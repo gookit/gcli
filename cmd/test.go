@@ -5,19 +5,19 @@ import (
     "fmt"
 )
 
-var testCmd = cli.Command{
-    Name: "test",
+var gitCmd = cli.Command{
+    Name: "git",
     Description: "this is a description message",
-    Aliases: []string{"ts","test1"},
+    Aliases: []string{"git-info"},
 }
 
-func TestCommand() *cli.Command {
-    testCmd.Execute = testExecute
+func GitCommand() *cli.Command {
+    gitCmd.Execute = gitExecute
 
-    return &testCmd
+    return &gitCmd
 }
 
-func testExecute(cmd *cli.Command, args []string) int  {
+func gitExecute(cmd *cli.Command, args []string) int  {
     fmt.Print("hello, in test command\n")
     return 0
 }

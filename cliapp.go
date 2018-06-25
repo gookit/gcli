@@ -6,6 +6,7 @@ import (
     "feedscenter/console/cmd"
 )
 
+// for test run: go build cliapp.go && ./cliapp
 func main() {
     runtime.GOMAXPROCS(runtime.NumCPU())
 
@@ -14,6 +15,7 @@ func main() {
     //app.Description = "a Des"
 
     app.Add(cmd.TestCommand())
+    app.Add(cmd.GitCommand())
     app.Add(cmd.NewPusher())
 
     app.Run()
