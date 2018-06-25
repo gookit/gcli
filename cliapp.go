@@ -2,8 +2,8 @@ package main
 
 import (
     "runtime"
-    "feedscenter/consumer/cli"
-    "feedscenter/consumer/cmd"
+    "feedscenter/console/cli"
+    "feedscenter/console/cmd"
 )
 
 func main() {

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-    "feedscenter/consumer/cli"
+    "feedscenter/console/cli"
     "fmt"
 )
 

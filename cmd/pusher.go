@@ -1,6 +1,6 @@
 package cmd
 
-import "feedscenter/consumer/cli"
+import "feedscenter/console/cli"
 
 // moment pusher
 
