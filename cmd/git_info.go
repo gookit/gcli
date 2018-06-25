@@ -7,6 +7,8 @@ import (
 	"os/exec"
 	"log"
 	"strings"
+	"feedscenter/utils"
+	"feedscenter/models"
 )
 
 var gitCmd = cli.Command{
@@ -22,6 +24,8 @@ func GitCommand() *cli.Command {
 }
 
 func gitExecute(cmd *cli.Command, args []string) int {
+	info := models.GitInfoData{}
+
 	// latest commit id by: git log --pretty=%H -n1 HEAD
 	cid, err := execOsCommand("git log --pretty=%H -n1 HEAD")
 	if err != nil {
@@ -31,6 +35,7 @@ func gitExecute(cmd *cli.Command, args []string) int {
 
 	cid = strings.TrimSpace(cid)
 	fmt.Printf("commit id: %s\n", cid)
+	info.Version = cid
 
 	// latest commit date by: git log -n1 --pretty=%ci HEAD
 	cDate, err := execOsCommand("git log -n1 --pretty=%ci HEAD")
@@ -40,6 +45,7 @@ func gitExecute(cmd *cli.Command, args []string) int {
 	}
 
 	cDate = strings.TrimSpace(cDate)
+	info.ReleaseAt = cDate
 	fmt.Printf("commit date: %s\n", cDate)
 
 	// get tag: git describe --tags --exact-match HEAD
@@ -52,10 +58,19 @@ func gitExecute(cmd *cli.Command, args []string) int {
 			return -2
 		}
 		br = strings.TrimSpace(strings.Trim(br, "*"))
+		info.Tag = br
 		fmt.Printf("current branch: %s\n", br)
 	} else {
 		tag = strings.TrimSpace(tag)
+		info.Tag = tag
 		fmt.Printf("latest tag: %s\n", tag)
+	}
+
+	err = utils.WriteJsonFile("app.json", &info)
+
+	if err != nil {
+		log.Fatal(err)
+		return -2
 	}
 
 	return 0
