@@ -19,6 +19,11 @@ func TestCommand() *cli.Command {
 		Description: "this is a description message",
 		Aliases:     []string{"ts"},
 		Execute:     testExecute,
+		ArgList: map[string]string{
+			"arg0": "the first argument",
+			"arg1": "the second argument",
+		},
+		Examples: "{{script}} {{cmd}} --id 12 -c val ag0 ag1",
 	}
 
 	testOpts = TestOpts{}

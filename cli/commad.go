@@ -62,8 +62,8 @@ type Command struct {
 
     // Options
 
-    // arguments [name]description
-    Args []string
+    // ArgList arguments description [name]description
+    ArgList map[string]string
 
     // application
     app *App

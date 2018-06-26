@@ -43,11 +43,6 @@ func GitCommand() *cli.Command {
 func gitExecute(cmd *cli.Command, args []string) int {
 	info := models.GitInfoData{}
 
-	fmt.Printf("%+v\n", cmd.Flags)
-	fmt.Printf("gitOpts %+v\n", gitOpts)
-	fmt.Printf("args is %v\n", args)
-	return 0
-
 	// latest commit id by: git log --pretty=%H -n1 HEAD
 	cid, err := execOsCommand("git log --pretty=%H -n1 HEAD")
 	if err != nil {

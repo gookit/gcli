@@ -53,6 +53,12 @@ Global Options:
 
 Options:
 {{.Options}}
+
+{{if .Cmd.ArgList}}Arguments:{{range $k,$v := .Cmd.ArgList}}
+  {{$k | printf "%-12s"}}{{$v}}{{end}}{{end}}
+{{if .Cmd.Examples}}
+Examples:
+  {{.Cmd.Examples}}{{end}}
 `
 
 // showCommandHelp display help for an command
