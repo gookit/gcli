@@ -10,6 +10,12 @@ import (
 func main() {
     runtime.GOMAXPROCS(runtime.NumCPU())
 
+	//reg := regexp.MustCompile(cliapp.ColorTag)
+	//r := reg.FindAllString("<err>text</err>", -1)
+	//
+	//fmt.Printf("%+v\n", r)
+	//return
+
     app := cliapp.NewApp()
     app.Version = "1.0.3"
     app.Verbose = cliapp.VerbDebug

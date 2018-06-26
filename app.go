@@ -208,9 +208,23 @@ func (app *App) Add(c *Command) {
     //}
 //}
 
-// Run running a sub-command in current app
-func (app *App) SubRun() {
-    // @todo ...
+// Run running a sub-command in current command
+func (app *App) SubRun(name string, args []string) int {
+    if !IsCommand(name) {
+        Stdoutf(Color(FgRed).F("Error: unknown input command '%s'", name))
+        return -2
+    }
+
+    cmd := commands[name]
+
+    // parse args, don't contains command name.
+    if !cmd.CustomFlags {
+        cmd.Flags.Parse(args)
+        args = cmd.Flags.Args()
+    }
+
+    // do execute command
+    return cmd.Execute(cmd, args)
 }
 
 // GetCommandName get real command name by alias
