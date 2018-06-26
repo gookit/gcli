@@ -3,14 +3,15 @@ package main
 import (
     "runtime"
     "github.com/golangkit/cliapp"
-    "github.com/golangkit/cliapp/demos/cmd"
+    "github.com/golangkit/cliapp/demo/cmd"
 )
 
-// for test run: go build console/cliapp.go && ./cliapp
+// for test run: go build ./demo/cliapp.go && ./cliapp
 func main() {
     runtime.GOMAXPROCS(runtime.NumCPU())
 
     app := cliapp.NewApp()
+    app.Version = "1.0.3"
     app.Verbose = cliapp.VerbDebug
     app.Description = "this is my cli application"
 

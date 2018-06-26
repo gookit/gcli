@@ -12,7 +12,7 @@ import (
 
 // showVersionInfo display version info
 func showVersionInfo() {
-	fmt.Printf(`%s\n\nVersion: %s\n`, app.Description, app.Version)
+	fmt.Printf("%s\n\nVersion: %s\n", app.Description, app.Version)
 	os.Exit(0)
 }
 
