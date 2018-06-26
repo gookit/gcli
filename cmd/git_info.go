@@ -13,7 +13,7 @@ import (
 
 var gitCmd = cli.Command{
 	Name:        "git",
-	Description: "this is a description message",
+	Description: "collect project info by git info",
 	Aliases:     []string{"git-info"},
 }
 
@@ -66,13 +66,14 @@ func gitExecute(cmd *cli.Command, args []string) int {
 		fmt.Printf("latest tag: %s\n", tag)
 	}
 
-	err = utils.WriteJsonFile("app.json", &info)
+	err = utils.WriteJsonFile("static/app.json", &info)
 
 	if err != nil {
 		log.Fatal(err)
 		return -2
 	}
 
+	fmt.Print(cli.Color(cli.FgGreen).S("\nOk, project info collect completed!\n"))
 	return 0
 }
 

@@ -6,7 +6,7 @@ import (
     "feedscenter/console/cmd"
 )
 
-// for test run: go build cliapp.go && ./cliapp
+// for test run: go build console/cliapp.go && ./cliapp
 func main() {
     runtime.GOMAXPROCS(runtime.NumCPU())
 

@@ -7,14 +7,14 @@ type Color uint8
 
 // Foreground colors.
 const (
-	Black Color = iota + 30
-	Red
-	Green
-	Yellow
-	Blue
-	Magenta
-	Cyan
-	White
+	FgBlack Color = iota + 30
+	FgRed
+	FgGreen
+	FgYellow
+	FgBlue
+	FgMagenta
+	FgCyan
+	FgWhite
 )
 
 // Background colors.
@@ -30,7 +30,8 @@ const (
 )
 
 // Add adds the coloring to the given string.
-func (c Color) Add(s string) string {
+// usage: cli.Color(cli.FgCyan).S("string")
+func (c Color) S(s string) string {
 	return fmt.Sprintf("\x1b[%dm%s\x1b[0m", uint8(c), s)
 }
 
