@@ -3,6 +3,7 @@ package main
 import (
     "runtime"
     "github.com/golangkit/cliapp"
+    "github.com/golangkit/cliapp/demos/cmd"
 )
 
 // for test run: go build console/cliapp.go && ./cliapp
@@ -13,8 +14,8 @@ func main() {
     app.Verbose = cliapp.VerbDebug
     app.Description = "this is my cli application"
 
-    app.Add(ExampleCommand())
-    app.Add(GitCommand())
+    app.Add(cmd.ExampleCommand())
+    app.Add(cmd.GitCommand())
 
     app.Run()
 }
