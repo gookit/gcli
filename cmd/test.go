@@ -24,8 +24,8 @@ func TestCommand() *cli.Command {
 	testOpts = TestOpts{}
 
 	f := &cmd.Flags
-	f.IntVar(&testOpts.id, "id", 0, "the id option")
-	f.StringVar(&testOpts.c, "c", "", "the short option")
+	f.IntVar(&testOpts.id, "id", 2, "the id option")
+	f.StringVar(&testOpts.c, "c", "value", "the short option")
 	f.StringVar(&testOpts.dir, "dir", "", "the dir option")
 
 	return &cmd
