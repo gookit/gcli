@@ -16,6 +16,15 @@ func main() {
 
     app.Add(cmd.ExampleCommand())
     app.Add(cmd.GitCommand())
+    app.Add(&cliapp.Command{
+        Name: "demo",
+        Aliases: []string{"dm"},
+        Description: "this is a description message for demo",
+        Execute: func (cmd *cliapp.Command, args []string) int {
+            cliapp.Stdout("hello, in the demo command\n")
+            return 0
+        },
+    })
 
     app.Run()
 }

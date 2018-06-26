@@ -229,16 +229,16 @@ func IsCommand(name string) bool {
     return has
 }
 
-func Stdout(msg string, v ...interface{})  {
-    fmt.Fprint(os.Stdout, msg, v)
+func Stdout(msg ...interface{})  {
+    fmt.Fprint(os.Stdout, msg...)
 }
 
 func Stdoutf(f string, v ...interface{})  {
     fmt.Fprintf(os.Stdout, f + "\n", v...)
 }
 
-func Stderr(msg string, v ...interface{})  {
-    fmt.Fprint(os.Stderr, msg, v)
+func Stderr(msg ...interface{})  {
+    fmt.Fprint(os.Stderr, msg...)
 }
 
 func Stderrf(f string, v ...interface{})  {

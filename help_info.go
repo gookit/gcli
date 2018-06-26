@@ -19,7 +19,7 @@ func showVersionInfo() {
 // help template for all commands
 var commandsHelp = `{{.Des}}
 Usage:
-  {{.Script}} command [--options ...] [arguments ...]
+  {{.Script}} command [--option ...] [argument ...]
 
 Options:
   -h, --help        Display this help information
@@ -46,17 +46,17 @@ func showCommandsHelp() {
 var commandHelp = `{{.Cmd.Description}}
 
 Name: {{.Cmd.Name}}{{if .Cmd.Aliases}}(alias: {{.Cmd.Aliases.String}}){{end}}
-Usage: {{.Script}} {{.Cmd.Name}} [-opt ...] [arg0 ...]
+Usage: {{.Script}} {{.Cmd.Name}} [--option ...] [argument ...]
 
 Global Options:
-  -h, --help        Display this help information
+  -h, --help        Display this help information{{if .Options}}
 
 Options:
 {{.Options}}
-
-{{if .Cmd.ArgList}}Arguments:{{range $k,$v := .Cmd.ArgList}}
-  {{$k | printf "%-12s"}}{{$v}}{{end}}{{end}}
-{{if .Cmd.Examples}}
+{{end}}{{if .Cmd.ArgList}}
+Arguments:{{range $k,$v := .Cmd.ArgList}}
+  {{$k | printf "%-12s"}}{{$v}}{{end}}
+{{end}} {{if .Cmd.Examples}}
 Examples:
   {{.Cmd.Examples}}{{end}}
 `
