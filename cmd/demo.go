@@ -34,8 +34,8 @@ func (c *DemoCommand) Name() string {
 
 func (c *DemoCommand) Definition() {
     c.
-        IntOption(&c.opts.id, "id", 0, "the input id").
-        StrOption(&c.opts.dir, "d", "", "search `directory` for include files")
+        IntOpt(&c.opts.id, "id", 0, "the input id").
+        StrOpt(&c.opts.dir, "d", "", "search `directory` for include files")
 }
 
 // execute

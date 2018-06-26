@@ -98,19 +98,20 @@ func (app *App) Run() {
     logf("input command name is: %s", name)
 
     if !IsCommand(name) {
-        Stdoutf("Error: unknown input command '%s'", name)
+        Stdoutf(Color(FgRed).F("Error: unknown input command '%s'", name))
         showCommandsHelp()
     }
 
     cmd := commands[name]
-    //cmd.Flag.Usage = func() { cmd.ShowHelp() }
+    //cmd.Flags.Usage = func() { cmd.ShowHelp() }
 
     // parse args, don't contains command name.
     if !cmd.CustomFlags {
-        cmd.Flag.Parse(args)
-        args = cmd.Flag.Args()
+        cmd.Flags.Parse(args)
+        args = cmd.Flags.Args()
     }
 
+    // do execute command
     os.Exit(cmd.Execute(cmd, args))
 }
 
@@ -170,15 +171,16 @@ func (app *App) Add(c *Command) {
     names[c.Name] = 1
     commands[c.Name] = c
 
-    c.NewFlagSet()
-    c.Flag.Usage = func() {
+    // c.NewFlagSet()
+    // will call it on input './cliapp command -h'
+    c.Flags.Usage = func() {
         showCommandHelp([]string{c.Name}, true)
     }
 
     // add alias
     for _, a := range c.Aliases {
         if cmd, has := aliases[a]; has {
-            panic(fmt.Sprintf("the alias '%s' has been used by command '%s'", a, cmd))
+            panic(Color(FgRed).F("the alias '%s' has been used by command '%s'", a, cmd))
         }
 
         aliases[a] = c.Name

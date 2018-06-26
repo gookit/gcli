@@ -44,8 +44,8 @@ type Command struct {
     // The first word in the line is taken to be the command name.
     UsageLine string
 
-    // Flag is a set of flags specific to this command.
-    Flag flag.FlagSet
+    // Flags is a set of flags specific to this command.
+    Flags flag.FlagSet
 
     // CustomFlags indicates that the command will do its own flag parsing.
     CustomFlags bool
@@ -63,23 +63,25 @@ type Command struct {
     // Options
 
     // arguments [name]description
-    // Arguments map[string]string
+    Args []string
+
+    // application
     app *App
 }
 
 // Option a command option
 type Option struct {
-    // Name is the Option name.
+    // Name is the Option name. eg 'name' -> '--name'
     Name string
 
-    // Short is the Option short name. eg '-n'
+    // Short is the Option short name. eg 'n' -> '-n'
     Short string
 
     // Description is the option description message
     Description string
 }
 
-// ShowHelp
+// ShowHelp @notice not used
 func (c *Command) ShowHelp() {
     fmt.Fprintf(os.Stderr, "%s\n", strings.TrimSpace(string(c.Description)))
     fmt.Fprintf(os.Stderr, "Usage: %s\n\n", c.UsageLine)
@@ -95,29 +97,39 @@ func (c *Command) Runnable() bool {
     return c.Execute != nil
 }
 
-// NewFlagSet
-func (c *Command) NewFlagSet() *flag.FlagSet {
-   fst := flag.NewFlagSet(c.Name, flag.ContinueOnError)
-
-   c.Flag = *fst
-
-   return  fst
-}
+// NewFlags
+//func (c *Command) NewFlags() *flag.FlagSet {
+//   fst := flag.NewFlagSet(c.Name, flag.ContinueOnError)
+//
+//   c.Flags = *fst
+//
+//   return  fst
+//}
 
 // App
 func (c *Command) App() *App {
     return app
 }
 
+// GetArgs get args
+func (c *Command) GetArgs() []string {
+    return c.Flags.Args()
+}
+
+// Arg get arg
+func (c *Command) Arg(i int) string {
+    return c.Flags.Arg(i)
+}
+
 // IntOption
-func (c *Command) IntOption(p *int, name string, defaultValue int, description string) *Command {
-    c.Flag.IntVar(p, name, defaultValue, description)
+func (c *Command) IntOpt(p *int, name string, defaultValue int, description string) *Command {
+    c.Flags.IntVar(p, name, defaultValue, description)
     return c
 }
 
 // StrOption
-func (c *Command) StrOption(p *string, name string, defaultValue string, description string) *Command {
-    c.Flag.StringVar(p, name, defaultValue, description)
+func (c *Command) StrOpt(p *string, name string, defaultValue string, description string) *Command {
+    c.Flags.StringVar(p, name, defaultValue, description)
     return c
 }
 

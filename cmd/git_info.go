@@ -11,20 +11,42 @@ import (
 	"feedscenter/models"
 )
 
-var gitCmd = cli.Command{
-	Name:        "git",
-	Description: "collect project info by git info",
-	Aliases:     []string{"git-info"},
+var gitOpts GitOpts
+type GitOpts struct {
+	id  int
+	c   string
+	dir string
 }
 
+// GitCommand
 func GitCommand() *cli.Command {
-	gitCmd.Execute = gitExecute
+	cmd := cli.Command{
+		Name:        "git",
+		Aliases:     []string{"git-info"},
+		Description: "collect project info by git info",
 
-	return &gitCmd
+		Execute: gitExecute,
+	}
+
+	gitOpts = GitOpts{}
+
+	f := &cmd.Flags
+	f.IntVar(&gitOpts.id, "id", 0, "the id option")
+	f.StringVar(&gitOpts.c, "c", "", "the short option")
+	f.StringVar(&gitOpts.dir, "dir", "", "the dir option")
+
+	return &cmd
 }
 
+// arg test:
+// 	go build console/cliapp.go && ./cliapp git --id 12 -c val ag0 ag1
 func gitExecute(cmd *cli.Command, args []string) int {
 	info := models.GitInfoData{}
+
+	fmt.Printf("%+v\n", cmd.Flags)
+	fmt.Printf("gitOpts %+v\n", gitOpts)
+	fmt.Printf("args is %v\n", args)
+	return 0
 
 	// latest commit id by: git log --pretty=%H -n1 HEAD
 	cid, err := execOsCommand("git log --pretty=%H -n1 HEAD")
