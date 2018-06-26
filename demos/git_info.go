@@ -1,14 +1,12 @@
 package cmd
 
 import (
-	"feedscenter/console/cli"
+    cli "github.com/golangkit/cliapp"
 	"fmt"
 	"bytes"
 	"os/exec"
 	"log"
 	"strings"
-	"feedscenter/utils"
-	"feedscenter/models"
 )
 
 var gitOpts GitOpts
@@ -16,6 +14,12 @@ type GitOpts struct {
 	id  int
 	c   string
 	dir string
+}
+
+type GitInfoData struct {
+	Tag       string `json:"tag" description:"get tag name"`
+	Version   string `json:"version" description:"git repo version."`
+	ReleaseAt string `json:"releaseAt" description:"latest commit date"`
 }
 
 // GitCommand
@@ -41,7 +45,7 @@ func GitCommand() *cli.Command {
 // arg test:
 // 	go build console/cliapp.go && ./cliapp git --id 12 -c val ag0 ag1
 func gitExecute(cmd *cli.Command, args []string) int {
-	info := models.GitInfoData{}
+	info := GitInfoData{}
 
 	// latest commit id by: git log --pretty=%H -n1 HEAD
 	cid, err := execOsCommand("git log --pretty=%H -n1 HEAD")
@@ -81,13 +85,6 @@ func gitExecute(cmd *cli.Command, args []string) int {
 		tag = strings.TrimSpace(tag)
 		info.Tag = tag
 		fmt.Printf("latest tag: %s\n", tag)
-	}
-
-	err = utils.WriteJsonFile("static/app.json", &info)
-
-	if err != nil {
-		log.Fatal(err)
-		return -2
 	}
 
 	fmt.Print(cli.Color(cli.FgGreen).S("\nOk, project info collect completed!\n"))
