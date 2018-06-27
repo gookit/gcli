@@ -12,3 +12,4 @@ var LogLevel2tag = map[string]string{
 func Log(msg string, data interface{}, tag string, opts map[string]string) {
 
 }
+

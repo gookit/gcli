@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"log"
 	"strings"
+	"github.com/golangkit/cliapp/color"
 )
 
 var gitOpts GitOpts
@@ -29,7 +30,7 @@ func GitCommand() *cli.Command {
 		Aliases:     []string{"git-info"},
 		Description: "collect project info by git info",
 
-		Execute: gitExecute,
+		Fn: gitExecute,
 	}
 
 	gitOpts = GitOpts{}
@@ -87,7 +88,7 @@ func gitExecute(cmd *cli.Command, args []string) int {
 		fmt.Printf("latest tag: %s\n", tag)
 	}
 
-	fmt.Print(cli.Color(cli.FgGreen).S("\nOk, project info collect completed!\n"))
+	fmt.Print(color.Color(color.FgGreen).S("\nOk, project info collect completed!\n"))
 	return 0
 }
 

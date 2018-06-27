@@ -3,7 +3,6 @@ package cliapp
 import (
     "flag"
     "os"
-    "fmt"
     "log"
 	"github.com/golangkit/cliapp/color"
 )
@@ -46,6 +45,10 @@ type App struct {
     // debug level
     Verbose int
 
+    // script name
+	script string
+	// current command name
+	command string
     // work dir path
     workDir string
 }
@@ -63,7 +66,8 @@ func init()  {
 // settings name,version,description
 // cli.NewApp("my cli app", "1.0.1", "The is is my cil application")
 func NewApp(settings ...string) *App {
-    app = &App{Name:"My App", Version: "1.0.0"}
+    app = &App{Name:"My CLI App", Version: "1.0.0"}
+	app.script = os.Args[0]
     app.workDir, _ = os.Getwd()
     app.Verbose = VerbError
 
@@ -94,16 +98,16 @@ func (app *App) SetVerbose(verbose int) {
 // Run running app
 func (app *App) Run() {
     rawName, args := prepareRun()
-
-    name := GetCommandName(rawName)
+    name := FindCommandName(rawName)
     logf("input command name is: %s", name)
 
     if !IsCommand(name) {
-        Stdoutf(color.Color(color.FgRed).F("Error: unknown input command '%s'", name))
+        Stdoutf(color.New(color.FgRed).F("Error: unknown input command '%s'", name))
         showCommandsHelp()
     }
 
     cmd := commands[name]
+    app.command = name
     //cmd.Flags.Usage = func() { cmd.ShowHelp() }
 
     // parse args, don't contains command name.
@@ -113,7 +117,26 @@ func (app *App) Run() {
     }
 
     // do execute command
-    os.Exit(cmd.Execute(cmd, args))
+    os.Exit(cmd.Execute(app, args))
+}
+
+// Run running a sub-command in current command
+func (app *App) SubRun(name string, args []string) int {
+	if !IsCommand(name) {
+		Stdoutf(color.Color(color.FgRed).F("Error: unknown input command '%s'", name))
+		return -2
+	}
+
+	cmd := commands[name]
+
+	// parse args, don't contains command name.
+	if !cmd.CustomFlags {
+		cmd.Flags.Parse(args)
+		args = cmd.Flags.Args()
+	}
+
+	// do execute command
+	return cmd.Execute(app, args)
 }
 
 // prepareRun
@@ -158,17 +181,9 @@ func prepareRun() (string, []string) {
     return args[0], args[1:]
 }
 
-// print debug logging
-func logf(f string, v ...interface{}) {
-    if !app.Debug {
-        return
-    }
-
-    log.Printf("[DEBUG] " + f, v...)
-}
-
 // Add add a command
 func (app *App) Add(c *Command) {
+	// add ...
     names[c.Name] = 1
     commands[c.Name] = c
 
@@ -188,48 +203,36 @@ func (app *App) Add(c *Command) {
     }
 }
 
-// Add add a simple command
-//func (app *App) AddSimple(name string, des string, handler func() int) {
-//
-//}
-
 // Add add a command
-//func (app *App) AddCommander(c Commander) {
-//    n := c.Name()
-//    names[n] = 1
-//    commanders[n] = c
+func (app *App) AddCommander(c Commander) {
+	// run command configure
+	cmd := c.Configure()
 
-    // add alias
-    //for _, a := range c.Aliases {
-    //    if cmd, has := aliases[a]; has {
-    //        panic(fmt.Sprintf("the alias '%s' has been used by command '%s'", a, cmd))
-    //    }
-	//
-    //    aliases[a] = c.Name
-    //}
-//}
-
-// Run running a sub-command in current command
-func (app *App) SubRun(name string, args []string) int {
-    if !IsCommand(name) {
-        Stdoutf(color.Color(color.FgRed).F("Error: unknown input command '%s'", name))
-        return -2
-    }
-
-    cmd := commands[name]
-
-    // parse args, don't contains command name.
-    if !cmd.CustomFlags {
-        cmd.Flags.Parse(args)
-        args = cmd.Flags.Args()
-    }
-
-    // do execute command
-    return cmd.Execute(cmd, args)
+	app.Add(cmd)
 }
 
-// GetCommandName get real command name by alias
-func GetCommandName(alias string) string {
+// WorkDir get work dir
+func (app *App) WorkDir() string {
+	return app.workDir
+}
+
+// Script get script name
+func (app *App) Script() string {
+	return app.command
+}
+
+// Command get command name
+func (app *App) Command() string {
+	return app.command
+}
+
+// Command get command name
+func CommandNames() map[string]int {
+	return names
+}
+
+// FindCommandName get real command name by alias
+func FindCommandName(alias string) string {
     if name, has := aliases[alias]; has {
         return name
     }
@@ -244,18 +247,11 @@ func IsCommand(name string) bool {
     return has
 }
 
-func Stdout(msg ...interface{})  {
-    fmt.Fprint(os.Stdout, msg...)
-}
+// print debug logging
+func logf(f string, v ...interface{}) {
+	if !app.Debug {
+		return
+	}
 
-func Stdoutf(f string, v ...interface{})  {
-    fmt.Fprintf(os.Stdout, f + "\n", v...)
-}
-
-func Stderr(msg ...interface{})  {
-    fmt.Fprint(os.Stderr, msg...)
-}
-
-func Stderrf(f string, v ...interface{})  {
-    fmt.Fprintf(os.Stderr, f + "\n", v...)
+	log.Printf("[DEBUG] " + f, v...)
 }

@@ -75,7 +75,7 @@ func showCommandHelp(list []string, quit bool) {
 	}
 
 	// get real name
-	name := GetCommandName(list[0])
+	name := FindCommandName(list[0])
 	cmd, exist := commands[name]
 
 	if !exist {

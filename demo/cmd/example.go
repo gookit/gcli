@@ -18,7 +18,7 @@ func ExampleCommand() *cli.Command {
 		Name:        "example",
 		Description: "this is a description message",
 		Aliases:     []string{"exp", "ex"},
-		Execute:     exampleExecute,
+		Fn:          exampleExecute,
 		ArgList: map[string]string{
 			"arg0": "the first argument",
 			"arg1": "the second argument",

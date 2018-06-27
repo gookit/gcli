@@ -11,15 +11,6 @@ import (
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	str := `abc <err>err-text</> 
-def <info>info text
-</>`
-
-	s := cliapp.ReplaceTag(str)
-
-	fmt.Printf("%s\n", s)
-	return
-
 	app := cliapp.NewApp()
 	app.Version = "1.0.3"
 	app.Verbose = cliapp.VerbDebug
@@ -27,15 +18,18 @@ def <info>info text
 
 	app.Add(cmd.ExampleCommand())
 	app.Add(cmd.GitCommand())
+	app.Add(cmd.ColorCommand())
 	app.Add(&cliapp.Command{
-		Name:        "demo",
-		Aliases:     []string{"dm"},
-		Description: "this is a description message for demo",
-		Execute: func(cmd *cliapp.Command, args []string) int {
-			cliapp.Stdout("hello, in the demo command\n")
+		Name:        "test",
+		Aliases:     []string{"ts"},
+		Description: "this is a description message for test",
+		Fn: func(cmd *cliapp.Command, args []string) int {
+			cliapp.Stdout("hello, in the test command\n")
 			return 0
 		},
 	})
 
+	app.AddCommander(&cmd.DemoCommand{})
+	fmt.Printf("%+v\n", cliapp.CommandNames())
 	app.Run()
 }
