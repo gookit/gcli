@@ -11,7 +11,7 @@ import (
 // Commander
 type Commander interface {
 	Configure() *Command
-	Execute(app *App, args []string) int
+	Execute(app *Application, args []string) int
 	//Fn(cmd *Command, args []string) int
 }
 
@@ -19,7 +19,7 @@ type Commander interface {
 // type CmdExecutor func(Context) int
 
 // CmdHandler
-// type CmdHandler func(app *App, args []string) int
+// type CmdHandler func(app *Application, args []string) int
 type CmdHandler Command
 
 // CmdAliases
@@ -41,15 +41,15 @@ type Command struct {
 	// Description is the command description for 'go help'
 	Description string
 
-	// UsageLine is the one-line usage message.
-	// The first word in the line is taken to be the command name.
-	UsageLine string
-
 	// Flags is a set of flags specific to this command.
 	Flags flag.FlagSet
 
 	// CustomFlags indicates that the command will do its own flag parsing.
 	CustomFlags bool
+
+	// A callback func to runs the command.
+	// The args are the arguments after the command name.
+	Fn func(cmd *Command, args []string) int
 
 	// Help is the help message shown in the 'go help <this-command>' output.
 	Help template.HTML
@@ -57,9 +57,8 @@ type Command struct {
 	// Examples some usage example display
 	Examples template.HTML
 
-	// A callback func to runs the command.
-	// The args are the arguments after the command name.
-	Fn func(cmd *Command, args []string) int
+	// vars you can add some vars map for render help info
+	Vars map[string]string
 
 	// Options
 
@@ -67,7 +66,7 @@ type Command struct {
 	ArgList map[string]string
 
 	// application
-	app *App
+	app *Application
 }
 
 // Option a command option
@@ -85,7 +84,7 @@ type Option struct {
 // ShowHelp @notice not used
 func (c *Command) ShowHelp() {
 	fmt.Fprintf(os.Stderr, "%s\n", strings.TrimSpace(string(c.Description)))
-	fmt.Fprintf(os.Stderr, "Usage: %s\n\n", c.UsageLine)
+	// fmt.Fprintf(os.Stderr, "Usage: %s\n\n", c.UsageLine)
 	fmt.Fprintf(os.Stderr, "%s\n\n", c.Help)
 	fmt.Fprintf(os.Stderr, "Example:%s\n\n", c.Examples)
 
@@ -93,7 +92,7 @@ func (c *Command) ShowHelp() {
 }
 
 // Runnable reports whether the command can be run; otherwise
-// it is a documentation pseudo-command such as importpath.
+// it is a documentation pseudo-command such as import path.
 func (c *Command) Runnable() bool {
 	return c.Fn != nil
 }
@@ -104,12 +103,12 @@ func (c *Command) Configure() *Command {
 }
 
 // Execute do execute the command
-func (c *Command) Execute(app *App, args []string) int {
+func (c *Command) Execute(app *Application, args []string) int {
 	return c.Fn(c, args)
 }
 
-// App
-func (c *Command) App() *App {
+// Application
+func (c *Command) App() *Application {
 	return app
 }
 
@@ -138,4 +137,65 @@ func (c *Command) StrOpt(p *string, name string, defaultValue string, descriptio
 // AliasesStr
 func (c *Command) AliasesStr() string {
 	return c.Aliases.String()
+}
+
+// AddVars add multi tpl vars
+func (c *Command) AddVars(vars map[string]string) {
+	// first init
+	if c.Vars == nil {
+		c.Vars = vars
+		return
+	}
+
+	for n, v := range vars {
+		c.Vars[n] = v
+	}
+}
+
+// PrintDefaults prints, to standard error unless configured otherwise, the
+// default values of all defined command-line flags in the set. See the
+// documentation for the global function PrintDefaults for more information.
+// NOTICE: the func is copied from package 'flag', func 'PrintDefaults'
+func (c *Command) ParseDefaults() string {
+	var ss []string
+
+	c.Flags.VisitAll(func(fg *flag.Flag) {
+		var s string
+
+		// is short option
+		if len(fg.Name) == 1 {
+			s = fmt.Sprintf("  -%s", fg.Name) // Two spaces before -; see next two comments.
+		} else {
+			s = fmt.Sprintf("  --%s", fg.Name) // Two spaces before -; see next two comments.
+		}
+
+		name, usage := flag.UnquoteUsage(fg)
+		if len(name) > 0 {
+			s += " " + name
+		}
+		// Boolean flags of one ASCII letter are so common we
+		// treat them specially, putting their usage on the same line.
+		if len(s) <= 4 { // space, space, '-', 'x'.
+			s += "\t"
+		} else {
+			// Four spaces before the tab triggers good alignment
+			// for both 4- and 8-space tab stops.
+			s += "\n    \t"
+		}
+		s += strings.Replace(usage, "\n", "\n    \t", -1)
+
+		if !isZeroValue(fg, fg.DefValue) {
+			if _, ok := fg.Value.(*stringValue); ok {
+				// put quotes on the value
+				s += fmt.Sprintf(" (default %q)", fg.DefValue)
+			} else {
+				s += fmt.Sprintf(" (default %v)", fg.DefValue)
+			}
+		}
+
+		ss = append(ss, s)
+		// fmt.Fprint(fgs.Output(), s, "\n")
+	})
+
+	return strings.Join(ss, "\n")
 }

@@ -1,129 +1,157 @@
 package cliapp
 
 import (
-    "flag"
-    "os"
-    "log"
+	"flag"
+	"os"
+	"log"
 	"github.com/golangkit/cliapp/color"
 )
+
+// some constants
+const (
+	VerbQuiet = iota // don't report anything
+	VerbError        // reporting on error
+	VerbWarn
+	VerbInfo
+	VerbDebug
+
+	// command type
+	//TypeCommand = iota
+	//TypeCommander
+)
+
+// GlobalOpts global flags
+type GlobalOpts struct {
+	showHelp bool
+	showVersion bool
+}
+
+// Logo app logo, ASCII logo
+type Logo struct {
+	Text  string // ASCII logo string
+	Style string // eg "info"
+}
+
+// Application the cli app definition
+type Application struct {
+	Name        string
+	Version     string
+	Description string
+
+	// open debug
+	Debug bool
+	// debug level
+	Verbose int
+
+	// ASCII logo setting
+	Logo Logo
+
+	// script name
+	script string
+	// current command name
+	command string
+	// work dir path
+	workDir string
+
+	// vars you can add some vars map for render help info
+	vars map[string]string
+}
+
+// the cli app instance
+var app *Application
 
 // commands collect all command
 var names map[string]int // value
 var aliases map[string]string
-var commands  map[string]*Command
+var commands map[string]*Command
 //var commanders  map[string]Commander
 
 // some info
 var script = os.Args[0]
-var showHelp bool
-var showVersion bool
+var gOpts = GlobalOpts{}
 
-// some constants
-const (
-    VerbQuiet = iota // don't report anything
-    VerbError // reporting on error
-    VerbWarn
-    VerbInfo
-    VerbDebug
-
-    // command type
-    //TypeCommand = iota
-    //TypeCommander
-)
-
-// App the cli app
-type App struct {
-    Name string
-    Version string
-    Description string
-
-    // ASCII logo string
-    LogoText string
-
-    // open debug
-    Debug bool
-    // debug level
-    Verbose int
-
-    // script name
-	script string
-	// current command name
-	command string
-    // work dir path
-    workDir string
-}
-
-// the app instance
-var app *App
-
-func init()  {
-    names = make(map[string]int)
-    aliases = make(map[string]string)
-    commands = make(map[string]*Command)
+// init
+func init() {
+	names = make(map[string]int)
+	aliases = make(map[string]string)
+	commands = make(map[string]*Command)
 }
 
 // NewApp create new app
 // settings name,version,description
 // cli.NewApp("my cli app", "1.0.1", "The is is my cil application")
-func NewApp(settings ...string) *App {
-    app = &App{Name:"My CLI App", Version: "1.0.0"}
+func NewApp(settings ...string) *Application {
+	app = &Application{Name: "My CLI Application", Version: "1.0.0"}
 	app.script = script
-    app.workDir, _ = os.Getwd()
-    app.Verbose = VerbError
+	app.workDir, _ = os.Getwd()
+	app.Verbose = VerbError
+	app.Logo.Style = "info"
 
-    for k, v := range settings{
-        switch k {
-        case 0:
-            app.Name = v
-        case 1:
-            app.Version = v
-        case 2:
-            app.Description = v
-        }
-    }
+	for k, v := range settings {
+		switch k {
+		case 0:
+			app.Name = v
+		case 1:
+			app.Version = v
+		case 2:
+			app.Description = v
+		}
+	}
 
-    return app
+	// init
+	app.Init()
+
+	return app
+}
+
+// Init
+func (app *Application) Init()  {
+	// init some tpl vars
+	app.vars = map[string]string{
+		"script": app.script,
+		"workDir": app.workDir,
+	}
 }
 
 // SetDebug
-func (app *App) SetDebug(debug bool) {
-    app.Debug = debug
+func (app *Application) SetDebug(debug bool) {
+	app.Debug = debug
 }
 
 // SetVerbose
-func (app *App) SetVerbose(verbose int) {
-    app.Verbose = verbose
+func (app *Application) SetVerbose(verbose int) {
+	app.Verbose = verbose
 }
 
 // Run running app
-func (app *App) Run() {
-    rawName, args := prepareRun()
-    name := FindCommandName(rawName)
-    logf("input command name is: %s", name)
+func (app *Application) Run() {
+	rawName, args := prepareRun()
+	name := FindCommandName(rawName)
+	logf("input command name is: %s", name)
 
-    if !IsCommand(name) {
-        color.New(color.FgRed).Printf("Error: unknown input command '%s'\n", name)
-        showCommandsHelp()
-    }
+	if !IsCommand(name) {
+		color.Tips("error").Printf("unknown input command '%s'\n", name)
+		showCommandsHelp()
+	}
 
-    cmd := commands[name]
-    app.command = name
-    //cmd.Flags.Usage = func() { cmd.ShowHelp() }
+	cmd := commands[name]
+	app.command = name
+	//cmd.Flags.Usage = func() { cmd.ShowHelp() }
 
-    // parse args, don't contains command name.
-    if !cmd.CustomFlags {
-        cmd.Flags.Parse(args)
-        args = cmd.Flags.Args()
-    }
+	// parse args, don't contains command name.
+	if !cmd.CustomFlags {
+		cmd.Flags.Parse(args)
+		args = cmd.Flags.Args()
+	}
 
-    // do execute command
-    os.Exit(cmd.Execute(app, args))
+	// do execute command
+	os.Exit(cmd.Execute(app, args))
 }
 
 // Run running a sub-command in current command
-func (app *App) SubRun(name string, args []string) int {
+func (app *Application) SubRun(name string, args []string) int {
 	if !IsCommand(name) {
-		color.New(color.FgRed).Printf("Error: unknown input command '%s'", name)
+		color.Tips("error").Printf("unknown input command '%s'", name)
 		return -2
 	}
 
@@ -141,70 +169,73 @@ func (app *App) SubRun(name string, args []string) int {
 
 // prepareRun
 func prepareRun() (string, []string) {
-    flag.Usage = showCommandsHelp
+	flag.Usage = showCommandsHelp
 
-    // some global options
-    flag.BoolVar(&showHelp, "h", false, "")
-    flag.BoolVar(&showHelp, "help", false, "")
-    flag.BoolVar(&showVersion, "V", false, "")
-    flag.BoolVar(&showVersion, "version", false, "")
+	// some global options
+	flag.BoolVar(&gOpts.showHelp, "h", false, "")
+	flag.BoolVar(&gOpts.showHelp, "help", false, "")
+	flag.BoolVar(&gOpts.showVersion, "V", false, "")
+	flag.BoolVar(&gOpts.showVersion, "version", false, "")
 
-    flag.Parse()
-    // don't display date on print log
-    log.SetFlags(0)
+	flag.Parse()
+	// don't display date on print log
+	log.SetFlags(0)
 
-    if showHelp {
-        showCommandsHelp()
-    }
+	if gOpts.showHelp {
+		showCommandsHelp()
+	}
 
-    if showVersion {
-        showVersionInfo()
-    }
+	if gOpts.showVersion {
+		showVersionInfo()
+	}
 
-    // no command input
-    args := flag.Args()
-    if len(args) < 1 {
-        showCommandsHelp()
-    }
+	// no command input
+	args := flag.Args()
+	if len(args) < 1 {
+		showCommandsHelp()
+	}
 
-    // is help command
-    if args[0] == "help" {
-        // like 'go help'
-        if len(args) == 1 {
-            showCommandsHelp()
-        }
+	// is help command
+	if args[0] == "help" {
+		// like 'go help'
+		if len(args) == 1 {
+			showCommandsHelp()
+		}
 
-        // like 'go help COMMAND'
-        showCommandHelp(args[1:], true)
-    }
+		// like 'go help COMMAND'
+		showCommandHelp(args[1:], true)
+	}
 
-    return args[0], args[1:]
+	return args[0], args[1:]
 }
 
 // Add add a command
-func (app *App) Add(c *Command) {
+func (app *Application) Add(c *Command) {
 	// add ...
-    names[c.Name] = 1
-    commands[c.Name] = c
+	names[c.Name] = 1
+	commands[c.Name] = c
 
-    // c.NewFlagSet()
-    // will call it on input './cliapp command -h'
-    c.Flags.Usage = func() {
-        showCommandHelp([]string{c.Name}, true)
-    }
+	// c.NewFlagSet()
+	// will call it on input './cliapp command -h'
+	c.Flags.Usage = func() {
+		// add app vars to cmd
+		c.AddVars(app.vars)
 
-    // add alias
-    for _, a := range c.Aliases {
-        if cmd, has := aliases[a]; has {
-            panic(color.Color(color.FgRed).F("the alias '%s' has been used by command '%s'", a, cmd))
-        }
+		showCommandHelp([]string{c.Name}, true)
+	}
 
-        aliases[a] = c.Name
-    }
+	// add alias
+	for _, a := range c.Aliases {
+		if cmd, has := aliases[a]; has {
+			panic(color.Color(color.FgRed).F("the alias '%s' has been used by command '%s'", a, cmd))
+		}
+
+		aliases[a] = c.Name
+	}
 }
 
 // Add add a command
-//func (app *App) AddCommander(c Commander) {
+//func (app *Application) AddCommander(c Commander) {
 //	// run command configure
 //	cmd := c.Configure()
 //
@@ -212,17 +243,17 @@ func (app *App) Add(c *Command) {
 //}
 
 // WorkDir get work dir
-func (app *App) WorkDir() string {
+func (app *Application) WorkDir() string {
 	return app.workDir
 }
 
 // Script get script name
-func (app *App) Script() string {
+func (app *Application) Script() string {
 	return app.command
 }
 
 // Command get command name
-func (app *App) Command() string {
+func (app *Application) Command() string {
 	return app.command
 }
 
@@ -233,18 +264,18 @@ func CommandNames() map[string]int {
 
 // FindCommandName get real command name by alias
 func FindCommandName(alias string) string {
-    if name, has := aliases[alias]; has {
-        return name
-    }
+	if name, has := aliases[alias]; has {
+		return name
+	}
 
-    return alias
+	return alias
 }
 
 // IsCommand
 func IsCommand(name string) bool {
-    _, has := names[name]
+	_, has := names[name]
 
-    return has
+	return has
 }
 
 // print debug logging
@@ -253,5 +284,5 @@ func logf(f string, v ...interface{}) {
 		return
 	}
 
-	log.Printf("[DEBUG] " + f, v...)
+	log.Printf("[DEBUG] "+f, v...)
 }

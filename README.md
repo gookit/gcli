@@ -5,6 +5,8 @@ simple cliapp for golang
 - auto generate help info
 - support add multi commands
 - support command alias
+- support var replace on display help info
+- support color tag on display help info
 - support cli color, simple to use. like `<info>info style</>`
 
 ## install
@@ -46,8 +48,9 @@ func main() {
     app.Add(&cliapp.Command{
         Name: "demo",
         Aliases: []string{"dm"},
-        Description: "this is a description message for demo",
-        Execute: func (cmd *cliapp.Command, args []string) int {
+        // allow color tag and {$cmd} will be replace to 'demo'
+        Description: "this is a description <info>message</>  for {$cmd}", 
+        Fn: func (cmd *cliapp.Command, args []string) int {
             cliapp.Stdout("hello, in the demo command\n")
             return 0
         },
@@ -163,8 +166,11 @@ func main() {
 
 output:
 
-![colored-out](./demo/colored-out.jpg)
+<img src="demo/colored-out.jpg" style="max-width: 350px;"/>
 
+## Ref
+
+- `issue9/term` https://github.com/issue9/term
 
 ## License
 

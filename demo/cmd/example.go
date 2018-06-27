@@ -23,7 +23,7 @@ func ExampleCommand() *cli.Command {
 			"arg0": "the first argument",
 			"arg1": "the second argument",
 		},
-		Examples: "{{script}} {{cmd}} --id 12 -c val ag0 ag1",
+		Examples: "{$script} {$cmd} --id 12 -c val ag0 ag1",
 	}
 
 	exampleOpts = ExampleOpts{}
