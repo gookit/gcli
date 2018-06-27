@@ -37,9 +37,17 @@ func ColorCommand() *cliapp.Command {
 }
 
 func colorUsage(cmd *cliapp.Command, args []string) int  {
-	color.Println("<suc>he</><comment>llo</>, welcome")
+	// use style tag
+	color.Print("<suc>he</><comment>llo</>, <cyan>welcome</>\n")
 
+	// set a style tag
 	color.Tag("info").Print("info style\n")
+
+	// use info style tips
+	color.Tips("info").Print("tips style\n")
+
+	// use info style blocked tips
+	color.BlockTips("info").Print("blocked tips style\n")
 
 	return 0
 }

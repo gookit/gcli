@@ -137,6 +137,35 @@ Examples:
 
 ```
 
+## Use color
+
+```go
+package main
+
+import (
+    "github.com/golangkit/cliapp/color"
+    )
+
+func main() {
+    // use style tag
+	color.Print("<suc>he</><comment>llo</>, <cyan>welcome</>\n")
+
+	// set a style tag
+	color.Tag("info").Print("info style\n")
+
+	// use info style tips
+	color.Tips("info").Print("tips style\n")
+
+	// use info style blocked tips
+	color.BlockTips("info").Print("blocked tips style\n")
+}
+```
+
+output:
+
+![colored-out](./demo/colored-out.jpg)
+
+
 ## License
 
 MIT
