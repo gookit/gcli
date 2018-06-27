@@ -88,7 +88,8 @@ func gitExecute(cmd *cli.Command, args []string) int {
 		fmt.Printf("latest tag: %s\n", tag)
 	}
 
-	fmt.Print(color.Color(color.FgGreen).S("\nOk, project info collect completed!\n"))
+	color.Println("\n<suc>Ok, project info collect completed!</>")
+
 	return 0
 }
 

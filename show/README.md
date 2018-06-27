@@ -4,6 +4,7 @@
 - panel
 - list
 - multi list
+- alert
 
 - markdown
 - json

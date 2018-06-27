@@ -5,16 +5,16 @@ import (
 	"os"
 )
 
-func Stdout(msg ...interface{})  {
-	fmt.Fprint(os.Stdout, msg...)
+func Stdout(msg ...interface{}) (int, error) {
+	return fmt.Fprint(os.Stdout, msg...)
 }
 
-func Stdoutf(f string, v ...interface{})  {
-	fmt.Fprintf(os.Stdout, f + "\n", v...)
+func Stdoutf(f string, v ...interface{}) (int, error) {
+	return fmt.Fprintf(os.Stdout, f + "\n", v...)
 }
 
-func Stderr(msg ...interface{})  {
-	fmt.Fprint(os.Stderr, msg...)
+func Stderr(msg ...interface{}) (int, error) {
+	return fmt.Fprint(os.Stderr, msg...)
 }
 
 func Stderrf(f string, v ...interface{})  {

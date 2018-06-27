@@ -79,7 +79,7 @@ func showCommandHelp(list []string, quit bool) {
 	cmd, exist := commands[name]
 
 	if !exist {
-		Stdoutf(color.Color(color.FgRed).F("Unknown command name %#q.  Run '%s help'.", name, script))
+		color.New(color.FgRed).Printf("Unknown command name %#q.  Run '%s help'.", name, script)
 		os.Exit(2)
 	}
 

@@ -4,7 +4,6 @@ import (
 	"runtime"
 	"github.com/golangkit/cliapp"
 	"github.com/golangkit/cliapp/demo/cmd"
-	"fmt"
 )
 
 // for test run: go build ./demo/cliapp.go && ./cliapp
@@ -29,7 +28,7 @@ func main() {
 		},
 	})
 
-	app.AddCommander(&cmd.DemoCommand{})
-	fmt.Printf("%+v\n", cliapp.CommandNames())
+	//app.AddCommander(&cmd.DemoCommand{})
+	//fmt.Printf("%+v\n", cliapp.CommandNames())
 	app.Run()
 }

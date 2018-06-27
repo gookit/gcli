@@ -3,7 +3,6 @@ package cmd
 import (
 	"github.com/golangkit/cliapp"
 	"github.com/golangkit/cliapp/color"
-	"fmt"
 )
 
 var colorOpts ColorOpts
@@ -38,9 +37,9 @@ func ColorCommand() *cliapp.Command {
 }
 
 func colorUsage(cmd *cliapp.Command, args []string) int  {
-	str := color.UseStyle("red", "text message")
+	color.Println("<suc>he</><comment>llo</>, welcome")
 
-	fmt.Println(str)
+	color.Tag("info").Print("info style\n")
 
 	return 0
 }

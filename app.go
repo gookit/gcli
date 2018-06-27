@@ -67,7 +67,7 @@ func init()  {
 // cli.NewApp("my cli app", "1.0.1", "The is is my cil application")
 func NewApp(settings ...string) *App {
     app = &App{Name:"My CLI App", Version: "1.0.0"}
-	app.script = os.Args[0]
+	app.script = script
     app.workDir, _ = os.Getwd()
     app.Verbose = VerbError
 
@@ -102,7 +102,7 @@ func (app *App) Run() {
     logf("input command name is: %s", name)
 
     if !IsCommand(name) {
-        Stdoutf(color.New(color.FgRed).F("Error: unknown input command '%s'", name))
+        color.New(color.FgRed).Printf("Error: unknown input command '%s'\n", name)
         showCommandsHelp()
     }
 
@@ -123,7 +123,7 @@ func (app *App) Run() {
 // Run running a sub-command in current command
 func (app *App) SubRun(name string, args []string) int {
 	if !IsCommand(name) {
-		Stdoutf(color.Color(color.FgRed).F("Error: unknown input command '%s'", name))
+		color.New(color.FgRed).Printf("Error: unknown input command '%s'", name)
 		return -2
 	}
 
@@ -204,12 +204,12 @@ func (app *App) Add(c *Command) {
 }
 
 // Add add a command
-func (app *App) AddCommander(c Commander) {
-	// run command configure
-	cmd := c.Configure()
-
-	app.Add(cmd)
-}
+//func (app *App) AddCommander(c Commander) {
+//	// run command configure
+//	cmd := c.Configure()
+//
+//	app.Add(cmd)
+//}
 
 // WorkDir get work dir
 func (app *App) WorkDir() string {
