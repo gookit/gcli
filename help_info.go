@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"reflect"
 	"flag"
+	"github.com/golangkit/cliapp/color"
 )
 
 // showVersionInfo display version info
@@ -78,7 +79,7 @@ func showCommandHelp(list []string, quit bool) {
 	cmd, exist := commands[name]
 
 	if !exist {
-		Stdoutf(Color(FgRed).F("Unknown command name %#q.  Run '%s help'.", name, script))
+		Stdoutf(color.Color(color.FgRed).F("Unknown command name %#q.  Run '%s help'.", name, script))
 		os.Exit(2)
 	}
 

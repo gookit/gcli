@@ -1,16 +1,26 @@
-package cliapp
+package color
 
-import "fmt"
-
-const (
-	// Regex to match tags
-	ColorTag = `<([a-z=;]+)>(.*?)<\/\\1>`
-
-	// Regex used for removing color tags
-	StripTag = `<[\/]?[a-zA-Z=;]+>`
+import (
+	"fmt"
+	"regexp"
+	"strings"
 )
 
-// some defined style tags
+const (
+	// Regex to match color tags
+	// golang 不支持反向引用.  即不支持使用 \1 引用第一个匹配 ([a-z=;]+)
+	// TagExpr = `<([a-z=;]+)>(.*?)<\/\1>`
+	// 所以调整一下 统一使用 </> 来结束标签 e.g <info>some text</>
+	// (?s:...) s - 匹配换行
+	TagExpr = `<([a-z=;]+)>(?s:(.*?))<\/>`
+
+	// Regex used for removing color tags
+	// StripExpr = `<[\/]?[a-zA-Z=;]+>`
+	// 随着上面的做一些调整
+	StripExpr = `<[\/]?[a-zA-Z=;]*>`
+)
+
+// some defined style tags <tag>some text</>
 const (
 	// basic
 	Red     = "red"
@@ -44,7 +54,7 @@ const (
 )
 
 /**
- * some defined styles
+ * Some internal defined styles
  * custom style: fg;bg;opt
  */
 var Styles = map[string]string{
@@ -56,7 +66,8 @@ var Styles = map[string]string{
 	"green":   "0;32",
 	"brown":   "0;33",
 	"white":   "1;37",
-	"normal":  "39", // no color
+	"default":  "39", // no color
+	"normal":  "39",  // no color
 	"yellow":  "1;33",
 	"magenta": "1;35",
 
@@ -109,18 +120,57 @@ var Styles = map[string]string{
 	"reverse":    "7",
 }
 
+// Style
+func Style(name string, str string) string {
+	return Render(WrapTag(str, name))
+}
+
 // Apply
-func Apply(style string, text string) string {
-	return Render(WrapTag(text, style))
+// usage:
+// 	`(string, fg-color,bg-color, options...)`
+//  color.Apply("text", color.FgGreen)
+//  color.Apply("text", color.FgGreen, color.BgBlack, color.OpBold)
+func Apply(str string, colors ...Color) string {
+	return str
 }
 
 // Render
-func Render(text string) string {
-	return text
+func Render(str string) string {
+	return str
 }
 
-func FormatStr(text string) string {
-	return text
+func Format(str string) string {
+	return str
+}
+
+// ReplaceTag
+func ReplaceTag(str string) string {
+	if !strings.Contains(str, "<") {
+		return str
+	}
+
+	reg := regexp.MustCompile(TagExpr)
+	//reg, err := regexp.Compile(cliapp.TagExpr)
+	//if err != nil {
+	//	log.Fatal(err)
+	//}
+
+	r := reg.FindAllStringSubmatch(str, -1)
+	fmt.Printf("ret %v\n", r)
+
+	for _, item := range r {
+		// e.g "<tag>text</>"
+		_, tag, text := item[0],item[1], item[2]
+		code := GetColorCode(tag)
+
+		if len(code) > 0 {
+
+		}
+
+		fmt.Printf("tag: %s, tag content:%s\n", tag, text)
+	}
+
+	return str
 }
 
 // IsStyle is style name
@@ -132,7 +182,32 @@ func IsStyle(name string) bool {
 	return false
 }
 
+// GetColorCode get color code by style name
+func GetColorCode(name string) string {
+	if code, ok := Styles[name]; ok {
+		return code
+	}
+
+	return ""
+}
+
 // WrapTag wrap a tag for a string
 func WrapTag(str string, tag string) string {
-	return fmt.Sprintf("<%s>%s</%s>", tag, str, tag)
+	// return fmt.Sprintf("<%s>%s</%s>", tag, str, tag)
+	return fmt.Sprintf("<%s>%s</>", tag, str)
+}
+
+// ClearTag clear all tag for a string
+func ClearTag(str string) string {
+	if !strings.Contains(str, "<") {
+		return str
+	}
+
+	rgp, err := regexp.Compile(StripExpr)
+
+	if err != nil {
+		return str
+	}
+
+	return rgp.ReplaceAllString(str, "")
 }

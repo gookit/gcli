@@ -5,6 +5,7 @@ import (
     "os"
     "fmt"
     "log"
+	"github.com/golangkit/cliapp/color"
 )
 
 // commands collect all command
@@ -98,7 +99,7 @@ func (app *App) Run() {
     logf("input command name is: %s", name)
 
     if !IsCommand(name) {
-        Stdoutf(Color(FgRed).F("Error: unknown input command '%s'", name))
+        Stdoutf(color.Color(color.FgRed).F("Error: unknown input command '%s'", name))
         showCommandsHelp()
     }
 
@@ -180,7 +181,7 @@ func (app *App) Add(c *Command) {
     // add alias
     for _, a := range c.Aliases {
         if cmd, has := aliases[a]; has {
-            panic(Color(FgRed).F("the alias '%s' has been used by command '%s'", a, cmd))
+            panic(color.Color(color.FgRed).F("the alias '%s' has been used by command '%s'", a, cmd))
         }
 
         aliases[a] = c.Name
@@ -211,7 +212,7 @@ func (app *App) Add(c *Command) {
 // Run running a sub-command in current command
 func (app *App) SubRun(name string, args []string) int {
     if !IsCommand(name) {
-        Stdoutf(Color(FgRed).F("Error: unknown input command '%s'", name))
+        Stdoutf(color.Color(color.FgRed).F("Error: unknown input command '%s'", name))
         return -2
     }
 
