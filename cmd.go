@@ -42,7 +42,7 @@ type Command struct {
 	// Description is the command description for 'go help'
 	Description string
 
-	// Flags is a set of flags specific to this command.
+	// Flags(Options) is a set of flags specific to this command.
 	Flags flag.FlagSet
 
 	// CustomFlags indicates that the command will do its own flag parsing.
@@ -51,6 +51,10 @@ type Command struct {
 	// A callback func to runs the command.
 	// The args are the arguments after the command name.
 	Fn func(cmd *Command, args []string) int
+
+	// Hooks can setting some hooks func on running.
+	// names: "init", "before", "after"
+	Hooks map[string]func(cmd *Command)
 
 	// Help is the help message text
 	Help template.HTML
@@ -61,8 +65,6 @@ type Command struct {
 	// vars you can add some vars map for render help info
 	Vars map[string]string
 
-	// Options
-
 	// ArgList arguments description [name]description
 	ArgList map[string]string
 
@@ -71,9 +73,12 @@ type Command struct {
 
 	// mark is alone running.
 	alone bool
+
+	// shortcuts storage shortcuts for command options(Flags) [short -> lang]
+	shortcuts map[string]string
 }
 
-// Option a command option
+// Option a command option @unused
 type Option struct {
 	// Name is the Option name. eg 'name' -> '--name'
 	Name string
@@ -149,15 +154,62 @@ func (c *Command) Arg(i int) string {
 	return c.Flags.Arg(i)
 }
 
-// IntOption
-func (c *Command) IntOpt(p *int, name string, defaultValue int, description string) *Command {
+// IntOpt set a int option
+func (c *Command) IntOpt(p *int, name string, short string, defaultValue int, description string) *Command {
 	c.Flags.IntVar(p, name, defaultValue, description)
+
+	if len(short) == 1 {
+		c.Flags.IntVar(p, short, defaultValue, "")
+	}
+
 	return c
 }
 
-// StrOption
-func (c *Command) StrOpt(p *string, name string, defaultValue string, description string) *Command {
+// UintOpt set a int option
+func (c *Command) UintOpt(p *uint, name string, short string, defaultValue uint, description string) *Command {
+	c.Flags.UintVar(p, name, defaultValue, description)
+
+	if len(short) == 1 {
+		c.Flags.UintVar(p, short, defaultValue, "")
+	}
+
+	return c
+}
+
+// StrOpt set a str option
+func (c *Command) StrOpt(p *string, name string, short string, defaultValue string, description string) *Command {
 	c.Flags.StringVar(p, name, defaultValue, description)
+
+	if len(short) == 1 {
+		c.Flags.StringVar(p, short, defaultValue, "")
+	}
+
+	return c
+}
+
+// BoolOpt set a bool option
+func (c *Command) BoolOpt(p *bool, name string, short string, defaultValue bool, description string) *Command {
+	c.Flags.BoolVar(p, name, defaultValue, description)
+
+	if len(short) == 1 {
+		c.Flags.BoolVar(p, short, defaultValue, "")
+	}
+
+	return c
+}
+
+// VarOpt set a custom option
+// raw usage:
+// cmd.Flags.Var(&opts.Strings, "tables", "List of table names separated by a comma.")
+// in here:
+// cmd.VarOpt(&opts.Strings, "tables", "t", "List of table names separated by a comma.")
+func (c *Command) VarOpt(p flag.Value, name string, short string, description string) *Command {
+	c.Flags.Var(p, name, description)
+
+	if len(short) == 1 {
+		c.Flags.Var(p, short, "")
+	}
+
 	return c
 }
 

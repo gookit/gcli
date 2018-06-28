@@ -10,6 +10,7 @@ import (
 	"github.com/golangkit/cliapp/color"
 	"bytes"
 	"fmt"
+	"github.com/golangkit/cliapp/utils"
 )
 
 // showVersionInfo display version info
@@ -45,7 +46,7 @@ func showCommandsHelp() {
 	RenderStrTpl(&buf, commandsHelp, map[string]interface{}{
 		"Cs":          commands,
 		"Script":      script,
-		"Description": app.Description,
+		"Description": utils.UpperFirst(app.Description),
 	})
 
 	fmt.Print(ReplaceVars(buf.String(), app.vars))
@@ -100,6 +101,10 @@ func RenderStrTpl(w io.Writer, text string, data interface{}) {
 
 	t.Funcs(template.FuncMap{"colored": func (s string) interface{} {
 		return template.HTML(color.ReplaceTag(s))
+	}})
+
+	t.Funcs(template.FuncMap{"coloredHtml": func (h template.HTML) interface{} {
+		return template.HTML(color.ReplaceTag(string(h)))
 	}})
 
 	t.Funcs(template.FuncMap{"handleDes": func (s string) interface{} {

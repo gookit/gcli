@@ -5,6 +5,7 @@ import (
 	"os"
 	"github.com/golangkit/cliapp/color"
 	"bytes"
+	"github.com/golangkit/cliapp/utils"
 )
 
 // help template for a command
@@ -21,9 +22,9 @@ var commandHelp = `{{.Description}}
 {{end}}{{if .Cmd.ArgList}}
 <comment>Arguments:</>{{range $k,$v := .Cmd.ArgList}}
   {{$k | printf "%-12s"}}{{$v}}{{end}}
-{{end}} {{if .Cmd.Examples}}
+{{end}} {{if .Examples}}
 <comment>Examples:</>
-  {{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}
+  {{.Examples}}{{end}}{{if .Cmd.Help}}
 <comment>Help:</>
   {{.Cmd.Help}}{{end}}
 `
@@ -63,13 +64,16 @@ func (c *Command) ShowHelp(quit ...bool) {
 	//RenderStrTpl(os.Stdout, commandHelp, map[string]interface{}{
 	// render but not output
 	RenderStrTpl(&buf, commandHelp, map[string]interface{}{
-		"Cmd":         c,
+		"Cmd": c,
+
 		"Script":      script,
 		"Options":     color.ReplaceTag(c.ParseDefaults()),
-		"Description": color.ReplaceTag(c.Description),
+		"Examples":    color.ReplaceTag(string(c.Examples)),
+		"Description": color.ReplaceTag(utils.UpperFirst(c.Description)),
 	})
 
 	c.Vars["cmd"] = c.Name
+	c.Vars["fullCmd"] = script + " " + c.Name
 
 	// parse help vars
 	fmt.Print(ReplaceVars(buf.String(), c.Vars))

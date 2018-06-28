@@ -4,7 +4,7 @@ simple cliapp for golang
 
 - auto generate help info
 - support add multi commands
-- support command alias
+- support setting command alias
 - support for running a command independently
 - support var replace on display help info
 - support color tag on display help info
@@ -139,6 +139,105 @@ Examples:
 
 ```
 
+## Write A Command
+
+### simple use
+
+```go
+app.Add(&cliapp.Command{
+    Name: "demo",
+    Aliases: []string{"dm"},
+    // allow color tag and {$cmd} will be replace to 'demo'
+    Description: "this is a description <info>message</> for command", 
+    Fn: func (cmd *cliapp.Command, args []string) int {
+        cliapp.Stdout("hello, in the demo command\n")
+        return 0
+    },
+})
+```
+
+### write go file
+
+> the source file at: [example.go](demo/cmd/example.go)
+
+```go
+package cmd
+
+import (
+	cli "github.com/golangkit/cliapp"
+	"fmt"
+)
+
+// The string flag list, implemented flag.Value interface
+type Names []string
+
+func (ns *Names) String() string {
+	return fmt.Sprint(*ns)
+}
+
+func (ns *Names) Set(value string) error {
+	*ns = append(*ns, value)
+	return nil
+}
+
+// options for the command
+var exampleOpts ExampleOpts
+
+type ExampleOpts struct {
+	id  int
+	c   string
+	dir string
+	opt string
+	names Names
+}
+
+// ExampleCommand command definition
+func ExampleCommand() *cli.Command {
+	cmd := cli.Command{
+		Name:        "example",
+		Description: "this is a description message",
+		Aliases:     []string{"exp", "ex"},
+		Fn:          exampleExecute,
+		ArgList: map[string]string{
+			"arg0": "the first argument",
+			"arg1": "the second argument",
+		},
+		Examples: `{$script} {$cmd} --id 12 -c val ag0 ag1
+  <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
+	}
+
+	exampleOpts = ExampleOpts{}
+
+	// use flag package func
+	cmd.Flags.IntVar(&exampleOpts.id, "id", 2, "the id option")
+	cmd.Flags.StringVar(&exampleOpts.c, "c", "value", "the short option")
+
+	// use Command provided func
+	cmd.StrOpt(&exampleOpts.dir, "dir", "d", "","the dir option")
+
+	// setting option name and short-option name
+	cmd.StrOpt(&exampleOpts.opt, "opt", "o", "", "the option message")
+
+	// setting a special option var, it must implement the flag.Value interface
+	cmd.VarOpt(&exampleOpts.names, "names", "n", "the option message")
+
+	return &cmd
+}
+
+// command running
+// example run:
+// 	go build cliapp.go && ./cliapp example --id 12 -c val ag0 ag1
+func exampleExecute(cmd *cli.Command, args []string) int {
+	fmt.Print("hello, in example command\n")
+
+	// fmt.Printf("%+v\n", cmd.Flags)
+	fmt.Printf("opts %+v\n", exampleOpts)
+	fmt.Printf("args is %v\n", args)
+
+	return 0
+}
+```
+
 ## Use Color
 
 ```go
@@ -169,7 +268,7 @@ func main() {
 }
 ```
 
-output:
+- output:
 
 <img src="demo/colored-out.jpg" style="max-width: 320px;"/>
 

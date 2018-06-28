@@ -6,6 +6,7 @@ import (
 	"os/exec"
 	"bytes"
 	"runtime"
+	"strings"
 )
 
 func GetScreenSize() (w int, h int) {
@@ -92,4 +93,36 @@ func GetKeyMaxLen(kv map[string]interface{}, defLen int) (max int) {
 	}
 
 	return
+}
+
+// LowerFirst
+func LowerFirst(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+
+	f := s[0]
+	isUpper := f >= 'A' && f <= 'Z'
+
+	if isUpper {
+		return strings.ToLower(string(f)) + string(s[1:])
+	}
+
+	return s
+}
+
+// UpperFirst
+func UpperFirst(s string) string {
+	if len(s) == 0 {
+		return s
+	}
+
+	f := s[0]
+	isLower := f >= 'a' && f <= 'z'
+
+	if isLower {
+		return strings.ToUpper(string(f)) + string(s[1:])
+	}
+
+	return s
 }
