@@ -23,7 +23,7 @@ func main() {
 		Aliases:     []string{"ts"},
 		Description: "this is a description <info>message</> for command",
 		Fn: func(cmd *cliapp.Command, args []string) int {
-			cliapp.Stdout("hello, in the test command\n")
+			cliapp.Print("hello, in the test command\n")
 			return 0
 		},
 	})

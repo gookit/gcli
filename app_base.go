@@ -3,6 +3,7 @@ package cliapp
 import (
 	"strings"
 	"fmt"
+	"os"
 )
 
 // AddVar get command name
@@ -39,4 +40,16 @@ func ReplaceVars(help string, vars map[string]string) string {
 	}
 
 	return strings.NewReplacer(ss...).Replace(help)
+}
+
+func Print(msg ...interface{}) (int, error) {
+	return fmt.Fprint(os.Stdout, msg...)
+}
+
+func Println(msg ...interface{}) (int, error) {
+	return fmt.Fprintln(os.Stdout, msg...)
+}
+
+func Printf(f string, v ...interface{}) (int, error) {
+	return fmt.Fprintf(os.Stdout, f+"\n", v...)
 }

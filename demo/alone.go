@@ -33,7 +33,7 @@ func main() {
 }
 
 func run(cmd *cliapp.Command, args []string) int {
-	cliapp.Stdout("hello, in the alone command\n")
+	cliapp.Print("hello, in the alone command\n")
 
 	// fmt.Printf("%+v\n", cmd.Flags)
 	fmt.Printf("opts %+v\n", opts)

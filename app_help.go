@@ -15,21 +15,25 @@ import (
 
 // showVersionInfo display version info
 func showVersionInfo() {
-	color.Printf("%s\n\nVersion: <suc>%s</>\n", app.Description, app.Version)
+	color.Printf(
+		"%s\n\nVersion: <suc>%s</>\n",
+		utils.UpperFirst(app.Description),
+		app.Version,
+	)
 	os.Exit(0)
 }
 
 // help template for all commands
 var commandsHelp = `{{.Description|raw}}
 <comment>Usage:</>
-  {{.Script}} command [--option ...] [argument ...]
+  {{.Script}} <info>{command}</> [--option ...] [argument ...]
 
 <comment>Options:</>
   -h, --help        Display this help information
   -V, --version     Display this version information
 
 <comment>Commands:</>{{range .Cs}}{{if .Runnable}}
-  {{.Name | printf "%-12s"}} {{.Description|colored}}{{if .Aliases}}(alias: <info>{{.Aliases.String}}</>){{end}}{{end}}{{end}}
+  {{.Name | printf "%-12s"}} {{.Description|colored}}{{if .Aliases}}(alias: <cyan>{{.Aliases.String}}</>){{end}}{{end}}{{end}}
   help         display help information
 
 Use "<cyan>{{.Script}} help [command]</>" for more information about a command
@@ -42,7 +46,7 @@ func showCommandsHelp() {
 
 	commandsHelp = color.ReplaceTag(commandsHelp)
 
-	//RenderStrTpl(os.Stdout, commandsHelp, map[string]interface{}{
+	//RenderStrTpl(os.Print, commandsHelp, map[string]interface{}{
 	RenderStrTpl(&buf, commandsHelp, map[string]interface{}{
 		"Cs":          commands,
 		"Script":      script,
@@ -95,20 +99,16 @@ func RenderStrTpl(w io.Writer, text string, data interface{}) {
 	t := template.New("cli")
 
 	// don't escape content
-	t.Funcs(template.FuncMap{"raw": func (s string) interface{} {
+	t.Funcs(template.FuncMap{"raw": func(s string) interface{} {
 		return template.HTML(s)
 	}})
 
-	t.Funcs(template.FuncMap{"colored": func (s string) interface{} {
+	t.Funcs(template.FuncMap{"colored": func(s string) interface{} {
 		return template.HTML(color.ReplaceTag(s))
 	}})
 
-	t.Funcs(template.FuncMap{"coloredHtml": func (h template.HTML) interface{} {
+	t.Funcs(template.FuncMap{"coloredHtml": func(h template.HTML) interface{} {
 		return template.HTML(color.ReplaceTag(string(h)))
-	}})
-
-	t.Funcs(template.FuncMap{"handleDes": func (s string) interface{} {
-		return template.HTML(s)
 	}})
 
 	t.Funcs(template.FuncMap{"trim": func(s template.HTML) template.HTML {

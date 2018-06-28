@@ -6,13 +6,15 @@ import (
 	"github.com/golangkit/cliapp/color"
 	"bytes"
 	"github.com/golangkit/cliapp/utils"
+	"flag"
+	"strings"
 )
 
 // help template for a command
-var commandHelp = `{{.Description}}
-{{if .Cmd.NotAlone}}
+var commandHelp = `{{.Description}}{{if .Cmd.NotAlone}}
 <comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.Aliases.String}}</>){{end}}{{end}}
-<comment>Usage:</> {{.Script}} {{if .Cmd.NotAlone}}{{.Cmd.Name}} {{end}}[--option ...] [argument ...]
+<comment>Usage:</> 
+  {{.Script}} {{if .Cmd.NotAlone}}{{.Cmd.Name}} {{end}}[--option ...] [argument ...]
 
 <comment>Global Options:</>
   -h, --help        Display this help information{{if .Options}}
@@ -22,11 +24,11 @@ var commandHelp = `{{.Description}}
 {{end}}{{if .Cmd.ArgList}}
 <comment>Arguments:</>{{range $k,$v := .Cmd.ArgList}}
   {{$k | printf "%-12s"}}{{$v}}{{end}}
-{{end}} {{if .Examples}}
+{{end}} {{if .Cmd.Examples}}
 <comment>Examples:</>
-  {{.Examples}}{{end}}{{if .Cmd.Help}}
+  {{.Cmd.Examples|coloredHtml}}{{end}}{{if .Cmd.Help}}
 <comment>Help:</>
-  {{.Cmd.Help}}{{end}}
+  {{.Cmd.Help|coloredHtml}}{{end}}
 `
 
 // showCommandHelp display help for an command
@@ -68,7 +70,6 @@ func (c *Command) ShowHelp(quit ...bool) {
 
 		"Script":      script,
 		"Options":     color.ReplaceTag(c.ParseDefaults()),
-		"Examples":    color.ReplaceTag(string(c.Examples)),
 		"Description": color.ReplaceTag(utils.UpperFirst(c.Description)),
 	})
 
@@ -81,4 +82,52 @@ func (c *Command) ShowHelp(quit ...bool) {
 	if len(quit) > 0 && quit[0] {
 		os.Exit(0)
 	}
+}
+
+// PrintDefaults prints, to standard error unless configured otherwise, the
+// default values of all defined command-line flags in the set. See the
+// documentation for the global function PrintDefaults for more information.
+// NOTICE: the func is copied from package 'flag', func 'PrintDefaults'
+func (c *Command) ParseDefaults() string {
+	var ss []string
+
+	c.Flags.VisitAll(func(fg *flag.Flag) {
+		var s string
+
+		// is short option
+		if len(fg.Name) == 1 {
+			s = fmt.Sprintf("  <info>-%s</>", fg.Name) // Two spaces before -; see next two comments.
+		} else {
+			s = fmt.Sprintf("  <info>--%s</>", fg.Name)
+		}
+
+		name, usage := flag.UnquoteUsage(fg)
+		if len(name) > 0 {
+			s += " " + name
+		}
+		// Boolean flags of one ASCII letter are so common we
+		// treat them specially, putting their usage on the same line.
+		if len(s) <= 4 { // space, space, '-', 'x'.
+			s += "\t"
+		} else {
+			// Four spaces before the tab triggers good alignment
+			// for both 4- and 8-space tab stops.
+			s += "\n    \t"
+		}
+		s += strings.Replace(usage, "\n", "\n    \t", -1)
+
+		if !isZeroValue(fg, fg.DefValue) {
+			if _, ok := fg.Value.(*stringValue); ok {
+				// put quotes on the value
+				s += fmt.Sprintf(" (default <cyan>%q</>)", fg.DefValue)
+			} else {
+				s += fmt.Sprintf(" (default <cyan>%v</>)", fg.DefValue)
+			}
+		}
+
+		ss = append(ss, s)
+		// fmt.Fprint(fgs.Output(), s, "\n")
+	})
+
+	return strings.Join(ss, "\n")
 }

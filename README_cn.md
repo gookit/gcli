@@ -1,37 +1,39 @@
-# cliapp 
+# cliapp
 
-Command line application, tool library, written using golang
+golang下的命令行应用，工具库
 
-## Features
+## 功能特色
 
-- Easy to use
-- Multiple commands can be added and command aliases are supported
-- Supports a single command as a stand-alone application
-- Support option binding, support for adding short options
-- Supports rich color output. Supports html tab-style color rendering
-- Automatically generate command help information and support color display
+- 使用简单方便
+- 可以添加多个命令，并且支持命令别名
+- 支持单个命令当做独立应用运行
+- 支持选项绑定，支持添加短选项
+- 支持丰富的颜色输出。同时支持html标签式的颜色渲染
+- 自动生成命令帮助信息，并且支持颜色显示
 
-## install
+## 获取安装
 
-- use dep
+- 使用 dep 包管理
 
 ```bash
 dep ensure -add github.com/golangkit/cliapp
 ```
 
-- go get
+- 使用 go get
 
 ```bash
 go get -u github.com/golangkit/cliapp
 ```
 
-- git clone
+- git 克隆
 
 ```bash
 git clone https://github.com/golangkit/cliapp
 ```
 
-## Quick start
+## 快速开始
+
+如下，引入当前包就可以快速的编写cli应用了
 
 ```go 
 package main
@@ -72,30 +74,34 @@ func main() {
 
 ## [godoc](https://godoc.org/github.com/golangkit/cliapp)
 
-## Usage
+## 使用说明
 
-- build a demo package 
+先使用本项目下的 [demo](demo/) 示例代码构建一个小的cli demo应用
 
 ```bash
 % go build ./demo/cliapp.go                                                           
 ```
 
-### Display version
+### 打印版本信息
+
+打印我们在创建cli应用时设置的版本信息
 
 ```bash
 % ./cliapp --version
-this is my cli application
+This is my cli application
 
 Version: 1.0.3                                                           
 ```
 
-### Display app help
+### 应用帮助信息
+
+使用 `./cliapp` 或者 `./cliapp -h` 来显示应用的帮助信息，包含所有的可用命令和一些全局选项
 
 ```bash
 % ./cliapp                                                            
-this is my cli application
+This is my cli application
 Usage:
-  ./cliapp command [--option ...] [argument ...]
+  ./cliapp {command} [--option ...] [argument ...]
 
 Options:
   -h, --help        Display this help information
@@ -109,7 +115,7 @@ Use "./cliapp help [command]" for more information about a command
 
 ```
 
-### Run a command
+### 运行一个命令
 
 ```bash
 % ./cliapp example --id 12 -c val ag0 ag1                          
@@ -119,7 +125,7 @@ args is [ag0 ag1]
 
 ```
 
-### Display command help
+### display command help
 
 ```bash
 % ./cliapp example -h                                                
@@ -148,9 +154,9 @@ Examples:
 
 ```
 
-## Write a command
+## Write A Command
 
-### Simple use
+### simple use
 
 ```go
 app.Add(&cliapp.Command{
@@ -165,7 +171,7 @@ app.Add(&cliapp.Command{
 })
 ```
 
-### Write go file
+### write go file
 
 > the source file at: [example.go](demo/cmd/example.go)
 
@@ -247,7 +253,7 @@ func exampleExecute(cmd *cli.Command, args []string) int {
 }
 ```
 
-## Color usage
+## Use Color
 
 ```go
 package main
@@ -281,7 +287,7 @@ func main() {
 
 <img src="demo/colored-out.jpg" style="max-width: 320px;"/>
 
-### More usage
+### More Usage
 
 - use like html tag
 
@@ -305,7 +311,7 @@ func main() {
 	color.Tag("info").Println("info style text")
 ```
 
-### Internal tags
+### Internal Tags
 
 ```go
 // Some internal defined style tags
@@ -380,7 +386,6 @@ var TagColors = map[string]string{
 
 - `issue9/term` https://github.com/issue9/term
 - `beego/bee` https://github.com/beego/bee
-- `inhere/console` https://github/inhere/php-console
 
 ## License
 

@@ -3,7 +3,6 @@ package cliapp
 import (
 	"html/template"
 	"flag"
-	"fmt"
 	"os"
 	"strings"
 	"log"
@@ -78,18 +77,6 @@ type Command struct {
 	shortcuts map[string]string
 }
 
-// Option a command option @unused
-type Option struct {
-	// Name is the Option name. eg 'name' -> '--name'
-	Name string
-
-	// Short is the Option short name. eg 'n' -> '-n'
-	Short string
-
-	// Description is the option description message
-	Description string
-}
-
 // Runnable reports whether the command can be run; otherwise
 // it is a documentation pseudo-command such as import path.
 func (c *Command) Runnable() bool {
@@ -154,65 +141,6 @@ func (c *Command) Arg(i int) string {
 	return c.Flags.Arg(i)
 }
 
-// IntOpt set a int option
-func (c *Command) IntOpt(p *int, name string, short string, defaultValue int, description string) *Command {
-	c.Flags.IntVar(p, name, defaultValue, description)
-
-	if len(short) == 1 {
-		c.Flags.IntVar(p, short, defaultValue, "")
-	}
-
-	return c
-}
-
-// UintOpt set a int option
-func (c *Command) UintOpt(p *uint, name string, short string, defaultValue uint, description string) *Command {
-	c.Flags.UintVar(p, name, defaultValue, description)
-
-	if len(short) == 1 {
-		c.Flags.UintVar(p, short, defaultValue, "")
-	}
-
-	return c
-}
-
-// StrOpt set a str option
-func (c *Command) StrOpt(p *string, name string, short string, defaultValue string, description string) *Command {
-	c.Flags.StringVar(p, name, defaultValue, description)
-
-	if len(short) == 1 {
-		c.Flags.StringVar(p, short, defaultValue, "")
-	}
-
-	return c
-}
-
-// BoolOpt set a bool option
-func (c *Command) BoolOpt(p *bool, name string, short string, defaultValue bool, description string) *Command {
-	c.Flags.BoolVar(p, name, defaultValue, description)
-
-	if len(short) == 1 {
-		c.Flags.BoolVar(p, short, defaultValue, "")
-	}
-
-	return c
-}
-
-// VarOpt set a custom option
-// raw usage:
-// cmd.Flags.Var(&opts.Strings, "tables", "List of table names separated by a comma.")
-// in here:
-// cmd.VarOpt(&opts.Strings, "tables", "t", "List of table names separated by a comma.")
-func (c *Command) VarOpt(p flag.Value, name string, short string, description string) *Command {
-	c.Flags.Var(p, name, description)
-
-	if len(short) == 1 {
-		c.Flags.Var(p, short, "")
-	}
-
-	return c
-}
-
 // AliasesStr
 func (c *Command) AliasesStr() string {
 	return c.Aliases.String()
@@ -229,52 +157,4 @@ func (c *Command) AddVars(vars map[string]string) {
 	for n, v := range vars {
 		c.Vars[n] = v
 	}
-}
-
-// PrintDefaults prints, to standard error unless configured otherwise, the
-// default values of all defined command-line flags in the set. See the
-// documentation for the global function PrintDefaults for more information.
-// NOTICE: the func is copied from package 'flag', func 'PrintDefaults'
-func (c *Command) ParseDefaults() string {
-	var ss []string
-
-	c.Flags.VisitAll(func(fg *flag.Flag) {
-		var s string
-
-		// is short option
-		if len(fg.Name) == 1 {
-			s = fmt.Sprintf("  <info>-%s</>", fg.Name) // Two spaces before -; see next two comments.
-		} else {
-			s = fmt.Sprintf("  <info>--%s</>", fg.Name) // Two spaces before -; see next two comments.
-		}
-
-		name, usage := flag.UnquoteUsage(fg)
-		if len(name) > 0 {
-			s += " " + name
-		}
-		// Boolean flags of one ASCII letter are so common we
-		// treat them specially, putting their usage on the same line.
-		if len(s) <= 4 { // space, space, '-', 'x'.
-			s += "\t"
-		} else {
-			// Four spaces before the tab triggers good alignment
-			// for both 4- and 8-space tab stops.
-			s += "\n    \t"
-		}
-		s += strings.Replace(usage, "\n", "\n    \t", -1)
-
-		if !isZeroValue(fg, fg.DefValue) {
-			if _, ok := fg.Value.(*stringValue); ok {
-				// put quotes on the value
-				s += fmt.Sprintf(" (default <cyan>%q</>)", fg.DefValue)
-			} else {
-				s += fmt.Sprintf(" (default <cyan>%v</>)", fg.DefValue)
-			}
-		}
-
-		ss = append(ss, s)
-		// fmt.Fprint(fgs.Output(), s, "\n")
-	})
-
-	return strings.Join(ss, "\n")
 }
