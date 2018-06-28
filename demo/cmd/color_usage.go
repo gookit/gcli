@@ -41,6 +41,9 @@ func colorUsage(cmd *cliapp.Command, args []string) int {
 	// simple usage
 	color.FgCyan.Printf("Simple to use %s\n", "color")
 
+	// custom color
+	color.New(color.FgWhite, color.BgBlack).Println("custom color style")
+
 	// use style tag
 	color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>\n")
 

@@ -5,14 +5,14 @@ import (
 	"io"
 	"html/template"
 	"strings"
-	"fmt"
 	"reflect"
 	"flag"
+	"github.com/golangkit/cliapp/color"
 )
 
 // showVersionInfo display version info
 func showVersionInfo() {
-	fmt.Printf("%s\n\nVersion: %s\n", app.Description, app.Version)
+	color.Printf("%s\n\nVersion: <suc>%s</>\n", app.Description, app.Version)
 	os.Exit(0)
 }
 

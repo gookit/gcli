@@ -113,6 +113,11 @@ func (app *Application) Init() {
 	}
 }
 
+// LogoText
+func (app *Application) LogoText(logo string) {
+	app.Logo.Text = logo
+}
+
 // SetDebug
 func (app *Application) SetDebug(debug bool) {
 	app.Debug = debug
