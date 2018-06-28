@@ -2,6 +2,8 @@
 
 Command line application, tool library, written using golang
 
+**[中文说明](README_cn.md)**
+
 ## Features
 
 - Easy to use
@@ -11,7 +13,7 @@ Command line application, tool library, written using golang
 - Supports rich color output. Supports html tab-style color rendering
 - Automatically generate command help information and support color display
 
-## install
+## Install
 
 - use dep
 
@@ -70,7 +72,9 @@ func main() {
 }
 ```
 
-## [godoc](https://godoc.org/github.com/golangkit/cliapp)
+## Godoc
+
+[godoc](https://godoc.org/github.com/golangkit/cliapp)
 
 ## Usage
 

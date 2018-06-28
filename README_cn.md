@@ -2,6 +2,8 @@
 
 golang下的命令行应用，工具库
 
+**[EN Readme](README.md)**
+
 ## 功能特色
 
 - 使用简单方便
@@ -72,7 +74,9 @@ func main() {
 }
 ```
 
-## [godoc](https://godoc.org/github.com/golangkit/cliapp)
+## Godoc
+
+[godoc](https://godoc.org/github.com/golangkit/cliapp)
 
 ## 使用说明
 
