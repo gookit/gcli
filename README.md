@@ -150,8 +150,11 @@ import (
     )
 
 func main() {
-    // use style tag
-	color.Print("<suc>he</><comment>llo</>, <cyan>welcome</>\n")
+	// simple usage
+	color.FgCyan.Printf("Simple to use %s\n", "color")
+
+	// use style tag
+	color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>\n")
 
 	// set a style tag
 	color.Tag("info").Print("info style\n")
@@ -166,7 +169,7 @@ func main() {
 
 output:
 
-<img src="demo/colored-out.jpg" style="max-width: 350px;"/>
+<img src="demo/colored-out.jpg" style="max-width: 320px;"/>
 
 ## Ref
 

@@ -227,7 +227,7 @@ func (app *Application) Add(c *Command) {
 	// add alias
 	for _, a := range c.Aliases {
 		if cmd, has := aliases[a]; has {
-			panic(color.FgRed.Printf("the alias '%s' has been used by command '%s'", a, cmd))
+			panic(color.FgRed.Renderf("the alias '%s' has been used by command '%s'", a, cmd))
 		}
 
 		aliases[a] = c.Name

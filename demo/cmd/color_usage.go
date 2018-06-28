@@ -39,10 +39,10 @@ func ColorCommand() *cliapp.Command {
 
 func colorUsage(cmd *cliapp.Command, args []string) int {
 	// simple usage
-	color.FgCyan.Printf("string %s", "arg0")
+	color.FgCyan.Printf("Simple to use %s\n", "color")
 
 	// use style tag
-	color.Print("<suc>he</><comment>llo</>, <cyan>welcome</>\n")
+	color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>\n")
 
 	// set a style tag
 	color.Tag("info").Print("info style\n")
