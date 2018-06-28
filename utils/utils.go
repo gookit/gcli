@@ -74,7 +74,7 @@ func ExecOsCommand(cmdStr string, shells ...string) (string, error) {
 }
 
 // FindSimilar
-func FindSimilar(input string, samples []string)  {
+func FindSimilar(input string, samples []string) {
 
 }
 

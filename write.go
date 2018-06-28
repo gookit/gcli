@@ -20,4 +20,3 @@ func Stderr(msg ...interface{}) (int, error) {
 func Stderrf(f string, v ...interface{}) {
 	fmt.Fprintf(os.Stderr, f+"\n", v...)
 }
-

@@ -1,7 +1,7 @@
 package cmd
 
 import (
-    cli "github.com/golangkit/cliapp"
+	cli "github.com/golangkit/cliapp"
 	"fmt"
 	"log"
 	"strings"
@@ -10,6 +10,7 @@ import (
 )
 
 var gitOpts GitOpts
+
 type GitOpts struct {
 	id  int
 	c   string

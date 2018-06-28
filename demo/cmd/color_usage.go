@@ -6,6 +6,7 @@ import (
 )
 
 var colorOpts ColorOpts
+
 type ColorOpts struct {
 	id  int
 	c   string
@@ -36,7 +37,10 @@ func ColorCommand() *cliapp.Command {
 	return &cmd
 }
 
-func colorUsage(cmd *cliapp.Command, args []string) int  {
+func colorUsage(cmd *cliapp.Command, args []string) int {
+	// simple usage
+	color.FgCyan.Printf("string %s", "arg0")
+
 	// use style tag
 	color.Print("<suc>he</><comment>llo</>, <cyan>welcome</>\n")
 

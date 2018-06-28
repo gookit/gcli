@@ -22,7 +22,7 @@ const (
 
 // GlobalOpts global flags
 type GlobalOpts struct {
-	showHelp bool
+	showHelp    bool
 	showVersion bool
 }
 
@@ -105,10 +105,10 @@ func NewApp(settings ...string) *Application {
 }
 
 // Init
-func (app *Application) Init()  {
+func (app *Application) Init() {
 	// init some tpl vars
 	app.vars = map[string]string{
-		"script": app.script,
+		"script":  app.script,
 		"workDir": app.workDir,
 	}
 }
@@ -227,7 +227,7 @@ func (app *Application) Add(c *Command) {
 	// add alias
 	for _, a := range c.Aliases {
 		if cmd, has := aliases[a]; has {
-			panic(color.Color(color.FgRed).F("the alias '%s' has been used by command '%s'", a, cmd))
+			panic(color.FgRed.Printf("the alias '%s' has been used by command '%s'", a, cmd))
 		}
 
 		aliases[a] = c.Name

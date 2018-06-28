@@ -1,11 +1,12 @@
 package cmd
 
 import (
-    cli "github.com/golangkit/cliapp"
+	cli "github.com/golangkit/cliapp"
 	"fmt"
 )
 
 var exampleOpts ExampleOpts
+
 type ExampleOpts struct {
 	id  int
 	c   string
