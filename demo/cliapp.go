@@ -21,7 +21,7 @@ func main() {
 	app.Add(&cliapp.Command{
 		Name:        "test",
 		Aliases:     []string{"ts"},
-		Description: "this is a description <info>message</> for {$cmd}", // // {$cmd} will be replace to 'test'
+		Description: "this is a description <info>message</> for command",
 		Fn: func(cmd *cliapp.Command, args []string) int {
 			cliapp.Stdout("hello, in the test command\n")
 			return 0

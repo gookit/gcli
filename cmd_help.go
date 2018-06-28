@@ -10,20 +10,22 @@ import (
 // help template for a command
 var commandHelp = `{{.Description}}
 {{if .Cmd.NotAlone}}
-Name: {{.Cmd.Name}}{{if .Cmd.Aliases}}(alias: {{.Cmd.Aliases.String}}){{end}}{{end}}
-Usage: {{.Script}} {{if .Cmd.NotAlone}}{{.Cmd.Name}} {{end}}[--option ...] [argument ...]
+<comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.Aliases.String}}</>){{end}}{{end}}
+<comment>Usage:</> {{.Script}} {{if .Cmd.NotAlone}}{{.Cmd.Name}} {{end}}[--option ...] [argument ...]
 
-Global Options:
+<comment>Global Options:</>
   -h, --help        Display this help information{{if .Options}}
 
-Options:
+<comment>Options:</>
 {{.Options}}
 {{end}}{{if .Cmd.ArgList}}
-Arguments:{{range $k,$v := .Cmd.ArgList}}
+<comment>Arguments:</>{{range $k,$v := .Cmd.ArgList}}
   {{$k | printf "%-12s"}}{{$v}}{{end}}
 {{end}} {{if .Cmd.Examples}}
-Examples:
-  {{.Cmd.Examples}}{{end}}
+<comment>Examples:</>
+  {{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}
+<comment>Help:</>
+  {{.Cmd.Help}}{{end}}
 `
 
 // showCommandHelp display help for an command
@@ -55,14 +57,16 @@ func (c *Command) ShowHelp(quit ...bool) {
 	// use buffer receive rendered content
 	var buf bytes.Buffer
 
+	commandHelp = color.ReplaceTag(commandHelp)
+
 	// render and output help info
 	//RenderStrTpl(os.Stdout, commandHelp, map[string]interface{}{
 	// render but not output
 	RenderStrTpl(&buf, commandHelp, map[string]interface{}{
 		"Cmd":         c,
 		"Script":      script,
-		"Options":     color.Render(c.ParseDefaults()),
-		"Description": color.Render(c.Description),
+		"Options":     color.ReplaceTag(c.ParseDefaults()),
+		"Description": color.ReplaceTag(c.Description),
 	})
 
 	c.Vars["cmd"] = c.Name

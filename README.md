@@ -50,7 +50,7 @@ func main() {
         Name: "demo",
         Aliases: []string{"dm"},
         // allow color tag and {$cmd} will be replace to 'demo'
-        Description: "this is a description <info>message</>  for {$cmd}", 
+        Description: "this is a description <info>message</> for command", 
         Fn: func (cmd *cliapp.Command, args []string) int {
             cliapp.Stdout("hello, in the demo command\n")
             return 0
@@ -93,7 +93,7 @@ Options:
   -V, --version     Display this version information
 
 Commands:
-  demo         this is a description message for demo(alias: dm)
+  demo         this is a description message for command(alias: dm)
   help         display help information
 
 Use "./cliapp help [command]" for more information about a command
@@ -173,7 +173,7 @@ output:
 
 <img src="demo/colored-out.jpg" style="max-width: 320px;"/>
 
-### More Methods
+### More Usage
 
 - use like html tag
 

@@ -8,6 +8,8 @@ import (
 	"reflect"
 	"flag"
 	"github.com/golangkit/cliapp/color"
+	"bytes"
+	"fmt"
 )
 
 // showVersionInfo display version info
@@ -17,28 +19,36 @@ func showVersionInfo() {
 }
 
 // help template for all commands
-var commandsHelp = `{{.Description}}
-Usage:
+var commandsHelp = `{{.Description|raw}}
+<comment>Usage:</>
   {{.Script}} command [--option ...] [argument ...]
 
-Options:
+<comment>Options:</>
   -h, --help        Display this help information
   -V, --version     Display this version information
 
-Commands:{{range .Cs}}{{if .Runnable}}
-  {{.Name | printf "%-12s"}} {{.Description}}{{if .Aliases}}(alias: {{.Aliases.String}}){{end}}{{end}}{{end}}
+<comment>Commands:</>{{range .Cs}}{{if .Runnable}}
+  {{.Name | printf "%-12s"}} {{.Description|colored}}{{if .Aliases}}(alias: <info>{{.Aliases.String}}</>){{end}}{{end}}{{end}}
   help         display help information
 
-Use "{{.Script}} help [command]" for more information about a command
+Use "<cyan>{{.Script}} help [command]</>" for more information about a command
 `
 
 // showCommandsHelp commands list
 func showCommandsHelp() {
-	RenderStrTpl(os.Stdout, commandsHelp, map[string]interface{}{
+	// use buffer receive rendered content
+	var buf bytes.Buffer
+
+	commandsHelp = color.ReplaceTag(commandsHelp)
+
+	//RenderStrTpl(os.Stdout, commandsHelp, map[string]interface{}{
+	RenderStrTpl(&buf, commandsHelp, map[string]interface{}{
 		"Cs":          commands,
 		"Script":      script,
 		"Description": app.Description,
 	})
+
+	fmt.Print(ReplaceVars(buf.String(), app.vars))
 
 	os.Exit(0)
 }
@@ -82,6 +92,19 @@ func (s *stringValue) String() string   { return string(*s) }
 // RenderStrTpl
 func RenderStrTpl(w io.Writer, text string, data interface{}) {
 	t := template.New("cli")
+
+	// don't escape content
+	t.Funcs(template.FuncMap{"raw": func (s string) interface{} {
+		return template.HTML(s)
+	}})
+
+	t.Funcs(template.FuncMap{"colored": func (s string) interface{} {
+		return template.HTML(color.ReplaceTag(s))
+	}})
+
+	t.Funcs(template.FuncMap{"handleDes": func (s string) interface{} {
+		return template.HTML(s)
+	}})
 
 	t.Funcs(template.FuncMap{"trim": func(s template.HTML) template.HTML {
 		return template.HTML(strings.TrimSpace(string(s)))

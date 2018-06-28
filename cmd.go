@@ -191,9 +191,9 @@ func (c *Command) ParseDefaults() string {
 
 		// is short option
 		if len(fg.Name) == 1 {
-			s = fmt.Sprintf("  -%s", fg.Name) // Two spaces before -; see next two comments.
+			s = fmt.Sprintf("  <info>-%s</>", fg.Name) // Two spaces before -; see next two comments.
 		} else {
-			s = fmt.Sprintf("  --%s", fg.Name) // Two spaces before -; see next two comments.
+			s = fmt.Sprintf("  <info>--%s</>", fg.Name) // Two spaces before -; see next two comments.
 		}
 
 		name, usage := flag.UnquoteUsage(fg)
@@ -214,9 +214,9 @@ func (c *Command) ParseDefaults() string {
 		if !isZeroValue(fg, fg.DefValue) {
 			if _, ok := fg.Value.(*stringValue); ok {
 				// put quotes on the value
-				s += fmt.Sprintf(" (default %q)", fg.DefValue)
+				s += fmt.Sprintf(" (default <cyan>%q</>)", fg.DefValue)
 			} else {
-				s += fmt.Sprintf(" (default %v)", fg.DefValue)
+				s += fmt.Sprintf(" (default <cyan>%v</>)", fg.DefValue)
 			}
 		}
 
