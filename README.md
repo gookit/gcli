@@ -94,8 +94,6 @@ Options:
 
 Commands:
   demo         this is a description message for demo(alias: dm)
-  example      this is a description message(alias: exp,ex)
-  git          collect project info by git info(alias: git-info)
   help         display help information
 
 Use "./cliapp help [command]" for more information about a command
@@ -185,6 +183,9 @@ output:
 	color.Println("<suc>hello</>")
 	color.Println("<error>hello</>")
 	color.Println("<warning>hello</>")
+
+	// custom color attributes
+	color.Print("<fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
 ```
 
 - `color.Tag`

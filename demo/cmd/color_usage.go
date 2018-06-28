@@ -24,7 +24,7 @@ func ColorCommand() *cliapp.Command {
 			"arg0": "the first argument",
 			"arg1": "the second argument",
 		},
-		Examples: "{{script}} {{cmd}} --id 12 -c val ag0 ag1",
+		Examples: "{$script} {$cmd} --id 12 -c val ag0 ag1",
 	}
 
 	colorOpts = ColorOpts{}
@@ -44,10 +44,13 @@ func colorUsage(cmd *cliapp.Command, args []string) int {
 	// custom color
 	color.New(color.FgWhite, color.BgBlack).Println("custom color style")
 
-	// use style tag
+	// use defined color tag
 	color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>\n")
 
-	// set a style tag
+	// use custom color tag
+	color.Print("<fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
+
+	// set a color tag
 	color.Tag("info").Print("info style\n")
 
 	// use info style tips

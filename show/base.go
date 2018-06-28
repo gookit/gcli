@@ -1,12 +1,13 @@
 package show
 
+// show shown
 type IShow interface {
-	Show()
+	Print()
 	String() string
 }
 
-// Table a cli table show
-type Table struct {
+// table a cli table show
+type table struct {
 	Name       string
 	Cols       []string
 	Rows       []string
@@ -16,14 +17,14 @@ type Table struct {
 }
 
 // Table
-func NewTable(name string) *Table {
-	return &Table{Name: name}
+func Table(name string) *table {
+	return &table{Name: name}
 }
 
-func (t *Table) Show() {
+func (t *table) Print() {
 
 }
 
-func (t *Table) String() string {
+func (t *table) String() string {
 	return ""
 }

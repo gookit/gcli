@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"github.com/golangkit/cliapp/color"
+	"bytes"
 )
 
 // help template for a command
@@ -47,4 +48,29 @@ func showCommandHelp(list []string, quit bool) {
 	}
 
 	cmd.ShowHelp(quit)
+}
+
+// ShowHelp @notice not used
+func (c *Command) ShowHelp(quit ...bool) {
+	// use buffer receive rendered content
+	var buf bytes.Buffer
+
+	// render and output help info
+	//RenderStrTpl(os.Stdout, commandHelp, map[string]interface{}{
+	// render but not output
+	RenderStrTpl(&buf, commandHelp, map[string]interface{}{
+		"Cmd":         c,
+		"Script":      script,
+		"Options":     color.Render(c.ParseDefaults()),
+		"Description": color.Render(c.Description),
+	})
+
+	c.Vars["cmd"] = c.Name
+
+	// parse help vars
+	fmt.Print(ReplaceVars(buf.String(), c.Vars))
+
+	if len(quit) > 0 && quit[0] {
+		os.Exit(0)
+	}
 }

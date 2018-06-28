@@ -7,8 +7,6 @@ import (
 	"os"
 	"strings"
 	"log"
-	"bytes"
-	"github.com/golangkit/cliapp/color"
 )
 
 // Commander
@@ -54,7 +52,7 @@ type Command struct {
 	// The args are the arguments after the command name.
 	Fn func(cmd *Command, args []string) int
 
-	// Help is the help message shown in the 'go help <this-command>' output.
+	// Help is the help message text
 	Help template.HTML
 
 	// Examples some usage example display
@@ -85,31 +83,6 @@ type Option struct {
 
 	// Description is the option description message
 	Description string
-}
-
-// ShowHelp @notice not used
-func (c *Command) ShowHelp(quit ...bool) {
-	// use buffer receive rendered content
-	var buf bytes.Buffer
-
-	// render and output help info
-	//RenderStrTpl(os.Stdout, commandHelp, map[string]interface{}{
-	// render but not output
-	RenderStrTpl(&buf, commandHelp, map[string]interface{}{
-		"Cmd":         c,
-		"Script":      script,
-		"Options":     color.Render(c.ParseDefaults()),
-		"Description": color.Render(c.Description),
-	})
-
-	c.Vars["cmd"] = c.Name
-
-	// parse help vars
-	fmt.Print(ReplaceVars(buf.String(), c.Vars))
-
-	if len(quit) > 0 && quit[0] {
-		os.Exit(0)
-	}
 }
 
 // Runnable reports whether the command can be run; otherwise
