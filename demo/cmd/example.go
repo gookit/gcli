@@ -21,24 +21,24 @@ func (ns *Names) Set(value string) error {
 var exampleOpts ExampleOpts
 
 type ExampleOpts struct {
-	id  int
-	c   string
-	dir string
-	opt string
+	id    int
+	c     string
+	dir   string
+	opt   string
 	names Names
 }
 
 // ExampleCommand command definition
 func ExampleCommand() *cli.Command {
 	cmd := cli.Command{
-		Name:        "example",
-		Description: "this is a description message",
-		Aliases:     []string{"exp", "ex"},
-		Fn:          exampleExecute,
+		Fn:      exampleExecute,
+		Name:    "example",
+		Aliases: []string{"exp", "ex"},
 		ArgList: map[string]string{
 			"arg0": "the first argument",
 			"arg1": "the second argument",
 		},
+		Description: "this is a description message",
 		Examples: `{$script} {$cmd} --id 12 -c val ag0 ag1
   <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
 	}
@@ -50,7 +50,7 @@ func ExampleCommand() *cli.Command {
 	cmd.Flags.StringVar(&exampleOpts.c, "c", "value", "the short option")
 
 	// use Command provided func
-	cmd.StrOpt(&exampleOpts.dir, "dir", "d", "","the dir option")
+	cmd.StrOpt(&exampleOpts.dir, "dir", "d", "", "the dir option")
 
 	// setting option name and short-option name
 	cmd.StrOpt(&exampleOpts.opt, "opt", "o", "", "the option message")

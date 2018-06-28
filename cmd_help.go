@@ -69,8 +69,8 @@ func (c *Command) ShowHelp(quit ...bool) {
 		"Cmd": c,
 
 		"Script":      script,
-		"Options":     color.ReplaceTag(c.ParseDefaults()),
-		"Description": color.ReplaceTag(utils.UpperFirst(c.Description)),
+		"Options":     color.RenderStr(c.ParseDefaults()),
+		"Description": color.RenderStr(utils.UpperFirst(c.Description)),
 	})
 
 	c.Vars["cmd"] = c.Name

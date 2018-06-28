@@ -125,11 +125,11 @@ args is [ag0 ag1]
 
 ```
 
-### display command help
+### 显示一个命令的帮助
 
 ```bash
 % ./cliapp example -h                                                
-this is a description message
+This is a description message
 
 Name: example(alias: exp,ex)
 Usage: ./cliapp example [--option ...] [argument ...]
@@ -154,9 +154,9 @@ Examples:
 
 ```
 
-## Write A Command
+## 编写命令
 
-### simple use
+### 简单使用
 
 ```go
 app.Add(&cliapp.Command{
@@ -171,7 +171,7 @@ app.Add(&cliapp.Command{
 })
 ```
 
-### write go file
+### 使用独立的文件
 
 > the source file at: [example.go](demo/cmd/example.go)
 
@@ -209,14 +209,14 @@ type ExampleOpts struct {
 // ExampleCommand command definition
 func ExampleCommand() *cli.Command {
 	cmd := cli.Command{
-		Name:        "example",
-		Description: "this is a description message",
-		Aliases:     []string{"exp", "ex"},
-		Fn:          exampleExecute,
+		Fn:      exampleExecute,
+		Name:    "example",
+		Aliases: []string{"exp", "ex"},
 		ArgList: map[string]string{
 			"arg0": "the first argument",
 			"arg1": "the second argument",
 		},
+		Description: "this is a description message",
 		Examples: `{$script} {$cmd} --id 12 -c val ag0 ag1
   <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
 	}
@@ -253,14 +253,16 @@ func exampleExecute(cmd *cli.Command, args []string) int {
 }
 ```
 
-## Use Color
+## 使用颜色输出
+
+## 如何使用
 
 ```go
 package main
 
 import (
     "github.com/golangkit/cliapp/color"
-    )
+ )
 
 func main() {
 	// simple usage
@@ -283,26 +285,54 @@ func main() {
 }
 ```
 
-- output:
+- 输出如下:
 
 <img src="demo/colored-out.jpg" style="max-width: 320px;"/>
 
-### More Usage
-
-- use like html tag
+### 构建风格
 
 ```go
-	// use style tag
+    // 仅设置前景色
+	color.FgCyan.Printf("Simple to use %s\n", "color")
+    // 仅设置背景色
+	color.BgRed.Printf("Simple to use %s\n", "color")
+
+	// 完全自定义 前景色 背景色 选项
+	style := color.New(color.FgWhite, color.BgBlack, color.OpBold)
+    style.Println("custom color style")
+```
+
+```go
+    // 设置console颜色
+    color.Set(color.FgCyan)
+    
+    // 输出信息
+    fmt.Print("message")
+    
+    // 重置console颜色
+    color.Reset()
+```
+
+### 使用内置风格
+
+- 使用颜色标签
+
+使用颜色标签可以非常方便简单的构建自己需要的任何格式
+
+```go
+	// 使用内置的 color tag
 	color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>")
 	color.Println("<suc>hello</>")
 	color.Println("<error>hello</>")
 	color.Println("<warning>hello</>")
 
-	// custom color attributes
+	// 自定义颜色属性
 	color.Print("<fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
 ```
 
-- `color.Tag`
+- 使用 `color.Tag`
+
+给后面输出的文本信息加上给定的颜色风格标签
 
 ```go
 	// set a style tag
@@ -311,7 +341,9 @@ func main() {
 	color.Tag("info").Println("info style text")
 ```
 
-### Internal Tags
+### 内置的标签
+
+这里列出了内置的标签，基本上涵盖了各种风格和颜色搭配。它们都可用着颜色标签，或者 `color.Tag` `color.Tips` 等的参数
 
 ```go
 // Some internal defined style tags
@@ -382,10 +414,11 @@ var TagColors = map[string]string{
 }
 ```
 
-## Ref
+## 参考项目
 
 - `issue9/term` https://github.com/issue9/term
 - `beego/bee` https://github.com/beego/bee
+- `inhere/console` https://github/inhere/php-console
 
 ## License
 
