@@ -54,10 +54,10 @@ func colorUsage(cmd *cliapp.Command, args []string) int {
 	color.Tag("info").Print("info style\n")
 
 	// use info style tips
-	color.Tips("info").Print("tips style\n")
+	color.Tips("info").Print("tips style")
 
 	// use info style blocked tips
-	color.BlockTips("info").Print("blocked tips style\n")
+	color.BlockTips("info").Print("blocked tips style")
 
 	return 0
 }

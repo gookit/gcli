@@ -3,9 +3,7 @@ package cliapp
 import (
 	"html/template"
 	"flag"
-	"os"
 	"strings"
-	"log"
 )
 
 // Commander
@@ -73,7 +71,8 @@ type Command struct {
 	// mark is alone running.
 	alone bool
 
-	// shortcuts storage shortcuts for command options(Flags) [short -> lang]
+	// shortcuts storage shortcuts for command options(Flags)
+	// [short -> lang] eg. {"n": "name", "o": "opt"}
 	shortcuts map[string]string
 }
 
@@ -91,39 +90,6 @@ func (c *Command) Configure() *Command {
 // Execute do execute the command
 func (c *Command) Execute(app *Application, args []string) int {
 	return c.Fn(c, args)
-}
-
-// AloneRun
-func (c *Command) AloneRun() int {
-	c.alone = true
-
-	// init some tpl vars
-	c.Vars = map[string]string{
-		"script":  script,
-		"workDir": workDir,
-	}
-
-	c.Flags.Usage = func() {
-		c.ShowHelp(true)
-	}
-
-	// don't display date on print log
-	log.SetFlags(0)
-
-	// exclude script
-	c.Flags.Parse(os.Args[1:])
-
-	return c.Fn(c, c.Flags.Args())
-}
-
-// IsAlone
-func (c *Command) IsAlone() bool {
-	return c.alone
-}
-
-// NotAlone
-func (c *Command) NotAlone() bool {
-	return !c.alone
 }
 
 // Application

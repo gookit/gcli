@@ -1,12 +1,16 @@
 package cliapp
 
-import "flag"
+import (
+	"flag"
+	"github.com/golangkit/cliapp/color"
+)
 
 // IntOpt set a int option
 func (c *Command) IntOpt(p *int, name string, short string, defaultValue int, description string) *Command {
 	c.Flags.IntVar(p, name, defaultValue, description)
 
 	if len(short) == 1 {
+		c.addShortcut(name, short)
 		c.Flags.IntVar(p, short, defaultValue, "")
 	}
 
@@ -18,6 +22,7 @@ func (c *Command) UintOpt(p *uint, name string, short string, defaultValue uint,
 	c.Flags.UintVar(p, name, defaultValue, description)
 
 	if len(short) == 1 {
+		c.addShortcut(name, short)
 		c.Flags.UintVar(p, short, defaultValue, "")
 	}
 
@@ -29,6 +34,7 @@ func (c *Command) StrOpt(p *string, name string, short string, defaultValue stri
 	c.Flags.StringVar(p, name, defaultValue, description)
 
 	if len(short) == 1 {
+		c.addShortcut(name, short)
 		c.Flags.StringVar(p, short, defaultValue, "")
 	}
 
@@ -40,6 +46,7 @@ func (c *Command) BoolOpt(p *bool, name string, short string, defaultValue bool,
 	c.Flags.BoolVar(p, name, defaultValue, description)
 
 	if len(short) == 1 {
+		c.addShortcut(name, short)
 		c.Flags.BoolVar(p, short, defaultValue, "")
 	}
 
@@ -55,8 +62,29 @@ func (c *Command) VarOpt(p flag.Value, name string, short string, description st
 	c.Flags.Var(p, name, description)
 
 	if len(short) == 1 {
+		c.addShortcut(name, short)
 		c.Flags.Var(p, short, "")
 	}
 
 	return c
+}
+
+// addShortcut add a shortcut name for a option name
+func (c *Command) addShortcut(name string, short string) {
+	if n, ok := c.shortcuts[short]; ok {
+		color.Tips("error").Printf("The shortcut name '%s' has been used by option '%s'", short, n)
+		Exit(-2)
+	}
+
+	c.shortcuts[short] = name
+}
+
+// addShortcut add a shortcut name for a option name
+func (c *Command) isShortcut(short string) bool {
+	if len(short) != 1 {
+		return false
+	}
+	_, ok := c.shortcuts[short]
+
+	return ok
 }

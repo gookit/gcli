@@ -5,6 +5,7 @@ import (
 	"os"
 	"log"
 	"github.com/golangkit/cliapp/color"
+	"strings"
 )
 
 // some constants
@@ -129,6 +130,28 @@ func (app *Application) SetVerbose(verbose int) {
 	app.Verbose = verbose
 }
 
+// Add add a command
+func (app *Application) Add(c *Command) {
+	// add ...
+	names[c.Name] = 1
+	commands[c.Name] = c
+
+	// will call it on input './cliapp command -h'
+	c.Flags.Usage = func() {
+		// add app vars to cmd
+		c.AddVars(app.vars)
+		c.ShowHelp(true)
+	}
+
+	// if contains help var "{$cmd}"
+	if strings.Contains(c.Description, "{$cmd}") {
+		c.Description = strings.Replace(c.Description, "{$cmd}", c.Name, -1)
+	}
+
+	// add aliases for the command
+	AddAliases(c.Name, c.Aliases)
+}
+
 // Run running app
 func (app *Application) Run() {
 	rawName, args := prepareRun()
@@ -136,7 +159,7 @@ func (app *Application) Run() {
 	logf("input command name is: %s", name)
 
 	if !IsCommand(name) {
-		color.Tips("error").Printf("unknown input command '%s'\n", name)
+		color.Tips("error").Printf("unknown input command '%s'", name)
 		showCommandsHelp()
 	}
 
@@ -216,30 +239,6 @@ func prepareRun() (string, []string) {
 }
 
 // Add add a command
-func (app *Application) Add(c *Command) {
-	// add ...
-	names[c.Name] = 1
-	commands[c.Name] = c
-
-	// c.NewFlagSet()
-	// will call it on input './cliapp command -h'
-	c.Flags.Usage = func() {
-		// add app vars to cmd
-		c.AddVars(app.vars)
-		c.ShowHelp(true)
-	}
-
-	// add alias
-	for _, a := range c.Aliases {
-		if cmd, has := aliases[a]; has {
-			panic(color.FgRed.Renderf("the alias '%s' has been used by command '%s'", a, cmd))
-		}
-
-		aliases[a] = c.Name
-	}
-}
-
-// Add add a command
 //func (app *Application) AddCommander(c Commander) {
 //	// run command configure
 //	cmd := c.Configure()
@@ -262,9 +261,26 @@ func (app *Application) Command() string {
 	return app.command
 }
 
+// Exit
+func Exit(code int)  {
+	os.Exit(code)
+}
+
 // Command get command name
 func CommandNames() map[string]int {
 	return names
+}
+
+// AddAliases add alias names for a command
+func AddAliases(command string, names []string)  {
+	// add alias
+	for _, a := range names {
+		if cmd, has := aliases[a]; has {
+			panic(color.FgRed.Renderf("The alias '%s' has been used by command '%s'", a, cmd))
+		}
+
+		aliases[a] = command
+	}
 }
 
 // FindCommandName get real command name by alias

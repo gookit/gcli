@@ -34,9 +34,8 @@ var commandHelp = `{{.Description}}{{if .Cmd.NotAlone}}
 // showCommandHelp display help for an command
 func showCommandHelp(list []string, quit bool) {
 	if len(list) != 1 {
-		fmt.Fprintf(
-			os.Stdout,
-			"usage: %s help %s\n\nToo many arguments given.\n",
+		color.Tips("error").Printf(
+			"Usage: %s help %s\n\nToo many arguments given.",
 			script,
 			list[0],
 		)
@@ -48,7 +47,7 @@ func showCommandHelp(list []string, quit bool) {
 	cmd, exist := commands[name]
 
 	if !exist {
-		color.Tips("danger").Printf("Unknown command name %#q.  Run '%s -h'\n", name, script)
+		color.Tips("error").Printf("Unknown command name %#q.  Run '%s -h'", name, script)
 		os.Exit(2)
 	}
 

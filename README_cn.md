@@ -200,8 +200,7 @@ func (ns *Names) Set(value string) error {
 }
 
 // options for the command
-var exampleOpts ExampleOpts
-
+var exampleOpts = ExampleOpts{}
 type ExampleOpts struct {
 	id  int
 	c   string
@@ -221,11 +220,10 @@ func ExampleCommand() *cli.Command {
 			"arg1": "the second argument",
 		},
 		Description: "this is a description message",
+		// {$script} {$cmd} is help vars. '{$cmd}' will replace to 'example'
 		Examples: `{$script} {$cmd} --id 12 -c val ag0 ag1
   <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
 	}
-
-	exampleOpts = ExampleOpts{}
 
 	// use flag package func
 	cmd.Flags.IntVar(&exampleOpts.id, "id", 2, "the id option")

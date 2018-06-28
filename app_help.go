@@ -24,7 +24,7 @@ func showVersionInfo() {
 }
 
 // help template for all commands
-var commandsHelp = `{{.Description|raw}}
+var commandsHelp = `{{.Description|raw}} (Version: <info>{{.Version}}</>)
 <comment>Usage:</>
   {{.Script}} <info>{command}</> [--option ...] [argument ...]
 
@@ -33,7 +33,7 @@ var commandsHelp = `{{.Description|raw}}
   -V, --version     Display this version information
 
 <comment>Commands:</>{{range .Cs}}{{if .Runnable}}
-  {{.Name | printf "%-12s"}} {{.Description|colored}}{{if .Aliases}}(alias: <cyan>{{.Aliases.String}}</>){{end}}{{end}}{{end}}
+  {{.Name | printf "%-12s"}} {{.Description|colored}}{{if .Aliases}} (alias: <cyan>{{.Aliases.String}}</>){{end}}{{end}}{{end}}
   help         display help information
 
 Use "<cyan>{{.Script}} help [command]</>" for more information about a command
@@ -50,6 +50,7 @@ func showCommandsHelp() {
 	RenderStrTpl(&buf, commandsHelp, map[string]interface{}{
 		"Cs":          commands,
 		"Script":      script,
+		"Version":     app.Version,
 		"Description": utils.UpperFirst(app.Description),
 	})
 
