@@ -6,6 +6,9 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"log"
+	"bytes"
+	"github.com/golangkit/cliapp/color"
 )
 
 // Commander
@@ -67,6 +70,9 @@ type Command struct {
 
 	// application
 	app *Application
+
+	// mark is alone running.
+	alone bool
 }
 
 // Option a command option
@@ -82,13 +88,28 @@ type Option struct {
 }
 
 // ShowHelp @notice not used
-func (c *Command) ShowHelp() {
-	fmt.Fprintf(os.Stderr, "%s\n", strings.TrimSpace(string(c.Description)))
-	// fmt.Fprintf(os.Stderr, "Usage: %s\n\n", c.UsageLine)
-	fmt.Fprintf(os.Stderr, "%s\n\n", c.Help)
-	fmt.Fprintf(os.Stderr, "Example:%s\n\n", c.Examples)
+func (c *Command) ShowHelp(quit ...bool) {
+	// use buffer receive rendered content
+	var buf bytes.Buffer
 
-	os.Exit(0)
+	// render and output help info
+	//RenderStrTpl(os.Stdout, commandHelp, map[string]interface{}{
+	// render but not output
+	RenderStrTpl(&buf, commandHelp, map[string]interface{}{
+		"Cmd":         c,
+		"Script":      script,
+		"Options":     color.Render(c.ParseDefaults()),
+		"Description": color.Render(c.Description),
+	})
+
+	c.Vars["cmd"] = c.Name
+
+	// parse help vars
+	fmt.Print(ReplaceVars(buf.String(), c.Vars))
+
+	if len(quit) > 0 && quit[0] {
+		os.Exit(0)
+	}
 }
 
 // Runnable reports whether the command can be run; otherwise
@@ -105,6 +126,39 @@ func (c *Command) Configure() *Command {
 // Execute do execute the command
 func (c *Command) Execute(app *Application, args []string) int {
 	return c.Fn(c, args)
+}
+
+// AloneRun
+func (c *Command) AloneRun() int {
+	c.alone = true
+
+	// init some tpl vars
+	c.Vars = map[string]string{
+		"script":  script,
+		"workDir": workDir,
+	}
+
+	c.Flags.Usage = func() {
+		c.ShowHelp(true)
+	}
+
+	// don't display date on print log
+	log.SetFlags(0)
+
+	// exclude script
+	c.Flags.Parse(os.Args[1:])
+
+	return c.Fn(c, c.Flags.Args())
+}
+
+// IsAlone
+func (c *Command) IsAlone() bool {
+	return c.alone
+}
+
+// NotAlone
+func (c *Command) NotAlone() bool {
+	return !c.alone
 }
 
 // Application

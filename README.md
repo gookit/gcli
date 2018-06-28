@@ -5,6 +5,7 @@ simple cliapp for golang
 - auto generate help info
 - support add multi commands
 - support command alias
+- support for running a command independently
 - support var replace on display help info
 - support color tag on display help info
 - support cli color, simple to use. like `<info>info style</>`

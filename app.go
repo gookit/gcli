@@ -68,6 +68,7 @@ var commands map[string]*Command
 
 // some info
 var script = os.Args[0]
+var workDir, _ = os.Getwd()
 var gOpts = GlobalOpts{}
 
 // init
@@ -83,7 +84,7 @@ func init() {
 func NewApp(settings ...string) *Application {
 	app = &Application{Name: "My CLI Application", Version: "1.0.0"}
 	app.script = script
-	app.workDir, _ = os.Getwd()
+	app.workDir = workDir
 	app.Verbose = VerbError
 	app.Logo.Style = "info"
 
@@ -108,8 +109,8 @@ func NewApp(settings ...string) *Application {
 func (app *Application) Init() {
 	// init some tpl vars
 	app.vars = map[string]string{
-		"script":  app.script,
-		"workDir": app.workDir,
+		"script":  script,
+		"workDir": workDir,
 	}
 }
 
@@ -225,8 +226,7 @@ func (app *Application) Add(c *Command) {
 	c.Flags.Usage = func() {
 		// add app vars to cmd
 		c.AddVars(app.vars)
-
-		showCommandHelp([]string{c.Name}, true)
+		c.ShowHelp(true)
 	}
 
 	// add alias
