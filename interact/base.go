@@ -1,37 +1,12 @@
 package interact
 
 import (
-	"bufio"
-	"os"
 	"strings"
 	"fmt"
-	"github.com/golangkit/cliapp/color"
 )
 
-// ReadLine
-// in := ReadLine("")
-// ans := ReadLine("your name?")
-func ReadLine(question string) string {
-	reader := bufio.NewReader(os.Stdin)
-
-	if len(question) > 0 {
-		color.Print(question)
-	}
-
-	answer, _, _ := reader.ReadLine()
-
-	return strings.TrimSpace(string(answer))
-}
-
-// ReadFirst read first char
-func ReadFirst(question string) string {
-	answer := ReadLine(question)
-
-	return string(answer[0])
-}
-
 // check user inputted answer is right
-// fmt.Print("are you OK? ")
+// fmt.Print("are you OK? [yes|no]")
 // ok := EnsureUserAnswer()
 func EnsureAnswerIsOk() bool {
 	var answer string
