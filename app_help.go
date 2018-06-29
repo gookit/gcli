@@ -27,13 +27,15 @@ func (app *Application) showVersionInfo() {
 // help template for all commands
 var commandsHelp = `{{.Description|raw}} (Version: <info>{{.Version}}</>)
 <comment>Usage:</>
-  {$binName} <info>{command}</> [--option ...] [argument ...]
+  {$binName} [global options...] <info>{command}</> [--option ...] [argument ...]
 
-<comment>Options:</>
-  -h, --help        Display this help information
-  -V, --version     Display this version information
+<comment>Global Options:</>
+      --verbose     Set error reporting level(quiet 0 - 4 debug)
+      --no-color    Disable color output
+  -h, --help        Display help information
+  -V, --version     Display version information
 
-<comment>Commands:</>{{range .Cs}}{{if .Runnable}}
+<comment>Available Commands:</>{{range .Cs}}{{if .Runnable}}
   {{.Name | printf "%-12s"}} {{.Description|colored}}{{if .Aliases}} (alias: <cyan>{{.Aliases.String}}</>){{end}}{{end}}{{end}}
   help         display help information
 

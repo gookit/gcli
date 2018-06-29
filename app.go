@@ -1,18 +1,11 @@
 package cliapp
 
 import (
-	"flag"
 	"os"
 	"log"
 	"github.com/golangkit/cliapp/color"
 	"strings"
 )
-
-// GlobalOpts global flags
-type GlobalOpts struct {
-	showHelp    bool
-	showVersion bool
-}
 
 // the cli app instance
 var app *Application
@@ -20,9 +13,6 @@ var app *Application
 // commands collect all command
 var commands map[string]*Command
 //var commanders  map[string]Commander
-
-// some info
-var gOpts = GlobalOpts{}
 
 // init
 func init() {
@@ -131,27 +121,13 @@ func (app *Application) SubRun(name string, args []string) int {
 
 // prepare to running
 func (app *Application) prepareRun() (string, []string) {
-	// Some global options
-	flag.Usage = showCommandsHelp
-	flag.BoolVar(&gOpts.showHelp, "h", false, "")
-	flag.BoolVar(&gOpts.showHelp, "help", false, "")
-	flag.BoolVar(&gOpts.showVersion, "V", false, "")
-	flag.BoolVar(&gOpts.showVersion, "version", false, "")
-
-	flag.Parse()
 	// don't display date on print log
 	log.SetFlags(0)
 
-	if gOpts.showHelp {
-		showCommandsHelp()
-	}
-
-	if gOpts.showVersion {
-		app.showVersionInfo()
-	}
-
 	// no command input
-	args := flag.Args()
+	args := app.parseGlobalOpts()
+
+	// check args
 	if len(args) < 1 {
 		defCmd := app.defaultCmd
 
