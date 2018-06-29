@@ -5,8 +5,7 @@ import (
 	"github.com/golangkit/cliapp/color"
 )
 
-var colorOpts ColorOpts
-
+var colorOpts = ColorOpts{}
 type ColorOpts struct {
 	id  int
 	c   string
@@ -24,15 +23,12 @@ func ColorCommand() *cliapp.Command {
 			"arg0": "the first argument",
 			"arg1": "the second argument",
 		},
-		Examples: "{$script} {$cmd} --id 12 -c val ag0 ag1",
+		Examples: "{$binName} {$cmd} --id 12 -c val ag0 ag1",
 	}
 
-	colorOpts = ColorOpts{}
-
-	f := &cmd.Flags
-	f.IntVar(&colorOpts.id, "id", 2, "the id option")
-	f.StringVar(&colorOpts.c, "c", "value", "the short option")
-	f.StringVar(&colorOpts.dir, "dir", "", "the dir option")
+	cmd.IntOpt(&colorOpts.id, "id", "", 2, "the id option")
+	cmd.StrOpt(&colorOpts.c, "c", "", "value", "the config option")
+	cmd.StrOpt(&colorOpts.dir, "dir", "",  "", "the dir option")
 
 	return &cmd
 }

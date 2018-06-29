@@ -220,8 +220,8 @@ func ExampleCommand() *cli.Command {
 			"arg1": "the second argument",
 		},
 		Description: "this is a description message",
-		// {$script} {$cmd} is help vars. '{$cmd}' will replace to 'example'
-		Examples: `{$script} {$cmd} --id 12 -c val ag0 ag1
+		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
+		Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1
   <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
 	}
 
@@ -280,10 +280,10 @@ func main() {
 	color.Tag("info").Println("info style text")
 
 	// use info style tips
-	color.Tips("info").Print("tips style text\n")
+	color.Tips("info").Print("tips style text")
 
 	// use info style blocked tips
-	color.BlockTips("info").Print("blocked tips style text\n")
+	color.BlockTips("info").Print("blocked tips style text")
 }
 ```
 
@@ -294,25 +294,25 @@ func main() {
 ### 构建风格
 
 ```go
-    // 仅设置前景色
-	color.FgCyan.Printf("Simple to use %s\n", "color")
-    // 仅设置背景色
-	color.BgRed.Printf("Simple to use %s\n", "color")
+// 仅设置前景色
+color.FgCyan.Printf("Simple to use %s\n", "color")
+// 仅设置背景色
+color.BgRed.Printf("Simple to use %s\n", "color")
 
-	// 完全自定义 前景色 背景色 选项
-	style := color.New(color.FgWhite, color.BgBlack, color.OpBold)
-    style.Println("custom color style")
+// 完全自定义 前景色 背景色 选项
+style := color.New(color.FgWhite, color.BgBlack, color.OpBold)
+style.Println("custom color style")
 ```
 
 ```go
-    // 设置console颜色
-    color.Set(color.FgCyan)
-    
-    // 输出信息
-    fmt.Print("message")
-    
-    // 重置console颜色
-    color.Reset()
+// 设置console颜色
+color.Set(color.FgCyan)
+
+// 输出信息
+fmt.Print("message")
+
+// 重置console颜色
+color.Reset()
 ```
 
 ### 使用内置风格
@@ -322,14 +322,14 @@ func main() {
 使用颜色标签可以非常方便简单的构建自己需要的任何格式
 
 ```go
-	// 使用内置的 color tag
-	color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>")
-	color.Println("<suc>hello</>")
-	color.Println("<error>hello</>")
-	color.Println("<warning>hello</>")
+// 使用内置的 color tag
+color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>")
+color.Println("<suc>hello</>")
+color.Println("<error>hello</>")
+color.Println("<warning>hello</>")
 
-	// 自定义颜色属性
-	color.Print("<fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
+// 自定义颜色属性
+color.Print("<fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
 ```
 
 - 使用 `color.Tag`
@@ -337,10 +337,10 @@ func main() {
 给后面输出的文本信息加上给定的颜色风格标签
 
 ```go
-	// set a style tag
-	color.Tag("info").Print("info style text")
-	color.Tag("info").Printf("%s style text", "info")
-	color.Tag("info").Println("info style text")
+// set a style tag
+color.Tag("info").Print("info style text")
+color.Tag("info").Printf("%s style text", "info")
+color.Tag("info").Println("info style text")
 ```
 
 ### 内置的标签

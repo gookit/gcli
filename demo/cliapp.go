@@ -12,8 +12,9 @@ func main() {
 
 	app := cliapp.NewApp()
 	app.Version = "1.0.3"
-	app.Verbose = cliapp.VerbDebug
 	app.Description = "this is my cli application"
+
+	app.SetVerbose(cliapp.VerbDebug)
 
 	app.Add(cmd.ExampleCommand())
 	app.Add(cmd.GitCommand())

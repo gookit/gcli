@@ -9,8 +9,7 @@ import (
 	"github.com/golangkit/cliapp/utils"
 )
 
-var gitOpts GitOpts
-
+var gitOpts = GitOpts{}
 type GitOpts struct {
 	id  int
 	c   string
@@ -33,12 +32,9 @@ func GitCommand() *cli.Command {
 		Fn: gitExecute,
 	}
 
-	gitOpts = GitOpts{}
-
-	f := &cmd.Flags
-	f.IntVar(&gitOpts.id, "id", 0, "the id option")
-	f.StringVar(&gitOpts.c, "c", "", "the short option")
-	f.StringVar(&gitOpts.dir, "dir", "", "the dir option")
+	cmd.IntOpt(&gitOpts.id, "id",  "", 0, "the id option")
+	cmd.StrOpt(&gitOpts.c, "c",  "","", "the config option")
+	cmd.StrOpt(&gitOpts.dir, "dir", "d", "","the dir option")
 
 	return &cmd
 }

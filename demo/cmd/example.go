@@ -38,8 +38,8 @@ func ExampleCommand() *cli.Command {
 			"arg1": "the second argument",
 		},
 		Description: "this is a description message",
-		// {$script} {$cmd} is help vars. '{$cmd}' will replace to 'example'
-		Examples: `{$script} {$cmd} --id 12 -c val ag0 ag1
+		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
+		Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1
   <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
 	}
 

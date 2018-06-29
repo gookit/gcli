@@ -11,8 +11,8 @@ func (c *Command) AloneRun() int {
 
 	// init some tpl vars
 	c.Vars = map[string]string{
-		"script":  script,
 		"workDir": workDir,
+		"binName": binName,
 	}
 
 	c.Flags.Usage = func() {

@@ -11,17 +11,17 @@ import (
 )
 
 // help template for a command
-var commandHelp = `{{.Description}}{{if .Cmd.NotAlone}}
+var commandHelp = `{{.Description}}
+{{if .Cmd.NotAlone}}
 <comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.Aliases.String}}</>){{end}}{{end}}
 <comment>Usage:</> 
-  {{.Script}} {{if .Cmd.NotAlone}}{{.Cmd.Name}} {{end}}[--option ...] [argument ...]
+  {$binName} {{if .Cmd.NotAlone}}{{.Cmd.Name}} {{end}}[--option ...] [argument ...]
 
 <comment>Global Options:</>
   -h, --help        Display this help information{{if .Options}}
 
 <comment>Options:</>
-{{.Options}}
-{{end}}{{if .Cmd.ArgList}}
+{{.Options}}{{end}}{{if .Cmd.ArgList}}
 <comment>Arguments:</>{{range $k,$v := .Cmd.ArgList}}
   {{$k | printf "%-12s"}}{{$v}}{{end}}
 {{end}} {{if .Cmd.Examples}}
@@ -32,22 +32,22 @@ var commandHelp = `{{.Description}}{{if .Cmd.NotAlone}}
 `
 
 // showCommandHelp display help for an command
-func showCommandHelp(list []string, quit bool) {
+func (app *Application) showCommandHelp(list []string, quit bool) {
 	if len(list) != 1 {
 		color.Tips("error").Printf(
 			"Usage: %s help %s\n\nToo many arguments given.",
-			script,
+			binName,
 			list[0],
 		)
 		os.Exit(2) // failed at 'bee help'
 	}
 
 	// get real name
-	name := FindCommandName(list[0])
+	name := app.GetNameByAlias(list[0])
 	cmd, exist := commands[name]
 
 	if !exist {
-		color.Tips("error").Printf("Unknown command name %#q.  Run '%s -h'", name, script)
+		color.Tips("error").Printf("Unknown command name %#q.  Run '%s -h'", name, binName)
 		os.Exit(2)
 	}
 
@@ -65,15 +65,15 @@ func (c *Command) ShowHelp(quit ...bool) {
 	//RenderStrTpl(os.Stdout, commandHelp, map[string]interface{}{
 	// render but not output
 	RenderStrTpl(&buf, commandHelp, map[string]interface{}{
-		"Cmd": c,
+		"Cmd":     c,
+		"Options": color.RenderStr(c.ParseDefaults()),
 
-		"Script":      script,
-		"Options":     color.RenderStr(c.ParseDefaults()),
+		// always upper first char
 		"Description": color.RenderStr(utils.UpperFirst(c.Description)),
 	})
 
 	c.Vars["cmd"] = c.Name
-	c.Vars["fullCmd"] = script + " " + c.Name
+	c.Vars["fullCmd"] = binName + " " + c.Name
 
 	// parse help vars
 	fmt.Print(ReplaceVars(buf.String(), c.Vars))

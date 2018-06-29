@@ -76,6 +76,12 @@ func (c *Command) addShortcut(name string, short string) {
 		Exit(-2)
 	}
 
+	// first add
+	if c.shortcuts == nil {
+		c.shortcuts = map[string]string{short: name}
+		return
+	}
+
 	c.shortcuts[short] = name
 }
 

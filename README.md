@@ -214,8 +214,8 @@ func ExampleCommand() *cli.Command {
 			"arg0": "the first argument",
 			"arg1": "the second argument",
 		},
-		// {$script} {$cmd} is help vars. '{$cmd}' will replace to 'example'
-		Examples: `{$script} {$cmd} --id 12 -c val ag0 ag1
+		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
+		Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1
   <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
 	}
 
@@ -272,10 +272,10 @@ func main() {
 	color.Tag("info").Println("info style text")
 
 	// use info style tips
-	color.Tips("info").Print("tips style text\n")
+	color.Tips("info").Print("tips style text")
 
 	// use info style blocked tips
-	color.BlockTips("info").Print("blocked tips style text\n")
+	color.BlockTips("info").Print("blocked tips style text")
 }
 ```
 
@@ -288,23 +288,23 @@ func main() {
 - use like html tag
 
 ```go
-	// use style tag
-	color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>")
-	color.Println("<suc>hello</>")
-	color.Println("<error>hello</>")
-	color.Println("<warning>hello</>")
+// use style tag
+color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>")
+color.Println("<suc>hello</>")
+color.Println("<error>hello</>")
+color.Println("<warning>hello</>")
 
-	// custom color attributes
-	color.Print("<fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
+// custom color attributes
+color.Print("<fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
 ```
 
 - `color.Tag`
 
 ```go
-	// set a style tag
-	color.Tag("info").Print("info style text")
-	color.Tag("info").Printf("%s style text", "info")
-	color.Tag("info").Println("info style text")
+// set a style tag
+color.Tag("info").Print("info style text")
+color.Tag("info").Printf("%s style text", "info")
+color.Tag("info").Println("info style text")
 ```
 
 ### Internal tags
