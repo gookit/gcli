@@ -47,8 +47,8 @@ func ExampleCommand() *cli.Command {
 	cmd.Flags.IntVar(&exampleOpts.id, "id", 2, "the id option")
 	cmd.Flags.StringVar(&exampleOpts.c, "c", "value", "the short option")
 
-	// use Command provided func
-	cmd.StrOpt(&exampleOpts.dir, "dir", "d", "", "the dir option")
+	// use Command provided func. notice `DIRECTORY` will replace to option value type
+	cmd.StrOpt(&exampleOpts.dir, "dir", "d", "", "the `DIRECTORY` option")
 
 	// setting option name and short-option name
 	cmd.StrOpt(&exampleOpts.opt, "opt", "o", "", "the option message")

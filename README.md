@@ -99,15 +99,15 @@ Version: 1.0.3
 % ./cliapp                                                            
 this is my cli application
 Usage:
-  ./cliapp command [--option ...] [argument ...]
+  ./cliapp [global options...] command [--option ...] [argument ...]
 
 Options:
   -h, --help        Display this help information
   -V, --version     Display this version information
 
 Commands:
-  demo         this is a description message for command(alias: dm)
-  help         display help information
+  demo         This is a description message for demo(alias: dm)
+  help         Display help information
 
 Use "./cliapp help [command]" for more information about a command
 
@@ -127,7 +127,7 @@ args is [ag0 ag1]
 
 ```bash
 % ./cliapp example -h                                                
-this is a description message
+This is a description message
 
 Name: example(alias: exp,ex)
 Usage: ./cliapp example [--option ...] [argument ...]
@@ -137,15 +137,15 @@ Global Options:
 
 Options:
   -c string
-        the short option (default value)
+        The short option (default value)
   --dir string
-        the dir option
+        The dir option
   --id int
-        the id option (default 2)
+        The id option (default 2)
 
 Arguments:
-  arg0        the first argument
-  arg1        the second argument
+  arg0        The first argument
+  arg1        The second argument
  
 Examples:
   ./cliapp example --id 12 -c val ag0 ag1
@@ -255,9 +255,15 @@ func exampleExecute(cmd *cli.Command, args []string) int {
 go build ./demo/cliapp.go && ./cliapp example -h
 ```
 
-![cmd-help](demo/cmd-help.jpg)
+![cmd-help](demo/images/cmd-help.jpg)
 
-## Color usage
+## CLI Color
+
+### Color output display
+
+![colored-out](demo/images/colored-out.jpg)
+
+### usage
 
 ```go
 package main
@@ -287,10 +293,6 @@ func main() {
 }
 ```
 
-- output:
-
-<img src="demo/colored-out.jpg" style="max-width: 320px;"/>
-
 ### More usage
 
 - use like html tag
@@ -317,74 +319,73 @@ color.Tag("info").Println("info style text")
 
 ### Internal tags
 
-```go
+```text
 // Some internal defined style tags
 // format is: "fg;bg;opt"
 // usage: <tag>content text</>
-var TagColors = map[string]string{
-	// basic tags
-	"red":     "0;31",
-	"blue":    "0;34",
-	"cyan":    "0;36",
-	"black":   "0;30",
-	"green":   "0;32",
-	"brown":   "0;33",
-	"white":   "1;37",
-	"default": "39", // no color
-	"normal":  "39", // no color
-	"yellow":  "1;33",
-	"magenta": "1;35",
 
-	// alert tags, like bootstrap's alert
-	"suc":     "1;32", // same "green" and "bold"
-	"success": "1;32",
-	"info":    "0;32", // same "green",
-	"comment": "0;33", // same "brown"
-	"note":    "36;1",
-	"notice":  "36;4",
-	"warn":    "0;30;43",
-	"warning": "0;30;43",
-	"primary": "0;34",
-	"danger":  "0;31", // same "red"
-	"err":     "30;41",
-	"error":   "30;41",
+// basic tags
+- red
+- blue
+- cyan
+- black
+- green
+- brown
+- white
+- default  // no color
+- normal// no color
+- yellow  
+- magenta 
 
-	// more tags
-	"lightRed":      "1;31",
-	"light_red":     "1;31",
-	"lightGreen":    "1;32",
-	"light_green":   "1;32",
-	"lightBlue":     "1;34",
-	"light_blue":    "1;34",
-	"lightCyan":     "1;36",
-	"light_cyan":    "1;36",
-	"gray":          "90",
-	"darkGray":      "90",
-	"light_gray":    "37",
-	"darkDray":      "90",
-	"dark_gray":     "90",
-	"lightYellow":   "93",
-	"light_yellow":  "93",
-	"lightMagenta":  "95",
-	"light_magenta": "95",
+// alert tags like bootstrap's alert
+- suc // same "green" and "bold"
+- success 
+- info // same "green"
+- comment  // same "brown"
+- note 
+- notice  
+- warn
+- warning 
+- primary 
+- danger // same "red"
+- err 
+- error
 
-	// extra
-	"lightRedEx":     "91",
-	"light_red_ex":   "91",
-	"lightGreenEx":   "92",
-	"light_green_ex": "92",
-	"lightBlueEx":    "94",
-	"light_blue_ex":  "94",
-	"lightCyanEx":    "96",
-	"light_cyan_ex":  "96",
-	"whiteEx":        "97",
-	"white_ex":       "97",
+// more tags
+- lightRed
+- light_red
+- lightGreen
+- light_green
+- lightBlue 
+- light_blue
+- lightCyan
+- light_cyan
+- lightDray
+- light_gray
+- gray
+- darkGray
+- dark_gray
+- lightYellow
+- light_yellow  
+- lightMagenta  
+- light_magenta 
 
-	// option
-	"bold":       "1",
-	"underscore": "4",
-	"reverse":    "7",
-}
+// extra
+- lightRedEx
+- light_red_ex
+- lightGreenEx
+- light_green_ex 
+- lightBlueEx
+- light_blue_ex  
+- lightCyanEx
+- light_cyan_ex  
+- whiteEx
+- white_ex
+
+// option
+- bold
+- underscore 
+- reverse
 ```
 
 ## Ref

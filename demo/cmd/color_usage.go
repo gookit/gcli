@@ -3,6 +3,7 @@ package cmd
 import (
 	"github.com/golangkit/cliapp"
 	"github.com/golangkit/cliapp/color"
+	"fmt"
 )
 
 var colorOpts = ColorOpts{}
@@ -51,9 +52,27 @@ func colorUsage(cmd *cliapp.Command, args []string) int {
 
 	// tips
 	color.Tips("info").Print("tips style message")
+	color.Tips("warn").Print("tips style message")
 
 	// lite tips
 	color.LiteTips("info").Print("lite tips style message")
+	color.LiteTips("warn").Print("lite tips style message")
+
+	i := 0
+
+	fmt.Print("\n- All Available Tags: \n\n")
+
+	for tag, _ := range color.TagColors {
+		i++
+		color.Tag(tag).Print(tag)
+
+		if i % 5 == 0 {
+			fmt.Print("\n")
+		} else {
+			fmt.Print(" ")
+		}
+	}
+	fmt.Print("\n")
 
 	return 0
 }

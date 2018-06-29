@@ -15,8 +15,7 @@ import (
 var commandHelp = `{{.Description}}
 {{if .Cmd.NotAlone}}
 <comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.Aliases.String}}</>){{end}}{{end}}
-<comment>Usage:</> 
-  {$binName} [global options...] {{if .Cmd.NotAlone}}{{.Cmd.Name}} {{end}}[--option ...] [argument ...]
+<comment>Usage:</> {$binName} [global options...] {{if .Cmd.NotAlone}}{{.Cmd.Name}} {{end}}[--option ...] [argument ...]
 
 <comment>Global Options:</>
       <info>--verbose</>     Set error reporting level(quiet 0 - 4 debug)
@@ -27,7 +26,7 @@ var commandHelp = `{{.Description}}
 {{.Options}}{{end}}{{if .Cmd.ArgList}}
 
 <comment>Arguments:</>{{range $k,$v := .Cmd.ArgList}}
-  {{$k | printf "%-12s"}}{{$v|upFirst}}{{end}}
+  <info>{{$k | printf "%-12s"}}</>{{$v|upFirst}}{{end}}
 {{end}} {{if .Cmd.Examples}}
 <comment>Examples:</>
   {{.Cmd.Examples|coloredHtml}}{{end}}{{if .Cmd.Help}}

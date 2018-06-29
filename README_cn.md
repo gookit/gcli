@@ -101,23 +101,7 @@ Version: 1.0.3
 
 使用 `./cliapp` 或者 `./cliapp -h` 来显示应用的帮助信息，包含所有的可用命令和一些全局选项
 
-```bash
-% ./cliapp                                                            
-This is my cli application
-Usage:
-  ./cliapp {command} [--option ...] [argument ...]
-
-Options:
-  -h, --help        Display this help information
-  -V, --version     Display this version information
-
-Commands:
-  demo         this is a description message for command(alias: dm)
-  help         display help information
-
-Use "./cliapp help [command]" for more information about a command
-
-```
+![app-help](demo/images/app-help.jpg)
 
 ### 运行一个命令
 
@@ -143,15 +127,15 @@ Global Options:
 
 Options:
   -c string
-        the short option (default value)
+        The short option (default value)
   --dir string
-        the dir option
+        The dir option
   --id int
-        the id option (default 2)
+        The id option (default 2)
 
 Arguments:
-  arg0        the first argument
-  arg1        the second argument
+  arg0        The first argument
+  arg1        The second argument
  
 Examples:
   ./cliapp example --id 12 -c val ag0 ag1
@@ -257,15 +241,21 @@ func exampleExecute(cmd *cli.Command, args []string) int {
 
 - 查看此命令的帮助信息：
 
+> 漂亮的帮助信息就已经自动生成并展示出来了
+
 ```bash
 go build ./demo/cliapp.go && ./cliapp example -h
 ```
 
-![cmd-help](demo/cmd-help.jpg)
+![cmd-help](demo/images/cmd-help.jpg)
 
 ## 使用颜色输出
 
-## 如何使用
+### 颜色输出展示
+
+![colored-out](demo/images/colored-out.jpg)
+
+### 如何使用
 
 ```go
 package main
@@ -294,10 +284,6 @@ func main() {
 	color.LiteTips("info").Print("blocked tips style text")
 }
 ```
-
-- 输出如下:
-
-<img src="demo/colored-out.jpg" style="max-width: 320px;"/>
 
 ### 构建风格
 
@@ -355,74 +341,73 @@ color.Tag("info").Println("info style text")
 
 这里列出了内置的标签，基本上涵盖了各种风格和颜色搭配。它们都可用作颜色标签，或者作为 `color.Tag` `color.Tips` 等的参数
 
-```go
+```text
 // Some internal defined style tags
 // format is: "fg;bg;opt"
 // usage: <tag>content text</>
-var TagColors = map[string]string{
-	// basic tags
-	"red":     "0;31",
-	"blue":    "0;34",
-	"cyan":    "0;36",
-	"black":   "0;30",
-	"green":   "0;32",
-	"brown":   "0;33",
-	"white":   "1;37",
-	"default": "39", // no color
-	"normal":  "39", // no color
-	"yellow":  "1;33",
-	"magenta": "1;35",
 
-	// alert tags, like bootstrap's alert
-	"suc":     "1;32", // same "green" and "bold"
-	"success": "1;32",
-	"info":    "0;32", // same "green",
-	"comment": "0;33", // same "brown"
-	"note":    "36;1",
-	"notice":  "36;4",
-	"warn":    "0;30;43",
-	"warning": "0;30;43",
-	"primary": "0;34",
-	"danger":  "0;31", // same "red"
-	"err":     "30;41",
-	"error":   "30;41",
+// basic tags
+- red
+- blue
+- cyan
+- black
+- green
+- brown
+- white
+- default  // no color
+- normal// no color
+- yellow  
+- magenta 
 
-	// more tags
-	"lightRed":      "1;31",
-	"light_red":     "1;31",
-	"lightGreen":    "1;32",
-	"light_green":   "1;32",
-	"lightBlue":     "1;34",
-	"light_blue":    "1;34",
-	"lightCyan":     "1;36",
-	"light_cyan":    "1;36",
-	"lightDray":     "37",
-	"light_gray":    "37",
-	"gray":          "90",
-	"darkGray":      "90",
-	"dark_gray":     "90",
-	"lightYellow":   "93",
-	"light_yellow":  "93",
-	"lightMagenta":  "95",
-	"light_magenta": "95",
+// alert tags like bootstrap's alert
+- suc // same "green" and "bold"
+- success 
+- info // same "green"
+- comment  // same "brown"
+- note 
+- notice  
+- warn
+- warning 
+- primary 
+- danger // same "red"
+- err 
+- error
 
-	// extra
-	"lightRedEx":     "91",
-	"light_red_ex":   "91",
-	"lightGreenEx":   "92",
-	"light_green_ex": "92",
-	"lightBlueEx":    "94",
-	"light_blue_ex":  "94",
-	"lightCyanEx":    "96",
-	"light_cyan_ex":  "96",
-	"whiteEx":        "97",
-	"white_ex":       "97",
+// more tags
+- lightRed
+- light_red
+- lightGreen
+- light_green
+- lightBlue 
+- light_blue
+- lightCyan
+- light_cyan
+- lightDray
+- light_gray
+- gray
+- darkGray
+- dark_gray
+- lightYellow
+- light_yellow  
+- lightMagenta  
+- light_magenta 
 
-	// option
-	"bold":       "1",
-	"underscore": "4",
-	"reverse":    "7",
-}
+// extra
+- lightRedEx
+- light_red_ex
+- lightGreenEx
+- light_green_ex 
+- lightBlueEx
+- light_blue_ex  
+- lightCyanEx
+- light_cyan_ex  
+- whiteEx
+- white_ex
+
+// option
+- bold
+- underscore 
+- reverse
 ```
 
 ## 参考项目
