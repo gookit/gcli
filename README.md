@@ -18,12 +18,16 @@ Command line application, tool library, written using golang
 - use dep
 
 ```bash
+dep ensure -add gopkg.in/golangkit/cliapp.v1
+// OR
 dep ensure -add github.com/golangkit/cliapp
 ```
 
 - go get
 
 ```bash
+go get gopkg.in/golangkit/cliapp.v1
+// OR
 go get -u github.com/golangkit/cliapp
 ```
 
@@ -34,6 +38,12 @@ git clone https://github.com/golangkit/cliapp
 ```
 
 ## Quick start
+
+```bash
+import "gopkg.in/golangkit/cliapp.v1"
+// or
+import "github.com/golangkit/cliapp"
+```
 
 ```go 
 package main
@@ -97,7 +107,7 @@ Version: 1.0.3
 
 ```bash
 % ./cliapp                                                            
-this is my cli application
+This is my cli application
 Usage:
   ./cliapp [global options...] command [--option ...] [argument ...]
 
@@ -321,7 +331,6 @@ color.Tag("info").Println("info style text")
 
 ```text
 // Some internal defined style tags
-// format is: "fg;bg;opt"
 // usage: <tag>content text</>
 
 // basic tags

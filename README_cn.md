@@ -18,12 +18,16 @@ golang下的命令行应用，工具库
 - 使用 dep 包管理
 
 ```bash
+dep ensure -add gopkg.in/golangkit/cliapp.v1
+// OR
 dep ensure -add github.com/golangkit/cliapp
 ```
 
 - 使用 go get
 
 ```bash
+go get gopkg.in/golangkit/cliapp.v1
+// OR
 go get -u github.com/golangkit/cliapp
 ```
 
@@ -36,6 +40,12 @@ git clone https://github.com/golangkit/cliapp
 ## 快速开始
 
 如下，引入当前包就可以快速的编写cli应用了
+
+```bash
+import "gopkg.in/golangkit/cliapp.v1"
+// or
+import "github.com/golangkit/cliapp"
+```
 
 ```go 
 package main
@@ -343,7 +353,6 @@ color.Tag("info").Println("info style text")
 
 ```text
 // Some internal defined style tags
-// format is: "fg;bg;opt"
 // usage: <tag>content text</>
 
 // basic tags
