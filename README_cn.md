@@ -18,7 +18,7 @@ golang下的命令行应用，工具库
 - 使用 dep 包管理
 
 ```bash
-dep ensure -add gopkg.in/gookit/cliapp.v1
+dep ensure -add gopkg.in/gookit/cliapp.v1 // 推荐
 // OR
 dep ensure -add github.com/gookit/cliapp
 ```
@@ -26,7 +26,7 @@ dep ensure -add github.com/gookit/cliapp
 - 使用 go get
 
 ```bash
-go get gopkg.in/gookit/cliapp.v1
+go get gopkg.in/gookit/cliapp.v1 // 推荐
 // OR
 go get -u github.com/gookit/cliapp
 ```
@@ -42,7 +42,7 @@ git clone https://github.com/gookit/cliapp
 如下，引入当前包就可以快速的编写cli应用了
 
 ```bash
-import "gopkg.in/gookit/cliapp.v1"
+import "gopkg.in/gookit/cliapp.v1" // 推荐
 // or
 import "github.com/gookit/cliapp"
 ```
@@ -86,7 +86,8 @@ func main() {
 
 ## Godoc
 
-[godoc](https://godoc.org/github.com/gookit/cliapp)
+- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v1)
+- [godoc for github](https://godoc.org/github.com/gookit/cliapp)
 
 ## 使用说明
 
@@ -124,6 +125,8 @@ args is [ag0 ag1]
 ```
 
 ### 显示一个命令的帮助
+
+> by `./cliapp example -h` or `./cliapp example --help`
 
 ```bash
 % ./cliapp example -h                                                

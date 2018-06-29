@@ -18,7 +18,7 @@ Command line application, tool library, written using golang
 - use dep
 
 ```bash
-dep ensure -add gopkg.in/gookit/cliapp.v1
+dep ensure -add gopkg.in/gookit/cliapp.v1 // is recommended
 // OR
 dep ensure -add github.com/gookit/cliapp
 ```
@@ -26,7 +26,7 @@ dep ensure -add github.com/gookit/cliapp
 - go get
 
 ```bash
-go get gopkg.in/gookit/cliapp.v1
+go get gopkg.in/gookit/cliapp.v1 // is recommended
 // OR
 go get -u github.com/gookit/cliapp
 ```
@@ -40,7 +40,7 @@ git clone https://github.com/gookit/cliapp
 ## Quick start
 
 ```bash
-import "gopkg.in/gookit/cliapp.v1"
+import "gopkg.in/gookit/cliapp.v1" // is recommended
 // or
 import "github.com/gookit/cliapp"
 ```
@@ -84,7 +84,8 @@ func main() {
 
 ## Godoc
 
-[godoc](https://godoc.org/github.com/gookit/cliapp)
+- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v1)
+- [godoc for github](https://godoc.org/github.com/gookit/cliapp)
 
 ## Usage
 
@@ -105,23 +106,10 @@ Version: 1.0.3
 
 ### Display app help
 
-```bash
-% ./cliapp                                                            
-This is my cli application
-Usage:
-  ./cliapp [global options...] command [--option ...] [argument ...]
+> by `./cliapp` or `./cliapp -h` or `./cliapp --help`
 
-Options:
-  -h, --help        Display this help information
-  -V, --version     Display this version information
+![app-help](demo/images/app-help.jpg)
 
-Commands:
-  demo         This is a description message for demo(alias: dm)
-  help         Display help information
-
-Use "./cliapp help [command]" for more information about a command
-
-```
 
 ### Run a command
 
@@ -134,6 +122,8 @@ args is [ag0 ag1]
 ```
 
 ### Display command help
+
+> by `./cliapp example -h` or `./cliapp example --help`
 
 ```bash
 % ./cliapp example -h                                                
