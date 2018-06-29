@@ -5,8 +5,6 @@ import (
 	"io"
 	"html/template"
 	"strings"
-	"reflect"
-	"flag"
 	"github.com/golangkit/cliapp/color"
 	"bytes"
 	"fmt"
@@ -30,14 +28,14 @@ var commandsHelp = `{{.Description|raw}} (Version: <info>{{.Version}}</>)
   {$binName} [global options...] <info>{command}</> [--option ...] [argument ...]
 
 <comment>Global Options:</>
-      --verbose     Set error reporting level(quiet 0 - 4 debug)
-      --no-color    Disable color output
-  -h, --help        Display help information
-  -V, --version     Display version information
+      <info>--verbose</>     Set error reporting level(quiet 0 - 4 debug)
+      <info>--no-color</>    Disable color when outputting message
+  <info>-h, --help</>        Display the help information
+  <info>-V, --version</>     Display app version information
 
 <comment>Available Commands:</>{{range .Cs}}{{if .Runnable}}
-  {{.Name | printf "%-12s"}} {{.Description|colored}}{{if .Aliases}} (alias: <cyan>{{.Aliases.String}}</>){{end}}{{end}}{{end}}
-  help         display help information
+  <info>{{.Name | printf "%-12s"}}</> {{.Description|colored}}{{if .Aliases}} (alias: <cyan>{{.Aliases.String}}</>){{end}}{{end}}{{end}}
+  <info>help</>         Display help information
 
 Use "<cyan>{$binName} help {command}</>" for more information about a command
 `
@@ -62,56 +60,20 @@ func showCommandsHelp() {
 	os.Exit(0)
 }
 
-// isZeroValue guesses whether the string represents the zero
-// value for a flag. It is not accurate but in practice works OK.
-// NOTICE: the func is copied from package 'flag', func 'isZeroValue'
-func isZeroValue(fg *flag.Flag, value string) bool {
-	// Build a zero value of the flag's Value type, and see if the
-	// result of calling its String method equals the value passed in.
-	// This works unless the Value type is itself an interface type.
-	typ := reflect.TypeOf(fg.Value)
-	var z reflect.Value
-	if typ.Kind() == reflect.Ptr {
-		z = reflect.New(typ.Elem())
-	} else {
-		z = reflect.Zero(typ)
-	}
-	if value == z.Interface().(flag.Value).String() {
-		return true
-	}
-
-	switch value {
-	case "false", "", "0":
-		return true
-	}
-	return false
-}
-
-// -- string Value
-// NOTICE: the var is copied from package 'flag'
-type stringValue string
-
-func (s *stringValue) Set(val string) error {
-	*s = stringValue(val)
-	return nil
-}
-func (s *stringValue) Get() interface{} { return string(*s) }
-func (s *stringValue) String() string   { return string(*s) }
-
 // RenderStrTpl
 func RenderStrTpl(w io.Writer, text string, data interface{}) {
 	t := template.New("cli")
 
 	// don't escape content
-	t.Funcs(template.FuncMap{"raw": func(s string) interface{} {
+	t.Funcs(template.FuncMap{"raw": func(s string) template.HTML {
 		return template.HTML(s)
 	}})
 
-	t.Funcs(template.FuncMap{"colored": func(s string) interface{} {
+	t.Funcs(template.FuncMap{"colored": func(s string) template.HTML {
 		return template.HTML(color.ReplaceTag(s))
 	}})
 
-	t.Funcs(template.FuncMap{"coloredHtml": func(h template.HTML) interface{} {
+	t.Funcs(template.FuncMap{"coloredHtml": func(h template.HTML) template.HTML {
 		return template.HTML(color.ReplaceTag(string(h)))
 	}})
 

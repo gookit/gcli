@@ -4,7 +4,6 @@ import (
 	"os"
 	"log"
 	"github.com/golangkit/cliapp/color"
-	"strings"
 )
 
 // the cli app instance
@@ -49,7 +48,6 @@ func (app *Application) Init() {
 
 	// init some tpl vars
 	app.vars = map[string]string{
-		"script":  binName,
 		"workDir": workDir,
 		"binName": binName,
 	}
@@ -57,7 +55,7 @@ func (app *Application) Init() {
 
 // Add add a command
 func (app *Application) Add(c *Command) {
-	app.names[c.Name] = 1
+	app.names[c.Name] = len(c.Name)
 	commands[c.Name] = c
 
 	// will call it on input './cliapp command -h'
@@ -67,10 +65,8 @@ func (app *Application) Add(c *Command) {
 		c.ShowHelp(true)
 	}
 
-	// if contains help var "{$cmd}"
-	if strings.Contains(c.Description, "{$cmd}") {
-		c.Description = strings.Replace(c.Description, "{$cmd}", c.Name, -1)
-	}
+	// init
+	c.Init()
 
 	// add aliases for the command
 	app.AddAliases(c.Name, c.Aliases)

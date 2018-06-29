@@ -7,15 +7,20 @@ import (
 
 // AloneRun
 func (c *Command) AloneRun() int {
+	// mark is alone
 	c.alone = true
 
-	// init some tpl vars
-	c.Vars = map[string]string{
-		"workDir": workDir,
-		"binName": binName,
-	}
+	// init
+	c.Init()
 
+	// set help handler
 	c.Flags.Usage = func() {
+		// init some tpl vars
+		c.Vars = map[string]string{
+			"workDir": workDir,
+			"binName": binName,
+		}
+
 		c.ShowHelp(true)
 	}
 

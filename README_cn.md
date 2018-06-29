@@ -283,7 +283,7 @@ func main() {
 	color.Tips("info").Print("tips style text")
 
 	// use info style blocked tips
-	color.BlockTips("info").Print("blocked tips style text")
+	color.LiteTips("info").Print("blocked tips style text")
 }
 ```
 
@@ -345,7 +345,7 @@ color.Tag("info").Println("info style text")
 
 ### 内置的标签
 
-这里列出了内置的标签，基本上涵盖了各种风格和颜色搭配。它们都可用着颜色标签，或者 `color.Tag` `color.Tips` 等的参数
+这里列出了内置的标签，基本上涵盖了各种风格和颜色搭配。它们都可用作颜色标签，或者作为 `color.Tag` `color.Tips` 等的参数
 
 ```go
 // Some internal defined style tags

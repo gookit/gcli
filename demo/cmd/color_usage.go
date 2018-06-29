@@ -47,13 +47,13 @@ func colorUsage(cmd *cliapp.Command, args []string) int {
 	color.Print("<fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
 
 	// set a color tag
-	color.Tag("info").Print("info style\n")
+	color.Tag("info").Println("info style message")
 
-	// use info style tips
-	color.Tips("info").Print("tips style")
+	// tips
+	color.Tips("info").Print("tips style message")
 
-	// use info style blocked tips
-	color.BlockTips("info").Print("blocked tips style")
+	// lite tips
+	color.LiteTips("info").Print("lite tips style message")
 
 	return 0
 }

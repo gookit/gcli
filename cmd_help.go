@@ -5,9 +5,9 @@ import (
 	"os"
 	"github.com/golangkit/cliapp/color"
 	"bytes"
-	"github.com/golangkit/cliapp/utils"
 	"flag"
 	"strings"
+	"reflect"
 )
 
 // help template for a command
@@ -18,7 +18,7 @@ var commandHelp = `{{.Description}}
   {$binName} {{if .Cmd.NotAlone}}{{.Cmd.Name}} {{end}}[--option ...] [argument ...]
 
 <comment>Global Options:</>
-  -h, --help        Display this help information{{if .Options}}
+  <info>-h, --help</>        Display this help information{{if .Options}}
 
 <comment>Options:</>
 {{.Options}}{{end}}{{if .Cmd.ArgList}}
@@ -54,7 +54,7 @@ func (app *Application) showCommandHelp(list []string, quit bool) {
 	cmd.ShowHelp(quit)
 }
 
-// ShowHelp @notice not used
+// ShowHelp show command help info
 func (c *Command) ShowHelp(quit ...bool) {
 	// use buffer receive rendered content
 	var buf bytes.Buffer
@@ -69,7 +69,7 @@ func (c *Command) ShowHelp(quit ...bool) {
 		"Options": color.RenderStr(c.ParseDefaults()),
 
 		// always upper first char
-		"Description": color.RenderStr(utils.UpperFirst(c.Description)),
+		"Description": color.RenderStr(c.Description),
 	})
 
 	c.Vars["cmd"] = c.Name
@@ -130,3 +130,39 @@ func (c *Command) ParseDefaults() string {
 
 	return strings.Join(ss, "\n")
 }
+
+// isZeroValue guesses whether the string represents the zero
+// value for a flag. It is not accurate but in practice works OK.
+// NOTICE: the func is copied from package 'flag', func 'isZeroValue'
+func isZeroValue(fg *flag.Flag, value string) bool {
+	// Build a zero value of the flag's Value type, and see if the
+	// result of calling its String method equals the value passed in.
+	// This works unless the Value type is itself an interface type.
+	typ := reflect.TypeOf(fg.Value)
+	var z reflect.Value
+	if typ.Kind() == reflect.Ptr {
+		z = reflect.New(typ.Elem())
+	} else {
+		z = reflect.Zero(typ)
+	}
+	if value == z.Interface().(flag.Value).String() {
+		return true
+	}
+
+	switch value {
+	case "false", "", "0":
+		return true
+	}
+	return false
+}
+
+// -- string Value
+// NOTICE: the var is copied from package 'flag'
+type stringValue string
+
+func (s *stringValue) Set(val string) error {
+	*s = stringValue(val)
+	return nil
+}
+func (s *stringValue) Get() interface{} { return string(*s) }
+func (s *stringValue) String() string   { return string(*s) }

@@ -59,7 +59,7 @@ func main() {
         Name: "demo",
         Aliases: []string{"dm"},
         // allow color tag and {$cmd} will be replace to 'demo'
-        Description: "this is a description <info>message</> for command", 
+        Description: "this is a description <info>message</> for {$cmd}", 
         Fn: func (cmd *cliapp.Command, args []string) int {
             cliapp.Stdout("hello, in the demo command\n")
             return 0
@@ -275,7 +275,7 @@ func main() {
 	color.Tips("info").Print("tips style text")
 
 	// use info style blocked tips
-	color.BlockTips("info").Print("blocked tips style text")
+	color.LiteTips("info").Print("blocked tips style text")
 }
 ```
 

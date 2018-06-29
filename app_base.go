@@ -28,7 +28,7 @@ type Logo struct {
 
 // GlobalOpts global flags
 type GlobalOpts struct {
-	noColor bool
+	noColor     bool
 	showHelp    bool
 	showVersion bool
 }
@@ -36,9 +36,9 @@ type GlobalOpts struct {
 // Application the cli app definition
 type Application struct {
 	// app name
-	Name        string
+	Name string
 	// app version. like "1.0.1"
-	Version     string
+	Version string
 	// app description
 	Description string
 
@@ -57,7 +57,8 @@ type Application struct {
 	// vars you can add some vars map for render help info
 	vars map[string]string
 
-	// command names {name: 1}
+	// command names. key is name, value is name string length
+	// eg. {"test": 4, "example": 7}
 	names map[string]int // value
 
 	// command aliases map {alias: name}
@@ -151,6 +152,15 @@ func (app *Application) AddVars(vars map[string]string) {
 	for n, v := range vars {
 		app.AddVar(n, v)
 	}
+}
+
+// GetVar get a help var by name
+func (app *Application) GetVar(name string) string {
+	if v, ok := app.vars[name]; ok {
+		return v
+	}
+
+	return ""
 }
 
 // GetVars get all tpl vars

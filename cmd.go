@@ -4,11 +4,12 @@ import (
 	"html/template"
 	"flag"
 	"strings"
+	"github.com/golangkit/cliapp/utils"
 )
 
 // Commander
 type Commander interface {
-	Configure() *Command
+	Init() *Command
 	Execute(app *Application, args []string) int
 	//Fn(cmd *Command, args []string) int
 }
@@ -82,8 +83,17 @@ func (c *Command) Runnable() bool {
 	return c.Fn != nil
 }
 
-// Configure
-func (c *Command) Configure() *Command {
+// Init
+func (c *Command) Init() *Command {
+	if len(c.Description) > 0 {
+		c.Description = utils.UpperFirst(c.Description)
+
+		// if contains help var "{$cmd}"
+		if strings.Contains(c.Description, "{$cmd}") {
+			c.Description = strings.Replace(c.Description, "{$cmd}", c.Name, -1)
+		}
+	}
+
 	return c
 }
 
@@ -107,11 +117,6 @@ func (c *Command) Arg(i int) string {
 	return c.Flags.Arg(i)
 }
 
-// AliasesStr
-func (c *Command) AliasesStr() string {
-	return c.Aliases.String()
-}
-
 // AddVars add multi tpl vars
 func (c *Command) AddVars(vars map[string]string) {
 	// first init
@@ -123,4 +128,13 @@ func (c *Command) AddVars(vars map[string]string) {
 	for n, v := range vars {
 		c.Vars[n] = v
 	}
+}
+
+// GetVar get a help var by name
+func (c *Command) GetVar(name string) string {
+	if v, ok := c.Vars[name]; ok {
+		return v
+	}
+
+	return ""
 }
