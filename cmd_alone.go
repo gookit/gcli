@@ -10,7 +10,7 @@ func (c *Command) AloneRun() int {
 	// mark is alone
 	c.alone = true
 
-	//args := parseGlobalOpts()
+	// args := parseGlobalOpts()
 
 	// init
 	c.Init()

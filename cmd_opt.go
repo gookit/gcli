@@ -2,7 +2,7 @@ package cliapp
 
 import (
 	"flag"
-	"github.com/golangkit/cliapp/color"
+	"github.com/gookit/cliapp/color"
 )
 
 // IntOpt set a int option

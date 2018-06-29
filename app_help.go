@@ -5,10 +5,10 @@ import (
 	"io"
 	"html/template"
 	"strings"
-	"github.com/golangkit/cliapp/color"
+	"github.com/gookit/cliapp/color"
 	"bytes"
 	"fmt"
-	"github.com/golangkit/cliapp/utils"
+	"github.com/gookit/cliapp/utils"
 )
 
 // showVersionInfo display version info
@@ -47,7 +47,7 @@ func showCommandsHelp() {
 
 	commandsHelp = color.ReplaceTag(commandsHelp)
 
-	//RenderStrTpl(os.Print, commandsHelp, map[string]interface{}{
+	// RenderStrTpl(os.Print, commandsHelp, map[string]interface{}{
 	RenderStrTpl(&buf, commandsHelp, map[string]interface{}{
 		"Cs":      commands,
 		"Version": app.Version,
@@ -69,6 +69,7 @@ func RenderStrTpl(w io.Writer, text string, data interface{}) {
 		return template.HTML(s)
 	}})
 
+	// upper first char
 	t.Funcs(template.FuncMap{"upFirst": func(s string) template.HTML {
 		return template.HTML(utils.UpperFirst(s))
 	}})

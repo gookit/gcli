@@ -3,7 +3,7 @@ package cliapp
 import (
 	"os"
 	"log"
-	"github.com/golangkit/cliapp/color"
+	"github.com/gookit/cliapp/color"
 )
 
 // the cli app instance
@@ -11,7 +11,7 @@ var app *Application
 
 // commands collect all command
 var commands map[string]*Command
-//var commanders  map[string]Commander
+// var commanders  map[string]Commander
 
 // init
 func init() {
@@ -165,12 +165,12 @@ func (app *Application) prepareRun() (string, []string) {
 }
 
 // Add add a command
-//func (app *Application) AddCommander(c Commander) {
-//	// run command configure
-//	cmd := c.Configure()
+// func (app *Application) AddCommander(c Commander) {
+// 	// run command configure
+// 	cmd := c.Configure()
 //
-//	app.Add(cmd)
-//}
+// 	app.Add(cmd)
+// }
 
 // Command get command name
 func (app *Application) Command() string {

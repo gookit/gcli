@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"flag"
-	"github.com/golangkit/cliapp/color"
+	"github.com/gookit/cliapp/color"
 )
 
 // constants for error level
@@ -126,7 +126,7 @@ func parseGlobalOpts() []string {
 
 	flag.Parse()
 
-	//fmt.Printf("verb %v, global opts: %+v\n", Verbose, gOpts)
+	// fmt.Printf("verb %v, global opts: %+v\n", Verbose, gOpts)
 
 	return flag.Args()
 }

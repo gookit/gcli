@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/golangkit/cliapp"
+	"github.com/gookit/cliapp"
 	"fmt"
 )
 
 var opts = Opts{}
+
 type Opts struct {
 	fontName   string
 	visualMode bool

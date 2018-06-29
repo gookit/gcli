@@ -1,12 +1,13 @@
 package cmd
 
 import (
-	"github.com/golangkit/cliapp"
-	"github.com/golangkit/cliapp/color"
+	"github.com/gookit/cliapp"
+	"github.com/gookit/cliapp/color"
 	"fmt"
 )
 
 var colorOpts = ColorOpts{}
+
 type ColorOpts struct {
 	id  int
 	c   string
@@ -29,7 +30,7 @@ func ColorCommand() *cliapp.Command {
 
 	cmd.IntOpt(&colorOpts.id, "id", "", 2, "the id option")
 	cmd.StrOpt(&colorOpts.c, "c", "", "value", "the config option")
-	cmd.StrOpt(&colorOpts.dir, "dir", "",  "", "the dir option")
+	cmd.StrOpt(&colorOpts.dir, "dir", "", "", "the dir option")
 
 	return &cmd
 }
@@ -66,7 +67,7 @@ func colorUsage(cmd *cliapp.Command, args []string) int {
 		i++
 		color.Tag(tag).Print(tag)
 
-		if i % 5 == 0 {
+		if i%5 == 0 {
 			fmt.Print("\n")
 		} else {
 			fmt.Print(" ")

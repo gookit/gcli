@@ -3,7 +3,7 @@ package interact
 import (
 	"bufio"
 	"os"
-	"github.com/golangkit/cliapp/color"
+	"github.com/gookit/cliapp/color"
 	"strings"
 )
 
@@ -26,4 +26,3 @@ func ReadFirst(question string) string {
 	answer := ReadLine(question)
 	return string(answer[0])
 }
-

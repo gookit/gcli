@@ -1,15 +1,16 @@
 package cmd
 
 import (
-	cli "github.com/golangkit/cliapp"
+	cli "github.com/gookit/cliapp"
 	"fmt"
 	"log"
 	"strings"
-	"github.com/golangkit/cliapp/color"
-	"github.com/golangkit/cliapp/utils"
+	"github.com/gookit/cliapp/color"
+	"github.com/gookit/cliapp/utils"
 )
 
 var gitOpts = GitOpts{}
+
 type GitOpts struct {
 	id  int
 	c   string
@@ -32,9 +33,9 @@ func GitCommand() *cli.Command {
 		Fn: gitExecute,
 	}
 
-	cmd.IntOpt(&gitOpts.id, "id",  "", 0, "the id option")
-	cmd.StrOpt(&gitOpts.c, "c",  "","", "the config option")
-	cmd.StrOpt(&gitOpts.dir, "dir", "d", "","the dir option")
+	cmd.IntOpt(&gitOpts.id, "id", "", 0, "the id option")
+	cmd.StrOpt(&gitOpts.c, "c", "", "", "the config option")
+	cmd.StrOpt(&gitOpts.dir, "dir", "d", "", "the dir option")
 
 	return &cmd
 }

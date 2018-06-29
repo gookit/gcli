@@ -3,12 +3,12 @@ package cliapp
 import (
 	"fmt"
 	"os"
-	"github.com/golangkit/cliapp/color"
+	"github.com/gookit/cliapp/color"
 	"bytes"
 	"flag"
 	"strings"
 	"reflect"
-	"github.com/golangkit/cliapp/utils"
+	"github.com/gookit/cliapp/utils"
 )
 
 // help template for a command
@@ -65,7 +65,7 @@ func (c *Command) ShowHelp(quit ...bool) {
 	commandHelp = color.ReplaceTag(commandHelp)
 
 	// render and output help info
-	//RenderStrTpl(os.Stdout, commandHelp, map[string]interface{}{
+	// RenderStrTpl(os.Stdout, commandHelp, map[string]interface{}{
 	// render but not output
 	RenderStrTpl(&buf, commandHelp, map[string]interface{}{
 		"Cmd":     c,

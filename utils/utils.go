@@ -9,10 +9,6 @@ import (
 	"strings"
 )
 
-func GetScreenSize() (w int, h int) {
-	return
-}
-
 // isMSys
 func isMSys() bool {
 	if len(os.Getenv("MSYSTEM")) > 0 { // msys 环境
@@ -22,8 +18,7 @@ func isMSys() bool {
 	return false
 }
 
-// IsWin
-// linux windows darwin
+// IsWin linux windows darwin
 func IsWin() bool {
 	return runtime.GOOS == "windows"
 }
@@ -80,7 +75,8 @@ func FindSimilar(input string, samples []string) {
 }
 
 // GetKeyMaxLen
-// usage: utils.GetKeyMaxLen(map[string]string{"k1":"v1", "key2": "v2"}, 0)
+// usage:
+// utils.GetKeyMaxLen(map[string]string{"k1":"v1", "key2": "v2"}, 0)
 func GetKeyMaxLen(kv map[string]interface{}, defLen int) (max int) {
 	max = defLen
 
@@ -92,6 +88,10 @@ func GetKeyMaxLen(kv map[string]interface{}, defLen int) (max int) {
 		}
 	}
 
+	return
+}
+
+func GetScreenSize() (w int, h int) {
 	return
 }
 
@@ -111,7 +111,7 @@ func LowerFirst(s string) string {
 	return s
 }
 
-// UpperFirst
+// UpperFirst upper first char
 func UpperFirst(s string) string {
 	if len(s) == 0 {
 		return s

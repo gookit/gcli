@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	cli "github.com/golangkit/cliapp"
+	cli "github.com/gookit/cliapp"
 	"fmt"
 )
 
@@ -19,6 +19,7 @@ func (ns *Names) Set(value string) error {
 
 // options for the command
 var exampleOpts = ExampleOpts{}
+
 type ExampleOpts struct {
 	id    int
 	c     string

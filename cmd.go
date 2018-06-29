@@ -4,14 +4,14 @@ import (
 	"html/template"
 	"flag"
 	"strings"
-	"github.com/golangkit/cliapp/utils"
+	"github.com/gookit/cliapp/utils"
 )
 
 // Commander
 type Commander interface {
 	Init() *Command
 	Execute(app *Application, args []string) int
-	//Fn(cmd *Command, args []string) int
+	// Fn(cmd *Command, args []string) int
 }
 
 // CmdExecutor

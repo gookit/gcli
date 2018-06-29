@@ -18,23 +18,23 @@ golang下的命令行应用，工具库
 - 使用 dep 包管理
 
 ```bash
-dep ensure -add gopkg.in/golangkit/cliapp.v1
+dep ensure -add gopkg.in/gookit/cliapp.v1
 // OR
-dep ensure -add github.com/golangkit/cliapp
+dep ensure -add github.com/gookit/cliapp
 ```
 
 - 使用 go get
 
 ```bash
-go get gopkg.in/golangkit/cliapp.v1
+go get gopkg.in/gookit/cliapp.v1
 // OR
-go get -u github.com/golangkit/cliapp
+go get -u github.com/gookit/cliapp
 ```
 
 - git 克隆
 
 ```bash
-git clone https://github.com/golangkit/cliapp
+git clone https://github.com/gookit/cliapp
 ```
 
 ## 快速开始
@@ -42,9 +42,9 @@ git clone https://github.com/golangkit/cliapp
 如下，引入当前包就可以快速的编写cli应用了
 
 ```bash
-import "gopkg.in/golangkit/cliapp.v1"
+import "gopkg.in/gookit/cliapp.v1"
 // or
-import "github.com/golangkit/cliapp"
+import "github.com/gookit/cliapp"
 ```
 
 ```go 
@@ -52,8 +52,8 @@ package main
 
 import (
     "runtime"
-    "github.com/golangkit/cliapp"
-    "github.com/golangkit/cliapp/demo/cmd"
+    "github.com/gookit/cliapp"
+    "github.com/gookit/cliapp/demo/cmd"
 )
 
 // for test run: go build ./demo/cliapp.go && ./cliapp
@@ -86,7 +86,7 @@ func main() {
 
 ## Godoc
 
-[godoc](https://godoc.org/github.com/golangkit/cliapp)
+[godoc](https://godoc.org/github.com/gookit/cliapp)
 
 ## 使用说明
 
@@ -177,7 +177,7 @@ app.Add(&cliapp.Command{
 package cmd
 
 import (
-	cli "github.com/golangkit/cliapp"
+	cli "github.com/gookit/cliapp"
 	"fmt"
 )
 
@@ -271,7 +271,7 @@ go build ./demo/cliapp.go && ./cliapp example -h
 package main
 
 import (
-    "github.com/golangkit/cliapp/color"
+    "github.com/gookit/cliapp/color"
  )
 
 func main() {
