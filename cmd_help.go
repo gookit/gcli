@@ -8,6 +8,7 @@ import (
 	"flag"
 	"strings"
 	"reflect"
+	"github.com/golangkit/cliapp/utils"
 )
 
 // help template for a command
@@ -15,15 +16,18 @@ var commandHelp = `{{.Description}}
 {{if .Cmd.NotAlone}}
 <comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.Aliases.String}}</>){{end}}{{end}}
 <comment>Usage:</> 
-  {$binName} {{if .Cmd.NotAlone}}{{.Cmd.Name}} {{end}}[--option ...] [argument ...]
+  {$binName} [global options...] {{if .Cmd.NotAlone}}{{.Cmd.Name}} {{end}}[--option ...] [argument ...]
 
 <comment>Global Options:</>
+      <info>--verbose</>     Set error reporting level(quiet 0 - 4 debug)
+      <info>--no-color</>    Disable color when outputting message
   <info>-h, --help</>        Display this help information{{if .Options}}
 
 <comment>Options:</>
 {{.Options}}{{end}}{{if .Cmd.ArgList}}
+
 <comment>Arguments:</>{{range $k,$v := .Cmd.ArgList}}
-  {{$k | printf "%-12s"}}{{$v}}{{end}}
+  {{$k | printf "%-12s"}}{{$v|upFirst}}{{end}}
 {{end}} {{if .Cmd.Examples}}
 <comment>Examples:</>
   {{.Cmd.Examples|coloredHtml}}{{end}}{{if .Cmd.Help}}
@@ -93,16 +97,27 @@ func (c *Command) ParseDefaults() string {
 	c.Flags.VisitAll(func(fg *flag.Flag) {
 		var s string
 
-		// is short option
-		if len(fg.Name) == 1 {
-			s = fmt.Sprintf("  <info>-%s</>", fg.Name) // Two spaces before -; see next two comments.
+		// is long option
+		if len(fg.Name) > 1 {
+			// find shortcut name
+			if sn := c.getShortName(fg.Name); sn != "" {
+				s = fmt.Sprintf("  <info>-%s, --%s</>", sn, fg.Name)
+			} else {
+				s = fmt.Sprintf("      <info>--%s</>", fg.Name)
+			}
 		} else {
-			s = fmt.Sprintf("  <info>--%s</>", fg.Name)
+			// is short option, skip it
+			if c.isShortcut(fg.Name) {
+				return
+			}
+
+			s = fmt.Sprintf("  <info>-%s</>", fg.Name)
 		}
 
 		name, usage := flag.UnquoteUsage(fg)
+		// option value type
 		if len(name) > 0 {
-			s += " " + name
+			s += fmt.Sprintf(" <magenta>%s</>", name)
 		}
 		// Boolean flags of one ASCII letter are so common we
 		// treat them specially, putting their usage on the same line.
@@ -113,7 +128,7 @@ func (c *Command) ParseDefaults() string {
 			// for both 4- and 8-space tab stops.
 			s += "\n    \t"
 		}
-		s += strings.Replace(usage, "\n", "\n    \t", -1)
+		s += strings.Replace(utils.UpperFirst(usage), "\n", "\n    \t", -1)
 
 		if !isZeroValue(fg, fg.DefValue) {
 			if _, ok := fg.Value.(*stringValue); ok {

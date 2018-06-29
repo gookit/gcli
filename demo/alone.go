@@ -5,14 +5,13 @@ import (
 	"fmt"
 )
 
+var opts = Opts{}
 type Opts struct {
 	fontName   string
 	visualMode bool
 	list       bool
 	sample     bool
 }
-
-var opts = Opts{}
 
 // test run: go build ./demo/alone.go && ./alone -h
 func main() {

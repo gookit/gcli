@@ -69,6 +69,10 @@ func RenderStrTpl(w io.Writer, text string, data interface{}) {
 		return template.HTML(s)
 	}})
 
+	t.Funcs(template.FuncMap{"upFirst": func(s string) template.HTML {
+		return template.HTML(utils.UpperFirst(s))
+	}})
+
 	t.Funcs(template.FuncMap{"colored": func(s string) template.HTML {
 		return template.HTML(color.ReplaceTag(s))
 	}})

@@ -249,6 +249,14 @@ func exampleExecute(cmd *cli.Command, args []string) int {
 }
 ```
 
+- display the command help：
+
+```bash
+go build ./demo/cliapp.go && ./cliapp example -h
+```
+
+![cmd-help](demo/cmd-help.jpg)
+
 ## Color usage
 
 ```go

@@ -120,8 +120,19 @@ func (app *Application) prepareRun() (string, []string) {
 	// don't display date on print log
 	log.SetFlags(0)
 
-	// no command input
-	args := app.parseGlobalOpts()
+	args := parseGlobalOpts()
+
+	if gOpts.showHelp {
+		showCommandsHelp()
+	}
+
+	if gOpts.showVersion {
+		app.showVersionInfo()
+	}
+
+	if gOpts.noColor {
+		color.Enable = false
+	}
 
 	// check args
 	if len(args) < 1 {

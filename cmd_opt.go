@@ -85,12 +85,29 @@ func (c *Command) addShortcut(name string, short string) {
 	c.shortcuts[short] = name
 }
 
-// addShortcut add a shortcut name for a option name
+// isShortOpt alias of the `isShortcut`
+func (c *Command) isShortOpt(short string) bool {
+	return c.isShortcut(short)
+}
+
+// isShortcut check it is a shortcut name
 func (c *Command) isShortcut(short string) bool {
 	if len(short) != 1 {
 		return false
 	}
+
 	_, ok := c.shortcuts[short]
 
 	return ok
+}
+
+// getShortName get a shortcut name by option name
+func (c *Command) getShortName(name string) string {
+	for s, n := range c.shortcuts {
+		if n == name {
+			return s
+		}
+	}
+
+	return ""
 }

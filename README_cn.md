@@ -255,6 +255,14 @@ func exampleExecute(cmd *cli.Command, args []string) int {
 }
 ```
 
+- 查看此命令的帮助信息：
+
+```bash
+go build ./demo/cliapp.go && ./cliapp example -h
+```
+
+![cmd-help](demo/cmd-help.jpg)
+
 ## 使用颜色输出
 
 ## 如何使用

@@ -10,6 +10,8 @@ func (c *Command) AloneRun() int {
 	// mark is alone
 	c.alone = true
 
+	//args := parseGlobalOpts()
+
 	// init
 	c.Init()
 

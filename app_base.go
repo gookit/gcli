@@ -113,9 +113,10 @@ func (app *Application) DefaultCmd(name string) {
 }
 
 // parseGlobalOpts parse global options
-func (app *Application) parseGlobalOpts() []string {
+func parseGlobalOpts() []string {
 	// Some global options
 	flag.Usage = showCommandsHelp
+
 	flag.IntVar(&Verbose, "verbose", VerbError, "")
 	flag.BoolVar(&gOpts.showHelp, "h", false, "")
 	flag.BoolVar(&gOpts.showHelp, "help", false, "")
@@ -124,18 +125,6 @@ func (app *Application) parseGlobalOpts() []string {
 	flag.BoolVar(&gOpts.noColor, "no-color", false, "")
 
 	flag.Parse()
-
-	if gOpts.showHelp {
-		showCommandsHelp()
-	}
-
-	if gOpts.showVersion {
-		app.showVersionInfo()
-	}
-
-	if gOpts.noColor {
-		color.Enable = false
-	}
 
 	//fmt.Printf("verb %v, global opts: %+v\n", Verbose, gOpts)
 
