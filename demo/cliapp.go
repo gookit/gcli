@@ -15,6 +15,7 @@ func main() {
 	app.Description = "this is my cli application"
 
 	app.SetVerbose(cliapp.VerbDebug)
+	// app.DefaultCmd("exampl")
 
 	app.Add(cmd.ExampleCommand())
 	app.Add(cmd.GitCommand())

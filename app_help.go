@@ -14,12 +14,13 @@ import (
 )
 
 // showVersionInfo display version info
-func showVersionInfo() {
+func (app *Application) showVersionInfo() {
 	color.Printf(
 		"%s\n\nVersion: <suc>%s</>\n",
 		utils.UpperFirst(app.Description),
 		app.Version,
 	)
+
 	os.Exit(0)
 }
 
@@ -36,7 +37,7 @@ var commandsHelp = `{{.Description|raw}} (Version: <info>{{.Version}}</>)
   {{.Name | printf "%-12s"}} {{.Description|colored}}{{if .Aliases}} (alias: <cyan>{{.Aliases.String}}</>){{end}}{{end}}{{end}}
   help         display help information
 
-Use "<cyan>{$binName} help [command]</>" for more information about a command
+Use "<cyan>{$binName} help {command}</>" for more information about a command
 `
 
 // showCommandsHelp commands list

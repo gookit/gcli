@@ -6,17 +6,13 @@ import (
 	"os"
 )
 
-// some constants
+// constants for error level
 const (
 	VerbQuiet = iota // don't report anything
 	VerbError        // reporting on error
 	VerbWarn
 	VerbInfo
 	VerbDebug
-
-	// command type
-	//TypeCommand = iota
-	//TypeCommander
 )
 
 // HelpVar allow var replace in help info. like "{$binName}" "{$cmd}"
@@ -68,6 +64,11 @@ var workDir, _ = os.Getwd()
 // error level
 var Verbose = VerbError
 
+// Exit
+func Exit(code int) {
+	os.Exit(code)
+}
+
 // WorkDir get work dir
 func WorkDir() string {
 	return workDir
@@ -91,6 +92,11 @@ func (app *Application) SetDebug() {
 // SetVerbose
 func (app *Application) SetVerbose(verbose int) {
 	Verbose = verbose
+}
+
+// DefaultCmd set default command name
+func (app *Application) DefaultCmd(name string) {
+	app.defaultCmd = name
 }
 
 // AddVar get command name

@@ -88,7 +88,7 @@ func (app *Application) Add(c *Command) {
 
 // Run running app
 func (app *Application) Run() {
-	rawName, args := prepareRun()
+	rawName, args := app.prepareRun()
 	name := app.GetNameByAlias(rawName)
 	logf("input command name is: %s", name)
 
@@ -129,11 +129,10 @@ func (app *Application) SubRun(name string, args []string) int {
 	return cmd.Execute(app, args)
 }
 
-// prepareRun
-func prepareRun() (string, []string) {
+// prepare to running
+func (app *Application) prepareRun() (string, []string) {
+	// Some global options
 	flag.Usage = showCommandsHelp
-
-	// some global options
 	flag.BoolVar(&gOpts.showHelp, "h", false, "")
 	flag.BoolVar(&gOpts.showHelp, "help", false, "")
 	flag.BoolVar(&gOpts.showVersion, "V", false, "")
@@ -148,13 +147,24 @@ func prepareRun() (string, []string) {
 	}
 
 	if gOpts.showVersion {
-		showVersionInfo()
+		app.showVersionInfo()
 	}
 
 	// no command input
 	args := flag.Args()
 	if len(args) < 1 {
-		showCommandsHelp()
+		defCmd := app.defaultCmd
+
+		if len(defCmd) == 0 {
+			showCommandsHelp()
+		}
+
+		if !app.IsCommand(defCmd) {
+			color.Tips("error").Printf("The default command '%s' is not exists", defCmd)
+			showCommandsHelp()
+		}
+
+		args = []string{defCmd}
 	}
 
 	// is help command
@@ -182,11 +192,6 @@ func prepareRun() (string, []string) {
 // Command get command name
 func (app *Application) Command() string {
 	return app.command
-}
-
-// Exit
-func Exit(code int) {
-	os.Exit(code)
 }
 
 // IsCommand
