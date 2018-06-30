@@ -6,13 +6,11 @@ import (
 	"fmt"
 )
 
-var colorOpts = ColorOpts{}
-
-type ColorOpts struct {
+var colorOpts = struct {
 	id  int
 	c   string
 	dir string
-}
+}{}
 
 // ColorCommand command definition
 func ColorCommand() *cliapp.Command {
@@ -41,6 +39,8 @@ func colorUsage(cmd *cliapp.Command, args []string) int {
 
 	// custom color
 	color.New(color.FgWhite, color.BgBlack).Println("custom color style")
+	// can also:
+	color.Style{color.FgCyan, color.OpBold}.Println("custom color style")
 
 	// use defined color tag
 	color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>\n")
@@ -76,4 +76,8 @@ func colorUsage(cmd *cliapp.Command, args []string) int {
 	fmt.Print("\n")
 
 	return 0
+}
+
+func byte8color()  {
+
 }

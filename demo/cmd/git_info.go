@@ -46,7 +46,7 @@ func gitExecute(cmd *cli.Command, args []string) int {
 	info := GitInfoData{}
 
 	// latest commit id by: git log --pretty=%H -n1 HEAD
-	cid, err := utils.ExecOsCommand("git log --pretty=%H -n1 HEAD")
+	cid, err := utils.ExecCommand("git log --pretty=%H -n1 HEAD")
 	if err != nil {
 		log.Fatal(err)
 		return -2
@@ -57,7 +57,7 @@ func gitExecute(cmd *cli.Command, args []string) int {
 	info.Version = cid
 
 	// latest commit date by: git log -n1 --pretty=%ci HEAD
-	cDate, err := utils.ExecOsCommand("git log -n1 --pretty=%ci HEAD")
+	cDate, err := utils.ExecCommand("git log -n1 --pretty=%ci HEAD")
 	if err != nil {
 		log.Fatal(err)
 		return -2
@@ -68,10 +68,10 @@ func gitExecute(cmd *cli.Command, args []string) int {
 	fmt.Printf("commit date: %s\n", cDate)
 
 	// get tag: git describe --tags --exact-match HEAD
-	tag, err := utils.ExecOsCommand("git describe --tags --exact-match HEAD")
+	tag, err := utils.ExecCommand("git describe --tags --exact-match HEAD")
 	if err != nil {
 		// get branch: git branch -a | grep "*"
-		br, err := utils.ExecOsCommand(`git branch -a | grep "*"`)
+		br, err := utils.ExecCommand(`git branch -a | grep "*"`)
 		if err != nil {
 			log.Fatal(err)
 			return -2

@@ -1,51 +1,14 @@
 package utils
 
 import (
-	"io"
-	"os"
 	"os/exec"
 	"bytes"
-	"runtime"
-	"strings"
+	"encoding/json"
 )
 
-// isMSys
-func isMSys() bool {
-	if len(os.Getenv("MSYSTEM")) > 0 { // msys 环境
-		return true
-	}
-
-	return false
-}
-
-// IsWin linux windows darwin
-func IsWin() bool {
-	return runtime.GOOS == "windows"
-}
-
-// IsMac
-func IsMac() bool {
-	return runtime.GOOS == "darwin"
-}
-
-// IsLinux
-func IsLinux() bool {
-	return runtime.GOOS == "linux"
-}
-
-// 判断 w 是否为 stderr、stdout、stdin 三者之一
-func IsConsole(out io.Writer) bool {
-	o, ok := out.(*os.File)
-	if !ok {
-		return false
-	}
-
-	return o == os.Stdout || o == os.Stderr || o == os.Stdin
-}
-
-// ExecOsCommand
+// ExecCommand
 // cmdStr eg. "ls -al"
-func ExecOsCommand(cmdStr string, shells ...string) (string, error) {
+func ExecCommand(cmdStr string, shells ...string) (string, error) {
 	shell := "/bin/bash"
 
 	if len(shells) > 0 {
@@ -69,11 +32,6 @@ func ExecOsCommand(cmdStr string, shells ...string) (string, error) {
 	return out.String(), nil
 }
 
-// FindSimilar
-func FindSimilar(input string, samples []string) {
-
-}
-
 // GetKeyMaxLen
 // usage:
 // utils.GetKeyMaxLen(map[string]string{"k1":"v1", "key2": "v2"}, 0)
@@ -91,38 +49,14 @@ func GetKeyMaxLen(kv map[string]interface{}, defLen int) (max int) {
 	return
 }
 
+// GetScreenSize
 func GetScreenSize() (w int, h int) {
 	return
 }
 
-// LowerFirst
-func LowerFirst(s string) string {
-	if len(s) == 0 {
-		return s
-	}
+// PrettyJson get pretty Json string
+func PrettyJson(v interface{}) (string, error) {
+	out, err := json.MarshalIndent(v, "", "    ")
 
-	f := s[0]
-	isUpper := f >= 'A' && f <= 'Z'
-
-	if isUpper {
-		return strings.ToLower(string(f)) + string(s[1:])
-	}
-
-	return s
-}
-
-// UpperFirst upper first char
-func UpperFirst(s string) string {
-	if len(s) == 0 {
-		return s
-	}
-
-	f := s[0]
-	isLower := f >= 'a' && f <= 'z'
-
-	if isLower {
-		return strings.ToUpper(string(f)) + string(s[1:])
-	}
-
-	return s
+	return string(out), err
 }

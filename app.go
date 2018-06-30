@@ -4,6 +4,8 @@ import (
 	"os"
 	"log"
 	"github.com/gookit/cliapp/color"
+	"github.com/gookit/cliapp/utils"
+	"strings"
 )
 
 // the cli app instance
@@ -16,6 +18,11 @@ var commands map[string]*Command
 // init
 func init() {
 	commands = make(map[string]*Command)
+
+	// binName will contains work dir path on windows
+	if utils.IsWin() {
+		binName = strings.Replace(binName, workDir + "\\", "", 1)
+	}
 }
 
 // NewApp create new app

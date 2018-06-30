@@ -194,14 +194,13 @@ func (ns *Names) Set(value string) error {
 }
 
 // options for the command
-var exampleOpts = ExampleOpts{}
-type ExampleOpts struct {
+var exampleOpts = struct {
 	id  int
 	c   string
 	dir string
 	opt string
 	names Names
-}
+}{}
 
 // ExampleCommand command definition
 func ExampleCommand() *cli.Command {
@@ -279,6 +278,9 @@ func main() {
 	// custom color
 	color.New(color.FgWhite, color.BgBlack).Println("custom color style")
 
+	// can also:
+	color.Style{color.FgCyan, color.OpBold}.Println("custom color style")
+	
 	// use style tag
 	color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>\n")
 
@@ -392,6 +394,7 @@ color.Tag("info").Println("info style text")
 - `issue9/term` https://github.com/issue9/term
 - `beego/bee` https://github.com/beego/bee
 - `inhere/console` https://github/inhere/php-console
+- [ANSI escape code](https://en.wikipedia.org/wiki/ANSI_escape_code)
 
 ## License
 

@@ -197,14 +197,13 @@ func (ns *Names) Set(value string) error {
 }
 
 // options for the command
-var exampleOpts = ExampleOpts{}
-type ExampleOpts struct {
+var exampleOpts = struct {
 	id  int
 	c   string
 	dir string
 	opt string
 	names Names
-}
+}{}
 
 // ExampleCommand command definition
 func ExampleCommand() *cli.Command {
@@ -284,6 +283,9 @@ func main() {
 	// custom color
 	color.New(color.FgWhite, color.BgBlack).Println("custom color style")
 
+	// can also:
+	color.Style{color.FgCyan, color.OpBold}.Println("custom color style")
+	
 	// use style tag
 	color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>\n")
 
@@ -309,6 +311,9 @@ color.BgRed.Printf("Simple to use %s\n", "color")
 // 完全自定义 前景色 背景色 选项
 style := color.New(color.FgWhite, color.BgBlack, color.OpBold)
 style.Println("custom color style")
+
+// can also:
+color.Style{color.FgCyan, color.OpBold}.Println("custom color style")
 ```
 
 ```go
@@ -427,6 +432,9 @@ color.Tag("info").Println("info style text")
 - `issue9/term` https://github.com/issue9/term
 - `beego/bee` https://github.com/beego/bee
 - `inhere/console` https://github/inhere/php-console
+- [ANSI转义序列](https://zh.wikipedia.org/wiki/ANSI转义序列)
+- [Standard ANSI color map](https://conemu.github.io/en/AnsiEscapeCodes.html#Standard_ANSI_color_map)
+- go package: `golang.org/x/crypto/ssh/terminal`
 
 ## License
 

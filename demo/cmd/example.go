@@ -18,15 +18,13 @@ func (ns *Names) Set(value string) error {
 }
 
 // options for the command
-var exampleOpts = ExampleOpts{}
-
-type ExampleOpts struct {
+var exampleOpts = struct {
 	id    int
 	c     string
 	dir   string
 	opt   string
 	names Names
-}
+}{}
 
 // ExampleCommand command definition
 func ExampleCommand() *cli.Command {

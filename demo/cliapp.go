@@ -18,6 +18,7 @@ func main() {
 	// app.DefaultCmd("exampl")
 
 	app.Add(cmd.ExampleCommand())
+	app.Add(cmd.EnvInfoCommand())
 	app.Add(cmd.GitCommand())
 	app.Add(cmd.ColorCommand())
 	app.Add(&cliapp.Command{
