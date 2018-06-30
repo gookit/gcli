@@ -43,6 +43,8 @@ func IsMSys() bool {
 }
 
 // IsSupportColor check console is support color.
+// supported: linux, mac, or windows's ConEmu, Cmder, putty, git-bash.exe
+// not support: windows cmd, powerShell
 func IsSupportColor() bool {
 	// "TERM=xterm"  support color
 	// "TERM=xterm-vt220" support color
