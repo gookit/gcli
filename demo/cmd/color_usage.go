@@ -38,7 +38,7 @@ func colorUsage(cmd *cliapp.Command, args []string) int {
 	color.FgCyan.Printf("Simple to use %s\n", "color")
 
 	// custom color
-	color.New(color.FgWhite, color.BgBlack).Println("custom color style")
+	color.New(color.FgMagenta, color.BgBlack).Println("custom color style")
 	// can also:
 	color.Style{color.FgCyan, color.OpBold}.Println("custom color style")
 

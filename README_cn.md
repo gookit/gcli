@@ -253,11 +253,11 @@ func exampleExecute(cmd *cli.Command, args []string) int {
 
 - 查看此命令的帮助信息：
 
-> 漂亮的帮助信息就已经自动生成并展示出来了
-
 ```bash
 go build ./demo/cliapp.go && ./cliapp example -h
 ```
+
+> 漂亮的帮助信息就已经自动生成并展示出来了
 
 ![cmd-help](demo/images/cmd-help.jpg)
 

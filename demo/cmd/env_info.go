@@ -10,15 +10,13 @@ import (
 )
 
 // options for the command
-var eiOpts = defEiOpts{}
-
-type defEiOpts struct {
+var eiOpts =  struct {
 	id    int
 	c     string
 	dir   string
 	opt   string
 	names Names
-}
+}{}
 
 // EnvInfoCommand
 func EnvInfoCommand() *cli.Command {

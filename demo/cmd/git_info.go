@@ -9,13 +9,11 @@ import (
 	"github.com/gookit/cliapp/utils"
 )
 
-var gitOpts = GitOpts{}
-
-type GitOpts struct {
+var gitOpts = struct {
 	id  int
 	c   string
 	dir string
-}
+}{}
 
 type GitInfoData struct {
 	Tag       string `json:"tag" description:"get tag name"`
