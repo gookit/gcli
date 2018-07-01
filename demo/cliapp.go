@@ -4,6 +4,7 @@ import (
 	"runtime"
 	"github.com/gookit/cliapp"
 	"github.com/gookit/cliapp/demo/cmd"
+	"github.com/gookit/cliapp/internal"
 )
 
 // for test run: go build ./demo/cliapp.go && ./cliapp
@@ -31,7 +32,7 @@ func main() {
 		},
 	})
 
-	// app.AddCommander(&cmd.DemoCommand{})
+	app.Add(internal.GenShAutoComplete())
 	// fmt.Printf("%+v\n", cliapp.CommandNames())
 	app.Run()
 }

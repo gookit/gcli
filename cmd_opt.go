@@ -111,3 +111,21 @@ func (c *Command) getShortName(name string) string {
 
 	return ""
 }
+
+// Option is config info for a option
+// usage:
+// cmd.AddOpt(Option{
+// 	Name: "name"
+//	Short: "n"
+// 	DType: "string"
+// })
+// cmd.Flags.String()
+type Option struct {
+	Name string
+	Short string
+	DType string // int, string, bool, value
+
+	Required bool
+	DefValue string
+	Description string
+}

@@ -21,7 +21,7 @@ func init() {
 
 	// binName will contains work dir path on windows
 	if utils.IsWin() {
-		binName = strings.Replace(binName, workDir + "\\", "", 1)
+		binName = strings.Replace(binName, workDir+"\\", "", 1)
 	}
 }
 
@@ -62,6 +62,10 @@ func (app *Application) Init() {
 
 // Add add a command
 func (app *Application) Add(c *Command) {
+	if c.IsDisabled() {
+		return
+	}
+
 	app.names[c.Name] = len(c.Name)
 	commands[c.Name] = c
 
@@ -88,6 +92,8 @@ func (app *Application) Run() {
 
 	if !app.IsCommand(name) {
 		color.Tips("error").Printf("unknown input command '%s'", name)
+		// utils.FindSimilar(name, app.CommandNames())
+
 		showCommandsHelp()
 	}
 
@@ -192,9 +198,15 @@ func (app *Application) IsCommand(name string) bool {
 	return has
 }
 
-// Command get command name
-func (app *Application) CommandNames() map[string]int {
-	return app.names
+// Command get all command names
+func (app *Application) CommandNames() []string {
+	var ss []string
+
+	for n := range app.names {
+		ss = append(ss, n)
+	}
+
+	return ss
 }
 
 // AddAliases add alias names for a command

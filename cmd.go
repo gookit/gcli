@@ -72,6 +72,11 @@ type Command struct {
 	// mark is alone running.
 	alone bool
 
+	// mark is disabled. if true will skip register to cli-app.
+	disabled bool
+
+	// opts map[string]interface{} // {opt name: opt value}
+
 	// shortcuts storage shortcuts for command options(Flags)
 	// [short -> lang] eg. {"n": "name", "o": "opt"}
 	shortcuts map[string]string
@@ -107,6 +112,16 @@ func (c *Command) Execute(app *Application, args []string) int {
 	return c.Fn(c, args)
 }
 
+// Disable set cmd is disabled
+func (c *Command) Disable() {
+	c.disabled = true
+}
+
+// IsDisabled get cmd is disabled
+func (c *Command) IsDisabled() bool {
+	return c.disabled
+}
+
 // Application
 func (c *Command) App() *Application {
 	return app
@@ -119,6 +134,11 @@ func (c *Command) GetArgs() []string {
 
 // Arg get arg
 func (c *Command) Arg(i int) string {
+	return c.Flags.Arg(i)
+}
+
+// Arg get arg
+func (c *Command) GetArg(i int) string {
 	return c.Flags.Arg(i)
 }
 

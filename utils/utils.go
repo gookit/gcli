@@ -71,3 +71,7 @@ func PrettyJson(v interface{}) (string, error) {
 
 	return string(out), err
 }
+
+func RenderTpl(file string, data interface{}) string {
+
+}
