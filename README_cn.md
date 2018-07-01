@@ -10,7 +10,7 @@ golang下的命令行应用，工具库
 - 可以添加多个命令，并且支持命令别名
 - 支持单个命令当做独立应用运行
 - 支持选项绑定，支持添加短选项
-- 支持丰富的颜色输出。同时支持html标签式的颜色渲染
+- 支持丰富的颜色输出。同时支持html标签式的颜色渲染，兼容Windows
 - 自动生成命令帮助信息，并且支持颜色显示
 
 ## 获取安装
@@ -353,18 +353,18 @@ color.Yellow("yellow message")
 
 > 支持在windows `cmd.exe` 使用
 
-- `color.Info()`
-- `color.Note()`
-- `color.Light()`
-- `color.Error()`
-- `color.Danger()`
-- `color.Notice()`
-- `color.Success()`
-- `color.Comment()`
-- `color.Primary()`
-- `color.Warning()`
-- `color.Question()`
-- `color.Secondary()`
+- `color.Info(args ...interface{})`
+- `color.Note(args ...interface{})`
+- `color.Light(args ...interface{})`
+- `color.Error(args ...interface{})`
+- `color.Danger(args ...interface{})`
+- `color.Notice(args ...interface{})`
+- `color.Success(args ...interface{})`
+- `color.Comment(args ...interface{})`
+- `color.Primary(args ...interface{})`
+- `color.Warning(args ...interface{})`
+- `color.Question(args ...interface{})`
+- `color.Secondary(args ...interface{})`
 
 ```go
 color.Info("Info message")
@@ -373,7 +373,7 @@ color.Success("Success message")
 
 #### 使用颜色html标签
 
-> **不** 支持在windows `cmd.exe` 使用
+> **不** 支持在windows `cmd.exe` 使用，但不影响使用，会自动去除颜色标签
 
 使用颜色标签可以非常方便简单的构建自己需要的任何格式
 

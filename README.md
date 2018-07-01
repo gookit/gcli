@@ -10,7 +10,7 @@ Command line application, tool library, written using golang
 - Multiple commands can be added and command aliases are supported
 - Supports a single command as a stand-alone application
 - Support option binding, support for adding short options
-- Supports rich color output. Supports html tab-style color rendering
+- Supports rich color output. supports html tab-style color rendering, compatible with Windows
 - Automatically generate command help information and support color display
 
 ## Install
