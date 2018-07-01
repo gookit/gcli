@@ -1,6 +1,6 @@
 # cliapp
 
-golang下的命令行应用，工具库
+golang下的命令行应用，工具库, cli色彩使用
 
 **[EN Readme](README.md)**
 

@@ -1,6 +1,6 @@
 # cliapp 
 
-Command line application, tool library, written using golang
+Command line application, cli-color library, written using golang
 
 **[中文说明](README_cn.md)**
 
