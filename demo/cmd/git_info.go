@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
-	"github.com/gookit/cliapp/color"
+	"github.com/gookit/color"
 	"github.com/gookit/cliapp/utils"
 )
 

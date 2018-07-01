@@ -268,7 +268,7 @@ go build ./demo/cliapp.go && ./cliapp example -h
 package main
 
 import (
-    "github.com/gookit/cliapp/color"
+    "github.com/gookit/color"
     )
 
 func main() {

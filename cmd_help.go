@@ -3,7 +3,7 @@ package cliapp
 import (
 	"fmt"
 	"os"
-	"github.com/gookit/cliapp/color"
+	"github.com/gookit/color"
 	"bytes"
 	"flag"
 	"strings"

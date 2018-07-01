@@ -5,7 +5,7 @@ import (
 	"io"
 	"html/template"
 	"strings"
-	"github.com/gookit/cliapp/color"
+	"github.com/gookit/color"
 	"bytes"
 	"fmt"
 	"github.com/gookit/cliapp/utils"

@@ -3,7 +3,7 @@ package interact
 import (
 	"bufio"
 	"os"
-	"github.com/gookit/cliapp/color"
+	"github.com/gookit/color"
 	"strings"
 )
 

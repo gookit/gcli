@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"os"
 	"flag"
-	"github.com/gookit/cliapp/color"
+	"github.com/gookit/color"
 )
 
 // constants for error level

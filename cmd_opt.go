@@ -2,7 +2,7 @@ package cliapp
 
 import (
 	"flag"
-	"github.com/gookit/cliapp/color"
+	"github.com/gookit/color"
 )
 
 // IntOpt set a int option
