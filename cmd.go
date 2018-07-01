@@ -94,6 +94,11 @@ func (c *Command) Init() *Command {
 		}
 	}
 
+	// first init
+	if c.Vars == nil {
+		c.Vars = make(map[string]string)
+	}
+
 	return c
 }
 
@@ -119,12 +124,6 @@ func (c *Command) Arg(i int) string {
 
 // AddVars add multi tpl vars
 func (c *Command) AddVars(vars map[string]string) {
-	// first init
-	if c.Vars == nil {
-		c.Vars = vars
-		return
-	}
-
 	for n, v := range vars {
 		c.Vars[n] = v
 	}

@@ -329,7 +329,51 @@ color.Reset()
 
 ### 使用内置风格
 
-- 使用颜色标签
+#### 基础颜色方法
+
+> 支持在windows `cmd.exe` 使用
+
+- `color.Bold(args ...interface{})`
+- `color.Black(args ...interface{})`
+- `color.White(args ...interface{})`
+- `color.Gray(args ...interface{})`
+- `color.Red(args ...interface{})`
+- `color.Green(args ...interface{})`
+- `color.Yellow(args ...interface{})`
+- `color.Blue(args ...interface{})`
+- `color.Magenta(args ...interface{})`
+- `color.Cyan(args ...interface{})`
+
+```go
+color.Bold("bold message")
+color.Yellow("yellow message")
+```
+
+#### 扩展风格方法 
+
+> 支持在windows `cmd.exe` 使用
+
+- `color.Info()`
+- `color.Note()`
+- `color.Light()`
+- `color.Error()`
+- `color.Danger()`
+- `color.Notice()`
+- `color.Success()`
+- `color.Comment()`
+- `color.Primary()`
+- `color.Warning()`
+- `color.Question()`
+- `color.Secondary()`
+
+```go
+color.Info("Info message")
+color.Success("Success message")
+```
+
+#### 使用颜色html标签
+
+> **不** 支持在windows `cmd.exe` 使用
 
 使用颜色标签可以非常方便简单的构建自己需要的任何格式
 
@@ -344,7 +388,7 @@ color.Println("<warning>hello</>")
 color.Print("<fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
 ```
 
-- 使用 `color.Tag`
+#### 使用 `color.Tag`
 
 给后面输出的文本信息加上给定的颜色风格标签
 
@@ -357,7 +401,7 @@ color.Tag("info").Println("info style text")
 
 ### 内置的标签
 
-这里列出了内置的标签，基本上涵盖了各种风格和颜色搭配。它们都可用作颜色标签，或者作为 `color.Tag` `color.Tips` 等的参数
+这里列出了内置的标签，基本上涵盖了各种风格和颜色搭配。它们都可用作颜色html标签，或者作为 `color.Tag` `color.Tips` 等的参数
 
 ```text
 // Some internal defined style tags

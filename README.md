@@ -262,7 +262,7 @@ go build ./demo/cliapp.go && ./cliapp example -h
 
 ![colored-out](demo/images/colored-out.jpg)
 
-### usage
+### Usage
 
 ```go
 package main
@@ -297,7 +297,51 @@ func main() {
 
 ### More usage
 
-- use like html tag
+#### Basic color functions
+
+> support on windows `cmd.exe`
+
+- `color.Bold(args ...interface{})`
+- `color.Black(args ...interface{})`
+- `color.White(args ...interface{})`
+- `color.Gray(args ...interface{})`
+- `color.Red(args ...interface{})`
+- `color.Green(args ...interface{})`
+- `color.Yellow(args ...interface{})`
+- `color.Blue(args ...interface{})`
+- `color.Magenta(args ...interface{})`
+- `color.Cyan(args ...interface{})`
+
+```go
+color.Bold("bold message")
+color.Yellow("yellow message")
+```
+
+#### Extra style functions 
+
+> support on windows `cmd.exe`
+
+- `color.Info()`
+- `color.Note()`
+- `color.Light()`
+- `color.Error()`
+- `color.Danger()`
+- `color.Notice()`
+- `color.Success()`
+- `color.Comment()`
+- `color.Primary()`
+- `color.Warning()`
+- `color.Question()`
+- `color.Secondary()`
+
+```go
+color.Info("Info message")
+color.Success("Success message")
+```
+
+#### Use like html tag
+
+> **not** support on windows `cmd.exe`
 
 ```go
 // use style tag
@@ -319,7 +363,7 @@ color.Tag("info").Printf("%s style text", "info")
 color.Tag("info").Println("info style text")
 ```
 
-### Internal tags
+### Internal color tags
 
 ```text
 // Some internal defined style tags

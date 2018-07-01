@@ -67,13 +67,14 @@ func (app *Application) Add(c *Command) {
 
 	// will call it on input './cliapp command -h'
 	c.Flags.Usage = func() {
-		// add app vars to cmd
-		c.AddVars(app.vars)
 		c.ShowHelp(true)
 	}
 
 	// init
 	c.Init()
+
+	// add app vars to cmd
+	c.AddVars(app.vars)
 
 	// add aliases for the command
 	app.AddAliases(c.Name, c.Aliases)

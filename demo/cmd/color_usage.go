@@ -61,9 +61,9 @@ func colorUsage(cmd *cliapp.Command, args []string) int {
 
 	i := 0
 
-	fmt.Print("\n- All Available Tags: \n\n")
+	fmt.Print("\n- All Available color Tags: \n\n")
 
-	for tag, _ := range color.TagColors {
+	for tag, _ := range color.GetColorTags() {
 		i++
 		color.Tag(tag).Print(tag)
 
