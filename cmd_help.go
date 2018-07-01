@@ -3,11 +3,10 @@ package cliapp
 import (
 	"fmt"
 	"os"
-	"github.com/gookit/color"
-	"bytes"
 	"flag"
 	"strings"
 	"reflect"
+	"github.com/gookit/color"
 	"github.com/gookit/cliapp/utils"
 )
 
@@ -29,9 +28,9 @@ var commandHelp = `{{.Description}}
   <info>{{$k | printf "%-12s"}}</>{{$v|upFirst}}{{end}}
 {{end}} {{if .Cmd.Examples}}
 <comment>Examples:</>
-  {{.Cmd.Examples|coloredHtml}}{{end}}{{if .Cmd.Help}}
+  {{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}
 <comment>Help:</>
-  {{.Cmd.Help|coloredHtml}}{{end}}
+  {{.Cmd.Help}}{{end}}
 `
 
 // showCommandHelp display help for an command
@@ -59,27 +58,25 @@ func (app *Application) showCommandHelp(list []string, quit bool) {
 
 // ShowHelp show command help info
 func (c *Command) ShowHelp(quit ...bool) {
-	// use buffer receive rendered content
-	var buf bytes.Buffer
-
 	commandHelp = color.ReplaceTag(commandHelp)
 
 	// render and output help info
-	// RenderStrTpl(os.Stdout, commandHelp, map[string]interface{}{
+	// RenderTplStr(os.Stdout, commandHelp, map[string]interface{}{
 	// render but not output
-	RenderStrTpl(&buf, commandHelp, map[string]interface{}{
+	str := utils.RenderTemplate(commandHelp, map[string]interface{}{
 		"Cmd":     c,
 		"Options": color.RenderStr(c.ParseDefaults()),
 
 		// always upper first char
 		"Description": color.RenderStr(c.Description),
-	})
+	}, false)
 
 	c.Vars["cmd"] = c.Name
 	c.Vars["fullCmd"] = binName + " " + c.Name
 
 	// parse help vars
-	fmt.Print(ReplaceVars(buf.String(), c.Vars))
+	str = ReplaceVars(str, c.Vars)
+	fmt.Print(color.RenderStr(str))
 
 	if len(quit) > 0 && quit[0] {
 		os.Exit(0)

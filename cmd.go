@@ -1,7 +1,6 @@
 package cliapp
 
 import (
-	"html/template"
 	"flag"
 	"strings"
 	"github.com/gookit/cliapp/utils"
@@ -55,10 +54,10 @@ type Command struct {
 	Hooks map[string]func(cmd *Command)
 
 	// Help is the help message text
-	Help template.HTML
+	Help string
 
 	// Examples some usage example display
-	Examples template.HTML
+	Examples string
 
 	// vars you can add some vars map for render help info
 	Vars map[string]string
@@ -75,10 +74,13 @@ type Command struct {
 	// mark is disabled. if true will skip register to cli-app.
 	disabled bool
 
+	// option names {name:short}
+	optNames map[string]string
+
 	// opts map[string]interface{} // {opt name: opt value}
 
 	// shortcuts storage shortcuts for command options(Flags)
-	// [short -> lang] eg. {"n": "name", "o": "opt"}
+	// {short:name} eg. {"n": "name", "o": "opt"}
 	shortcuts map[string]string
 }
 

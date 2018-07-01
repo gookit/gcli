@@ -234,6 +234,16 @@ func (app *Application) GetNameByAlias(alias string) string {
 	return alias
 }
 
+// Commands get all commands
+func (app *Application) Commands() map[string]*Command {
+	return commands
+}
+
+// AllCommands get all commands
+func AllCommands() map[string]*Command {
+	return commands
+}
+
 // print debug logging
 func logf(f string, v ...interface{}) {
 	if !app.Debug {

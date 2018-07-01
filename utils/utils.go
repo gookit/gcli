@@ -4,6 +4,8 @@ import (
 	"os/exec"
 	"bytes"
 	"encoding/json"
+	"text/template"
+	"strings"
 )
 
 // Go is a basic promise implementation: it wraps calls a function in a goroutine
@@ -72,6 +74,46 @@ func PrettyJson(v interface{}) (string, error) {
 	return string(out), err
 }
 
-func RenderTpl(file string, data interface{}) string {
+// RenderTemplate
+func RenderTemplate(input string, data interface{}, isFile ...bool) string {
+	// use buffer receive rendered content
+	var buf bytes.Buffer
+	var isFilename bool
 
+	if len(isFile) > 0 {
+		isFilename = isFile[0]
+	}
+
+	t := template.New("cli")
+
+	// don't escape content
+	t.Funcs(template.FuncMap{"raw": func(s string) string {
+		return s
+	}})
+
+	t.Funcs(template.FuncMap{"trim": func(s string) string {
+		return strings.TrimSpace(string(s))
+	}})
+
+	// join strings
+	t.Funcs(template.FuncMap{"join": func(ss []string, sep string) string {
+		return strings.Join(ss, sep)
+	}})
+
+	// upper first char
+	t.Funcs(template.FuncMap{"upFirst": func(s string) string {
+		return UpperFirst(s)
+	}})
+
+	if isFilename {
+		template.Must(t.ParseFiles(input))
+	} else {
+		template.Must(t.Parse(input))
+	}
+
+	if err := t.Execute(&buf, data); err != nil {
+		panic(err)
+	}
+
+	return buf.String()
 }

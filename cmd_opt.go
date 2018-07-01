@@ -6,48 +6,44 @@ import (
 )
 
 // IntOpt set a int option
-func (c *Command) IntOpt(p *int, name string, short string, defaultValue int, description string) *Command {
-	c.Flags.IntVar(p, name, defaultValue, description)
+func (c *Command) IntOpt(p *int, name string, short string, defValue int, description string) *Command {
+	c.Flags.IntVar(p, name, defValue, description)
 
-	if len(short) == 1 {
-		c.addShortcut(name, short)
-		c.Flags.IntVar(p, short, defaultValue, "")
+	if s, ok := c.addShortcut(name, short); ok {
+		c.Flags.IntVar(p, s, defValue, "")
 	}
 
 	return c
 }
 
 // UintOpt set a int option
-func (c *Command) UintOpt(p *uint, name string, short string, defaultValue uint, description string) *Command {
-	c.Flags.UintVar(p, name, defaultValue, description)
+func (c *Command) UintOpt(p *uint, name string, short string, defValue uint, description string) *Command {
+	c.Flags.UintVar(p, name, defValue, description)
 
-	if len(short) == 1 {
-		c.addShortcut(name, short)
-		c.Flags.UintVar(p, short, defaultValue, "")
+	if s, ok := c.addShortcut(name, short); ok {
+		c.Flags.UintVar(p, s, defValue, "")
 	}
 
 	return c
 }
 
 // StrOpt set a str option
-func (c *Command) StrOpt(p *string, name string, short string, defaultValue string, description string) *Command {
-	c.Flags.StringVar(p, name, defaultValue, description)
+func (c *Command) StrOpt(p *string, name string, short string, defValue string, description string) *Command {
+	c.Flags.StringVar(p, name, defValue, description)
 
-	if len(short) == 1 {
-		c.addShortcut(name, short)
-		c.Flags.StringVar(p, short, defaultValue, "")
+	if s, ok := c.addShortcut(name, short); ok {
+		c.Flags.StringVar(p, s, defValue, "")
 	}
 
 	return c
 }
 
 // BoolOpt set a bool option
-func (c *Command) BoolOpt(p *bool, name string, short string, defaultValue bool, description string) *Command {
-	c.Flags.BoolVar(p, name, defaultValue, description)
+func (c *Command) BoolOpt(p *bool, name string, short string, defValue bool, description string) *Command {
+	c.Flags.BoolVar(p, name, defValue, description)
 
-	if len(short) == 1 {
-		c.addShortcut(name, short)
-		c.Flags.BoolVar(p, short, defaultValue, "")
+	if s, ok := c.addShortcut(name, short); ok {
+		c.Flags.BoolVar(p, s, defValue, "")
 	}
 
 	return c
@@ -61,28 +57,43 @@ func (c *Command) BoolOpt(p *bool, name string, short string, defaultValue bool,
 func (c *Command) VarOpt(p flag.Value, name string, short string, description string) *Command {
 	c.Flags.Var(p, name, description)
 
-	if len(short) == 1 {
-		c.addShortcut(name, short)
-		c.Flags.Var(p, short, "")
+	if s, ok := c.addShortcut(name, short); ok {
+		c.Flags.Var(p, s, "")
 	}
 
 	return c
 }
 
 // addShortcut add a shortcut name for a option name
-func (c *Command) addShortcut(name string, short string) {
+func (c *Command) addShortcut(name string, short string) (string, bool) {
+	// first add
+	if c.optNames == nil {
+		c.optNames = map[string]string{}
+	}
+
+	// empty string
+	if len(short) == 0 {
+		c.optNames[name] = ""
+		return "", false
+	}
+
+	// first add
+	if c.shortcuts == nil {
+		c.shortcuts = map[string]string{}
+	}
+
+	// ensure it is one char
+	short = string(short[0])
+
 	if n, ok := c.shortcuts[short]; ok {
 		color.Tips("error").Printf("The shortcut name '%s' has been used by option '%s'", short, n)
 		Exit(-2)
 	}
 
-	// first add
-	if c.shortcuts == nil {
-		c.shortcuts = map[string]string{short: name}
-		return
-	}
-
+	c.optNames[name] = short
 	c.shortcuts[short] = name
+
+	return short, true
 }
 
 // isShortOpt alias of the `isShortcut`
@@ -110,6 +121,11 @@ func (c *Command) getShortName(name string) string {
 	}
 
 	return ""
+}
+
+// OptNames return all option names
+func (c *Command) OptNames() map[string]string {
+	return c.optNames
 }
 
 // Option is config info for a option
