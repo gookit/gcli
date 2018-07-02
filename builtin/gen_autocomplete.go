@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	ZshShell = "zsh"
+	ZshShell  = "zsh"
 	BashShell = "bash"
 )
 
@@ -133,6 +133,44 @@ func doGen(cmd *cliapp.Command, args []string) int {
 	return 0
 }
 
+var bashCompleteScriptTpl = `#!/usr/bin/env {{.Shell}}
+
+# ------------------------------------------------------------------------------
+#          FILE:  {{.FileName}}
+#        AUTHOR:  inhere (https://github.com/inhere)
+#       VERSION:  1.0.0
+#   DESCRIPTION:  zsh shell complete for cli app: {{.BinName}}
+# ------------------------------------------------------------------------------
+# usage: source {{.FileName}}
+# run 'complete' to see registered complete function.
+
+
+_complete_for_{{.BinName}} () {
+    local cur prev
+    _get_comp_words_by_ref -n = cur prev
+
+    COMPREPLY=()
+    commands="{{join .CmdNames " "}}"
+
+    case "$prev" in{{range $k,$v := .NameOpts}}
+        {{$k}})
+            COMPREPLY=($(compgen -W "{{$v}}" -- "$cur"))
+            return 0
+            ;;{{end}}
+        help)
+            COMPREPLY=($(compgen -W "$commands" -- "$cur"))
+            return 0
+            ;;
+    esac
+
+    COMPREPLY=($(compgen -W "$commands" -- "$cur"))
+
+} &&
+# complete -F {auto_complete_func} {bin_filename}
+# complete -F _complete_for_{{.BinName}} -A file {{.BinName}} {{.BinName}}.exe
+complete -F _complete_for_{{.BinName}} {{.BinName}} {{.BinName}}.exe
+`
+
 func buildForBashShell(data map[string]interface{}) map[string]interface{} {
 	var cNames []string
 
@@ -167,7 +205,13 @@ func buildForBashShell(data map[string]interface{}) map[string]interface{} {
 				opList = append(opList, "-"+st)
 			}
 
-			opList = append(opList, "--"+op)
+			pfx := "--"
+
+			if len(op) == 1 {
+				pfx = "-"
+			}
+
+			opList = append(opList, pfx+op)
 		}
 
 		nameOpts[key] = strings.Join(opList, " ")
@@ -179,13 +223,53 @@ func buildForBashShell(data map[string]interface{}) map[string]interface{} {
 	return data
 }
 
-func buildForZshShell(data map[string]interface{}) map[string]interface{} {
-	var cNames []string
+var zshCompleteScriptTpl = `# ------------------------------------------------------------------------------
+#          FILE:  {{.FileName}}
+#        AUTHOR:  inhere (https://github.com/inhere)
+#       VERSION:  1.0.0
+#   DESCRIPTION:  zsh shell complete for cli app: {{.BinName}}
+# ------------------------------------------------------------------------------
+# usage: source {{.FileName}}
 
-	// {cmd name: cmd des}
+_complete_for_{{.BinName}} () {
+   typeset -a commands
+   commands+=({{range $k,$v := .NameDes}}
+    '{{$k}}[{{$v}}]'{{end}}
+   )
+
+  if (( CURRENT == 2 )); then
+    # explain commands
+    _values 'cliapp commands' ${commands[@]}
+    return
+  fi
+
+  case ${words[2]} in{{range $k,$vs := .NameOpts}}
+  {{$k}})
+      _arguments -s -w : \{{range $vs}}
+      "{{.N}}[{{.V}}]"\ {{end}}
+      ;;{{end}}
+  help)
+      _values "${commands[@]}"
+      ;;
+  *)
+      # use files by default
+      _files
+      ;;
+  esac
+}
+
+compdef _complete_for_{{.BinName}} {{.BinName}}
+compdef _complete_for_{{.BinName}} {{.BinName}}.exe
+`
+
+func buildForZshShell(data map[string]interface{}) map[string]interface{} {
+	type opInfo struct{ N, V string }
+	type opInfos []opInfo
+
+	// {cmd name: cmd des}. in zsh eg: 'build[compile packages and dependencies]'
 	nameDes := make(map[string]string)
-	// {cmd name: opts}
-	nameOpts := make(map[string]string)
+	// {cmd name: {opt: opt des}}. in zsh eg: '-n[print the commands but do not run them]'
+	nameOpts := make(map[string]opInfos)
 
 	for n, c := range cliapp.AllCommands() {
 		// skip self
@@ -205,92 +289,30 @@ func buildForZshShell(data map[string]interface{}) map[string]interface{} {
 		if len(ns) > 0 {
 			ns = append(ns, n)
 			key = strings.Join(ns, "|")
-			cNames = append(cNames, ns...)
-		} else {
-			cNames = append(cNames, n)
 		}
 
-		var opList []string
+		var opis opInfos
 		for op, st := range ops {
+			opDes := c.Flags.Lookup(op).Usage
+
 			if st != "" {
-				opList = append(opList, "-"+st)
+				opis = append(opis, opInfo{"-" + st, opDes})
 			}
 
-			opList = append(opList, "--"+op)
+			pfx := "--"
+
+			if len(op) == 1 {
+				pfx = "-"
+			}
+
+			opis = append(opis, opInfo{pfx + op, opDes})
 		}
 
-		nameOpts[key] = strings.Join(opList, " ")
+		nameOpts[key] = opis
 	}
 
-	data["CmdNames"] = cNames
+	data["NameDes"] = nameDes
 	data["NameOpts"] = nameOpts
 
 	return data
 }
-
-var bashCompleteScriptTpl = `#!/usr/bin/env {{.Shell}}
-
-# ------------------------------------------------------------------------------
-#          FILE:  {{.FileName}}
-#        AUTHOR:  inhere (https://github.com/inhere)
-#       VERSION:  1.0.0
-#   DESCRIPTION:  zsh shell complete for cli app: {{.BinName}}
-# ------------------------------------------------------------------------------
-# usage: source {{.FileName}}
-# run 'complete' to see registered complete function.
-
-
-_complete_for_{{.BinName}} () {
-    local cur prev
-    _get_comp_words_by_ref -n = cur prev
-
-    COMPREPLY=()
-    commands="{{join .CmdNames " "}}"
-
-    case "$prev" in{{range $k,$v := .NameOpts}}
-        {{$k}})
-            COMPREPLY=($(compgen -W "{{$v}}" -- "$cur"))
-            return 0
-            ;;{{end}}
-    esac
-
-    COMPREPLY=($(compgen -W "$commands" -- "$cur"))
-
-} &&
-# complete -F {auto_complete_func} {bin_filename}
-complete -F _complete_for_{{.BinName}} -A file {{.BinName}} {{.BinName}}.exe
-`
-
-var zshCompleteScriptTpl = `# ------------------------------------------------------------------------------
-#          FILE:  {{.FileName}}
-#        AUTHOR:  inhere (https://github.com/inhere)
-#       VERSION:  1.0.0
-#   DESCRIPTION:  zsh shell complete for cli app: {{.BinName}}
-# ------------------------------------------------------------------------------
-# usage: source {{.FileName}}
-
-_complete_for_{{.BinName}} () {
-   typeset -a commands
-   commands+=(
-   )
-
-  if (( CURRENT == 2 )); then
-    # explain commands
-    _values 'cliapp commands' ${commands[@]}
-    return
-  fi
-
-  case ${words[2]} in
-    command)
-      compadd $(_{{.BinName}}_command_list)
-      ;;
-    *)
-      # use files by default
-      _files
-      ;;
-  esac
-}
-
-compdef _complete_for_{{.BinName}} {{.BinName}}
-compdef _complete_for_{{.BinName}} {{.BinName}}.exe
-`

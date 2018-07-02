@@ -12,6 +12,7 @@ Command line application, cli-color library, written using golang
 - Support option binding, support for adding short options
 - Supports rich color output. supports html tab-style color rendering, compatible with Windows
 - Automatically generate command help information and support color display
+- Supports generation of `zsh` and `bash` command completion script files
 
 ## Install
 
