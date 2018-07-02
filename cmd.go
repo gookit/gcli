@@ -18,7 +18,7 @@ type Commander interface {
 
 // CmdHandler
 // type CmdHandler func(app *Application, args []string) int
-type CmdHandler Command
+// type CmdHandler Command
 
 // CmdAliases
 type CmdAliases []string
@@ -26,6 +26,11 @@ type CmdAliases []string
 // to string
 func (a *CmdAliases) String() string {
 	return strings.Join(*a, ",")
+}
+
+// to string
+func (a *CmdAliases) Join(sep string) string {
+	return strings.Join(*a, sep)
 }
 
 // Command a cli command
@@ -79,8 +84,7 @@ type Command struct {
 
 	// opts map[string]interface{} // {opt name: opt value}
 
-	// shortcuts storage shortcuts for command options(Flags)
-	// {short:name} eg. {"n": "name", "o": "opt"}
+	// shortcuts for command options(Flags) {short:name} eg. {"n": "name", "o": "opt"}
 	shortcuts map[string]string
 }
 

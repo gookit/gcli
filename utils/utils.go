@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"text/template"
 	"strings"
+	"path/filepath"
 )
 
 // Go is a basic promise implementation: it wraps calls a function in a goroutine
@@ -46,14 +47,20 @@ func ExecCommand(cmdStr string, shells ...string) (string, error) {
 }
 
 // GetCurShell get current used shell env file. eg "/bin/zsh" "/bin/bash"
-func GetCurShell() string {
+func GetCurShell(onlyName bool) string {
 	path, err := ExecCommand("echo $SHELL")
 
 	if err != nil {
 		return ""
 	}
 
-	return strings.TrimSpace(path)
+	path = strings.TrimSpace(path)
+
+	if onlyName && len(path) > 0 {
+		filepath.Base(path)
+	}
+
+	return path
 }
 
 // GetKeyMaxLen

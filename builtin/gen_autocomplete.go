@@ -1,4 +1,4 @@
-package internal
+package builtin
 
 import (
 	"github.com/gookit/cliapp"
@@ -6,7 +6,6 @@ import (
 	"strings"
 	"os"
 	"github.com/gookit/color"
-	"path/filepath"
 	"github.com/gookit/cliapp/interact"
 )
 
@@ -36,13 +35,17 @@ func GenShAutoComplete() *cliapp.Command {
 		Description: "generate script file for command auto complete",
 	}
 
-	curShell := filepath.Base(utils.GetCurShell())
+	shell := utils.GetCurShell(true)
+
+	if shell == "" {
+		shell = "bash"
+	}
 
 	cmd.StrOpt(
 		&genOpts.shell,
 		"shell",
 		"s",
-		curShell,
+		shell,
 		"the shell env name for want generated, allow: zsh,bash",
 	).StrOpt(
 		&genOpts.binName,
@@ -100,9 +103,9 @@ func doGen(cmd *cliapp.Command, args []string) int {
 	str := utils.RenderTemplate(shellTpls[genOpts.shell], &data)
 
 	color.Infoln("Now, will write content to file ", genOpts.output)
-	color.Gray("Continue?")
+	color.Normal("Continue?")
 
-	if !interact.EnsureAnswerIsOk() {
+	if !interact.AnswerIsYes(true) {
 		color.Info("\nBye :)\n")
 
 		return 0
@@ -137,6 +140,11 @@ func buildForBashShell(data map[string]interface{}) map[string]interface{} {
 	nameOpts := make(map[string]string)
 
 	for n, c := range cliapp.AllCommands() {
+		// skip self
+		if n == "genac" || n == "gen-ac" {
+			continue
+		}
+
 		ops := c.OptNames()
 		if len(ops) == 0 {
 			continue
@@ -175,13 +183,16 @@ func buildForZshShell(data map[string]interface{}) map[string]interface{} {
 	var cNames []string
 
 	// {cmd name: cmd des}
-	names := make(map[string]string)
-
+	nameDes := make(map[string]string)
 	// {cmd name: opts}
 	nameOpts := make(map[string]string)
 
 	for n, c := range cliapp.AllCommands() {
-		names[c.Name] = c.Description + "(alias " + c.Aliases.String() + ")"
+		// skip self
+		if n == "genac" || n == "gen-ac" {
+			continue
+		}
+		nameDes[c.Name] = c.Description + "(alias " + c.Aliases.String() + ")"
 
 		ops := c.OptNames()
 		if len(ops) == 0 {
@@ -264,7 +275,7 @@ _complete_for_{{.BinName}} () {
    )
 
   if (( CURRENT == 2 )); then
-    # explain go commands
+    # explain commands
     _values 'cliapp commands' ${commands[@]}
     return
   fi
