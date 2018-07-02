@@ -17,3 +17,8 @@
 *.out
 alone
 cliapp
+
+# shell script
+*.bash
+*.sh
+*.zsh

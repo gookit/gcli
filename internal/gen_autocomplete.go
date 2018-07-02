@@ -52,11 +52,17 @@ func doGen(cmd *cliapp.Command, args []string) int {
 		genOpts.binName = cliapp.BinName()
 	}
 
-	genOpts.binName = strings.TrimSuffix(genOpts.binName, ".exe")
-	genOpts.output = strings.Replace(genOpts.binName, "{shell}", genOpts.shell, 1)
+	genOpts.binName = strings.TrimSuffix(strings.Trim(genOpts.binName, "./"), ".exe")
 
-	if !strings.Contains(genOpts.output, ".") {
-		genOpts.output += "." + genOpts.shell
+	if len(genOpts.output) == 0 {
+		genOpts.output = genOpts.binName + "." + genOpts.shell
+	} else {
+		genOpts.output = strings.Replace(genOpts.output, "{shell}", genOpts.shell, 1)
+
+		// check suffix
+		if !strings.Contains(genOpts.output, ".") {
+			genOpts.output += "." + genOpts.shell
+		}
 	}
 
 	color.LiteTips("info").Printf("%+v\n", genOpts)
@@ -125,8 +131,7 @@ func doGen(cmd *cliapp.Command, args []string) int {
 	return 0
 }
 
-var autoCompleteScriptTpl = `
-#!/usr/bin/env {{.Shell}}
+var autoCompleteScriptTpl = `#!/usr/bin/env {{.Shell}}
 
 #
 # usage: source ./auto-completion.{{.Shell}}

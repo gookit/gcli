@@ -1,33 +1,43 @@
 #!/usr/bin/env bash
 
 #
-# usage:
-#   run: source ./auto-completion.bash
-# run `complete` to see registered complete function.
+# usage: source ./auto-completion.bash
+# run 'complete' to see registered complete function.
 #
 
-_console_app()
+_complete_for_cliapp()
 {
-	local cur prev
-	_get_comp_words_by_ref -n = cur prev
+    local cur prev
+    _get_comp_words_by_ref -n = cur prev
 
-	commands="color clr colors \
-	env ei env-info \
-	example exp ex git test help"
+    COMPREPLY=()
+    commands="exp ex example env-info ei env git-info git clr colors color gen gen-ac"
 
-	case "$prev" in
-		example|exp)
-			COMPREPLY=($(compgen -W "--id --dir --opt --names" -- "$cur"))
-			return 0
-			;;
-		git|git-info)
-			COMPREPLY=($(compgen -W "--id --dir --opt --abc" -- "$cur"))
-			return 0
-			;;
-	esac
+    case "$prev" in
+        clr|colors|color)
+            COMPREPLY=($(compgen -W "--id --c --dir" -- "$cur"))
+            return 0
+            ;;
+        env-info|ei|env)
+            COMPREPLY=($(compgen -W "--id --c -d --dir" -- "$cur"))
+            return 0
+            ;;
+        exp|ex|example)
+            COMPREPLY=($(compgen -W "-d --dir -o --opt -n --names" -- "$cur"))
+            return 0
+            ;;
+        gen|gen-ac)
+            COMPREPLY=($(compgen -W "-b --bin-name -o --output --shell" -- "$cur"))
+            return 0
+            ;;
+        git-info|git)
+            COMPREPLY=($(compgen -W "--id --c -d --dir" -- "$cur"))
+            return 0
+            ;;
+    esac
 
-	COMPREPLY=($(compgen -W "$commands" -- "$cur"))
+    COMPREPLY=($(compgen -W "$commands" -- "$cur"))
 
 } &&
 # complete -F {auto_complete_func} {bin_filename}
-complete -F _console_app cliapp cliapp.exe
+complete -F _complete_for_cliapp cliapp cliapp.exe

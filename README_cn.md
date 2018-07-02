@@ -12,6 +12,7 @@ golang下的命令行应用，工具库, cli色彩使用
 - 支持选项绑定，支持添加短选项
 - 支持丰富的颜色输出。同时支持html标签式的颜色渲染，兼容Windows
 - 自动生成命令帮助信息，并且支持颜色显示
+- 内置支持生成 `bash` 下的命令补全脚本文件
 
 ## 获取安装
 
@@ -126,7 +127,7 @@ args is [ag0 ag1]
 
 ### 显示一个命令的帮助
 
-> by `./cliapp example -h` or `./cliapp example --help`
+> by `./cliapp {command} -h` or `./cliapp {command} --help` or `./cliapp help {command}`
 
 ```bash
 % ./cliapp example -h                                                

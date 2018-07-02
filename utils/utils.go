@@ -22,7 +22,7 @@ func Go(f func() error) chan error {
 // ExecCommand
 // cmdStr eg. "ls -al"
 func ExecCommand(cmdStr string, shells ...string) (string, error) {
-	shell := "/bin/bash"
+	shell := "/bin/sh"
 
 	if len(shells) > 0 {
 		shell = shells[0]
