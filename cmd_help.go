@@ -96,7 +96,7 @@ func (c *Command) ParseDefaults() string {
 		// is long option
 		if len(fg.Name) > 1 {
 			// find shortcut name
-			if sn := c.getShortName(fg.Name); sn != "" {
+			if sn := c.ShortName(fg.Name); sn != "" {
 				s = fmt.Sprintf("  <info>-%s, --%s</>", sn, fg.Name)
 			} else {
 				s = fmt.Sprintf("      <info>--%s</>", fg.Name)
@@ -136,7 +136,6 @@ func (c *Command) ParseDefaults() string {
 		}
 
 		ss = append(ss, s)
-		// fmt.Fprint(fgs.Output(), s, "\n")
 	})
 
 	return strings.Join(ss, "\n")

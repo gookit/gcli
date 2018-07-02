@@ -50,9 +50,7 @@ func (c *Command) BoolOpt(p *bool, name string, short string, defValue bool, des
 }
 
 // VarOpt set a custom option
-// raw usage:
-// cmd.Flags.Var(&opts.Strings, "tables", "Description ...")
-// in here:
+// usage:
 // cmd.VarOpt(&opts.Strings, "tables", "t", "Description ...")
 func (c *Command) VarOpt(p flag.Value, name string, short string, description string) *Command {
 	c.Flags.Var(p, name, description)
@@ -112,12 +110,30 @@ func (c *Command) isShortcut(short string) bool {
 	return ok
 }
 
-// getShortName get a shortcut name by option name
-func (c *Command) getShortName(name string) string {
+// ShortName get a shortcut name by option name
+func (c *Command) ShortName(name string) string {
 	for s, n := range c.shortcuts {
 		if n == name {
 			return s
 		}
+	}
+
+	return ""
+}
+
+// OptFlag get option Flag by option name
+func (c *Command) OptFlag(name string) *flag.Flag {
+	if _, ok := c.optNames[name]; ok {
+		return c.Flags.Lookup(name)
+	}
+
+	return nil
+}
+
+// OptDes get option description by option name
+func (c *Command) OptDes(name string) string {
+	if _, ok := c.optNames[name]; ok {
+		return c.Flags.Lookup(name).Usage
 	}
 
 	return ""

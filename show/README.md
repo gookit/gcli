@@ -1,7 +1,8 @@
 # formatted message show 
 
-- contains `section, panel, padding, helpPanel, table, tree, title, list, multiList`
+contains `section, panel, padding, helpPanel, table, tree, title, list, multiList`
 
+- title
 - table
 - panel
 - section

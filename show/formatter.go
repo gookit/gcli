@@ -2,5 +2,5 @@ package show
 
 // IFormatter
 type IFormatter interface {
-	Format()
+	Format() string
 }
