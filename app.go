@@ -101,6 +101,10 @@ func (app *Application) Run() {
 	cmd := commands[name]
 	app.command = name
 
+	if app.Strict {
+		args = strictFormatArgs(args)
+	}
+
 	// parse args, don't contains command name.
 	if !cmd.CustomFlags {
 		cmd.Flags.Parse(args)
@@ -247,7 +251,7 @@ func AllCommands() map[string]*Command {
 
 // print debug logging
 func logf(f string, v ...interface{}) {
-	if !app.Debug {
+	if Verbose < VerbDebug {
 		return
 	}
 

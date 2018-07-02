@@ -45,8 +45,8 @@ type Application struct {
 	// ASCII logo setting
 	Logo Logo
 
-	// open debug
-	Debug bool
+	// use strict mode. short opt must be begin '-', long opt must be begin '--'
+	Strict bool
 
 	// current command name
 	command string
@@ -170,6 +170,40 @@ func ReplaceVars(help string, vars map[string]string) string {
 	}
 
 	return strings.NewReplacer(ss...).Replace(help)
+}
+
+// strictFormatArgs '-ab' will split to '-a -b', '--o' -> '-o'
+func strictFormatArgs(args []string) []string {
+	if len(args) == 0 {
+		return args
+	}
+
+	var fmtdArgs []string
+
+	for _, arg := range args {
+		l := len(arg)
+
+		if strings.Index(arg, "--") == 0 {
+			if l == 3 {
+				arg = "-" + string(arg[2])
+			}
+
+		} else if strings.Index(arg, "-") == 0 {
+			if l > 2 {
+				bools := strings.Split(strings.Trim(arg, "-"), "")
+
+				for _, s := range bools {
+					fmtdArgs = append(fmtdArgs, "-"+s)
+				}
+
+				continue
+			}
+		}
+
+		fmtdArgs = append(fmtdArgs, arg)
+	}
+
+	return fmtdArgs
 }
 
 // Print
