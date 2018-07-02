@@ -6,16 +6,19 @@ import (
 )
 
 // check user inputted answer is right
-// fmt.Print("are you OK? [yes|no]")
-// ok := EnsureUserAnswer()
-func EnsureAnswerIsOk() bool {
+// fmt.Print("are you OK?")
+// ok := EnsureAnswerIsOk()
+// ok := EnsureAnswerIsOk(true)
+func EnsureAnswerIsOk(def ...bool) bool {
 	var answer string
-	_, err := fmt.Scanln(&answer)
+
+	// _, err := fmt.Scanln(&answer)
+	// _, err := fmt.Scan(&answer)
+	answer, err := ReadLine(" [yes|no]: ")
+
 	if err != nil {
 		panic(err)
 	}
-
-	answer = strings.TrimSpace(answer)
 
 	if len(answer) > 0 {
 		fChar := strings.ToLower(string(answer[0]))
@@ -25,8 +28,10 @@ func EnsureAnswerIsOk() bool {
 		} else if fChar == "n" {
 			return false
 		}
+	} else if len(def) > 0 {
+		return def[0]
 	}
 
-	fmt.Println("Please type yes or no and then press enter:")
+	fmt.Print("Please try again")
 	return EnsureAnswerIsOk()
 }

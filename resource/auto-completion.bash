@@ -34,6 +34,8 @@ _complete_for_cliapp()
             COMPREPLY=($(compgen -W "--id --c -d --dir" -- "$cur"))
             return 0
             ;;
+        # * )
+        #     COMPREPLY=( $( compgen -A file ))
     esac
 
     COMPREPLY=($(compgen -W "$commands" -- "$cur"))

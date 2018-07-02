@@ -94,7 +94,8 @@ func (app *Application) Run() {
 		color.Tips("error").Printf("unknown input command '%s'", name)
 		// utils.FindSimilar(name, app.CommandNames())
 
-		showCommandsHelp()
+		color.Info("\nPlease use '", binName, " -h' to see available commands\n")
+		Exit(-2)
 	}
 
 	cmd := commands[name]

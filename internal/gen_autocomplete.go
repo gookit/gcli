@@ -6,30 +6,44 @@ import (
 	"strings"
 	"os"
 	"github.com/gookit/color"
+	"path/filepath"
+	"github.com/gookit/cliapp/interact"
+)
+
+const (
+	ZshShell = "zsh"
+	BashShell = "bash"
 )
 
 //
 var genOpts = struct {
 	shell   string
 	binName string
-	output string
+	output  string
 }{}
+
+var shellTpls = map[string]string{
+	"zsh":  zshCompleteScriptTpl,
+	"bash": bashCompleteScriptTpl,
+}
 
 func GenShAutoComplete() *cliapp.Command {
 	cmd := cliapp.Command{
-		Fn: doGen,
+		Fn:      doGen,
 		Name:    "gen-ac",
-		Aliases: []string{"gen"},
+		Aliases: []string{"genac"},
 
 		Description: "generate script file for command auto complete",
 	}
 
+	curShell := filepath.Base(utils.GetCurShell())
+
 	cmd.StrOpt(
 		&genOpts.shell,
 		"shell",
-		"",
-		"bash",
-		"the shell env name for want generated, allow: sh,zsh,bash",
+		"s",
+		curShell,
+		"the shell env name for want generated, allow: zsh,bash",
 	).StrOpt(
 		&genOpts.binName,
 		"bin-name",
@@ -65,49 +79,34 @@ func doGen(cmd *cliapp.Command, args []string) int {
 		}
 	}
 
-	color.LiteTips("info").Printf("%+v\n", genOpts)
+	color.LiteTips("info").Printf("\n  %+v\n", genOpts)
 
-	var cNames []string
-	fNameOpts := make(map[string]string)
-
-	for n, c := range cliapp.AllCommands() {
-		ops := c.OptNames()
-
-		if len(ops) == 0 {
-			continue
-		}
-
-		ns := c.Aliases
-		key := n
-
-		if len(ns) > 0 {
-			ns = append(ns, n)
-			key = strings.Join(ns, "|")
-			cNames = append(cNames, ns...)
-		} else {
-			cNames = append(cNames, n)
-		}
-
-		var opList []string
-		for op, st := range ops {
-			if st != "" {
-				opList = append(opList, "-" + st)
-			}
-
-			opList = append(opList, "--" + op)
-		}
-
-		fNameOpts[key] = strings.Join(opList, " ")
+	data := map[string]interface{}{
+		"Shell":    genOpts.shell,
+		"BinName":  genOpts.binName,
+		"FileName": genOpts.output,
 	}
 
-	str := utils.RenderTemplate(autoCompleteScriptTpl, map[string]interface{}{
-		"Shell": genOpts.shell,
-		"BinName": genOpts.binName,
-		"CmdNames": cNames,
-		"NameOpts": fNameOpts,
-	})
+	if genOpts.shell == BashShell {
+		data = buildForBashShell(data)
+	} else if genOpts.shell == ZshShell {
+		data = buildForZshShell(data)
+	} else {
+		color.LiteTips("error").Println("--shell option only allow: zsh,bash")
+
+		return -2
+	}
+
+	str := utils.RenderTemplate(shellTpls[genOpts.shell], &data)
 
 	color.Infoln("Now, will write content to file ", genOpts.output)
+	color.Gray("Continue?")
+
+	if !interact.EnsureAnswerIsOk() {
+		color.Info("\nBye :)\n")
+
+		return 0
+	}
 
 	// 以读写方式打开文件，如果不存在，则创建
 	file, err := os.OpenFile(genOpts.output, os.O_RDWR|os.O_CREATE, 0766)
@@ -131,15 +130,106 @@ func doGen(cmd *cliapp.Command, args []string) int {
 	return 0
 }
 
-var autoCompleteScriptTpl = `#!/usr/bin/env {{.Shell}}
+func buildForBashShell(data map[string]interface{}) map[string]interface{} {
+	var cNames []string
 
-#
-# usage: source ./auto-completion.{{.Shell}}
+	// {cmd name: opts}
+	nameOpts := make(map[string]string)
+
+	for n, c := range cliapp.AllCommands() {
+		ops := c.OptNames()
+		if len(ops) == 0 {
+			continue
+		}
+
+		ns := c.Aliases
+		key := n
+
+		if len(ns) > 0 {
+			ns = append(ns, n)
+			key = strings.Join(ns, "|")
+			cNames = append(cNames, ns...)
+		} else {
+			cNames = append(cNames, n)
+		}
+
+		var opList []string
+		for op, st := range ops {
+			if st != "" {
+				opList = append(opList, "-"+st)
+			}
+
+			opList = append(opList, "--"+op)
+		}
+
+		nameOpts[key] = strings.Join(opList, " ")
+	}
+
+	data["CmdNames"] = cNames
+	data["NameOpts"] = nameOpts
+
+	return data
+}
+
+func buildForZshShell(data map[string]interface{}) map[string]interface{} {
+	var cNames []string
+
+	// {cmd name: cmd des}
+	names := make(map[string]string)
+
+	// {cmd name: opts}
+	nameOpts := make(map[string]string)
+
+	for n, c := range cliapp.AllCommands() {
+		names[c.Name] = c.Description + "(alias " + c.Aliases.String() + ")"
+
+		ops := c.OptNames()
+		if len(ops) == 0 {
+			continue
+		}
+
+		ns := c.Aliases
+		key := n
+
+		if len(ns) > 0 {
+			ns = append(ns, n)
+			key = strings.Join(ns, "|")
+			cNames = append(cNames, ns...)
+		} else {
+			cNames = append(cNames, n)
+		}
+
+		var opList []string
+		for op, st := range ops {
+			if st != "" {
+				opList = append(opList, "-"+st)
+			}
+
+			opList = append(opList, "--"+op)
+		}
+
+		nameOpts[key] = strings.Join(opList, " ")
+	}
+
+	data["CmdNames"] = cNames
+	data["NameOpts"] = nameOpts
+
+	return data
+}
+
+var bashCompleteScriptTpl = `#!/usr/bin/env {{.Shell}}
+
+# ------------------------------------------------------------------------------
+#          FILE:  {{.FileName}}
+#        AUTHOR:  inhere (https://github.com/inhere)
+#       VERSION:  1.0.0
+#   DESCRIPTION:  zsh shell complete for cli app: {{.BinName}}
+# ------------------------------------------------------------------------------
+# usage: source {{.FileName}}
 # run 'complete' to see registered complete function.
-#
 
-_complete_for_{{.BinName}}()
-{
+
+_complete_for_{{.BinName}} () {
     local cur prev
     _get_comp_words_by_ref -n = cur prev
 
@@ -157,5 +247,39 @@ _complete_for_{{.BinName}}()
 
 } &&
 # complete -F {auto_complete_func} {bin_filename}
-complete -F _complete_for_{{.BinName}} {{.BinName}} {{.BinName}}.exe
+complete -F _complete_for_{{.BinName}} -A file {{.BinName}} {{.BinName}}.exe
+`
+
+var zshCompleteScriptTpl = `# ------------------------------------------------------------------------------
+#          FILE:  {{.FileName}}
+#        AUTHOR:  inhere (https://github.com/inhere)
+#       VERSION:  1.0.0
+#   DESCRIPTION:  zsh shell complete for cli app: {{.BinName}}
+# ------------------------------------------------------------------------------
+# usage: source {{.FileName}}
+
+_complete_for_{{.BinName}} () {
+   typeset -a commands
+   commands+=(
+   )
+
+  if (( CURRENT == 2 )); then
+    # explain go commands
+    _values 'cliapp commands' ${commands[@]}
+    return
+  fi
+
+  case ${words[2]} in
+    command)
+      compadd $(_{{.BinName}}_command_list)
+      ;;
+    *)
+      # use files by default
+      _files
+      ;;
+  esac
+}
+
+compdef _complete_for_{{.BinName}} {{.BinName}}
+compdef _complete_for_{{.BinName}} {{.BinName}}.exe
 `

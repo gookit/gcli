@@ -45,6 +45,17 @@ func ExecCommand(cmdStr string, shells ...string) (string, error) {
 	return out.String(), nil
 }
 
+// GetCurShell get current used shell env file. eg "/bin/zsh" "/bin/bash"
+func GetCurShell() string {
+	path, err := ExecCommand("echo $SHELL")
+
+	if err != nil {
+		return ""
+	}
+
+	return strings.TrimSpace(path)
+}
+
 // GetKeyMaxLen
 // usage:
 // utils.GetKeyMaxLen(map[string]string{"k1":"v1", "key2": "v2"}, 0)
