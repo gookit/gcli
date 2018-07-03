@@ -150,7 +150,7 @@ _complete_for_{{.BinName}} () {
     _get_comp_words_by_ref -n = cur prev
 
     COMPREPLY=()
-    commands="{{join .CmdNames " "}}"
+    commands="{{join .CmdNames " "}} help"
 
     case "$prev" in{{range $k,$v := .NameOpts}}
         {{$k}})
@@ -235,6 +235,7 @@ _complete_for_{{.BinName}} () {
    typeset -a commands
    commands+=({{range $k,$v := .NameDes}}
     '{{$k}}[{{$v}}]'{{end}}
+    'help[Display help information]'
    )
 
   if (( CURRENT == 2 )); then
@@ -245,8 +246,8 @@ _complete_for_{{.BinName}} () {
 
   case ${words[2]} in{{range $k,$vs := .NameOpts}}
   {{$k}})
-      _arguments -s -w : \{{range $vs}}
-      "{{.N}}[{{.V}}]"\ {{end}}
+      _arguments -s -w \{{range $vs}}
+        "{{.N}}[{{.V}}]" {{.Sfx}}{{end}}
       ;;{{end}}
   help)
       _values "${commands[@]}"
@@ -263,7 +264,7 @@ compdef _complete_for_{{.BinName}} {{.BinName}}.exe
 `
 
 func buildForZshShell(data map[string]interface{}) map[string]interface{} {
-	type opInfo struct{ N, V string }
+	type opInfo struct{ N, V, Sfx string }
 	type opInfos []opInfo
 
 	// {cmd name: cmd des}. in zsh eg: 'build[compile packages and dependencies]'
@@ -276,10 +277,11 @@ func buildForZshShell(data map[string]interface{}) map[string]interface{} {
 		if n == "genac" || n == "gen-ac" {
 			continue
 		}
-		nameDes[c.Name] = c.Description + "(alias " + c.Aliases.String() + ")"
+		nameDes[c.Name] = fmtDes(c.Description) + "(alias " + c.Aliases.String() + ")"
 
 		ops := c.OptNames()
-		if len(ops) == 0 {
+		oplen := len(ops)
+		if oplen == 0 {
 			continue
 		}
 
@@ -291,12 +293,15 @@ func buildForZshShell(data map[string]interface{}) map[string]interface{} {
 			key = strings.Join(ns, "|")
 		}
 
+		sfx := "\\"
+		var i int
 		var opis opInfos
 		for op, st := range ops {
-			opDes := c.Flags.Lookup(op).Usage
+			i++
+			opDes := fmtDes(c.Flags.Lookup(op).Usage)
 
 			if st != "" {
-				opis = append(opis, opInfo{"-" + st, opDes})
+				opis = append(opis, opInfo{"-" + st, opDes, sfx})
 			}
 
 			pfx := "--"
@@ -305,7 +310,11 @@ func buildForZshShell(data map[string]interface{}) map[string]interface{} {
 				pfx = "-"
 			}
 
-			opis = append(opis, opInfo{pfx + op, opDes})
+			if oplen == i {
+				sfx = ""
+			}
+
+			opis = append(opis, opInfo{pfx + op, opDes, sfx})
 		}
 
 		nameOpts[key] = opis
@@ -315,4 +324,10 @@ func buildForZshShell(data map[string]interface{}) map[string]interface{} {
 	data["NameOpts"] = nameOpts
 
 	return data
+}
+
+func fmtDes(str string) string {
+	str = color.ClearTag(str)
+
+	return strings.NewReplacer("`", "").Replace(str)
 }

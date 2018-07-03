@@ -156,6 +156,38 @@ Examples:
 
 ```
 
+### 生成命令补全脚本
+
+```go
+import  "github.com/gookit/cliapp/builtin"
+
+    // ...
+    // 添加内置提供的生成命令
+    app.Add(builtin.GenShAutoComplete())
+
+```
+
+构建并运行生成命令(_生成成功后可以去掉此命令_)：
+
+```bash
+% go build ./demo/cliapp.go && ./cliapp genac -h // 使用帮助
+% go build ./demo/cliapp.go && ./cliapp genac // 开始生成, 你将会看到类似的信息
+INFO: 
+  {shell:zsh binName:cliapp output:auto-completion.zsh}
+
+Now, will write content to file auto-completion.zsh
+Continue? [yes|no](default yes): y
+
+OK, auto-complete file generate successful
+```
+
+生成的shell script 文件请参看： 
+
+- bash 环境 [auto-completion.bash](resource/auto-completion.bash) 
+- zsh 环境 [auto-completion.zsh](resource/auto-completion.zsh)
+
+> ok, 运行后就会在当前目录下生成一个 `auto-completion.{zsh|bash}` 文件， shell 环境名是自动获取的。当然你可以在运行时手动指定
+
 ## 编写命令
 
 ### 简单使用

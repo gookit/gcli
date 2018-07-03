@@ -57,7 +57,7 @@ func GetCurShell(onlyName bool) string {
 	path = strings.TrimSpace(path)
 
 	if onlyName && len(path) > 0 {
-		filepath.Base(path)
+		path = filepath.Base(path)
 	}
 
 	return path

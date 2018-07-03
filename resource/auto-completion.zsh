@@ -14,6 +14,7 @@ _complete_for_cliapp () {
     'example[This is a description message(alias exp,ex)]'
     'git[Collect project info by git info(alias git-info)]'
     'test[This is a description <info>message</> for command test(alias ts)]'
+    'help[Display help information]'
    )
 
   if (( CURRENT == 2 )); then
@@ -25,32 +26,32 @@ _complete_for_cliapp () {
   case ${words[2]} in
   clr|colors|color)
       _arguments -s -w : \
-      "--id[the id option]"\ 
-      "-c[the config option]"\ 
-      "--dir[the dir option]"\ 
+      "--id[the id option]" \
+      "-c[the config option]" \
+      "--dir[the dir option]"
       ;;
   env-info|ei|env)
       _arguments -s -w : \
-      "--id[the id option]"\ 
-      "-c[the config option]"\ 
-      "-d[the dir option]"\ 
-      "--dir[the dir option]"\ 
+      "--id[the id option]" \
+      "-c[the config option]" \
+      "-d[the dir option]" \
+      "--dir[the dir option]"
       ;;
   exp|ex|example)
       _arguments -s -w : \
-      "-n[the option message]"\ 
-      "--names[the option message]"\ 
-      "-d[the `DIRECTORY` option]"\ 
-      "--dir[the `DIRECTORY` option]"\ 
-      "-o[the option message]"\ 
-      "--opt[the option message]"\ 
+      "-d[the `DIRECTORY` option]" \
+      "--dir[the `DIRECTORY` option]" \
+      "-o[the option message]" \
+      "--opt[the option message]" \
+      "-n[the option message]" \
+      "--names[the option message]"
       ;;
   git-info|git)
       _arguments -s -w : \
-      "-d[the dir option]"\ 
-      "--dir[the dir option]"\ 
-      "--id[the id option]"\ 
-      "-c[the config option]"\ 
+      "--id[the id option]" \
+      "-c[the config option]" \
+      "-d[the dir option]" \
+      "--dir[the dir option]"
       ;;
   help)
       _values "${commands[@]}"
