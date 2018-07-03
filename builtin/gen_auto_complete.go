@@ -7,6 +7,7 @@ import (
 	"os"
 	"github.com/gookit/color"
 	"github.com/gookit/cliapp/interact"
+	"fmt"
 )
 
 const (
@@ -223,7 +224,8 @@ func buildForBashShell(data map[string]interface{}) map[string]interface{} {
 	return data
 }
 
-var zshCompleteScriptTpl = `# ------------------------------------------------------------------------------
+var zshCompleteScriptTpl = `#compdef {{.BinName}}
+# ------------------------------------------------------------------------------
 #          FILE:  {{.FileName}}
 #        AUTHOR:  inhere (https://github.com/inhere)
 #       VERSION:  1.0.0
@@ -232,31 +234,31 @@ var zshCompleteScriptTpl = `# --------------------------------------------------
 # usage: source {{.FileName}}
 
 _complete_for_{{.BinName}} () {
-   typeset -a commands
-   commands+=({{range $k,$v := .NameDes}}
-    '{{$k}}[{{$v}}]'{{end}}
-    'help[Display help information]'
-   )
+    typeset -a commands
+    commands+=({{range $k,$v := .NameDes}}
+        '{{$k}}[{{$v}}]'{{end}}
+        'help[Display help information]'
+    )
 
-  if (( CURRENT == 2 )); then
-    # explain commands
-    _values 'cliapp commands' ${commands[@]}
-    return
-  fi
+    if (( CURRENT == 2 )); then
+        # explain commands
+        _values 'cliapp commands' ${commands[@]}
+        return
+    fi
 
-  case ${words[2]} in{{range $k,$vs := .NameOpts}}
-  {{$k}})
-      _arguments -s -w \{{range $vs}}
-        "{{.N}}[{{.V}}]" {{.Sfx}}{{end}}
-      ;;{{end}}
-  help)
-      _values "${commands[@]}"
-      ;;
-  *)
-      # use files by default
-      _files
-      ;;
-  esac
+    case ${words[2]} in{{range $k,$vs := .NameOpts}}
+    {{$k}})
+        _values 'command options' \{{range $vs}}
+            {{.}}{{end}}
+        ;;{{end}}
+    help)
+        _values "${commands[@]}"
+        ;;
+    *)
+        # use files by default
+        _files
+        ;;
+    esac
 }
 
 compdef _complete_for_{{.BinName}} {{.BinName}}
@@ -264,12 +266,14 @@ compdef _complete_for_{{.BinName}} {{.BinName}}.exe
 `
 
 func buildForZshShell(data map[string]interface{}) map[string]interface{} {
-	type opInfo struct{ N, V, Sfx string }
-	type opInfos []opInfo
+	type opInfos []string
 
 	// {cmd name: cmd des}. in zsh eg: 'build[compile packages and dependencies]'
 	nameDes := make(map[string]string)
-	// {cmd name: {opt: opt des}}. in zsh eg: '-n[print the commands but do not run them]'
+	// {cmd name: {opt: opt des}}.
+	// in zsh eg:
+	// '-x[description]:message:action'
+	// {-h,--help}'[Show usage message]' // multi name
 	nameOpts := make(map[string]opInfos)
 
 	for n, c := range cliapp.AllCommands() {
@@ -293,28 +297,32 @@ func buildForZshShell(data map[string]interface{}) map[string]interface{} {
 			key = strings.Join(ns, "|")
 		}
 
-		sfx := "\\"
+		sfx := " \\"
 		var i int
-		var opis opInfos
+		var opis []string
 		for op, st := range ops {
 			i++
-			opDes := fmtDes(c.Flags.Lookup(op).Usage)
-
-			if st != "" {
-				opis = append(opis, opInfo{"-" + st, opDes, sfx})
-			}
-
 			pfx := "--"
+			opDes := fmtDes(c.Flags.Lookup(op).Usage)
 
 			if len(op) == 1 {
 				pfx = "-"
 			}
 
+			opKey := pfx + op
+			desTpl := "'%s[%s]'%s"
+
+			if st != "" {
+				desTpl = "%s'[%s]'%s"
+				opKey = fmt.Sprintf("{-%s,%s}", st, pfx + op)
+			}
+
+			// latest item
 			if oplen == i {
 				sfx = ""
 			}
 
-			opis = append(opis, opInfo{pfx + op, opDes, sfx})
+			opis = append(opis, fmt.Sprintf(desTpl, opKey, opDes, sfx))
 		}
 
 		nameOpts[key] = opis
@@ -329,5 +337,5 @@ func buildForZshShell(data map[string]interface{}) map[string]interface{} {
 func fmtDes(str string) string {
 	str = color.ClearTag(str)
 
-	return strings.NewReplacer("`", "").Replace(str)
+	return strings.NewReplacer("`", "", "[", "", "]", "").Replace(str)
 }

@@ -56,3 +56,4 @@ zsh 环境下的命令自动补全脚本
 ### 参考链接 
 
 - https://segmentfault.com/a/1190000002994217
+- https://github.com/zsh-users/zsh-completions/blob/master/zsh-completions-howto.org
