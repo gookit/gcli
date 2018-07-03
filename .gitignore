@@ -17,7 +17,7 @@
 *.out
 alone
 cliapp
-
+.DS_Store
 # shell script
 /*.bash
 /*.sh

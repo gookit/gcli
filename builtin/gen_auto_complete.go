@@ -4,7 +4,7 @@ import (
 	"github.com/gookit/cliapp"
 	"github.com/gookit/cliapp/utils"
 	"strings"
-	"os"
+	"io/ioutil"
 	"github.com/gookit/color"
 	"github.com/gookit/cliapp/interact"
 	"fmt"
@@ -113,15 +113,7 @@ func doGen(cmd *cliapp.Command, args []string) int {
 	}
 
 	// 以读写方式打开文件，如果不存在，则创建
-	file, err := os.OpenFile(genOpts.output, os.O_RDWR|os.O_CREATE, 0766)
-
-	if err != nil {
-		color.Errorln("Open file error: ", err.Error())
-
-		return -2
-	}
-
-	_, err = file.WriteString(str)
+	err := ioutil.WriteFile(genOpts.output, []byte(str), 0664)
 
 	if err != nil {
 		color.Errorln("Write file error: ", err.Error())
