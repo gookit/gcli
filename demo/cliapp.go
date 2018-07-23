@@ -1,10 +1,10 @@
 package main
 
 import (
-	"runtime"
 	"github.com/gookit/cliapp"
-	"github.com/gookit/cliapp/demo/cmd"
 	"github.com/gookit/cliapp/builtin"
+	"github.com/gookit/cliapp/demo/cmd"
+	"runtime"
 )
 
 // for test run: go build ./demo/cliapp.go && ./cliapp

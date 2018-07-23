@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	cli "github.com/gookit/cliapp"
 	"fmt"
+	cli "github.com/gookit/cliapp"
 )
 
 // The string flag list, implemented flag.Value interface

@@ -1,12 +1,12 @@
 package cmd
 
 import (
-	cli "github.com/gookit/cliapp"
 	"fmt"
+	cli "github.com/gookit/cliapp"
+	"github.com/gookit/cliapp/utils"
+	"github.com/gookit/color"
 	"log"
 	"strings"
-	"github.com/gookit/color"
-	"github.com/gookit/cliapp/utils"
 )
 
 var gitOpts = struct {

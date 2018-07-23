@@ -2,8 +2,8 @@ package cliapp
 
 import (
 	"flag"
-	"strings"
 	"github.com/gookit/cliapp/utils"
+	"strings"
 )
 
 // Commander

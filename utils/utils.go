@@ -1,12 +1,12 @@
 package utils
 
 import (
-	"os/exec"
 	"bytes"
 	"encoding/json"
-	"text/template"
-	"strings"
+	"os/exec"
 	"path/filepath"
+	"strings"
+	"text/template"
 )
 
 // Go is a basic promise implementation: it wraps calls a function in a goroutine

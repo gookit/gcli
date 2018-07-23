@@ -1,10 +1,10 @@
 package cliapp
 
 import (
-	"os"
-	"log"
-	"github.com/gookit/color"
 	"github.com/gookit/cliapp/utils"
+	"github.com/gookit/color"
+	"log"
+	"os"
 	"strings"
 )
 
@@ -13,6 +13,7 @@ var app *Application
 
 // commands collect all command
 var commands map[string]*Command
+
 // var commanders  map[string]Commander
 
 // init

@@ -1,9 +1,9 @@
 package cmd
 
 import (
+	"fmt"
 	"github.com/gookit/cliapp"
 	"github.com/gookit/color"
-	"fmt"
 )
 
 var colorOpts = struct {
@@ -78,6 +78,6 @@ func colorUsage(cmd *cliapp.Command, args []string) int {
 	return 0
 }
 
-func byte8color()  {
+func byte8color() {
 
 }

@@ -6,11 +6,10 @@ type IShow interface {
 	Print()
 	// trans to string
 	String() string
-
 }
 
 type Title struct {
-	Title string
+	Title     string
 	Formatter func(t *Title) string
 	// Formatter IFormatter
 }

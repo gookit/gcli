@@ -8,7 +8,7 @@ type Table struct {
 	Border     bool
 	RowBorder  bool
 	HeadBorder bool
-	WrapBorder  bool
+	WrapBorder bool
 }
 
 // NewTable
@@ -27,4 +27,3 @@ func (t *Table) Print() {
 func (t *Table) String() string {
 	return ""
 }
-

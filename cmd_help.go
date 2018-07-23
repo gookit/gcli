@@ -1,13 +1,13 @@
 package cliapp
 
 import (
-	"fmt"
-	"os"
 	"flag"
-	"strings"
-	"reflect"
-	"github.com/gookit/color"
+	"fmt"
 	"github.com/gookit/cliapp/utils"
+	"github.com/gookit/color"
+	"os"
+	"reflect"
+	"strings"
 )
 
 // help template for a command

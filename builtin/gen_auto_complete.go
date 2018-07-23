@@ -1,13 +1,13 @@
 package builtin
 
 import (
-	"github.com/gookit/cliapp"
-	"github.com/gookit/cliapp/utils"
-	"strings"
-	"io/ioutil"
-	"github.com/gookit/color"
-	"github.com/gookit/cliapp/interact"
 	"fmt"
+	"github.com/gookit/cliapp"
+	"github.com/gookit/cliapp/interact"
+	"github.com/gookit/cliapp/utils"
+	"github.com/gookit/color"
+	"io/ioutil"
+	"strings"
 )
 
 const (
@@ -306,7 +306,7 @@ func buildForZshShell(data map[string]interface{}) map[string]interface{} {
 
 			if st != "" {
 				desTpl = "%s'[%s]'%s"
-				opKey = fmt.Sprintf("{-%s,%s}", st, pfx + op)
+				opKey = fmt.Sprintf("{-%s,%s}", st, pfx+op)
 			}
 
 			// latest item

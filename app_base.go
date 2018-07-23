@@ -1,11 +1,11 @@
 package cliapp
 
 import (
-	"strings"
-	"fmt"
-	"os"
 	"flag"
+	"fmt"
 	"github.com/gookit/color"
+	"os"
+	"strings"
 )
 
 // constants for error level

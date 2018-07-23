@@ -1,8 +1,8 @@
 package main
 
 import (
-	"github.com/gookit/cliapp"
 	"fmt"
+	"github.com/gookit/cliapp"
 )
 
 var opts = struct {

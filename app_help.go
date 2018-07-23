@@ -1,10 +1,10 @@
 package cliapp
 
 import (
-	"os"
 	"fmt"
-	"github.com/gookit/color"
 	"github.com/gookit/cliapp/utils"
+	"github.com/gookit/color"
+	"os"
 )
 
 // showVersionInfo display version info

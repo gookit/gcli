@@ -1,16 +1,15 @@
 package cmd
 
-
 import (
-	cli "github.com/gookit/cliapp"
 	"fmt"
-	"runtime"
-	"os"
+	cli "github.com/gookit/cliapp"
 	"github.com/gookit/cliapp/utils"
+	"os"
+	"runtime"
 )
 
 // options for the command
-var eiOpts =  struct {
+var eiOpts = struct {
 	id    int
 	c     string
 	dir   string
@@ -36,16 +35,16 @@ func EnvInfoCommand() *cli.Command {
 }
 
 // do run
-func envInfoRun(cmd *cli.Command, args []string) int   {
-	eAble,_ := os.Executable()
+func envInfoRun(cmd *cli.Command, args []string) int {
+	eAble, _ := os.Executable()
 
 	data := map[string]interface{}{
-		"os": runtime.GOOS,
-		"binName": cli.BinName(),
-		"workDir": cli.WorkDir(),
-		"rawArgs": os.Args,
+		"os":       runtime.GOOS,
+		"binName":  cli.BinName(),
+		"workDir":  cli.WorkDir(),
+		"rawArgs":  os.Args,
 		"execAble": eAble,
-		"env": os.Environ(),
+		"env":      os.Environ(),
 	}
 
 	str, _ := utils.PrettyJson(&data)

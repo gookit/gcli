@@ -1,8 +1,8 @@
 package interact
 
 import (
-	"strings"
 	"fmt"
+	"strings"
 )
 
 // check user inputted answer is right

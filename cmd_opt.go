@@ -153,11 +153,11 @@ func (c *Command) OptNames() map[string]string {
 // })
 // cmd.Flags.String()
 type Option struct {
-	Name string
+	Name  string
 	Short string
 	DType string // int, string, bool, value
 
-	Required bool
-	DefValue string
+	Required    bool
+	DefValue    string
 	Description string
 }
