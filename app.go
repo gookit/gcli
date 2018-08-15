@@ -67,8 +67,8 @@ func (app *Application) Add(c *Command) {
 		return
 	}
 
-	app.names[c.Name] = len(c.Name)
 	commands[c.Name] = c
+	app.names[c.Name] = len(c.Name)
 
 	// will call it on input './cliapp command -h'
 	c.Flags.Usage = func() {
@@ -139,7 +139,6 @@ func (app *Application) SubRun(name string, args []string) int {
 func (app *Application) prepareRun() (string, []string) {
 	// don't display date on print log
 	log.SetFlags(0)
-
 	args := parseGlobalOpts()
 
 	if gOpts.showHelp {
@@ -157,7 +156,6 @@ func (app *Application) prepareRun() (string, []string) {
 	// check args
 	if len(args) < 1 {
 		defCmd := app.defaultCmd
-
 		if len(defCmd) == 0 {
 			showCommandsHelp()
 		}

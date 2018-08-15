@@ -6,7 +6,6 @@ import (
 )
 
 var level2name = map[uint]string{
-	VerbQuiet: "",
 	VerbError: "ERROR",
 	VerbWarn:  "WARNING",
 	VerbInfo:  "INFO",

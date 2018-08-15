@@ -2,7 +2,6 @@ package cliapp
 
 import (
 	"flag"
-	"github.com/gookit/color"
 	"os"
 )
 
@@ -33,34 +32,28 @@ type GlobalOpts struct {
 
 // Application the cli app definition
 type Application struct {
-	// app name
+	// Name app name
 	Name string
-	// app version. like "1.0.1"
+	// Version app version. like "1.0.1"
 	Version string
-	// app description
+	// Description app description
 	Description string
-
-	// ASCII logo setting
+	// Logo ASCII logo setting
 	Logo Logo
-
-	// use strict mode. short opt must be begin '-', long opt must be begin '--'
+	// Strict use strict mode. short opt must be begin '-', long opt must be begin '--'
 	Strict bool
-
-	// current command name
-	command string
-
-	// default command name
-	defaultCmd string
 
 	// vars you can add some vars map for render help info
 	vars map[string]string
-
 	// command names. key is name, value is name string length
 	// eg. {"test": 4, "example": 7}
 	names map[string]int // value
-
 	// command aliases map {alias: name}
 	aliases map[string]string
+	// current command name
+	command string
+	// default command name
+	defaultCmd string
 }
 
 // global options
@@ -72,10 +65,10 @@ var binName = os.Args[0]
 // the app work dir path
 var workDir, _ = os.Getwd()
 
-// error level
+// Verbose message report level
 var Verbose = VerbError
 
-// Exit
+// Exit program
 func Exit(code int) {
 	os.Exit(code)
 }
@@ -152,19 +145,4 @@ func (app *Application) GetVar(name string) string {
 // GetVars get all tpl vars
 func (app *Application) GetVars(name string, value string) map[string]string {
 	return app.vars
-}
-
-// Print
-func Print(args ...interface{}) (int, error) {
-	return color.Print(args...)
-}
-
-// Println
-func Println(args ...interface{}) (int, error) {
-	return color.Println(args...)
-}
-
-// Printf
-func Printf(format string, args ...interface{}) (int, error) {
-	return color.Printf(format, args...)
 }

@@ -1,11 +1,10 @@
 package cmd
 
 import (
-	"fmt"
 	cli "github.com/gookit/cliapp"
-	"github.com/gookit/cliapp/utils"
 	"os"
 	"runtime"
+	"github.com/gookit/cliapp/show"
 )
 
 // options for the command
@@ -47,8 +46,6 @@ func envInfoRun(cmd *cli.Command, args []string) int {
 		"env":      os.Environ(),
 	}
 
-	str, _ := utils.PrettyJson(&data)
-
-	fmt.Println(str)
+	show.JSON(&data)
 	return 0
 }

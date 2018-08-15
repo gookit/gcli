@@ -7,17 +7,6 @@ import (
 	"os"
 )
 
-// showVersionInfo display version info
-func (app *Application) showVersionInfo() {
-	color.Printf(
-		"%s\n\nVersion: <suc>%s</>\n",
-		utils.UpperFirst(app.Description),
-		app.Version,
-	)
-
-	os.Exit(0)
-}
-
 // help template for all commands
 var commandsHelp = `{{.Description}} (Version: <info>{{.Version}}</>)
 <comment>Usage:</>
@@ -36,6 +25,17 @@ var commandsHelp = `{{.Description}} (Version: <info>{{.Version}}</>)
 Use "<cyan>{$binName} help {command}</>" for more information about a command
 `
 
+// showVersionInfo display version info
+func (app *Application) showVersionInfo() {
+	fmt.Printf(
+		"%s\n\nVersion: %s\n",
+		utils.UpperFirst(app.Description),
+		color.ApplyTag("cyan", app.Version),
+	)
+
+	os.Exit(0)
+}
+
 // showCommandsHelp commands list
 func showCommandsHelp() {
 	commandsHelp = color.ReplaceTag(commandsHelp)
@@ -52,4 +52,19 @@ func showCommandsHelp() {
 	fmt.Print(color.RenderStr(str))
 
 	os.Exit(0)
+}
+
+// Print messages
+func Print(args ...interface{}) (int, error) {
+	return color.Print(args...)
+}
+
+// Println messages
+func Println(args ...interface{}) (int, error) {
+	return color.Println(args...)
+}
+
+// Printf messages
+func Printf(format string, args ...interface{}) (int, error) {
+	return color.Printf(format, args...)
 }
