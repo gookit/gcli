@@ -109,7 +109,7 @@ Version: 1.0.3
 
 > by `./cliapp` or `./cliapp -h` or `./cliapp --help`
 
-![app-help](demo/images/app-help.jpg)
+![app-help](_examples/images/app-help.jpg)
 
 
 ### Run a command
@@ -172,7 +172,7 @@ app.Add(&cliapp.Command{
 
 ### Write go file
 
-> the source file at: [example.go](demo/cmd/example.go)
+> the source file at: [example.go](_examples/cmd/example.go)
 
 ```go
 package cmd
@@ -252,16 +252,16 @@ func exampleExecute(cmd *cli.Command, args []string) int {
 - display the command help：
 
 ```bash
-go build ./demo/cliapp.go && ./cliapp example -h
+go build ./_examples/cliapp.go && ./cliapp example -h
 ```
 
-![cmd-help](demo/images/cmd-help.jpg)
+![cmd-help](_examples/images/cmd-help.jpg)
 
 ## CLI Color
 
 ### Color output display
 
-![colored-out](demo/images/colored-out.jpg)
+![colored-out](_examples/images/colored-out.jpg)
 
 ### Usage
 

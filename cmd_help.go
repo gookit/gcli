@@ -75,7 +75,7 @@ func (c *Command) ShowHelp(quit ...bool) {
 	c.Vars["fullCmd"] = binName + " " + c.Name
 
 	// parse help vars
-	str = ReplaceVars(str, c.Vars)
+	str = replaceVars(str, c.Vars)
 	fmt.Print(color.RenderStr(str))
 
 	if len(quit) > 0 && quit[0] {

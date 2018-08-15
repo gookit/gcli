@@ -3,11 +3,12 @@ package main
 import (
 	"github.com/gookit/cliapp"
 	"github.com/gookit/cliapp/builtin"
-	"github.com/gookit/cliapp/demo/cmd"
+	"github.com/gookit/cliapp/_examples/cmd"
 	"runtime"
+	"github.com/gookit/cliapp/builtin/filewatcher"
 )
 
-// for test run: go build ./demo/cliapp.go && ./cliapp
+// for test run: go run ./_examples/cliapp.go
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
@@ -22,6 +23,7 @@ func main() {
 	app.Add(cmd.EnvInfoCommand())
 	app.Add(cmd.GitCommand())
 	app.Add(cmd.ColorCommand())
+	app.Add(filewatcher.FileWatcher())
 	app.Add(&cliapp.Command{
 		Name:        "test",
 		Aliases:     []string{"ts"},

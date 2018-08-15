@@ -89,7 +89,7 @@ func (app *Application) Add(c *Command) {
 func (app *Application) Run() {
 	rawName, args := app.prepareRun()
 	name := app.GetNameByAlias(rawName)
-	logf("input command name is: %s", name)
+	debugf(VerbDebug, "input command name is: %s", name)
 
 	if !app.IsCommand(name) {
 		color.Tips("error").Printf("unknown input command '%s'", name)
@@ -248,13 +248,4 @@ func (app *Application) Commands() map[string]*Command {
 // AllCommands get all commands
 func AllCommands() map[string]*Command {
 	return commands
-}
-
-// print debug logging
-func logf(f string, v ...interface{}) {
-	if Verbose < VerbDebug {
-		return
-	}
-
-	log.Printf("[DEBUG] "+f, v...)
 }

@@ -2,6 +2,7 @@ package cliapp
 
 import (
 	"flag"
+	"fmt"
 	"github.com/gookit/color"
 )
 
@@ -153,11 +154,44 @@ func (c *Command) OptNames() map[string]string {
 // })
 // cmd.Flags.String()
 type Option struct {
-	Name  string
-	Short string
-	DType string // int, string, bool, value
+	Name   string
+	Short  string
+	DType  string // int, string, bool, value
+	VarPtr interface{}
 
 	Required    bool
-	DefValue    string
+	DefValue    interface{}
 	Description string
+}
+
+/*************************************************************
+ * Some special var options
+ *************************************************************/
+
+// Ints The int flag list, implemented flag.Value interface
+type Ints []int
+
+// String to string
+func (s *Ints) String() string {
+	return fmt.Sprintf("%v", *s)
+}
+
+// Set new value
+func (s *Ints) Set(value int) error {
+	*s = append(*s, value)
+	return nil
+}
+
+// Strings The string flag list, implemented flag.Value interface
+type Strings []string
+
+// String to string
+func (s *Strings) String() string {
+	return fmt.Sprintf("%v", *s)
+}
+
+// Set new value
+func (s *Strings) Set(value string) error {
+	*s = append(*s, value)
+	return nil
 }

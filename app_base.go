@@ -2,16 +2,14 @@ package cliapp
 
 import (
 	"flag"
-	"fmt"
 	"github.com/gookit/color"
 	"os"
-	"strings"
 )
 
 // constants for error level
 const (
-	VerbQuiet = iota // don't report anything
-	VerbError        // reporting on error
+	VerbQuiet uint = iota // don't report anything
+	VerbError             // reporting on error
 	VerbWarn
 	VerbInfo
 	VerbDebug
@@ -103,7 +101,7 @@ func (app *Application) SetDebug() {
 }
 
 // SetVerbose
-func (app *Application) SetVerbose(verbose int) {
+func (app *Application) SetVerbose(verbose uint) {
 	Verbose = verbose
 }
 
@@ -117,7 +115,7 @@ func parseGlobalOpts() []string {
 	// Some global options
 	flag.Usage = showCommandsHelp
 
-	flag.IntVar(&Verbose, "verbose", VerbError, "")
+	flag.UintVar(&Verbose, "verbose", VerbError, "")
 	flag.BoolVar(&gOpts.showHelp, "h", false, "")
 	flag.BoolVar(&gOpts.showHelp, "help", false, "")
 	flag.BoolVar(&gOpts.showVersion, "V", false, "")
@@ -125,7 +123,6 @@ func parseGlobalOpts() []string {
 	flag.BoolVar(&gOpts.noColor, "no-color", false, "")
 
 	flag.Parse()
-
 	// fmt.Printf("verb %v, global opts: %+v\n", Verbose, gOpts)
 
 	return flag.Args()
@@ -155,55 +152,6 @@ func (app *Application) GetVar(name string) string {
 // GetVars get all tpl vars
 func (app *Application) GetVars(name string, value string) map[string]string {
 	return app.vars
-}
-
-// ReplaceVars replace vars in the help info
-func ReplaceVars(help string, vars map[string]string) string {
-	// if not use var
-	if !strings.Contains(help, "{$") {
-		return help
-	}
-
-	var ss []string
-	for n, v := range vars {
-		ss = append(ss, fmt.Sprintf(HelpVar, n), v)
-	}
-
-	return strings.NewReplacer(ss...).Replace(help)
-}
-
-// strictFormatArgs '-ab' will split to '-a -b', '--o' -> '-o'
-func strictFormatArgs(args []string) []string {
-	if len(args) == 0 {
-		return args
-	}
-
-	var fmtdArgs []string
-
-	for _, arg := range args {
-		l := len(arg)
-
-		if strings.Index(arg, "--") == 0 {
-			if l == 3 {
-				arg = "-" + string(arg[2])
-			}
-
-		} else if strings.Index(arg, "-") == 0 {
-			if l > 2 {
-				bools := strings.Split(strings.Trim(arg, "-"), "")
-
-				for _, s := range bools {
-					fmtdArgs = append(fmtdArgs, "-"+s)
-				}
-
-				continue
-			}
-		}
-
-		fmtdArgs = append(fmtdArgs, arg)
-	}
-
-	return fmtdArgs
 }
 
 // Print

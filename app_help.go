@@ -48,7 +48,7 @@ func showCommandsHelp() {
 	}, false)
 
 	// parse help vars
-	str = ReplaceVars(str, app.vars)
+	str = replaceVars(str, app.vars)
 	fmt.Print(color.RenderStr(str))
 
 	os.Exit(0)

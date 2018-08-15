@@ -20,15 +20,21 @@ type Commander interface {
 // type CmdHandler func(app *Application, args []string) int
 // type CmdHandler Command
 
+type Map map[string]string
+type ArrMap []Map
+type Argument struct {
+	Name, Description string
+}
+
 // CmdAliases
 type CmdAliases []string
 
-// to string
+// String to string
 func (a *CmdAliases) String() string {
 	return strings.Join(*a, ",")
 }
 
-// to string
+// Join to string
 func (a *CmdAliases) Join(sep string) string {
 	return strings.Join(*a, sep)
 }
@@ -69,6 +75,12 @@ type Command struct {
 
 	// ArgList arguments description [name]description
 	ArgList map[string]string
+	// Args for the command
+	// eg. {
+	// 	Argument{"arg0", "this is first argument"},
+	// 	Argument{"arg1", "this is second argument"},
+	// }
+	Args []Argument
 
 	// application
 	app *Application
