@@ -54,10 +54,10 @@ package main
 import (
     "runtime"
     "github.com/gookit/cliapp"
-    "github.com/gookit/cliapp/demo/cmd"
+    "github.com/gookit/cliapp/_examples/cmd"
 )
 
-// for test run: go build ./demo/cliapp.go && ./cliapp
+// for test run: go run ./_examples/cliapp.go && ./cliapp
 func main() {
     runtime.GOMAXPROCS(runtime.NumCPU())
 
@@ -92,10 +92,10 @@ func main() {
 
 ## 使用说明
 
-先使用本项目下的 [demo](demo/) 示例代码构建一个小的cli demo应用
+先使用本项目下的 [demo](_examples/) 示例代码构建一个小的cli demo应用
 
 ```bash
-% go build ./demo/cliapp.go                                                           
+% go build ./_examples/cliapp.go                                                           
 ```
 
 ### 打印版本信息
@@ -113,7 +113,7 @@ Version: 1.0.3
 
 使用 `./cliapp` 或者 `./cliapp -h` 来显示应用的帮助信息，包含所有的可用命令和一些全局选项
 
-![app-help](demo/images/app-help.jpg)
+![app-help](_examples/images/app-help.jpg)
 
 ### 运行一个命令
 
@@ -170,8 +170,8 @@ import  "github.com/gookit/cliapp/builtin"
 构建并运行生成命令(_生成成功后可以去掉此命令_)：
 
 ```bash
-% go build ./demo/cliapp.go && ./cliapp genac -h // 使用帮助
-% go build ./demo/cliapp.go && ./cliapp genac // 开始生成, 你将会看到类似的信息
+% go build ./_examples/cliapp.go && ./cliapp genac -h // 使用帮助
+% go build ./_examples/cliapp.go && ./cliapp genac // 开始生成, 你将会看到类似的信息
 INFO: 
   {shell:zsh binName:cliapp output:auto-completion.zsh}
 
@@ -207,7 +207,7 @@ app.Add(&cliapp.Command{
 
 ### 使用独立的文件
 
-> the source file at: [example.go](demo/cmd/example.go)
+> the source file at: [example.go](_examples/cmd/example.go)
 
 ```go
 package cmd
@@ -287,18 +287,18 @@ func exampleExecute(cmd *cli.Command, args []string) int {
 - 查看此命令的帮助信息：
 
 ```bash
-go build ./demo/cliapp.go && ./cliapp example -h
+go build ./_examples/cliapp.go && ./cliapp example -h
 ```
 
 > 漂亮的帮助信息就已经自动生成并展示出来了
 
-![cmd-help](demo/images/cmd-help.jpg)
+![cmd-help](_examples/images/cmd-help.jpg)
 
 ## 使用颜色输出
 
 ### 颜色输出展示
 
-![colored-out](demo/images/colored-out.jpg)
+![colored-out](_examples/images/colored-out.jpg)
 
 ### 如何使用
 
