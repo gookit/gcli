@@ -2,8 +2,8 @@ package interact
 
 import (
 	"fmt"
-	"strings"
 	"github.com/gookit/color"
+	"strings"
 )
 
 // AnswerIsYes check user inputted answer is right

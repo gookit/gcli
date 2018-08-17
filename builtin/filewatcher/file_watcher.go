@@ -5,8 +5,8 @@ import (
 	"github.com/fsnotify/fsnotify"
 	"github.com/gookit/cliapp"
 	"github.com/gookit/color"
-	"path/filepath"
 	"os"
+	"path/filepath"
 	"strings"
 )
 
@@ -28,7 +28,7 @@ func FileWatcher() *cliapp.Command {
 
 		Description: "file system change notification",
 
-		Aliases:  []string{"fwatch", "fswatch"},
+		Aliases: []string{"fwatch", "fswatch"},
 		Examples: `watch a dir:
   {$fullCmd} -e .git -e .idea -d ./_examples --ext ".go|.md"
   watch a file(s):

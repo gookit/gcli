@@ -116,15 +116,16 @@ func (app *Application) prepareRun() (string, []string) {
 		color.Enable = false
 	}
 
-	// check args
+	// if no input command
 	if len(args) < 1 {
+		// will try run defaultCmd
 		defCmd := app.defaultCmd
 		if len(defCmd) == 0 {
 			app.showCommandsHelp()
 		}
 
 		if !app.IsCommand(defCmd) {
-			color.Tips("error").Printf("The default command '%s' is not exists", defCmd)
+			Logf(VerbError, "The default command '%s' is not exists", defCmd)
 			app.showCommandsHelp()
 		}
 
@@ -168,7 +169,6 @@ func (app *Application) IsCommand(name string) bool {
 // CommandNames get all command names
 func (app *Application) CommandNames() []string {
 	var ss []string
-
 	for n := range app.names {
 		ss = append(ss, n)
 	}

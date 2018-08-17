@@ -146,7 +146,17 @@ func (app *Application) Init() {
 }
 
 // Add add a command
-func (app *Application) Add(c *Command) {
+func (app *Application) Add(c *Command, more ...*Command) {
+	app.addCommand(c)
+
+	if len(more) > 0 {
+		for _, cmd := range more {
+			app.addCommand(cmd)
+		}
+	}
+}
+
+func (app *Application) addCommand(c *Command) {
 	if c.IsDisabled() {
 		Logf(VerbDebug, "command %s has been disabled, skip add", c.Name)
 		return
