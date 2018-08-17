@@ -151,7 +151,6 @@ func addWatchDir(dir string) error {
 				cliapp.Logf(cliapp.VerbDebug, "add watch file: %s", path)
 			}
 		} else { // add any file
-			// add file watch
 			err = watcher.Add(path)
 			cliapp.Logf(cliapp.VerbDebug, "add watch file: %s", path)
 		}

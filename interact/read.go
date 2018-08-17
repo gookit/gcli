@@ -11,20 +11,17 @@ import (
 // in := ReadLine("")
 // ans := ReadLine("your name?")
 func ReadLine(question string) (string, error) {
-	reader := bufio.NewReader(os.Stdin)
-
 	if len(question) > 0 {
 		color.Print(question)
 	}
 
+	reader := bufio.NewReader(os.Stdin)
 	answer, _, err := reader.ReadLine()
-
 	return strings.TrimSpace(string(answer)), err
 }
 
 // ReadFirst read first char
 func ReadFirst(question string) (string, error) {
 	answer, err := ReadLine(question)
-
 	return string(answer[0]), err
 }

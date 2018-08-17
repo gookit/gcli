@@ -65,7 +65,7 @@ func GenShAutoComplete() *cliapp.Command {
 	return &cmd
 }
 
-func doGen(cmd *cliapp.Command, args []string) int {
+func doGen(_ *cliapp.Command, _ []string) int {
 	if len(genOpts.binName) == 0 {
 		genOpts.binName = cliapp.BinName()
 	}
@@ -97,7 +97,6 @@ func doGen(cmd *cliapp.Command, args []string) int {
 		data = buildForZshShell(data)
 	} else {
 		color.LiteTips("error").Println("--shell option only allow: zsh,bash")
-
 		return -2
 	}
 
@@ -108,7 +107,6 @@ func doGen(cmd *cliapp.Command, args []string) int {
 
 	if !interact.AnswerIsYes(true) {
 		color.Info("\nBye :)\n")
-
 		return 0
 	}
 
@@ -199,7 +197,6 @@ func buildForBashShell(data map[string]interface{}) map[string]interface{} {
 			}
 
 			pfx := "--"
-
 			if len(op) == 1 {
 				pfx = "-"
 			}
@@ -328,6 +325,5 @@ func buildForZshShell(data map[string]interface{}) map[string]interface{} {
 
 func fmtDes(str string) string {
 	str = color.ClearTag(str)
-
 	return strings.NewReplacer("`", "", "[", "", "]", "").Replace(str)
 }
