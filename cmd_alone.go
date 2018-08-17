@@ -28,7 +28,6 @@ func (c *Command) AloneRun() int {
 	log.SetFlags(0)
 
 	c.Flags.Parse(os.Args[1:])
-
 	return c.Fn(c, c.Flags.Args())
 }
 

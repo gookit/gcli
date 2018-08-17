@@ -1,9 +1,14 @@
 package show
 
 import (
-	"fmt"
 	"encoding/json"
+	"fmt"
 )
+
+// New a
+func New() {
+	//
+}
 
 // JSON print pretty JSON data
 func JSON(v interface{}, settings ...string) {
@@ -25,4 +30,3 @@ func JSON(v interface{}, settings ...string) {
 
 	fmt.Println(string(bs))
 }
-

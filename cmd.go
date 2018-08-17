@@ -106,7 +106,7 @@ func (c *Command) Runnable() bool {
 	return c.Fn != nil
 }
 
-// Init
+// Init command
 func (c *Command) Init() *Command {
 	if len(c.Description) > 0 {
 		c.Description = utils.UpperFirst(c.Description)

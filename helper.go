@@ -2,6 +2,7 @@ package cliapp
 
 import (
 	"fmt"
+	"github.com/gookit/color"
 	"strings"
 )
 
@@ -10,15 +11,29 @@ var level2name = map[uint]string{
 	VerbWarn:  "WARNING",
 	VerbInfo:  "INFO",
 	VerbDebug: "DEBUG",
+	// VerbCrazy: "CRAZY",
 }
 
-// print debug logging
-func debugf(level uint, format string, v ...interface{}) {
-	if Verbose < level {
+var level2color = map[uint]color.Color{
+	VerbError: color.FgRed,
+	VerbWarn:  color.FgYellow,
+	VerbInfo:  color.FgCyan,
+	VerbDebug: color.FgGreen,
+}
+
+// print log message
+func logf(level uint, format string, v ...interface{}) {
+	if gOpts.verbose < level {
 		return
 	}
 
-	fmt.Printf("[DEBUG] "+format, v...)
+	name, has := level2name[level]
+	if !has {
+		return
+	}
+
+	c := level2color[level]
+	fmt.Printf("cliapp: [%s] %s\n", c.Render(name), fmt.Sprintf(format, v...))
 }
 
 // replaceVars replace vars in the help info
@@ -43,7 +58,6 @@ func strictFormatArgs(args []string) []string {
 	}
 
 	var fmtdArgs []string
-
 	for _, arg := range args {
 		l := len(arg)
 
@@ -55,7 +69,6 @@ func strictFormatArgs(args []string) []string {
 		} else if strings.Index(arg, "-") == 0 {
 			if l > 2 {
 				bools := strings.Split(strings.Trim(arg, "-"), "")
-
 				for _, s := range bools {
 					fmtdArgs = append(fmtdArgs, "-"+s)
 				}

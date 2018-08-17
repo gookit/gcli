@@ -1,7 +1,6 @@
 package filewatcher
 
 import (
-	"fmt"
 	"github.com/fsnotify/fsnotify"
 	"github.com/gookit/cliapp"
 	"github.com/gookit/color"
@@ -36,11 +35,13 @@ func FileWatcher() *cliapp.Command {
 
 // test run:
 // go run ./_examples/cliapp.go watch -e .git -e .idea -d ./_examples
-func watch(cmd *cliapp.Command, args []string) int {
+func watch(_ *cliapp.Command, _ []string) int {
 	color.Infoln("Work directory is: ", cliapp.WorkDir())
 
-	fmt.Printf("%+v\n", opts)
-	return 0
+	if opts.Dir == "" {
+		color.Error("watch directory cannot be empty")
+		return -1
+	}
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -55,6 +56,7 @@ func watch(cmd *cliapp.Command, args []string) int {
 			select {
 			case event := <-watcher.Events:
 				log.Println("event:", event)
+
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					log.Println("modified file:", event.Name)
 				}
@@ -64,7 +66,7 @@ func watch(cmd *cliapp.Command, args []string) int {
 		}
 	}()
 
-	err = watcher.Add("/tmp/foo")
+	err = watcher.Add(opts.Dir)
 	if err != nil {
 		color.Errln(err.Error())
 		return -1

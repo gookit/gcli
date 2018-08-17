@@ -5,6 +5,7 @@ import (
 	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
 	"os"
+	"strings"
 )
 
 // help template for all commands
@@ -25,7 +26,7 @@ var commandsHelp = `{{.Description}} (Version: <info>{{.Version}}</>)
 Use "<cyan>{$binName} help {command}</>" for more information about a command
 `
 
-// showVersionInfo display version info
+// display app version info
 func (app *Application) showVersionInfo() {
 	fmt.Printf(
 		"%s\n\nVersion: %s\n",
@@ -36,8 +37,8 @@ func (app *Application) showVersionInfo() {
 	os.Exit(0)
 }
 
-// showCommandsHelp commands list
-func showCommandsHelp() {
+// display app commands help
+func (app *Application) showCommandsHelp() {
 	commandsHelp = color.ReplaceTag(commandsHelp)
 
 	str := utils.RenderTemplate(commandsHelp, map[string]interface{}{
@@ -52,6 +53,33 @@ func showCommandsHelp() {
 	fmt.Print(color.RenderStr(str))
 
 	os.Exit(0)
+}
+
+// findSimilarCmd
+func (app *Application) findSimilarCmd(input string, commands []string) []string {
+	var ss []string
+	// ins := strings.Split(input, "")
+	// fmt.Print(input, ins)
+	ln := len(input)
+
+	for _, name := range commands {
+		cln := len(name)
+
+		if cln > ln && strings.Contains(name, input) {
+			ss = append(ss, name)
+		} else if ln > cln && strings.Contains(input, name) {
+			// sns := strings.Split(str, "")
+			ss = append(ss, name)
+		}
+
+		// max find 5 items
+		if len(ss) == 5 {
+			break
+		}
+	}
+
+	// fmt.Println("found ", ss)
+	return ss
 }
 
 // Print messages

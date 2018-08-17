@@ -16,8 +16,8 @@ func main() {
 	app.Version = "1.0.3"
 	app.Description = "this is my cli application"
 
-	app.SetVerbose(cliapp.VerbDebug)
-	// app.DefaultCmd("exampl")
+	// app.SetVerbose(cliapp.VerbDebug)
+	// app.DefaultCmd("example")
 
 	app.Add(cmd.ExampleCommand())
 	app.Add(cmd.EnvInfoCommand())
