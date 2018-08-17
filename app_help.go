@@ -55,16 +55,16 @@ func (app *Application) showCommandsHelp() {
 	os.Exit(0)
 }
 
-// findSimilarCmd
-func (app *Application) findSimilarCmd(input string, commands []string) []string {
+// findSimilarCmd find similar cmd by input string
+func (app *Application) findSimilarCmd(input string) []string {
 	var ss []string
 	// ins := strings.Split(input, "")
 	// fmt.Print(input, ins)
 	ln := len(input)
 
-	for _, name := range commands {
+	// find from command names
+	for name := range app.names {
 		cln := len(name)
-
 		if cln > ln && strings.Contains(name, input) {
 			ss = append(ss, name)
 		} else if ln > cln && strings.Contains(input, name) {
@@ -78,7 +78,21 @@ func (app *Application) findSimilarCmd(input string, commands []string) []string
 		}
 	}
 
-	// fmt.Println("found ", ss)
+	// find from aliases
+	for alias := range app.aliases {
+		// max find 5 items
+		if len(ss) >= 5 {
+			break
+		}
+
+		cln := len(alias)
+		if cln > ln && strings.Contains(alias, input) {
+			ss = append(ss, alias)
+		} else if ln > cln && strings.Contains(input, alias) {
+			ss = append(ss, alias)
+		}
+	}
+
 	return ss
 }
 

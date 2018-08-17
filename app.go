@@ -49,7 +49,7 @@ type Application struct {
 	// command names. key is name, value is name string length
 	// eg. {"test": 4, "example": 7}
 	names map[string]int // value
-	// command aliases map {alias: name}
+	// command aliases map. {alias: name}
 	aliases map[string]string
 	// current command name
 	command string

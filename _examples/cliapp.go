@@ -13,7 +13,7 @@ func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	app := cliapp.NewApp()
-	app.Version = "1.0.3"
+	app.Version = "1.0.5"
 	app.Description = "this is my cli application"
 
 	// app.SetVerbose(cliapp.VerbDebug)

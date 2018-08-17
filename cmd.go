@@ -175,3 +175,8 @@ func (c *Command) GetVar(name string) string {
 
 	return ""
 }
+
+// Logf print log message
+func (c *Command) Logf(level uint, format string, v ...interface{}) {
+	logf(level, format, v...)
+}

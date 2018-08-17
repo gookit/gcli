@@ -37,12 +37,12 @@ func (app *Application) Run() {
 	if !app.IsCommand(name) {
 		color.Tips("error").Printf("unknown input command '%s'", name)
 
-		ns := app.findSimilarCmd(name, app.CommandNames())
+		ns := app.findSimilarCmd(name)
 		if len(ns) > 0 {
 			fmt.Println("\nMaybe you means:\n  ", color.FgGreen.Render(strings.Join(ns, ", ")))
 		}
 
-		color.Info("\nPlease use '", binName, " -h' to see available commands\n")
+		color.Info("\nUse '", binName, " -h' to see available commands\n")
 		Exit(-2)
 	}
 
