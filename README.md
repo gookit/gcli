@@ -6,7 +6,7 @@ Command line application, cli-color library, written using golang
 
 ## Features
 
-- Easy to use
+- Simple to use
 - Multiple commands can be added and command aliases are supported
 - Supports a single command as a stand-alone application
 - Support option binding, support for adding short options

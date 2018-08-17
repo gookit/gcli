@@ -32,7 +32,7 @@ func init() {
 func (app *Application) Run() {
 	rawName, args := app.prepareRun()
 	name := app.GetNameByAlias(rawName)
-	logf(VerbDebug, "input command name is: %s", name)
+	Logf(VerbDebug, "input command name is: %s, real name: %s", rawName, name)
 
 	if !app.IsCommand(name) {
 		color.Tips("error").Printf("unknown input command '%s'", name)

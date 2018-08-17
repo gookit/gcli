@@ -22,7 +22,7 @@ var level2color = map[uint]color.Color{
 }
 
 // print log message
-func logf(level uint, format string, v ...interface{}) {
+func Logf(level uint, format string, v ...interface{}) {
 	if gOpts.verbose < level {
 		return
 	}

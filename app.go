@@ -148,13 +148,13 @@ func (app *Application) Init() {
 // Add add a command
 func (app *Application) Add(c *Command) {
 	if c.IsDisabled() {
-		logf(VerbDebug, "command %s has been disabled, skip add", c.Name)
+		Logf(VerbDebug, "command %s has been disabled, skip add", c.Name)
 		return
 	}
 
 	commands[c.Name] = c
 	app.names[c.Name] = len(c.Name)
-	logf(VerbDebug, "add command: %s", c.Name)
+	Logf(VerbDebug, "add command: %s", c.Name)
 
 	// will call it on input './cliapp command -h'
 	c.Flags.Usage = func() {

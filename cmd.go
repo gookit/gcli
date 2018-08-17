@@ -178,5 +178,10 @@ func (c *Command) GetVar(name string) string {
 
 // Logf print log message
 func (c *Command) Logf(level uint, format string, v ...interface{}) {
-	logf(level, format, v...)
+	Logf(level, format, v...)
+}
+
+// WorkDir returns command work dir
+func (c *Command) WorkDir() string {
+	return workDir
 }

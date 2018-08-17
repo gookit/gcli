@@ -8,12 +8,12 @@ import (
 	"github.com/gookit/cliapp/builtin/filewatcher"
 )
 
-// for test run: go run ./_examples/cliapp.go
+// run: go run ./_examples/cliapp.go
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
 	app := cliapp.NewApp()
-	app.Version = "1.0.5"
+	app.Version = "1.0.6"
 	app.Description = "this is my cli application"
 
 	// app.SetVerbose(cliapp.VerbDebug)
