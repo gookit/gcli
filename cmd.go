@@ -6,6 +6,7 @@ import (
 	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
 	"strings"
+	"strconv"
 )
 
 // CmdRunner interface
@@ -180,8 +181,53 @@ type Argument struct {
 	IsArray bool
 	// Required arg is required
 	Required bool
-	// value store parsed argument data
-	value interface{}
+	// value store parsed argument data. (string, []string)
+	Value interface{}
+}
+
+// Int argument value to int
+func (a *Argument) Int(defVal ...int) int {
+	def := 0
+	if len(defVal) == 1 {
+		def = defVal[0]
+	}
+
+	if a.Value == nil {
+		return def
+	}
+
+	str := a.Value.(string)
+	if str != "" {
+		val, err := strconv.Atoi(str)
+		if err != nil {
+			return val
+		}
+	}
+
+	return def
+}
+
+// String argument value to string
+func (a *Argument) String(defVal ...string) string {
+	def := ""
+	if len(defVal) == 1 {
+		def = defVal[0]
+	}
+
+	if a.Value == nil {
+		return def
+	}
+
+	return a.Value.(string)
+}
+
+// Strings argument value to string array, if argument isArray = true.
+func (a *Argument) Strings() (ss []string) {
+	if a.Value != nil {
+		ss = a.Value.([]string)
+	}
+
+	return
 }
 
 // AddArg add a command argument.
