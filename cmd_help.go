@@ -69,9 +69,6 @@ func (c *Command) ShowHelp(quit ...bool) {
 		"Description": color.RenderStr(c.Description),
 	}, false)
 
-	c.Vars["cmd"] = c.Name
-	c.Vars["fullCmd"] = binName + " " + c.Name
-
 	// parse help vars
 	str = replaceVars(str, c.Vars)
 	fmt.Print(color.RenderStr(str))

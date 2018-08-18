@@ -4,8 +4,9 @@ import (
 	"github.com/gookit/cliapp"
 	"github.com/gookit/cliapp/builtin"
 	"github.com/gookit/cliapp/_examples/cmd"
-	"runtime"
 	"github.com/gookit/cliapp/builtin/filewatcher"
+	"github.com/gookit/cliapp/builtin/reverseproxy"
+	"runtime"
 )
 
 // run: go run ./_examples/cliapp.go
@@ -24,6 +25,7 @@ func main() {
 	app.Add(cmd.GitCommand())
 	app.Add(cmd.ColorCommand())
 	app.Add(filewatcher.FileWatcher(nil))
+	app.Add(reverseproxy.ReverseProxyCommand())
 	app.Add(&cliapp.Command{
 		Name:        "test",
 		Aliases:     []string{"ts"},

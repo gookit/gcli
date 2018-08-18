@@ -17,7 +17,7 @@ const (
 )
 
 //
-var genOpts = struct {
+var genOpts = &struct {
 	shell   string
 	binName string
 	output  string

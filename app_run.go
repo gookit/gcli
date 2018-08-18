@@ -32,18 +32,18 @@ func init() {
 func (app *Application) Run() {
 	rawName, args := app.prepareRun()
 	name := app.RealCommandName(rawName)
-	Logf(VerbDebug, "input command name is: %s, real name: %s", rawName, name)
+	Logf(VerbDebug, "input command is: %s, real command: %s, args: %v", rawName, name, args)
 
 	if !app.IsCommand(name) {
 		color.Tips("error").Printf("unknown input command '%s'", name)
 
 		ns := app.findSimilarCmd(name)
 		if len(ns) > 0 {
-			fmt.Println("\nMaybe you means:\n  ", color.FgGreen.Render(strings.Join(ns, ", ")))
+			fmt.Println("\nMaybe you mean:\n  ", color.FgGreen.Render(strings.Join(ns, ", ")))
 		}
 
-		color.Info("\nUse '", binName, " -h' to see available commands\n")
-		Exit(-2)
+		fmt.Printf("\nUse \"%s\" to see available commands\n", color.FgMagenta.Render(binName+" -h"))
+		Exit(ERR)
 	}
 
 	cmd := commands[name]
@@ -60,8 +60,10 @@ func (app *Application) Run() {
 		args = cmd.Flags.Args()
 	}
 
+	Logf(VerbDebug, "args for the command %s: %v", name, args)
+
 	// do execute command
-	exitCode := cmd.Execute(app, args)
+	exitCode := cmd.Execute(args)
 
 	if len(app.errors) > 0 {
 		app.callHook(EvtError, app.errors)
@@ -103,7 +105,7 @@ func (app *Application) SubRun(name string, args []string) int {
 	}
 
 	// do execute command
-	return cmd.Execute(app, args)
+	return cmd.Execute(args)
 }
 
 // prepare to running

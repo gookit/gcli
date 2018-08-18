@@ -7,28 +7,17 @@ import (
 
 // AloneRun current command
 func (c *Command) AloneRun() int {
+	// don't display date on print log
+	log.SetFlags(0)
 	// mark is alone
 	c.alone = true
 	// args := parseGlobalOpts()
 	// init
 	c.Init()
-
-	// set help handler
-	c.Flags.Usage = func() {
-		// init some tpl vars
-		c.Vars = map[string]string{
-			"workDir": workDir,
-			"binName": binName,
-		}
-
-		c.ShowHelp(true)
-	}
-
-	// don't display date on print log
-	log.SetFlags(0)
-
+	// parse args and opts
 	c.Flags.Parse(os.Args[1:])
-	return c.Func(c, c.Flags.Args())
+
+	return c.Execute(c.Flags.Args())
 }
 
 // IsAlone running

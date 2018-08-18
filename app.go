@@ -83,7 +83,7 @@ type Application struct {
 }
 
 // global options
-var gOpts = GlobalOpts{verbose: VerbError}
+var gOpts = &GlobalOpts{verbose: VerbError}
 
 // bin script name eg "./cliapp"
 var binName = os.Args[0]
@@ -209,14 +209,8 @@ func (app *Application) addCommand(c *Command) {
 	app.AddAliases(c.Name, c.Aliases)
 	Logf(VerbDebug, "add command: %s", c.Name)
 
-	// will call it on input './cliapp command -h'
-	c.Flags.Usage = func() {
-		c.ShowHelp(true)
-	}
-
-	// add app vars to cmd
-	c.AddVars(app.vars)
 	// init command
+	c.app = app
 	c.Init()
 }
 

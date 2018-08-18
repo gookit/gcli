@@ -2,36 +2,39 @@ package cliapp
 
 import (
 	"flag"
+	"fmt"
 	"github.com/gookit/cliapp/utils"
+	"github.com/gookit/color"
 	"strings"
 )
 
-// Commander interface
-type Commander interface {
-	Init() *Command
-	Execute(app *Application, args []string) int
-	// Func(cmd *Command, args []string) int
+// CmdRunner interface
+type CmdRunner interface {
+	Run(cmd *Command, args []string) int
 }
 
-// CmdExecutor
-// type CmdExecutor func(Context) int
+// CmdFunc definition
+type CmdFunc func(cmd *Command, args []string) int
 
-// CmdHandler
-// type CmdHandler func(app *Application, args []string) int
-// type CmdHandler Command
+// Run implement the CmdRunner interface
+func (f CmdFunc) Run(cmd *Command, args []string) int {
+	return f(cmd, args)
+}
 
-// type Map map[string]string
-// type ArrMap []Map
+// HookFunc definition
+type HookFunc func(cmd *Command, data interface{})
 
 // Command a CLI command structure
 type Command struct {
 	// Name is the command name.
 	Name string
 	// Func A callback func to runs the command.
-	Func func(cmd *Command, args []string) int
+	// Func func(cmd *Command, args []string) int
+	// Func CmdRunner
+	Func CmdFunc
 	// Hooks can setting some hooks func on running.
 	// allow hooks: "init", "before", "after", "error"
-	Hooks map[string]func(cmd *Command, data interface{})
+	Hooks map[string]HookFunc
 	// Aliases is the command name's alias names
 	Aliases []string
 	// Description is the command description for 'go help'
@@ -94,8 +97,36 @@ func (c *Command) Init() *Command {
 		}
 	}
 
+	c.AddVars(map[string]string{
+		"cmd": c.Name,
+		// full command
+		"fullCmd": binName + " " + c.Name,
+		"workDir": workDir,
+		"binName": binName,
+	})
+
+	if c.Hooks == nil {
+		c.Hooks = make(map[string]HookFunc, 1)
+	}
+
 	c.callHook(EvtInit, nil)
+
+	// add default error handler
+	if _, ok := c.Hooks[EvtError]; !ok {
+		c.Hooks[EvtError] = c.defaultErrHandler
+	}
+
+	// set help handler
+	c.Flags.Usage = func() {
+		c.ShowHelp(true)
+	}
+
 	return c
+}
+
+func (c *Command) defaultErrHandler(_ *Command, data interface{}) {
+	err := data.(error)
+	fmt.Println(color.FgRed.Render("ERROR:"), err.Error())
 }
 
 // Copy a new command for current
@@ -110,10 +141,11 @@ func (c *Command) Copy() *Command {
 }
 
 // Execute do execute the command
-func (c *Command) Execute(app *Application, args []string) int {
+func (c *Command) Execute(args []string) int {
 	c.callHook(EvtBefore, nil)
 
 	// call command handler func
+	// eCode := c.Func.Run(c, args)
 	eCode := c.Func(c, args)
 
 	if c.error != nil {
@@ -127,7 +159,8 @@ func (c *Command) Execute(app *Application, args []string) int {
 }
 
 func (c *Command) callHook(event string, data interface{}) {
-	Logf(VerbDebug, "command %s trigger the hook: %s", c.Name, event)
+	Logf(VerbDebug, "command '%s' trigger the hook: %s", c.Name, event)
+
 	if handler, ok := c.Hooks[event]; ok {
 		handler(c, data)
 	}
@@ -163,6 +196,13 @@ func (c *Command) AddArg(name, description string, required, isArray bool) {
 	if required && c.hasOptionalArg {
 		panic("Required argument cannot be defined after optional argument")
 	}
+
+	if c.argsIndexes == nil {
+		c.argsIndexes = make(map[string]int)
+	}
+
+	// add argument index record
+	c.argsIndexes[name] = len(c.args)
 
 	// add argument
 	c.args = append(c.args, &Argument{
@@ -221,10 +261,20 @@ func (c *Command) IsDisabled() bool {
 	return c.disabled
 }
 
+// Errorf format message and add error for the command
+func (c *Command) Errorf(format string, v ...interface{}) int {
+	return c.SetError(fmt.Errorf(format, v...))
+}
+
 // SetError for the command
 func (c *Command) SetError(err error) int {
 	c.error = err
 	return ERR
+}
+
+// Error get error of the command
+func (c *Command) Error() error {
+	return c.error
 }
 
 // App returns the CLI application

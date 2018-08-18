@@ -25,8 +25,8 @@ var opts = struct {
 // FileWatcher command definition
 func FileWatcher(handler func(event fsnotify.Event)) *cliapp.Command {
 	cmd := &cliapp.Command{
-		Func: watch,
 		Name: "watch",
+		Func: watch,
 
 		Description: "file system change notification, by fsnotify",
 
@@ -55,18 +55,15 @@ func FileWatcher(handler func(event fsnotify.Event)) *cliapp.Command {
 // go run ./_examples/cliapp.go watch -e .git -e .idea -d ./_examples
 func watch(c *cliapp.Command, _ []string) int {
 	color.Infoln("Work directory: ", c.WorkDir())
-	eColor := color.Tips("error")
 
 	if opts.Dir == "" && len(opts.Files) == 0 {
-		eColor.Println("watched directory or files cannot be empty")
-		return -1
+		return c.Errorf("watched directory or files cannot be empty")
 	}
 
 	var err error
 	watcher, err = fsnotify.NewWatcher()
 	if err != nil {
-		eColor.Println(err.Error())
-		return -1
+		return c.SetError(err)
 	}
 	defer watcher.Close()
 
@@ -92,9 +89,8 @@ func watch(c *cliapp.Command, _ []string) int {
 
 	if len(opts.Files) > 0 {
 		if err = addWatchFiles(opts.Files); err != nil {
-			eColor.Println(err)
 			// <-done
-			return -1
+			return c.SetError(err)
 		}
 	}
 
@@ -102,8 +98,7 @@ func watch(c *cliapp.Command, _ []string) int {
 		fmt.Println("- add watch dir: ", color.FgGreen.Render(opts.Dir))
 
 		if err = addWatchDir(opts.Dir); err != nil {
-			eColor.Println(err.Error())
-			return -1
+			return c.SetError(err)
 		}
 	}
 

@@ -4,25 +4,75 @@ package reverseproxy
 // https://blog.csdn.net/mengxinghuiku/article/details/65448600
 // https://github.com/ilanyu/ReverseProxy
 import (
+	"fmt"
 	"github.com/gookit/cliapp"
+	"log"
 	"math/rand"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
 )
 
+type reverseProxy struct {
+	listen   string
+	remote   string
+	remoteIP string
+}
+
+var rp = &reverseProxy{}
+var dnsServers = []string{
+	"114.114.114.114",
+	"114.114.115.115",
+	"119.29.29.29",
+	"223.5.5.5",
+	"8.8.8.8",
+	"208.67.222.222",
+	"208.67.220.220",
+}
+
 // ReverseProxyCommand create command
 func ReverseProxyCommand() *cliapp.Command {
 	c := &cliapp.Command{
-		Name: "proxy",
-		Func: func(cmd *cliapp.Command, args []string) int {
-			return 0
-		},
-
+		Name:        "proxy",
+		Func:        rp.Run,
 		Description: "start a reverse proxy http server",
 	}
 
+	c.StrOpt(
+		&rp.listen,
+		"listen", "s", "127.0.0.1:1180",
+		"local proxy server listen address.",
+	)
+	c.StrOpt(
+		&rp.remote,
+		"remote", "r", "",
+		"the remote reverse proxy server `address`. eg http://site.com:80",
+	)
+	c.StrOpt(
+		&rp.remoteIP,
+		"remoteIP", "", "",
+		"the remote reverse proxy server IP address.",
+	)
+
 	return c
+}
+
+func (rp *reverseProxy) Run(cmd *cliapp.Command, args []string) int {
+	if rp.remote == "" {
+		return cmd.Errorf("must be setting the remote server by -r, --remote ")
+	}
+
+	urlObj, err := url.Parse(rp.remote)
+	if err != nil {
+		return cmd.SetError(err)
+	}
+
+	rpHandler := ReverseProxy(urlObj)
+
+	log.Printf("Listening on %s, forwarding to %s", rp.listen, rp.remote)
+	log.Fatal(http.ListenAndServe(rp.listen, rpHandler))
+
+	return 0
 }
 
 /*************************************************************
@@ -56,6 +106,9 @@ func ReverseProxy(targets ...*url.URL) *httputil.ReverseProxy {
 			target = targets[rand.Int()%len(targets)]
 		}
 
+		fmt.Printf("Received request %s %s %s\n", req.Method, req.Host, req.RemoteAddr)
+
+		// log.Println(r.RemoteAddr + " " + r.Method + " " + r.URL.String() + " " + r.Proto + " " + r.UserAgent())
 		targetQuery := target.RawQuery
 
 		req.URL.Scheme = target.Scheme
