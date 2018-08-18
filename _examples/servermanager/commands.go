@@ -64,7 +64,7 @@ func ServerStop() *cliapp.Command {
 		Description: "stop the running server by PID file",
 	}
 
-	cmd.Fn = func(_ *cliapp.Command, _ []string) int {
+	cmd.Func = func(_ *cliapp.Command, _ []string) int {
 		return stopServer()
 	}
 
@@ -86,7 +86,7 @@ func ServerRestart() *cliapp.Command {
 		Description: "restart the running server by PID file",
 	}
 
-	cmd.Fn = func(c *cliapp.Command, _ []string) int {
+	cmd.Func = func(c *cliapp.Command, _ []string) int {
 		// c.App().SubRun("stop", []string{"-c", confFile})
 		stopServer()
 		startServer()

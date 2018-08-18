@@ -13,7 +13,7 @@ import (
 // help template for a command
 var commandHelp = `{{.Description}}
 {{if .Cmd.NotAlone}}
-<comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.Aliases.String}}</>){{end}}{{end}}
+<comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.AliasesString}}</>){{end}}{{end}}
 <comment>Usage:</> {$binName} [global options...] {{if .Cmd.NotAlone}}{{.Cmd.Name}} {{end}}[--option ...] [argument ...]
 
 <comment>Global Options:</>
@@ -22,10 +22,10 @@ var commandHelp = `{{.Description}}
   <info>-h, --help</>        Display this help information{{if .Options}}
 
 <comment>Options:</>
-{{.Options}}{{end}}{{if .Cmd.ArgList}}
+{{.Options}}{{end}}{{if .Cmd.Args}}
 
-<comment>Arguments:</>{{range $k,$v := .Cmd.ArgList}}
-  <info>{{$k | printf "%-12s"}}</>{{$v|upFirst}}{{end}}
+<comment>Arguments:</>{{range $a := .Cmd.Args}}
+  <info>{{$a.Name | printf "%-12s"}}</>{{$a.Description | upFirst}}{{end}}
 {{end}} {{if .Cmd.Examples}}
 <comment>Examples:</>
   {{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}
@@ -45,9 +45,8 @@ func (app *Application) showCommandHelp(list []string, quit bool) {
 	}
 
 	// get real name
-	name := app.GetNameByAlias(list[0])
+	name := app.RealCommandName(list[0])
 	cmd, exist := commands[name]
-
 	if !exist {
 		color.Tips("error").Printf("Unknown command name %#q.  Run '%s -h'", name, binName)
 		os.Exit(2)
@@ -66,7 +65,6 @@ func (c *Command) ShowHelp(quit ...bool) {
 	str := utils.RenderTemplate(commandHelp, map[string]interface{}{
 		"Cmd":     c,
 		"Options": color.RenderStr(c.ParseDefaults()),
-
 		// always upper first char
 		"Description": color.RenderStr(c.Description),
 	}, false)

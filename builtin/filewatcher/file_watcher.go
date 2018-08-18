@@ -18,15 +18,17 @@ var opts = struct {
 
 	Config  string
 	Exclude cliapp.Strings
+
+	handler func(event fsnotify.Event)
 }{}
 
 // FileWatcher command definition
-func FileWatcher() *cliapp.Command {
+func FileWatcher(handler func(event fsnotify.Event)) *cliapp.Command {
 	cmd := &cliapp.Command{
-		Fn:   watch,
+		Func: watch,
 		Name: "watch",
 
-		Description: "file system change notification",
+		Description: "file system change notification, by fsnotify",
 
 		Aliases: []string{"fwatch", "fswatch"},
 		Examples: `watch a dir:
@@ -43,6 +45,8 @@ func FileWatcher() *cliapp.Command {
 	cmd.VarOpt(&opts.Files, "files", "f", "the want watched file paths")
 	cmd.StrOpt(&opts.Config, "config", "c", "", "load options from a json config")
 	cmd.VarOpt(&opts.Exclude, "exclude", "e", "the ignored directory or files")
+
+	opts.handler = handler
 
 	return cmd
 }
@@ -76,6 +80,10 @@ func watch(c *cliapp.Command, _ []string) int {
 				if event.Op&fsnotify.Write == fsnotify.Write {
 					c.Logf(cliapp.VerbDebug, "modified file: %s", event.Name)
 				}
+
+				if opts.handler != nil {
+					opts.handler(event)
+				}
 			case err := <-watcher.Errors:
 				c.Logf(cliapp.VerbError, "error: %s", err.Error())
 			}
@@ -84,7 +92,8 @@ func watch(c *cliapp.Command, _ []string) int {
 
 	if len(opts.Files) > 0 {
 		if err = addWatchFiles(opts.Files); err != nil {
-			eColor.Println(err.Error())
+			eColor.Println(err)
+			// <-done
 			return -1
 		}
 	}

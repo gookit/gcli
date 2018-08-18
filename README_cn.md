@@ -1,18 +1,24 @@
 # cliapp
 
-golang下的命令行应用，工具库, CLI色彩使用
+一个golang下的简单易用的命令行应用，工具库。
 
 **[EN Readme](README.md)**
 
 ## 功能特色
 
 - 使用简单方便
-- 可以添加多个命令，并且支持命令别名
-- 支持单个命令当做独立应用运行
-- 支持选项绑定，支持添加短选项
+- 支持添加多个命令，并且支持命令别名
+- 输入的命令错误时，将会提示相似命令（包含别名提示）
+- 快速方便的添加选项绑定，支持添加短选项
 - 支持丰富的颜色输出。同时支持html标签式的颜色渲染，兼容Windows
-- 自动生成命令帮助信息，并且支持颜色显示
-- 支持生成 `zsh`,`bash` 下的命令补全脚本文件
+- 自动根据命令生成帮助信息，并且支持颜色显示
+- 支持为当前CLI应用生成 `zsh`,`bash` 下的命令补全脚本文件
+- 支持将单个命令当做独立应用运行
+
+## Godoc
+
+- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v1)
+- [godoc for github](https://godoc.org/github.com/gookit/cliapp)
 
 ## 获取安装
 
@@ -73,7 +79,7 @@ func main() {
         Aliases: []string{"dm"},
         // allow color tag and {$cmd} will be replace to 'demo'
         Description: "this is a description <info>message</> for command", 
-        Fn: func (cmd *cliapp.Command, args []string) int {
+        Func: func (cmd *cliapp.Command, args []string) int {
             cliapp.Stdout("hello, in the demo command\n")
             return 0
         },
@@ -84,11 +90,6 @@ func main() {
     app.Run()
 }
 ```
-
-## Godoc
-
-- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v1)
-- [godoc for github](https://godoc.org/github.com/gookit/cliapp)
 
 ## 使用说明
 
@@ -163,7 +164,7 @@ import  "github.com/gookit/cliapp/builtin"
 
     // ...
     // 添加内置提供的生成命令
-    app.Add(builtin.GenShAutoComplete())
+    app.Add(builtin.GenAutoCompleteScript())
 
 ```
 
@@ -190,6 +191,11 @@ OK, auto-complete file generate successful
 
 ## 编写命令
 
+### 关于参数定义
+
+- 必须的参数不能定义在可选参数之后
+- 多个值的（数组）参数只能定义在最后
+
 ### 简单使用
 
 ```go
@@ -198,7 +204,7 @@ app.Add(&cliapp.Command{
     Aliases: []string{"dm"},
     // allow color tag and {$cmd} will be replace to 'demo'
     Description: "this is a description <info>message</> for command", 
-    Fn: func (cmd *cliapp.Command, args []string) int {
+    Func: func (cmd *cliapp.Command, args []string) int {
         cliapp.Stdout("hello, in the demo command\n")
         return 0
     },
@@ -213,21 +219,9 @@ app.Add(&cliapp.Command{
 package cmd
 
 import (
-	cli "github.com/gookit/cliapp"
+	"github.com/gookit/cliapp"
 	"fmt"
 )
-
-// The string flag list, implemented flag.Value interface
-type Names []string
-
-func (ns *Names) String() string {
-	return fmt.Sprint(*ns)
-}
-
-func (ns *Names) Set(value string) error {
-	*ns = append(*ns, value)
-	return nil
-}
 
 // options for the command
 var exampleOpts = struct {
@@ -235,45 +229,42 @@ var exampleOpts = struct {
 	c   string
 	dir string
 	opt string
-	names Names
+	names cliapp.Strings
 }{}
 
 // ExampleCommand command definition
-func ExampleCommand() *cli.Command {
-	cmd := cli.Command{
-		Fn:      exampleExecute,
-		Name:    "example",
-		Aliases: []string{"exp", "ex"},
-		ArgList: map[string]string{
-			"arg0": "the first argument",
-			"arg1": "the second argument",
-		},
+func ExampleCommand() *cliapp.Command {
+	cmd := &cliapp.Command{
+		Name:        "example",
 		Description: "this is a description message",
+		Aliases:     []string{"exp", "ex"},
+		Func:          exampleExecute,
 		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
 		Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1
   <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
 	}
 
-	// use flag package func
-	cmd.Flags.IntVar(&exampleOpts.id, "id", 2, "the id option")
-	cmd.Flags.StringVar(&exampleOpts.c, "c", "value", "the short option")
-
-	// use Command provided func
-	cmd.StrOpt(&exampleOpts.dir, "dir", "d", "","the dir option")
-
+	// bind options
+	cmd.IntOpt(&exampleOpts.id, "id", "", 2, "the id option")
+	cmd.StrOpt(&exampleOpts.c, "config", "c", "value", "the config option")
+	// notice `DIRECTORY` will replace to option value type
+	cmd.StrOpt(&exampleOpts.dir, "dir", "d", "", "the `DIRECTORY` option")
 	// setting option name and short-option name
 	cmd.StrOpt(&exampleOpts.opt, "opt", "o", "", "the option message")
-
 	// setting a special option var, it must implement the flag.Value interface
 	cmd.VarOpt(&exampleOpts.names, "names", "n", "the option message")
 
-	return &cmd
+	// bind args
+	cmd.AddArg("arg0", "the first argument", true, false)
+	cmd.AddArg("arg1", "the second argument", false, false)
+
+	return cmd
 }
 
 // command running
 // example run:
 // 	go build cliapp.go && ./cliapp example --id 12 -c val ag0 ag1
-func exampleExecute(cmd *cli.Command, args []string) int {
+func exampleExecute(cmd *cliapp.Command, args []string) int {
 	fmt.Print("hello, in example command\n")
 
 	// fmt.Printf("%+v\n", cmd.Flags)

@@ -18,11 +18,7 @@ func ColorCommand() *cliapp.Command {
 		Name:        "color",
 		Description: "this is a example for cli color usage",
 		Aliases:     []string{"clr", "colors"},
-		Fn:          colorUsage,
-		ArgList: map[string]string{
-			"arg0": "the first argument",
-			"arg1": "the second argument",
-		},
+		Func:        colorUsage,
 		Examples: "{$binName} {$cmd} --id 12 -c val ag0 ag1",
 	}
 

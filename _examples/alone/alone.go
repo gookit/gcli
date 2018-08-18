@@ -18,7 +18,7 @@ func main() {
 		Name:        "test",
 		Aliases:     []string{"ts"},
 		Description: "this is a description <info>message</> for {$cmd}", // // {$cmd} will be replace to 'test'
-		Fn:          run,
+		Func:        run,
 	}
 
 	cmd.Flags.BoolVar(&opts.visualMode, "visual", false, "Prints the font name.")

@@ -1,18 +1,24 @@
 # cliapp 
 
-Command line application, cli-color library, written using golang
+A simple to use command line application, written using golang
 
 **[中文说明](README_cn.md)**
 
 ## Features
 
 - Simple to use
-- Multiple commands can be added and command aliases are supported
-- Supports a single command as a stand-alone application
+- Support for adding multiple commands and supporting command aliases
+- When the command entered is incorrect, a similar command will be prompted (including an alias prompt)
 - Support option binding, support for adding short options
 - Supports rich color output. supports html tab-style color rendering, compatible with Windows
 - Automatically generate command help information and support color display
 - Supports generation of `zsh` and `bash` command completion script files
+- Supports a single command as a stand-alone application
+
+## Godoc
+
+- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v1)
+- [godoc for github](https://godoc.org/github.com/gookit/cliapp)
 
 ## Install
 
@@ -71,7 +77,7 @@ func main() {
         Aliases: []string{"dm"},
         // allow color tag and {$cmd} will be replace to 'demo'
         Description: "this is a description <info>message</> for {$cmd}", 
-        Fn: func (cmd *cliapp.Command, args []string) int {
+        Func: func (cmd *cliapp.Command, args []string) int {
             cliapp.Stdout("hello, in the demo command\n")
             return 0
         },
@@ -82,11 +88,6 @@ func main() {
     app.Run()
 }
 ```
-
-## Godoc
-
-- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v1)
-- [godoc for github](https://godoc.org/github.com/gookit/cliapp)
 
 ## Usage
 
@@ -155,6 +156,11 @@ Examples:
 
 ## Write a command
 
+### About argument definition
+
+- Required argument cannot be defined after optional argument
+- The (array) argument of multiple values ​​can only be defined at the end
+
 ### Simple use
 
 ```go
@@ -163,7 +169,7 @@ app.Add(&cliapp.Command{
     Aliases: []string{"dm"},
     // allow color tag and {$cmd} will be replace to 'demo'
     Description: "this is a description <info>message</> for command", 
-    Fn: func (cmd *cliapp.Command, args []string) int {
+    Func: func (cmd *cliapp.Command, args []string) int {
         cliapp.Stdout("hello, in the demo command\n")
         return 0
     },
@@ -178,21 +184,9 @@ app.Add(&cliapp.Command{
 package cmd
 
 import (
-	cli "github.com/gookit/cliapp"
+	"github.com/gookit/cliapp"
 	"fmt"
 )
-
-// The string flag list, implemented flag.Value interface
-type Names []string
-
-func (ns *Names) String() string {
-	return fmt.Sprint(*ns)
-}
-
-func (ns *Names) Set(value string) error {
-	*ns = append(*ns, value)
-	return nil
-}
 
 // options for the command
 var exampleOpts = struct {
@@ -200,45 +194,42 @@ var exampleOpts = struct {
 	c   string
 	dir string
 	opt string
-	names Names
+	names cliapp.Strings
 }{}
 
 // ExampleCommand command definition
-func ExampleCommand() *cli.Command {
-	cmd := cli.Command{
+func ExampleCommand() *cliapp.Command {
+	cmd := &cliapp.Command{
 		Name:        "example",
 		Description: "this is a description message",
 		Aliases:     []string{"exp", "ex"},
-		Fn:          exampleExecute,
-		ArgList: map[string]string{
-			"arg0": "the first argument",
-			"arg1": "the second argument",
-		},
+		Func:          exampleExecute,
 		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
 		Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1
   <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
 	}
 
-	// use flag package func
-	cmd.Flags.IntVar(&exampleOpts.id, "id", 2, "the id option")
-	cmd.Flags.StringVar(&exampleOpts.c, "c", "value", "the short option")
-
-	// use Command provided func
-	cmd.StrOpt(&exampleOpts.dir, "dir", "d", "","the dir option")
-
+	// bind options
+	cmd.IntOpt(&exampleOpts.id, "id", "", 2, "the id option")
+	cmd.StrOpt(&exampleOpts.c, "config", "c", "value", "the config option")
+	// notice `DIRECTORY` will replace to option value type
+	cmd.StrOpt(&exampleOpts.dir, "dir", "d", "", "the `DIRECTORY` option")
 	// setting option name and short-option name
 	cmd.StrOpt(&exampleOpts.opt, "opt", "o", "", "the option message")
-
 	// setting a special option var, it must implement the flag.Value interface
 	cmd.VarOpt(&exampleOpts.names, "names", "n", "the option message")
 
-	return &cmd
+	// bind args
+	cmd.AddArg("arg0", "the first argument", true, false)
+	cmd.AddArg("arg1", "the second argument", false, false)
+
+	return cmd
 }
 
 // command running
 // example run:
 // 	go build cliapp.go && ./cliapp example --id 12 -c val ag0 ag1
-func exampleExecute(cmd *cli.Command, args []string) int {
+func exampleExecute(cmd *cliapp.Command, args []string) int {
 	fmt.Print("hello, in example command\n")
 
 	// fmt.Printf("%+v\n", cmd.Flags)

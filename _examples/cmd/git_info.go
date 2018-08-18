@@ -28,7 +28,7 @@ func GitCommand() *cli.Command {
 		Aliases:     []string{"git-info"},
 		Description: "collect project info by git info",
 
-		Fn: gitExecute,
+		Func: gitExecute,
 	}
 
 	cmd.IntOpt(&gitOpts.id, "id", "", 0, "the id option")

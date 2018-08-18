@@ -24,7 +24,7 @@ var tp = TCPProxy{}
 // FileWatcher command definition
 func TCPProxyCommand() *cliapp.Command {
 	cmd := &cliapp.Command{
-		Fn:   runServer,
+		Func: runServer,
 		Name: "watch",
 
 		Description: "file system change notification",

@@ -20,10 +20,10 @@ var commandsHelp = `{{.Description}} (Version: <info>{{.Version}}</>)
   <info>-V, --version</>     Display app version information
 
 <comment>Available Commands:</>{{range .Cs}}{{if .Runnable}}
-  <info>{{.Name | printf "%-12s"}}</> {{.Description}}{{if .Aliases}} (alias: <cyan>{{.Aliases.String}}</>){{end}}{{end}}{{end}}
+  <info>{{.Name | printf "%-12s"}}</> {{.Description}}{{if .Aliases}} (alias: <cyan>{{ join .Aliases ","}}</>){{end}}{{end}}{{end}}
   <info>help</>         Display help information
 
-Use "<cyan>{$binName} help {command}</>" for more information about a command
+Use "<cyan>{$binName} {command} -h</>" for more information about a command
 `
 
 // display app version info
@@ -40,9 +40,9 @@ func (app *Application) showVersionInfo() {
 // display app commands help
 func (app *Application) showCommandsHelp() {
 	commandsHelp = color.ReplaceTag(commandsHelp)
-
 	str := utils.RenderTemplate(commandsHelp, map[string]interface{}{
-		"Cs":      commands,
+		"Cs": commands,
+		// app version
 		"Version": app.Version,
 		// always upper first char
 		"Description": utils.UpperFirst(app.Description),

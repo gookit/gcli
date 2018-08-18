@@ -23,7 +23,7 @@ func EnvInfoCommand() *cli.Command {
 		Aliases:     []string{"env-info", "ei"},
 		Description: "collect project info by git info",
 
-		Fn: envInfoRun,
+		Func: envInfoRun,
 	}
 
 	cmd.IntOpt(&eiOpts.id, "id", "", 0, "the id option")

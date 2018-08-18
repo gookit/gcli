@@ -41,6 +41,9 @@ type Application struct {
 	Description string
 	// Logo ASCII logo setting
 	Logo Logo
+	// Hooks can setting some hooks func on running.
+	// allow hooks: "init", "before", "after", "error"
+	Hooks map[string]func(app *Application)
 	// Strict use strict mode. short opt must be begin '-', long opt must be begin '--'
 	Strict bool
 
@@ -48,13 +51,13 @@ type Application struct {
 	vars map[string]string
 	// command names. key is name, value is name string length
 	// eg. {"test": 4, "example": 7}
-	names map[string]int // value
+	names map[string]int
 	// command aliases map. {alias: name}
 	aliases map[string]string
 	// current command name
-	command string
+	commandName string
 	// default command name
-	defaultCmd string
+	defaultCommand string
 }
 
 // global options
@@ -129,9 +132,9 @@ func (app *Application) SetVerbose(verbose uint) {
 	gOpts.verbose = verbose
 }
 
-// DefaultCmd set default command name
-func (app *Application) DefaultCmd(name string) {
-	app.defaultCmd = name
+// DefaultCommand set default command name
+func (app *Application) DefaultCommand(name string) {
+	app.defaultCommand = name
 }
 
 // Init

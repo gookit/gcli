@@ -27,9 +27,10 @@ var shellTpls = map[string]string{
 	"bash": bashCompleteScriptTpl,
 }
 
-func GenShAutoComplete() *cliapp.Command {
+// GenAutoCompleteScript create command
+func GenAutoCompleteScript() *cliapp.Command {
 	cmd := cliapp.Command{
-		Fn:      doGen,
+		Func:    doGen,
 		Name:    "gen-ac",
 		Aliases: []string{"genac"},
 
@@ -37,7 +38,6 @@ func GenShAutoComplete() *cliapp.Command {
 	}
 
 	shell := utils.GetCurShell(true)
-
 	if shell == "" {
 		shell = "bash"
 	}
@@ -112,15 +112,12 @@ func doGen(_ *cliapp.Command, _ []string) int {
 
 	// 以读写方式打开文件，如果不存在，则创建
 	err := ioutil.WriteFile(genOpts.output, []byte(str), 0664)
-
 	if err != nil {
 		color.Errorln("Write file error: ", err.Error())
-
 		return -2
 	}
 
 	color.Sucln("\nOK, auto-complete file generate successful")
-
 	return 0
 }
 
@@ -270,7 +267,7 @@ func buildForZshShell(data map[string]interface{}) map[string]interface{} {
 		if n == "genac" || n == "gen-ac" {
 			continue
 		}
-		nameDes[c.Name] = fmtDes(c.Description) + "(alias " + c.Aliases.String() + ")"
+		nameDes[c.Name] = fmtDes(c.Description) + "(alias " + c.AliasesString() + ")"
 
 		ops := c.OptNames()
 		oplen := len(ops)

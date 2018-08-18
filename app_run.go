@@ -31,7 +31,7 @@ func init() {
 // Run running application
 func (app *Application) Run() {
 	rawName, args := app.prepareRun()
-	name := app.GetNameByAlias(rawName)
+	name := app.RealCommandName(rawName)
 	Logf(VerbDebug, "input command name is: %s, real name: %s", rawName, name)
 
 	if !app.IsCommand(name) {
@@ -47,8 +47,7 @@ func (app *Application) Run() {
 	}
 
 	cmd := commands[name]
-	app.command = name
-
+	app.commandName = name
 	if app.Strict {
 		args = strictFormatArgs(args)
 	}
@@ -60,7 +59,8 @@ func (app *Application) Run() {
 	}
 
 	// do execute command
-	os.Exit(cmd.Execute(app, args))
+	exitCode := cmd.Execute(app, args)
+	os.Exit(exitCode)
 }
 
 // parseGlobalOpts parse global options
@@ -87,9 +87,8 @@ func (app *Application) SubRun(name string, args []string) int {
 	}
 
 	cmd := commands[name]
-
-	// parse args, don't contains command name.
 	if !cmd.CustomFlags {
+		// parse args, don't contains command name.
 		cmd.Flags.Parse(args)
 		args = cmd.Flags.Args()
 	}
@@ -118,8 +117,8 @@ func (app *Application) prepareRun() (string, []string) {
 
 	// if no input command
 	if len(args) < 1 {
-		// will try run defaultCmd
-		defCmd := app.defaultCmd
+		// will try run defaultCommand
+		defCmd := app.defaultCommand
 		if len(defCmd) == 0 {
 			app.showCommandsHelp()
 		}
@@ -154,16 +153,15 @@ func (app *Application) prepareRun() (string, []string) {
 // 	app.Add(cmd)
 // }
 
-// Command get command name
-func (app *Application) Command() string {
-	return app.command
-}
-
 // IsCommand name check
 func (app *Application) IsCommand(name string) bool {
 	_, has := app.names[name]
-
 	return has
+}
+
+// CommandName get current command name
+func (app *Application) CommandName() string {
+	return app.commandName
 }
 
 // CommandNames get all command names
@@ -192,8 +190,8 @@ func (app *Application) AddAliases(command string, names []string) {
 	}
 }
 
-// GetNameByAlias get real command name by alias
-func (app *Application) GetNameByAlias(alias string) string {
+// RealCommandName get real command name by alias
+func (app *Application) RealCommandName(alias string) string {
 	if name, has := app.aliases[alias]; has {
 		return name
 	}

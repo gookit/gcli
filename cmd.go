@@ -10,7 +10,7 @@ import (
 type Commander interface {
 	Init() *Command
 	Execute(app *Application, args []string) int
-	// Fn(cmd *Command, args []string) int
+	// Func(cmd *Command, args []string) int
 }
 
 // CmdExecutor
@@ -22,80 +22,57 @@ type Commander interface {
 
 type Map map[string]string
 type ArrMap []Map
-type Argument struct {
-	Name, Description string
-}
 
-// CmdAliases
-type CmdAliases []string
-
-// String to string
-func (a *CmdAliases) String() string {
-	return strings.Join(*a, ",")
-}
-
-// Join to string
-func (a *CmdAliases) Join(sep string) string {
-	return strings.Join(*a, sep)
-}
-
-// Command a cli command
+// Command a CLI command structure
 type Command struct {
 	// Name is the command name.
 	Name string
-
+	// Func A callback func to runs the command.
+	Func func(cmd *Command, args []string) int
+	// Hooks can setting some hooks func on running.
+	// allow hooks: "init", "before", "after"
+	Hooks map[string]func(cmd *Command)
 	// Aliases is the command name's alias names
-	Aliases CmdAliases
-
+	Aliases []string
 	// Description is the command description for 'go help'
 	Description string
-
 	// Flags(Options) is a set of flags specific to this command.
 	Flags flag.FlagSet
-
 	// CustomFlags indicates that the command will do its own flag parsing.
 	CustomFlags bool
-
-	// A callback func to runs the command.
-	// The args are the arguments after the command name.
-	Fn func(cmd *Command, args []string) int
-
-	// Hooks can setting some hooks func on running.
-	// names: "init", "before", "after"
-	Hooks map[string]func(cmd *Command)
-
-	// Help is the help message text
+	// Vars you can add some vars map for render help info
+	Vars map[string]string
+	// Help is the long help message text
 	Help string
-
 	// Examples some usage example display
 	Examples string
 
-	// vars you can add some vars map for render help info
-	Vars map[string]string
-
-	// ArgList arguments description [name]description
-	ArgList map[string]string
-	// Args for the command
+	// Args definition for the command.
 	// eg. {
-	// 	Argument{"arg0", "this is first argument"},
-	// 	Argument{"arg1", "this is second argument"},
+	// 	{"arg0", "this is first argument", false, false},
+	// 	{"arg1", "this is second argument", false, false},
 	// }
-	Args []Argument
+	args []*Argument
+	// Used to record argument names and defined positional relationships
+	// {
+	// 	// name: position
+	// 	"arg0": 0,
+	// 	"arg1": 1,
+	// }
+	argsIndexes    map[string]int
+	hasArrayArg    bool
+	hasOptionalArg bool
 
 	// application
 	app *Application
-
 	// mark is alone running.
 	alone bool
-
+	// store a command error
+	error error
 	// mark is disabled. if true will skip register to cli-app.
 	disabled bool
-
 	// option names {name:short}
 	optNames map[string]string
-
-	// opts map[string]interface{} // {opt name: opt value}
-
 	// shortcuts for command options(Flags) {short:name} eg. {"n": "name", "o": "opt"}
 	shortcuts map[string]string
 }
@@ -103,7 +80,7 @@ type Command struct {
 // Runnable reports whether the command can be run; otherwise
 // it is a documentation pseudo-command such as import path.
 func (c *Command) Runnable() bool {
-	return c.Fn != nil
+	return c.Func != nil
 }
 
 // Init command
@@ -117,7 +94,6 @@ func (c *Command) Init() *Command {
 		}
 	}
 
-	// first init
 	if c.Vars == nil {
 		c.Vars = make(map[string]string)
 	}
@@ -127,8 +103,86 @@ func (c *Command) Init() *Command {
 
 // Execute do execute the command
 func (c *Command) Execute(app *Application, args []string) int {
-	return c.Fn(c, args)
+	return c.Func(c, args)
 }
+
+/*************************************************************
+ * command arguments
+ *************************************************************/
+
+// Argument a command argument definition
+type Argument struct {
+	// Name argument name
+	Name string
+	// Description argument description message
+	Description string
+	// IsArray if is array, can allow accept multi values, and must in last.
+	IsArray bool
+	// Required arg is required
+	Required bool
+	// value store parsed argument data
+	value interface{}
+}
+
+// AddArg add a command argument.
+// Notice:
+// 	- Required argument cannot be defined after optional argument
+// 	- The (array) argument of multiple values ​​can only be defined at the end
+func (c *Command) AddArg(name, description string, required, isArray bool) {
+	if c.hasArrayArg {
+		panic("An array argument has been defined and no more argument definitions can be added")
+	}
+
+	if required && c.hasOptionalArg {
+		panic("Required argument cannot be defined after optional argument")
+	}
+
+	// add argument
+	c.args = append(c.args, &Argument{
+		Name: name, Description: description, Required: required, IsArray: isArray,
+	})
+
+	if !required {
+		c.hasOptionalArg = true
+	}
+
+	if isArray {
+		c.hasArrayArg = true
+	}
+}
+
+// Args get all defined argument
+func (c *Command) Args() []*Argument {
+	return c.args
+}
+
+// Arg get arg by defined name.
+// usage:
+// 	intVal := c.Arg("name").Int()
+// 	strVal := c.Arg("name").String()
+// 	arrVal := c.Arg("name").Array()
+func (c *Command) Arg(name string) *Argument {
+	i, ok := c.argsIndexes[name]
+	if !ok {
+		return &Argument{}
+	}
+
+	return c.args[i]
+}
+
+// GetArgs get Flags args
+func (c *Command) GetArgs() []string {
+	return c.Flags.Args()
+}
+
+// GetArg get Flags arg
+func (c *Command) GetArg(i int) string {
+	return c.Flags.Arg(i)
+}
+
+/*************************************************************
+ * helper methods
+ *************************************************************/
 
 // Disable set cmd is disabled
 func (c *Command) Disable() {
@@ -140,24 +194,14 @@ func (c *Command) IsDisabled() bool {
 	return c.disabled
 }
 
-// Application
+// SetError
+func (c *Command) SetError(err error) {
+	c.error = err
+}
+
+// Application returns the CLI application
 func (c *Command) App() *Application {
 	return app
-}
-
-// GetArgs get args
-func (c *Command) GetArgs() []string {
-	return c.Flags.Args()
-}
-
-// Arg get arg
-func (c *Command) Arg(i int) string {
-	return c.Flags.Arg(i)
-}
-
-// Arg get arg
-func (c *Command) GetArg(i int) string {
-	return c.Flags.Arg(i)
 }
 
 // AddVars add multi tpl vars
@@ -174,6 +218,16 @@ func (c *Command) GetVar(name string) string {
 	}
 
 	return ""
+}
+
+// AliasesString returns aliases string
+func (c *Command) AliasesString(sep ...string) string {
+	s := ","
+	if len(sep) == 1 {
+		s = sep[0]
+	}
+
+	return strings.Join(c.Aliases, s)
 }
 
 // Logf print log message

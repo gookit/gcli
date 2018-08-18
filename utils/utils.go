@@ -103,25 +103,23 @@ func RenderTemplate(input string, data interface{}, isFile ...bool) string {
 	}
 
 	t := template.New("cli")
-
-	// don't escape content
-	t.Funcs(template.FuncMap{"raw": func(s string) string {
-		return s
-	}})
-
-	t.Funcs(template.FuncMap{"trim": func(s string) string {
-		return strings.TrimSpace(string(s))
-	}})
-
-	// join strings
-	t.Funcs(template.FuncMap{"join": func(ss []string, sep string) string {
-		return strings.Join(ss, sep)
-	}})
-
-	// upper first char
-	t.Funcs(template.FuncMap{"upFirst": func(s string) string {
-		return UpperFirst(s)
-	}})
+	t.Funcs(template.FuncMap{
+		// don't escape content
+		"raw": func(s string) string {
+			return s
+		},
+		"trim": func(s string) string {
+			return strings.TrimSpace(string(s))
+		},
+		// join strings. usage {{ join .Strings ","}}
+		"join": func(ss []string, sep string) string {
+			return strings.Join(ss, sep)
+		},
+		// upper first char
+		"upFirst": func(s string) string {
+			return UpperFirst(s)
+		},
+	})
 
 	if isFilename {
 		template.Must(t.ParseFiles(input))

@@ -6,7 +6,11 @@ import (
 	"github.com/gookit/color"
 )
 
-// IntOpt set a int option
+/*************************************************************
+ * command options
+ *************************************************************/
+
+// IntOpt binding a int option
 func (c *Command) IntOpt(p *int, name string, short string, defValue int, description string) *Command {
 	c.Flags.IntVar(p, name, defValue, description)
 
@@ -17,7 +21,7 @@ func (c *Command) IntOpt(p *int, name string, short string, defValue int, descri
 	return c
 }
 
-// UintOpt set a int option
+// UintOpt binding a uint option
 func (c *Command) UintOpt(p *uint, name string, short string, defValue uint, description string) *Command {
 	c.Flags.UintVar(p, name, defValue, description)
 
@@ -28,7 +32,7 @@ func (c *Command) UintOpt(p *uint, name string, short string, defValue uint, des
 	return c
 }
 
-// StrOpt set a str option
+// StrOpt binding a string option
 func (c *Command) StrOpt(p *string, name string, short string, defValue string, description string) *Command {
 	c.Flags.StringVar(p, name, defValue, description)
 
@@ -39,7 +43,7 @@ func (c *Command) StrOpt(p *string, name string, short string, defValue string, 
 	return c
 }
 
-// BoolOpt set a bool option
+// BoolOpt binding a bool option
 func (c *Command) BoolOpt(p *bool, name string, short string, defValue bool, description string) *Command {
 	c.Flags.BoolVar(p, name, defValue, description)
 
@@ -50,9 +54,9 @@ func (c *Command) BoolOpt(p *bool, name string, short string, defValue bool, des
 	return c
 }
 
-// VarOpt set a custom option
+// VarOpt binding a custom var option
 // usage:
-// cmd.VarOpt(&opts.Strings, "tables", "t", "Description ...")
+// 		cmd.VarOpt(&opts.Strings, "tables", "t", "Description ...")
 func (c *Command) VarOpt(p flag.Value, name string, short string, description string) *Command {
 	c.Flags.Var(p, name, description)
 

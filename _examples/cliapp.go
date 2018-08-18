@@ -23,18 +23,18 @@ func main() {
 	app.Add(cmd.EnvInfoCommand())
 	app.Add(cmd.GitCommand())
 	app.Add(cmd.ColorCommand())
-	app.Add(filewatcher.FileWatcher())
+	app.Add(filewatcher.FileWatcher(nil))
 	app.Add(&cliapp.Command{
 		Name:        "test",
 		Aliases:     []string{"ts"},
 		Description: "this is a description <info>message</> for command {$cmd}",
-		Fn: func(cmd *cliapp.Command, args []string) int {
+		Func: func(cmd *cliapp.Command, args []string) int {
 			cliapp.Print("hello, in the test command\n")
 			return 0
 		},
 	})
 
-	app.Add(builtin.GenShAutoComplete())
+	app.Add(builtin.GenAutoCompleteScript())
 	// fmt.Printf("%+v\n", cliapp.CommandNames())
 	app.Run()
 }
