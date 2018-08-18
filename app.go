@@ -1,3 +1,9 @@
+// Package cliapp is a simple to use command line application, written using golang
+//
+// Source code and other details for the project are available at GitHub:
+// 		https://github.com/gookit/cliapp
+//
+// usage please ref examples and README
 package cliapp
 
 import (
@@ -16,6 +22,20 @@ const (
 
 // HelpVar allow var replace in help info. like "{$binName}" "{$cmd}"
 const HelpVar = "{$%s}"
+
+// constants for hooks event, there are default allowed hook names
+const (
+	EvtInit   = "init"
+	EvtBefore = "before"
+	EvtAfter  = "after"
+	EvtError  = "error"
+)
+
+// OK success code
+const OK = 0
+
+// ERR error code
+const ERR = 2
 
 // Logo app logo, ASCII logo
 type Logo struct {
@@ -43,7 +63,7 @@ type Application struct {
 	Logo Logo
 	// Hooks can setting some hooks func on running.
 	// allow hooks: "init", "before", "after", "error"
-	Hooks map[string]func(app *Application)
+	Hooks map[string]func(app *Application, data interface{})
 	// Strict use strict mode. short opt must be begin '-', long opt must be begin '--'
 	Strict bool
 
@@ -52,6 +72,8 @@ type Application struct {
 	// command names. key is name, value is name string length
 	// eg. {"test": 4, "example": 7}
 	names map[string]int
+	// store some runtime errors
+	errors []error
 	// command aliases map. {alias: name}
 	aliases map[string]string
 	// current command name
@@ -89,12 +111,17 @@ func Verbose() uint {
 	return gOpts.verbose
 }
 
-// NewApp create new app
-// settings (name, version, description)
-// cli.NewApp("my cli app", "1.0.1", "The is is my cil application")
+// NewApp create new app.
+// The settings (name, version, description)
+// eg:
+// 	cliapp.NewApp("cli app", "1.0.1", "The is is my cil application")
 func NewApp(settings ...string) *Application {
-	app = &Application{Name: "My CLI Application", Version: "1.0.0"}
-	app.Logo.Style = "info"
+	app = &Application{
+		Name: "My CLI Application",
+		Logo: Logo{Style: "info"},
+		// set a default version
+		Version: "1.0.0",
+	}
 
 	for k, v := range settings {
 		switch k {
@@ -112,9 +139,13 @@ func NewApp(settings ...string) *Application {
 	return app
 }
 
-// LogoText
-func (app *Application) LogoText(logo string) {
+// SetLogo text and color style
+func (app *Application) SetLogo(logo string, style ...string) {
 	app.Logo.Text = logo
+
+	if len(style) > 0 {
+		app.Logo.Style = style[0]
+	}
 }
 
 // DebugMode level
@@ -137,7 +168,7 @@ func (app *Application) DefaultCommand(name string) {
 	app.defaultCommand = name
 }
 
-// Init
+// Init application
 func (app *Application) Init() {
 	app.names = make(map[string]int)
 
@@ -146,12 +177,15 @@ func (app *Application) Init() {
 		"workDir": workDir,
 		"binName": binName,
 	}
+
+	app.callHook(EvtInit, nil)
 }
 
 // Add add a command
 func (app *Application) Add(c *Command, more ...*Command) {
 	app.addCommand(c)
 
+	// if has more
 	if len(more) > 0 {
 		for _, cmd := range more {
 			app.addCommand(cmd)
@@ -160,6 +194,10 @@ func (app *Application) Add(c *Command, more ...*Command) {
 }
 
 func (app *Application) addCommand(c *Command) {
+	if c.Name == "" {
+		panic("The added command must have a command name")
+	}
+
 	if c.IsDisabled() {
 		Logf(VerbDebug, "command %s has been disabled, skip add", c.Name)
 		return
@@ -167,6 +205,8 @@ func (app *Application) addCommand(c *Command) {
 
 	commands[c.Name] = c
 	app.names[c.Name] = len(c.Name)
+	// add aliases for the command
+	app.AddAliases(c.Name, c.Aliases)
 	Logf(VerbDebug, "add command: %s", c.Name)
 
 	// will call it on input './cliapp command -h'
@@ -174,12 +214,28 @@ func (app *Application) addCommand(c *Command) {
 		c.ShowHelp(true)
 	}
 
-	// init
-	c.Init()
 	// add app vars to cmd
 	c.AddVars(app.vars)
-	// add aliases for the command
-	app.AddAliases(c.Name, c.Aliases)
+	// init command
+	c.Init()
+}
+
+func (app *Application) callHook(event string, data interface{}) {
+	Logf(VerbDebug, "application trigger the hook: %s", event)
+
+	if handler, ok := app.Hooks[event]; ok {
+		handler(app, data)
+	}
+}
+
+// AddHook handler for a hook event
+func (app *Application) AddHook(name string, handler func(*Application, interface{})) {
+	app.Hooks[name] = handler
+}
+
+// AddError to the application
+func (app *Application) AddError(err error) {
+	app.errors = append(app.errors, err)
 }
 
 // AddVar get command name

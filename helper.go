@@ -21,7 +21,7 @@ var level2color = map[uint]color.Color{
 	VerbDebug: color.FgGreen,
 }
 
-// print log message
+// Logf print log message
 func Logf(level uint, format string, v ...interface{}) {
 	if gOpts.verbose < level {
 		return

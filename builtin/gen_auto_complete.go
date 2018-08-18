@@ -10,6 +10,7 @@ import (
 	"strings"
 )
 
+// current supported shell
 const (
 	ZshShell  = "zsh"
 	BashShell = "bash"
@@ -29,12 +30,12 @@ var shellTpls = map[string]string{
 
 // GenAutoCompleteScript create command
 func GenAutoCompleteScript() *cliapp.Command {
-	cmd := cliapp.Command{
+	c := cliapp.Command{
 		Func:    doGen,
 		Name:    "gen-ac",
 		Aliases: []string{"genac"},
 
-		Description: "generate script file for command auto complete",
+		Description: "generate auto complete scripts for current application",
 	}
 
 	shell := utils.GetCurShell(true)
@@ -42,7 +43,7 @@ func GenAutoCompleteScript() *cliapp.Command {
 		shell = "bash"
 	}
 
-	cmd.StrOpt(
+	c.StrOpt(
 		&genOpts.shell,
 		"shell",
 		"s",
@@ -62,7 +63,7 @@ func GenAutoCompleteScript() *cliapp.Command {
 		"output shell auto completion script file name.",
 	)
 
-	return &cmd
+	return &c
 }
 
 func doGen(_ *cliapp.Command, _ []string) int {

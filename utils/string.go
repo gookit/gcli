@@ -4,7 +4,7 @@ import (
 	"strings"
 )
 
-// LowerFirst
+// LowerFirst char for given string
 func LowerFirst(s string) string {
 	if len(s) == 0 {
 		return s

@@ -2,7 +2,6 @@ package utils
 
 import (
 	"bytes"
-	"encoding/json"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -20,25 +19,39 @@ func Go(f func() error) chan error {
 	return ch
 }
 
-// ExecCommand
-// cmdStr eg. "ls -al"
-func ExecCommand(cmdStr string, shells ...string) (string, error) {
+// ExecCmd exec a CLI command and return output.
+func ExecCmd(cmdStr string, dirAndShell ...string) (string, error) {
+	return ExecCommand(cmdStr, dirAndShell...)
+}
+
+// ExecCommand exec a CLI command and return output.
+// usage:
+// 	utils.ExecCommand("ls -al")
+// 	utils.ExecCommand("ls -al", "/usr/lib")
+// 	utils.ExecCommand("ls -al", "/usr/lib", "/bin/zsh")
+func ExecCommand(cmdStr string, dirAndShell ...string) (string, error) {
+	var workDir string
 	shell := "/bin/sh"
 
-	if len(shells) > 0 {
-		shell = shells[0]
+	// if has more args
+	if ln := len(dirAndShell); ln > 0 {
+		workDir = dirAndShell[0]
+		if ln > 1 {
+			shell = dirAndShell[1]
+		}
 	}
 
-	// 函数返回一个*Cmd，用于使用给出的参数执行name指定的程序
+	// create a new Cmd instance
 	cmd := exec.Command(shell, "-c", cmdStr)
+	if workDir != "" {
+		cmd.Dir = workDir
+	}
 
-	// 读取io.Writer类型的cmd.Stdout，
-	// 再通过bytes.Buffer(缓冲byte类型的缓冲器)将byte类型转化为string类型
-	var out bytes.Buffer
-	cmd.Stdout = &out
+	// rewrite cmd.Stdout to buffer
+	out := new(bytes.Buffer)
+	cmd.Stdout = out
 
-	// Run执行c包含的命令，并阻塞直到完成。
-	// 这里stdout被取出，cmd.Wait()无法正确获取 stdin,stdout,stderr，则阻塞在那了
+	// Run执行命令，并阻塞直到完成
 	if err := cmd.Run(); err != nil {
 		return "", err
 	}
@@ -55,7 +68,6 @@ func GetCurShell(onlyName bool) string {
 	}
 
 	path = strings.TrimSpace(path)
-
 	if onlyName && len(path) > 0 {
 		path = filepath.Base(path)
 	}
@@ -63,36 +75,27 @@ func GetCurShell(onlyName bool) string {
 	return path
 }
 
-// GetKeyMaxLen
+// GetKeyMaxLen get key max length of the map
 // usage:
-// utils.GetKeyMaxLen(map[string]string{"k1":"v1", "key2": "v2"}, 0)
+// 	utils.GetKeyMaxLen(map[string]string{"k1":"v1", "key2": "v2"}, 0)
 func GetKeyMaxLen(kv map[string]interface{}, defLen int) (max int) {
 	max = defLen
-
-	for k, _ := range kv {
-		kLen := len(k)
-
-		if kLen > max {
-			max = kLen
+	for k := range kv {
+		kl := len(k)
+		if kl > max {
+			max = kl
 		}
 	}
 
 	return
 }
 
-// GetScreenSize
+// GetScreenSize for current console terminal
 func GetScreenSize() (w int, h int) {
 	return
 }
 
-// PrettyJson get pretty Json string
-func PrettyJson(v interface{}) (string, error) {
-	out, err := json.MarshalIndent(v, "", "    ")
-
-	return string(out), err
-}
-
-// RenderTemplate
+// RenderTemplate render text template with data
 func RenderTemplate(input string, data interface{}, isFile ...bool) string {
 	// use buffer receive rendered content
 	var buf bytes.Buffer

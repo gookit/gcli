@@ -72,4 +72,4 @@ COPY --from=Builder /tmp/app-server app-server
 #COPY static static
 #COPY resources resources
 
-ENTRYPOINT ./app-server
+ENTRYPOINT ["./app-server"]

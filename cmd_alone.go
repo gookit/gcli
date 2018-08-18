@@ -5,7 +5,7 @@ import (
 	"os"
 )
 
-// AloneRun
+// AloneRun current command
 func (c *Command) AloneRun() int {
 	// mark is alone
 	c.alone = true
@@ -31,12 +31,12 @@ func (c *Command) AloneRun() int {
 	return c.Func(c, c.Flags.Args())
 }
 
-// IsAlone
+// IsAlone running
 func (c *Command) IsAlone() bool {
 	return c.alone
 }
 
-// NotAlone
+// NotAlone running
 func (c *Command) NotAlone() bool {
 	return !c.alone
 }

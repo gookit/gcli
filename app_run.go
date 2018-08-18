@@ -52,6 +52,8 @@ func (app *Application) Run() {
 		args = strictFormatArgs(args)
 	}
 
+	app.callHook(EvtBefore, cmd.Copy())
+
 	// parse args, don't contains command name.
 	if !cmd.CustomFlags {
 		cmd.Flags.Parse(args)
@@ -60,6 +62,13 @@ func (app *Application) Run() {
 
 	// do execute command
 	exitCode := cmd.Execute(app, args)
+
+	if len(app.errors) > 0 {
+		app.callHook(EvtError, app.errors)
+	} else {
+		app.callHook(EvtAfter, exitCode)
+	}
+
 	os.Exit(exitCode)
 }
 
@@ -79,10 +88,10 @@ func parseGlobalOpts() []string {
 	return flag.Args()
 }
 
-// Run running a sub-command in current command
+// SubRun running other command in current command
 func (app *Application) SubRun(name string, args []string) int {
 	if !app.IsCommand(name) {
-		color.Tips("error").Printf("unknown input command '%s'", name)
+		color.Tips("error").Printf("unknown command name '%s'", name)
 		return -2
 	}
 

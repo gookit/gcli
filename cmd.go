@@ -6,7 +6,7 @@ import (
 	"strings"
 )
 
-// Commander
+// Commander interface
 type Commander interface {
 	Init() *Command
 	Execute(app *Application, args []string) int
@@ -20,8 +20,8 @@ type Commander interface {
 // type CmdHandler func(app *Application, args []string) int
 // type CmdHandler Command
 
-type Map map[string]string
-type ArrMap []Map
+// type Map map[string]string
+// type ArrMap []Map
 
 // Command a CLI command structure
 type Command struct {
@@ -30,8 +30,8 @@ type Command struct {
 	// Func A callback func to runs the command.
 	Func func(cmd *Command, args []string) int
 	// Hooks can setting some hooks func on running.
-	// allow hooks: "init", "before", "after"
-	Hooks map[string]func(cmd *Command)
+	// allow hooks: "init", "before", "after", "error"
+	Hooks map[string]func(cmd *Command, data interface{})
 	// Aliases is the command name's alias names
 	Aliases []string
 	// Description is the command description for 'go help'
@@ -94,16 +94,43 @@ func (c *Command) Init() *Command {
 		}
 	}
 
-	if c.Vars == nil {
-		c.Vars = make(map[string]string)
-	}
-
+	c.callHook(EvtInit, nil)
 	return c
+}
+
+// Copy a new command for current
+func (c *Command) Copy() *Command {
+	nc := *c
+	// reset some fields
+	nc.Func = nil
+	nc.Hooks = nil
+	// nc.Flags = flag.FlagSet{}
+
+	return &nc
 }
 
 // Execute do execute the command
 func (c *Command) Execute(app *Application, args []string) int {
-	return c.Func(c, args)
+	c.callHook(EvtBefore, nil)
+
+	// call command handler func
+	eCode := c.Func(c, args)
+
+	if c.error != nil {
+		c.app.AddError(c.error)
+		c.callHook(EvtError, c.error)
+	} else {
+		c.callHook(EvtAfter, eCode)
+	}
+
+	return eCode
+}
+
+func (c *Command) callHook(event string, data interface{}) {
+	Logf(VerbDebug, "command %s trigger the hook: %s", c.Name, event)
+	if handler, ok := c.Hooks[event]; ok {
+		handler(c, data)
+	}
 }
 
 /*************************************************************
@@ -194,18 +221,23 @@ func (c *Command) IsDisabled() bool {
 	return c.disabled
 }
 
-// SetError
-func (c *Command) SetError(err error) {
+// SetError for the command
+func (c *Command) SetError(err error) int {
 	c.error = err
+	return ERR
 }
 
-// Application returns the CLI application
+// App returns the CLI application
 func (c *Command) App() *Application {
 	return app
 }
 
 // AddVars add multi tpl vars
 func (c *Command) AddVars(vars map[string]string) {
+	if c.Vars == nil {
+		c.Vars = make(map[string]string)
+	}
+
 	for n, v := range vars {
 		c.Vars[n] = v
 	}

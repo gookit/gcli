@@ -81,16 +81,16 @@ func (c *Command) ShowHelp(quit ...bool) {
 	}
 }
 
-// PrintDefaults prints, to standard error unless configured otherwise, the
+// ParseDefaults prints, to standard error unless configured otherwise, the
 // default values of all defined command-line flags in the set. See the
 // documentation for the global function PrintDefaults for more information.
+//
 // NOTICE: the func is copied from package 'flag', func 'PrintDefaults'
 func (c *Command) ParseDefaults() string {
+	var s string
 	var ss []string
 
 	c.Flags.VisitAll(func(fg *flag.Flag) {
-		var s string
-
 		// is long option
 		if len(fg.Name) > 1 {
 			// find shortcut name
