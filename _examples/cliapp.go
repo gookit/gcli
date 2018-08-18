@@ -18,7 +18,10 @@ func main() {
 	app.Description = "this is my cli application"
 
 	// app.SetVerbose(cliapp.VerbDebug)
-	// app.DefaultCmd("example")
+	// app.DefaultCommand("example")
+	app.Hooks[cliapp.EvtInit] = func(app *cliapp.Application, data interface{}) {
+		// do something...
+	}
 
 	app.Add(cmd.ExampleCommand())
 	app.Add(cmd.EnvInfoCommand())

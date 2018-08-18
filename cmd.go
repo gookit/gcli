@@ -125,25 +125,15 @@ func (c *Command) Init() *Command {
 	return c
 }
 
-func (c *Command) defaultErrHandler(_ *Command, data interface{}) {
-	err := data.(error)
-	fmt.Println(color.FgRed.Render("ERROR:"), err.Error())
-}
-
-// Copy a new command for current
-func (c *Command) Copy() *Command {
-	nc := *c
-	// reset some fields
-	nc.Func = nil
-	nc.Hooks = nil
-	// nc.Flags = flag.FlagSet{}
-
-	return &nc
-}
-
 // Execute do execute the command
 func (c *Command) Execute(args []string) int {
-	c.callHook(EvtBefore, nil)
+	// collect named args
+	if err := c.collectNamedArgs(args); err != nil {
+		fmt.Println(color.FgRed.Render("ERROR:"), err.Error())
+		return ERR
+	}
+
+	c.callHook(EvtBefore, args)
 
 	// call command handler func
 	// eCode := c.Func.Run(c, args)
@@ -159,12 +149,40 @@ func (c *Command) Execute(args []string) int {
 	return eCode
 }
 
+func (c *Command) collectNamedArgs(args []string) error {
+	// if len(args) < len(c.args) {
+	// 	return fmt.Errorf("not enough arguments for the command")
+	// }
+
+	// for i, arg := range c.args {
+	//
+	// }
+
+	return nil
+}
+
 func (c *Command) callHook(event string, data interface{}) {
 	Logf(VerbDebug, "command '%s' trigger the hook: %s", c.Name, event)
 
 	if handler, ok := c.Hooks[event]; ok {
 		handler(c, data)
 	}
+}
+
+func (c *Command) defaultErrHandler(_ *Command, data interface{}) {
+	err := data.(error)
+	fmt.Println(color.FgRed.Render("ERROR:"), err.Error())
+}
+
+// Copy a new command for current
+func (c *Command) Copy() *Command {
+	nc := *c
+	// reset some fields
+	nc.Func = nil
+	nc.Hooks = nil
+	// nc.Flags = flag.FlagSet{}
+
+	return &nc
 }
 
 /*************************************************************

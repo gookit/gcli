@@ -51,6 +51,8 @@ type GlobalOpts struct {
 	showHelp bool
 }
 
+type appHookFunc func(app *Application, data interface{})
+
 // Application the cli app definition
 type Application struct {
 	// Name app name
@@ -63,10 +65,12 @@ type Application struct {
 	Logo Logo
 	// Hooks can setting some hooks func on running.
 	// allow hooks: "init", "before", "after", "error"
-	Hooks map[string]func(app *Application, data interface{})
+	Hooks map[string]appHookFunc
 	// Strict use strict mode. short opt must be begin '-', long opt must be begin '--'
 	Strict bool
 
+	// pid value for current application
+	pid int
 	// vars you can add some vars map for render help info
 	vars map[string]string
 	// command names. key is name, value is name string length
@@ -135,8 +139,24 @@ func NewApp(settings ...string) *Application {
 	}
 
 	// init
-	app.Init()
+	app.initialize()
+
 	return app
+}
+
+// initialize application
+func (app *Application) initialize() {
+	app.pid = os.Getpid()
+	app.names = make(map[string]int)
+
+	// init some tpl vars
+	app.vars = map[string]string{
+		"workDir": workDir,
+		"binName": binName,
+	}
+
+	app.Hooks = make(map[string]appHookFunc, 0)
+	app.callHook(EvtInit, nil)
 }
 
 // SetLogo text and color style
@@ -166,19 +186,6 @@ func (app *Application) SetVerbose(verbose uint) {
 // DefaultCommand set default command name
 func (app *Application) DefaultCommand(name string) {
 	app.defaultCommand = name
-}
-
-// Init application
-func (app *Application) Init() {
-	app.names = make(map[string]int)
-
-	// init some tpl vars
-	app.vars = map[string]string{
-		"workDir": workDir,
-		"binName": binName,
-	}
-
-	app.callHook(EvtInit, nil)
 }
 
 // Add add a command
