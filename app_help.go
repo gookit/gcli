@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
-	"os"
 	"strings"
 )
 
@@ -33,8 +32,7 @@ func (app *Application) showVersionInfo() {
 		utils.UpperFirst(app.Description),
 		color.ApplyTag("cyan", app.Version),
 	)
-
-	os.Exit(0)
+	Exit(OK)
 }
 
 // display app commands help
@@ -51,8 +49,29 @@ func (app *Application) showCommandsHelp() {
 	// parse help vars
 	str = replaceVars(str, app.vars)
 	fmt.Print(color.RenderStr(str))
+	Exit(OK)
+}
 
-	os.Exit(0)
+// showCommandHelp display help for an command
+func (app *Application) showCommandHelp(list []string, quit bool) {
+	if len(list) != 1 {
+		color.Tips("error").Printf(
+			"Usage: %s help %s\n\nToo many arguments given.",
+			binName,
+			list[0],
+		)
+		Exit(ERR)
+	}
+
+	// get real name
+	name := app.RealCommandName(list[0])
+	cmd, exist := commands[name]
+	if !exist {
+		color.Tips("error").Printf("Unknown command name %#q. Run '%s -h'", name, binName)
+		Exit(ERR)
+	}
+
+	cmd.ShowHelp(quit)
 }
 
 // findSimilarCmd find similar cmd by input string
@@ -94,19 +113,4 @@ func (app *Application) findSimilarCmd(input string) []string {
 	}
 
 	return ss
-}
-
-// Print messages
-func Print(args ...interface{}) (int, error) {
-	return color.Print(args...)
-}
-
-// Println messages
-func Println(args ...interface{}) (int, error) {
-	return color.Println(args...)
-}
-
-// Printf messages
-func Printf(format string, args ...interface{}) (int, error) {
-	return color.Printf(format, args...)
 }

@@ -5,8 +5,9 @@ import (
 	"fmt"
 	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
+	"log"
+	"os"
 	"strings"
-	"strconv"
 )
 
 // CmdRunner interface
@@ -40,7 +41,7 @@ type Command struct {
 	Aliases []string
 	// Description is the command description for 'go help'
 	Description string
-	// Flags(Options) is a set of flags specific to this command.
+	// Flags(command options) is a set of flags specific to this command.
 	Flags flag.FlagSet
 	// CustomFlags indicates that the command will do its own flag parsing.
 	CustomFlags bool
@@ -57,7 +58,9 @@ type Command struct {
 	// 	{"arg1", "this is second argument", false, false},
 	// }
 	args []*Argument
-	// Used to record argument names and defined positional relationships
+	// record min length for args
+	// argsMinLen int
+	// record argument names and defined positional relationships
 	// {
 	// 	// name: position
 	// 	"arg0": 0,
@@ -81,6 +84,16 @@ type Command struct {
 	shortcuts map[string]string
 }
 
+// Disable set cmd is disabled
+func (c *Command) Disable() {
+	c.disabled = true
+}
+
+// IsDisabled get cmd is disabled
+func (c *Command) IsDisabled() bool {
+	return c.disabled
+}
+
 // Runnable reports whether the command can be run; otherwise
 // it is a documentation pseudo-command such as import path.
 func (c *Command) Runnable() bool {
@@ -92,18 +105,18 @@ func (c *Command) Init() *Command {
 	if len(c.Description) > 0 {
 		c.Description = utils.UpperFirst(c.Description)
 
-		// if contains help var "{$cmd}"
+		// contains help var "{$cmd}". replace on here is for 'app help'
 		if strings.Contains(c.Description, "{$cmd}") {
 			c.Description = strings.Replace(c.Description, "{$cmd}", c.Name, -1)
 		}
 	}
 
+	// set help vars
+	c.Vars = c.app.vars
 	c.AddVars(map[string]string{
 		"cmd": c.Name,
 		// full command
 		"fullCmd": binName + " " + c.Name,
-		"workDir": workDir,
-		"binName": binName,
 	})
 
 	if c.Hooks == nil {
@@ -124,6 +137,10 @@ func (c *Command) Init() *Command {
 
 	return c
 }
+
+/*************************************************************
+ * command run
+ *************************************************************/
 
 // Execute do execute the command
 func (c *Command) Execute(args []string) int {
@@ -149,14 +166,30 @@ func (c *Command) Execute(args []string) int {
 	return eCode
 }
 
-func (c *Command) collectNamedArgs(args []string) error {
-	// if len(args) < len(c.args) {
-	// 	return fmt.Errorf("not enough arguments for the command")
-	// }
+func (c *Command) collectNamedArgs(inArgs []string) error {
+	var num int
+	inNum := len(inArgs)
 
-	// for i, arg := range c.args {
-	//
-	// }
+	for i, arg := range c.args {
+		num = i + 1      // num is equal index + 1
+		if num > inNum { // no enough arg
+			if arg.Required {
+				return fmt.Errorf("must set a value for the argument: %s (position %d)", arg.Name, arg.index)
+			}
+			break
+		}
+
+		if arg.IsArray {
+			arg.Value = inArgs[i:]
+			inNum = num // must reset inNum
+		} else {
+			arg.Value = inArgs[i]
+		}
+	}
+
+	if c.app.Strict && inNum > num {
+		return fmt.Errorf("enter too many arguments: %v", inArgs[num:])
+	}
 
 	return nil
 }
@@ -186,152 +219,45 @@ func (c *Command) Copy() *Command {
 }
 
 /*************************************************************
- * command arguments
+ * alone running
  *************************************************************/
 
-// Argument a command argument definition
-type Argument struct {
-	// Name argument name
-	Name string
-	// Description argument description message
-	Description string
-	// IsArray if is array, can allow accept multi values, and must in last.
-	IsArray bool
-	// Required arg is required
-	Required bool
-	// value store parsed argument data. (string, []string)
-	Value interface{}
+// AloneRun current command
+func (c *Command) AloneRun() int {
+	// don't display date on print log
+	log.SetFlags(0)
+	// mark is alone
+	c.alone = true
+	// args := parseGlobalOpts()
+	// init
+	c.Init()
+	// parse args and opts
+	c.Flags.Parse(os.Args[1:])
+
+	return c.Execute(c.Flags.Args())
 }
 
-// Int argument value to int
-func (a *Argument) Int(defVal ...int) int {
-	def := 0
-	if len(defVal) == 1 {
-		def = defVal[0]
-	}
-
-	if a.Value == nil {
-		return def
-	}
-
-	str := a.Value.(string)
-	if str != "" {
-		val, err := strconv.Atoi(str)
-		if err != nil {
-			return val
-		}
-	}
-
-	return def
+// IsAlone running
+func (c *Command) IsAlone() bool {
+	return c.alone
 }
 
-// String argument value to string
-func (a *Argument) String(defVal ...string) string {
-	def := ""
-	if len(defVal) == 1 {
-		def = defVal[0]
-	}
-
-	if a.Value == nil {
-		return def
-	}
-
-	return a.Value.(string)
-}
-
-// Strings argument value to string array, if argument isArray = true.
-func (a *Argument) Strings() (ss []string) {
-	if a.Value != nil {
-		ss = a.Value.([]string)
-	}
-
-	return
-}
-
-// AddArg add a command argument.
-// Notice:
-// 	- Required argument cannot be defined after optional argument
-// 	- The (array) argument of multiple values ​​can only be defined at the end
-func (c *Command) AddArg(name, description string, required, isArray bool) {
-	if c.hasArrayArg {
-		panic("An array argument has been defined and no more argument definitions can be added")
-	}
-
-	if required && c.hasOptionalArg {
-		panic("Required argument cannot be defined after optional argument")
-	}
-
-	if c.argsIndexes == nil {
-		c.argsIndexes = make(map[string]int)
-	}
-
-	// add argument index record
-	c.argsIndexes[name] = len(c.args)
-
-	// add argument
-	c.args = append(c.args, &Argument{
-		Name: name, Description: description, Required: required, IsArray: isArray,
-	})
-
-	if !required {
-		c.hasOptionalArg = true
-	}
-
-	if isArray {
-		c.hasArrayArg = true
-	}
-}
-
-// Args get all defined argument
-func (c *Command) Args() []*Argument {
-	return c.args
-}
-
-// Arg get arg by defined name.
-// usage:
-// 	intVal := c.Arg("name").Int()
-// 	strVal := c.Arg("name").String()
-// 	arrVal := c.Arg("name").Array()
-func (c *Command) Arg(name string) *Argument {
-	i, ok := c.argsIndexes[name]
-	if !ok {
-		return &Argument{}
-	}
-
-	return c.args[i]
-}
-
-// GetArgs get Flags args
-func (c *Command) GetArgs() []string {
-	return c.Flags.Args()
-}
-
-// GetArg get Flags arg
-func (c *Command) GetArg(i int) string {
-	return c.Flags.Arg(i)
+// NotAlone running
+func (c *Command) NotAlone() bool {
+	return !c.alone
 }
 
 /*************************************************************
  * helper methods
  *************************************************************/
 
-// Disable set cmd is disabled
-func (c *Command) Disable() {
-	c.disabled = true
-}
-
-// IsDisabled get cmd is disabled
-func (c *Command) IsDisabled() bool {
-	return c.disabled
-}
-
-// Errorf format message and add error for the command
+// Errorf format message and add error to the command
 func (c *Command) Errorf(format string, v ...interface{}) int {
-	return c.SetError(fmt.Errorf(format, v...))
+	return c.WithError(fmt.Errorf(format, v...))
 }
 
-// SetError for the command
-func (c *Command) SetError(err error) int {
+// WithError for the command
+func (c *Command) WithError(err error) int {
 	c.error = err
 	return ERR
 }
@@ -344,6 +270,11 @@ func (c *Command) Error() error {
 // App returns the CLI application
 func (c *Command) App() *Application {
 	return app
+}
+
+// WorkDir returns command work dir
+func (c *Command) WorkDir() string {
+	return workDir
 }
 
 // AddVars add multi tpl vars
@@ -379,9 +310,4 @@ func (c *Command) AliasesString(sep ...string) string {
 // Logf print log message
 func (c *Command) Logf(level uint, format string, v ...interface{}) {
 	Logf(level, format, v...)
-}
-
-// WorkDir returns command work dir
-func (c *Command) WorkDir() string {
-	return workDir
 }

@@ -63,7 +63,7 @@ func watch(c *cliapp.Command, _ []string) int {
 	var err error
 	watcher, err = fsnotify.NewWatcher()
 	if err != nil {
-		return c.SetError(err)
+		return c.WithError(err)
 	}
 	defer watcher.Close()
 
@@ -90,7 +90,7 @@ func watch(c *cliapp.Command, _ []string) int {
 	if len(opts.Files) > 0 {
 		if err = addWatchFiles(opts.Files); err != nil {
 			// <-done
-			return c.SetError(err)
+			return c.WithError(err)
 		}
 	}
 
@@ -98,7 +98,7 @@ func watch(c *cliapp.Command, _ []string) int {
 		fmt.Println("- add watch dir: ", color.FgGreen.Render(opts.Dir))
 
 		if err = addWatchDir(opts.Dir); err != nil {
-			return c.SetError(err)
+			return c.WithError(err)
 		}
 	}
 

@@ -6,7 +6,6 @@ import (
 	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
 	"log"
-	"os"
 	"strings"
 )
 
@@ -42,7 +41,7 @@ func (app *Application) Run() {
 			fmt.Println("\nMaybe you mean:\n  ", color.FgGreen.Render(strings.Join(ns, ", ")))
 		}
 
-		fmt.Printf("\nUse \"%s\" to see available commands\n", color.FgMagenta.Render(binName+" -h"))
+		fmt.Printf("\nUse \"%s\" to see available commands\n", color.FgCyan.Render(binName+" -h"))
 		Exit(ERR)
 	}
 
@@ -71,7 +70,8 @@ func (app *Application) Run() {
 		app.callHook(EvtAfter, exitCode)
 	}
 
-	os.Exit(exitCode)
+	Logf(VerbDebug, "command %s run complete, exit with code: ", name, exitCode)
+	Exit(exitCode)
 }
 
 // parseGlobalOpts parse global options
@@ -194,7 +194,7 @@ func (app *Application) AddAliases(command string, names []string) {
 	// add alias
 	for _, alias := range names {
 		if cmd, has := app.aliases[alias]; has {
-			panic(color.FgRed.Renderf("The alias '%s' has been used by command '%s'", alias, cmd))
+			exitWithErr("The alias '%s' has been used by command '%s'", alias, cmd)
 		}
 
 		app.aliases[alias] = command

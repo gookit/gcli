@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/gookit/cliapp"
+	"github.com/gookit/color"
 )
 
 // The string flag list, implemented flag.Value interface
@@ -28,7 +29,7 @@ var exampleOpts = struct {
 
 // ExampleCommand command definition
 func ExampleCommand() *cliapp.Command {
-	cmd := cliapp.Command{
+	cmd := &cliapp.Command{
 		Func:    exampleExecute,
 		Name:    "example",
 		Aliases: []string{"exp", "ex"},
@@ -48,22 +49,34 @@ func ExampleCommand() *cliapp.Command {
 	// setting a special option var, it must implement the flag.Value interface
 	cmd.VarOpt(&exampleOpts.names, "names", "n", "the option message")
 
-	// bind args
-	cmd.AddArg("arg0", "the first argument", true, false)
-	cmd.AddArg("arg1", "the second argument", false, false)
+	// bind args with names
+	cmd.AddArg("arg0", "the first argument, is required", true)
+	cmd.AddArg("arg1", "the second argument, is required", true)
+	cmd.AddArg("arg2", "the optional argument, is optional")
+	cmd.AddArg("arrArg", "the array argument, is array", false, true)
 
-	return &cmd
+	return cmd
 }
 
 // command running
 // example run:
-// 	go build cliapp.go && ./cliapp example --id 12 -c val ag0 ag1
-func exampleExecute(cmd *cliapp.Command, args []string) int {
+// 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
+func exampleExecute(c *cliapp.Command, args []string) int {
 	fmt.Print("hello, in example command\n")
 
-	// fmt.Printf("%+v\n", cmd.Flags)
-	fmt.Printf("opts %+v\n", exampleOpts)
-	fmt.Printf("args is %v\n", args)
+	color.Magentaln("All options:")
+	fmt.Printf("%+v\n", exampleOpts)
+	color.Magentaln("Raw args:")
+	fmt.Printf("%v\n", args)
+
+	color.Magentaln("Get arg by name:")
+	arr := c.Arg("arrArg")
+	fmt.Printf("named array arg '%s', value: %v\n", arr.Name, arr.Value)
+
+	color.Magentaln("All named args:")
+	for _, arg := range c.Args() {
+		fmt.Printf("named arg '%s': %+v\n", arg.Name, *arg)
+	}
 
 	return 0
 }

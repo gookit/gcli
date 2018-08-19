@@ -64,7 +64,7 @@ func (rp *reverseProxy) Run(cmd *cliapp.Command, args []string) int {
 
 	urlObj, err := url.Parse(rp.remote)
 	if err != nil {
-		return cmd.SetError(err)
+		return cmd.WithError(err)
 	}
 
 	rpHandler := ReverseProxy(urlObj)

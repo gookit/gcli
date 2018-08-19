@@ -7,6 +7,7 @@
 package cliapp
 
 import (
+	"fmt"
 	"os"
 )
 
@@ -20,7 +21,9 @@ const (
 	// VerbCrazy
 )
 
-// HelpVar allow var replace in help info. like "{$binName}" "{$cmd}"
+// HelpVar allow var replace in help info.
+// default support:
+// 	"{$binName}" "{$cmd}" "{$fullCmd}" "{$workDir}"
 const HelpVar = "{$%s}"
 
 // constants for hooks event, there are default allowed hook names
@@ -68,7 +71,6 @@ type Application struct {
 	Hooks map[string]appHookFunc
 	// Strict use strict mode. short opt must be begin '-', long opt must be begin '--'
 	Strict bool
-
 	// pid value for current application
 	pid int
 	// vars you can add some vars map for render help info
@@ -151,6 +153,7 @@ func (app *Application) initialize() {
 
 	// init some tpl vars
 	app.vars = map[string]string{
+		"pid":     fmt.Sprint(app.pid),
 		"workDir": workDir,
 		"binName": binName,
 	}
@@ -202,7 +205,7 @@ func (app *Application) Add(c *Command, more ...*Command) {
 
 func (app *Application) addCommand(c *Command) {
 	if c.Name == "" {
-		panic("The added command must have a command name")
+		exitWithErr("The added command must have a command name")
 	}
 
 	if c.IsDisabled() {

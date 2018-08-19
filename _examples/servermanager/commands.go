@@ -47,7 +47,7 @@ func startServer() int {
 		fmt.Printf("server start, [PID] %d running...\n", command.Process.Pid)
 		ioutil.WriteFile(config.PidFile, []byte(fmt.Sprintf("%d", command.Process.Pid)), 0666)
 		config.Daemon = false
-		os.Exit(0)
+		return 0
 	} else {
 		fmt.Println("gonne start")
 	}

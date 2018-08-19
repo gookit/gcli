@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
-	"os"
 	"reflect"
 	"strings"
 )
@@ -25,35 +24,13 @@ var commandHelp = `{{.Description}}
 {{.Options}}{{end}}{{if .Cmd.Args}}
 
 <comment>Arguments:</>{{range $a := .Cmd.Args}}
-  <info>{{$a.Name | printf "%-12s"}}</>{{$a.Description | upFirst}}{{end}}
+  <info>{{$a.Name | printf "%-12s"}}</>{{$a.Description | upFirst}}{{if $a.Required}}<red>*</>{{end}}{{end}}
 {{end}} {{if .Cmd.Examples}}
 <comment>Examples:</>
   {{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}
 <comment>Help:</>
   {{.Cmd.Help}}{{end}}
 `
-
-// showCommandHelp display help for an command
-func (app *Application) showCommandHelp(list []string, quit bool) {
-	if len(list) != 1 {
-		color.Tips("error").Printf(
-			"Usage: %s help %s\n\nToo many arguments given.",
-			binName,
-			list[0],
-		)
-		os.Exit(2) // failed at 'bee help'
-	}
-
-	// get real name
-	name := app.RealCommandName(list[0])
-	cmd, exist := commands[name]
-	if !exist {
-		color.Tips("error").Printf("Unknown command name %#q.  Run '%s -h'", name, binName)
-		os.Exit(2)
-	}
-
-	cmd.ShowHelp(quit)
-}
 
 // ShowHelp show command help info
 func (c *Command) ShowHelp(quit ...bool) {
@@ -74,7 +51,7 @@ func (c *Command) ShowHelp(quit ...bool) {
 	fmt.Print(color.RenderStr(str))
 
 	if len(quit) > 0 && quit[0] {
-		os.Exit(0)
+		Exit(OK)
 	}
 }
 

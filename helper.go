@@ -29,11 +29,34 @@ func Logf(level uint, format string, v ...interface{}) {
 
 	name, has := level2name[level]
 	if !has {
-		return
+		name = "Unknown"
+	} else {
+		name = level2color[level].Render(name)
 	}
 
-	c := level2color[level]
-	fmt.Printf("cliapp: [%s] %s\n", c.Render(name), fmt.Sprintf(format, v...))
+	fmt.Printf("cliapp: [%s] %s\n", name, fmt.Sprintf(format, v...))
+}
+
+// Print messages
+func Print(args ...interface{}) (int, error) {
+	return color.Print(args...)
+}
+
+// Println messages
+func Println(args ...interface{}) (int, error) {
+	return color.Println(args...)
+}
+
+// Printf messages
+func Printf(format string, args ...interface{}) (int, error) {
+	return color.Printf(format, args...)
+}
+
+func exitWithErr(format string, v ...interface{}) {
+	fmt.Println(
+		color.FgRed.Render("ERROR:"), fmt.Sprintf(format, v...),
+	)
+	Exit(ERR)
 }
 
 // replaceVars replace vars in the help info

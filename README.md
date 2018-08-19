@@ -67,11 +67,10 @@ func main() {
 
     app := cliapp.NewApp()
     app.Version = "1.0.3"
-    app.Verbose = cliapp.VerbDebug
     app.Description = "this is my cli application"
+    // app.SetVerbose(cliapp.VerbDebug)
 
     app.Add(cmd.ExampleCommand())
-    app.Add(cmd.GitCommand())
     app.Add(&cliapp.Command{
         Name: "demo",
         Aliases: []string{"dm"},
@@ -112,53 +111,70 @@ Version: 1.0.3
 
 ![app-help](_examples/images/app-help.jpg)
 
-
 ### Run a command
 
 ```bash
-% ./cliapp example --id 12 -c val ag0 ag1                          
-hello, in example command
-opts {id:12 c:val dir:}
-args is [ag0 ag1]
-
+% ./cliapp example -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
 ```
+
+you can see:
+
+![run_example_cmd](_examples/images/run_example_cmd.jpg)
 
 ### Display command help
 
 > by `./cliapp example -h` or `./cliapp example --help`
 
-```bash
-% ./cliapp example -h                                                
-This is a description message
+![cmd-help](_examples/images/cmd-help.jpg)
 
-Name: example(alias: exp,ex)
-Usage: ./cliapp example [--option ...] [argument ...]
+### Display command tips
 
-Global Options:
-  -h, --help        Display this help information
+![command tips](_examples/images/err-cmd-tips.jpg)
 
-Options:
-  -c string
-        The short option (default value)
-  --dir string
-        The dir option
-  --id int
-        The id option (default 2)
+### Generate auto completion scripts
 
-Arguments:
-  arg0        The first argument
-  arg1        The second argument
- 
-Examples:
-  ./cliapp example --id 12 -c val ag0 ag1
+```go
+import  "github.com/gookit/cliapp/builtin"
+
+    // ...
+    // add gen command(gen successful you can remove it)
+    app.Add(builtin.GenAutoCompleteScript())
 
 ```
+
+Build and run command(_This command can be deleted after success._)：
+
+```bash
+% go build ./_examples/cliapp.go && ./cliapp genac -h // display help
+% go build ./_examples/cliapp.go && ./cliapp genac // run gen command
+INFO: 
+  {shell:zsh binName:cliapp output:auto-completion.zsh}
+
+Now, will write content to file auto-completion.zsh
+Continue? [yes|no](default yes): y
+
+OK, auto-complete file generate successful
+```
+
+generated shell script file ref： 
+
+- bash env [auto-completion.bash](resource/auto-completion.bash) 
+- zsh env [auto-completion.zsh](resource/auto-completion.zsh)
+
+> After running, it will generate an `auto-completion.{zsh|bash}` file in the current directory,
+ and the shell environment name is automatically obtained.
+ Of course you can specify it manually at runtime
+
+- preview: 
+
+![auto-complete-tips](_examples/images/auto-complete-tips.jpg)
 
 ## Write a command
 
 ### About argument definition
 
 - Required argument cannot be defined after optional argument
+- Only one array parameter is allowed
 - The (array) argument of multiple values ​​can only be defined at the end
 
 ### Simple use
@@ -185,6 +201,7 @@ package cmd
 
 import (
 	"github.com/gookit/cliapp"
+	"github.com/gookit/color"
 	"fmt"
 )
 
@@ -219,22 +236,34 @@ func ExampleCommand() *cliapp.Command {
 	// setting a special option var, it must implement the flag.Value interface
 	cmd.VarOpt(&exampleOpts.names, "names", "n", "the option message")
 
-	// bind args
-	cmd.AddArg("arg0", "the first argument", true, false)
-	cmd.AddArg("arg1", "the second argument", false, false)
+	// bind args with names
+	cmd.AddArg("arg0", "the first argument, is required", true)
+	cmd.AddArg("arg1", "the second argument, is required", true)
+	cmd.AddArg("arg2", "the optional argument, is optional")
+	cmd.AddArg("arrArg", "the array argument, is array", false, true)
 
 	return cmd
 }
 
 // command running
 // example run:
-// 	go build cliapp.go && ./cliapp example --id 12 -c val ag0 ag1
-func exampleExecute(cmd *cliapp.Command, args []string) int {
+// 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
+func exampleExecute(c *cliapp.Command, args []string) int {
 	fmt.Print("hello, in example command\n")
 
-	// fmt.Printf("%+v\n", cmd.Flags)
-	fmt.Printf("opts %+v\n", exampleOpts)
-	fmt.Printf("args is %v\n", args)
+	color.Magentaln("All options:")
+	fmt.Printf("%+v\n", exampleOpts)
+	color.Magentaln("Raw args:")
+	fmt.Printf("%v\n", args)
+
+	color.Magentaln("Get arg by name:")
+	arr := c.Arg("arrArg")
+	fmt.Printf("named array arg '%s', value: %v\n", arr.Name, arr.Value)
+
+	color.Magentaln("All named args:")
+	for _, arg := range c.Args() {
+		fmt.Printf("named arg '%s': %+v\n", arg.Name, *arg)
+	}
 
 	return 0
 }
