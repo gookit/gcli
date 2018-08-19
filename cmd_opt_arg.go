@@ -211,7 +211,7 @@ type Argument struct {
 	IsArray bool
 	// Required arg is required
 	Required bool
-	// value store parsed argument data. (string, []string)
+	// value store parsed argument data. (type: string, []string)
 	Value interface{}
 	// the argument position index in all arguments(cmd.args[index])
 	index int
@@ -226,7 +226,7 @@ func (a *Argument) Int(defVal ...int) int {
 		def = defVal[0]
 	}
 
-	if a.Value == nil {
+	if a.Value == nil || a.IsArray {
 		return def
 	}
 
@@ -248,23 +248,28 @@ func (a *Argument) String(defVal ...string) string {
 		def = defVal[0]
 	}
 
-	if a.Value == nil {
+	if a.Value == nil || a.IsArray {
 		return def
 	}
 
 	return a.Value.(string)
 }
 
+// Array alias of the Strings()
+func (a *Argument) Array() (ss []string) {
+	return a.Strings()
+}
+
 // Strings argument value to string array, if argument isArray = true.
 func (a *Argument) Strings() (ss []string) {
-	if a.Value != nil {
+	if a.Value != nil && a.IsArray {
 		ss = a.Value.([]string)
 	}
 
 	return
 }
 
-// AddArg add a command argument.
+// AddArg binding a named argument for the command.
 // Notice:
 // 	- Required argument cannot be defined after optional argument
 //  - Only one array parameter is allowed
@@ -273,7 +278,7 @@ func (a *Argument) Strings() (ss []string) {
 // usage:
 //	cmd.AddArg("name", "description")
 //	cmd.AddArg("name", "description", true) // required
-//	cmd.AddArg("name", "description", true, true) // required and is array
+//	cmd.AddArg("names", "description", true, true) // required and is array
 func (c *Command) AddArg(name, description string, requiredAndIsArray ...bool) *Argument {
 	if c.argsIndexes == nil {
 		c.argsIndexes = make(map[string]int)
@@ -331,7 +336,7 @@ func (c *Command) Args() []*Argument {
 // usage:
 // 	intVal := c.Arg("name").Int()
 // 	strVal := c.Arg("name").String()
-// 	arrVal := c.Arg("name").Array()
+// 	arrVal := c.Arg("names").Array()
 func (c *Command) Arg(name string) *Argument {
 	i, ok := c.argsIndexes[name]
 	if !ok {
@@ -343,7 +348,7 @@ func (c *Command) Arg(name string) *Argument {
 
 // ArgByIndex get named arg by index
 func (c *Command) ArgByIndex(i int) *Argument {
-	if i <= len(c.args) {
+	if i < len(c.args) {
 		return c.args[i]
 	}
 

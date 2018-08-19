@@ -54,7 +54,7 @@ func FileWatcher(handler func(event fsnotify.Event)) *cliapp.Command {
 // test run:
 // go run ./_examples/cliapp.go watch -e .git -e .idea -d ./_examples
 func watch(c *cliapp.Command, _ []string) int {
-	color.Infoln("Work directory: ", c.WorkDir())
+	color.Info.Println("Work directory: ", c.WorkDir())
 
 	if opts.Dir == "" && len(opts.Files) == 0 {
 		return c.Errorf("watched directory or files cannot be empty")

@@ -66,7 +66,7 @@ func GenAutoCompleteScript() *cliapp.Command {
 	return &c
 }
 
-func doGen(_ *cliapp.Command, _ []string) int {
+func doGen(c *cliapp.Command, _ []string) int {
 	if len(genOpts.binName) == 0 {
 		genOpts.binName = cliapp.BinName()
 	}
@@ -103,22 +103,21 @@ func doGen(_ *cliapp.Command, _ []string) int {
 
 	str := utils.RenderTemplate(shellTpls[genOpts.shell], &data)
 
-	color.Infoln("Now, will write content to file ", genOpts.output)
-	color.Normal("Continue?")
+	color.Info.Println("Now, will write content to file ", genOpts.output)
+	color.Normal.Print("Continue?")
 
 	if !interact.AnswerIsYes(true) {
-		color.Info("\nBye :)\n")
+		color.Info.Print("\nBye :)\n")
 		return 0
 	}
 
 	// 以读写方式打开文件，如果不存在，则创建
 	err := ioutil.WriteFile(genOpts.output, []byte(str), 0664)
 	if err != nil {
-		color.Errorln("Write file error: ", err.Error())
-		return -2
+		return c.Errorf("Write file error: %s", err.Error())
 	}
 
-	color.Sucln("\nOK, auto-complete file generate successful")
+	color.Success.Println("\nOK, auto-complete file generate successful")
 	return 0
 }
 

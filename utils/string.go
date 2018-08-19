@@ -4,8 +4,8 @@ import (
 	"strings"
 )
 
-// LowerFirst char for given string
-func LowerFirst(s string) string {
+// LcFirst char for given string
+func LcFirst(s string) string {
 	if len(s) == 0 {
 		return s
 	}
@@ -20,8 +20,8 @@ func LowerFirst(s string) string {
 	return s
 }
 
-// UpperFirst upper first char
-func UpperFirst(s string) string {
+// UcFirst upper first char
+func UcFirst(s string) string {
 	if len(s) == 0 {
 		return s
 	}

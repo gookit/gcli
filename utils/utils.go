@@ -111,17 +111,15 @@ func RenderTemplate(input string, data interface{}, isFile ...bool) string {
 		"raw": func(s string) string {
 			return s
 		},
-		"trim": func(s string) string {
-			return strings.TrimSpace(string(s))
-		},
+		"trim": strings.TrimSpace,
 		// join strings. usage {{ join .Strings ","}}
 		"join": func(ss []string, sep string) string {
 			return strings.Join(ss, sep)
 		},
+		// lower first char
+		"lcFirst": LcFirst,
 		// upper first char
-		"upFirst": func(s string) string {
-			return UpperFirst(s)
-		},
+		"ucFirst": UcFirst,
 	})
 
 	if isFilename {

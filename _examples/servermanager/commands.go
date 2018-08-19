@@ -6,7 +6,6 @@ import (
 	"os/exec"
 	"github.com/gookit/color"
 	"fmt"
-	"os"
 )
 
 type Config struct {
@@ -76,7 +75,7 @@ func stopServer() int {
 	command := exec.Command("kill", string(bs))
 	command.Start()
 
-	color.Successln("server stopped")
+	color.Success.Println("server stopped")
 	return 0
 }
 

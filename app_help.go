@@ -29,7 +29,7 @@ Use "<cyan>{$binName} {command} -h</>" for more information about a command
 func (app *Application) showVersionInfo() {
 	fmt.Printf(
 		"%s\n\nVersion: %s\n",
-		utils.UpperFirst(app.Description),
+		utils.UcFirst(app.Description),
 		color.ApplyTag("cyan", app.Version),
 	)
 	Exit(OK)
@@ -38,17 +38,17 @@ func (app *Application) showVersionInfo() {
 // display app commands help
 func (app *Application) showCommandsHelp() {
 	commandsHelp = color.ReplaceTag(commandsHelp)
+	// render help text template
 	str := utils.RenderTemplate(commandsHelp, map[string]interface{}{
 		"Cs": commands,
 		// app version
 		"Version": app.Version,
 		// always upper first char
-		"Description": utils.UpperFirst(app.Description),
+		"Description": utils.UcFirst(app.Description),
 	}, false)
 
-	// parse help vars
-	str = replaceVars(str, app.vars)
-	fmt.Print(color.RenderStr(str))
+	// parse help vars and render color tags
+	fmt.Print(color.RenderStr(replaceVars(str, app.vars)))
 	Exit(OK)
 }
 

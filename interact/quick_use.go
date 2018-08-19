@@ -52,3 +52,27 @@ func Confirm(message string, defVal ...bool) bool {
 	color.Print(message)
 	return AnswerIsYes(defVal...)
 }
+
+// QuickSelect select one of the options, returns selected option value
+// map options:
+// 	{
+//    // option value => option name
+//    'a' => 'chengdu',
+//    'b' => 'beijing'
+// 	}
+// array options:
+// 	{
+//    // only name, value will use index
+//    'chengdu',
+//    'beijing'
+// 	}
+func QuickSelect(title string, options interface{}, defOpt string, allowQuit ...bool) string {
+	s := NewSelect(title, options)
+	s.DefOpt = defOpt
+
+	if len(allowQuit) > 0 {
+		s.NoQuit = !allowQuit[0]
+	}
+
+	return s.Run().String()
+}

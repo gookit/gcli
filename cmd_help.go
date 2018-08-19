@@ -24,13 +24,12 @@ var commandHelp = `{{.Description}}
 {{.Options}}{{end}}{{if .Cmd.Args}}
 
 <comment>Arguments:</>{{range $a := .Cmd.Args}}
-  <info>{{$a.Name | printf "%-12s"}}</>{{$a.Description | upFirst}}{{if $a.Required}}<red>*</>{{end}}{{end}}
+  <info>{{$a.Name | printf "%-12s"}}</>{{$a.Description | ucFirst}}{{if $a.Required}}<red>*</>{{end}}{{end}}
 {{end}} {{if .Cmd.Examples}}
 <comment>Examples:</>
-  {{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}
-<comment>Help:</>
-  {{.Cmd.Help}}{{end}}
-`
+  {{.Cmd.Examples}}{{end}}
+{{if .Cmd.Help}}<comment>Help:</>
+  {{.Cmd.Help}}{{end}}`
 
 // ShowHelp show command help info
 func (c *Command) ShowHelp(quit ...bool) {
@@ -40,7 +39,8 @@ func (c *Command) ShowHelp(quit ...bool) {
 	// RenderTplStr(os.Stdout, commandHelp, map[string]interface{}{
 	// render but not output
 	str := utils.RenderTemplate(commandHelp, map[string]interface{}{
-		"Cmd":     c,
+		"Cmd": c,
+		// parse options to string
 		"Options": color.RenderStr(c.ParseDefaults()),
 		// always upper first char
 		"Description": color.RenderStr(c.Description),
@@ -96,7 +96,7 @@ func (c *Command) ParseDefaults() string {
 			// for both 4- and 8-space tab stops.
 			s += "\n    \t"
 		}
-		s += strings.Replace(utils.UpperFirst(usage), "\n", "\n    \t", -1)
+		s += strings.Replace(utils.UcFirst(usage), "\n", "\n    \t", -1)
 
 		if !isZeroValue(fg, fg.DefValue) {
 			if _, ok := fg.Value.(*stringValue); ok {

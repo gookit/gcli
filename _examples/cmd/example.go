@@ -64,16 +64,18 @@ func ExampleCommand() *cliapp.Command {
 func exampleExecute(c *cliapp.Command, args []string) int {
 	fmt.Print("hello, in example command\n")
 
-	color.Magentaln("All options:")
+	magentaln := color.Magenta.Println
+
+	magentaln("All options:")
 	fmt.Printf("%+v\n", exampleOpts)
-	color.Magentaln("Raw args:")
+	magentaln("Raw args:")
 	fmt.Printf("%v\n", args)
 
-	color.Magentaln("Get arg by name:")
+	magentaln("Get arg by name:")
 	arr := c.Arg("arrArg")
 	fmt.Printf("named array arg '%s', value: %v\n", arr.Name, arr.Value)
 
-	color.Magentaln("All named args:")
+	magentaln("All named args:")
 	for _, arg := range c.Args() {
 		fmt.Printf("named arg '%s': %+v\n", arg.Name, *arg)
 	}

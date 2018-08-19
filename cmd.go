@@ -103,7 +103,7 @@ func (c *Command) Runnable() bool {
 // Init command
 func (c *Command) Init() *Command {
 	if len(c.Description) > 0 {
-		c.Description = utils.UpperFirst(c.Description)
+		c.Description = utils.UcFirst(c.Description)
 
 		// contains help var "{$cmd}". replace on here is for 'app help'
 		if strings.Contains(c.Description, "{$cmd}") {
@@ -112,7 +112,8 @@ func (c *Command) Init() *Command {
 	}
 
 	// set help vars
-	c.Vars = c.app.vars
+	// c.Vars = c.app.vars // Error: var is map, map is ref addr
+	c.AddVars(c.app.vars)
 	c.AddVars(map[string]string{
 		"cmd": c.Name,
 		// full command
@@ -216,6 +217,11 @@ func (c *Command) Copy() *Command {
 	// nc.Flags = flag.FlagSet{}
 
 	return &nc
+}
+
+// On add hook handler for a hook event
+func (c *Command) On(name string, handler func(c *Command, data interface{})) {
+	c.Hooks[name] = handler
 }
 
 /*************************************************************

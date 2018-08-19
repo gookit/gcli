@@ -13,22 +13,27 @@ import (
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	app := cliapp.NewApp()
+	app := cliapp.NewApp(func(a *cliapp.Application) {
+		a.Hooks[cliapp.EvtInit] = func(a *cliapp.Application, data interface{}) {
+			// do something...
+			// fmt.Println("init app")
+		}
+	})
 	app.Version = "1.0.6"
 	app.Description = "this is my cli application"
 
 	// app.SetVerbose(cliapp.VerbDebug)
 	// app.DefaultCommand("example")
-	app.Hooks[cliapp.EvtInit] = func(app *cliapp.Application, data interface{}) {
-		// do something...
-	}
 
 	app.Add(cmd.ExampleCommand())
 	app.Add(cmd.EnvInfoCommand())
 	app.Add(cmd.GitCommand())
 	app.Add(cmd.ColorCommand())
+	app.Add(cmd.ShowDemoCommand(), cmd.InteractDemoCommand())
+
 	app.Add(filewatcher.FileWatcher(nil))
 	app.Add(reverseproxy.ReverseProxyCommand())
+
 	app.Add(&cliapp.Command{
 		Name:        "test",
 		Aliases:     []string{"ts"},

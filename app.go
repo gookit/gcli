@@ -34,11 +34,12 @@ const (
 	EvtError  = "error"
 )
 
-// OK success code
-const OK = 0
-
-// ERR error code
-const ERR = 2
+const (
+	// OK success exit code
+	OK = 0
+	// ERR error exit code
+	ERR = 2
+)
 
 // Logo app logo, ASCII logo
 type Logo struct {
@@ -118,36 +119,33 @@ func Verbose() uint {
 }
 
 // NewApp create new app.
-// The settings (name, version, description)
 // eg:
-// 	cliapp.NewApp("cli app", "1.0.1", "The is is my cil application")
-func NewApp(settings ...string) *Application {
+// 	cliapp.NewApp()
+// 	cliapp.NewApp(func(a *Application) {
+//		// do something before init ....
+// 		a.Hooks[cliapp.EvtInit] = func () {}
+// 	})
+func NewApp(fn ...func(a *Application)) *Application {
 	app = &Application{
-		Name: "My CLI Application",
-		Logo: Logo{Style: "info"},
+		Name:  "My CLI Application",
+		Logo:  Logo{Style: "info"},
+		Hooks: make(map[string]appHookFunc, 0),
 		// set a default version
 		Version: "1.0.0",
 	}
 
-	for k, v := range settings {
-		switch k {
-		case 0:
-			app.Name = v
-		case 1:
-			app.Version = v
-		case 2:
-			app.Description = v
-		}
+	if len(fn) > 0 {
+		fn[0](app)
 	}
 
 	// init
-	app.initialize()
+	app.Initialize()
 
 	return app
 }
 
 // initialize application
-func (app *Application) initialize() {
+func (app *Application) Initialize() {
 	app.pid = os.Getpid()
 	app.names = make(map[string]int)
 
@@ -158,7 +156,6 @@ func (app *Application) initialize() {
 		"binName": binName,
 	}
 
-	app.Hooks = make(map[string]appHookFunc, 0)
 	app.callHook(EvtInit, nil)
 }
 
@@ -232,8 +229,8 @@ func (app *Application) callHook(event string, data interface{}) {
 	}
 }
 
-// AddHook handler for a hook event
-func (app *Application) AddHook(name string, handler func(*Application, interface{})) {
+// On add hook handler for a hook event
+func (app *Application) On(name string, handler func(a *Application, data interface{})) {
 	app.Hooks[name] = handler
 }
 
