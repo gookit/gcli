@@ -155,14 +155,14 @@ Continue? [yes|no](default yes): y
 OK, auto-complete file generate successful
 ```
 
+> 运行后就会在当前目录下生成一个 `auto-completion.{zsh|bash}` 文件， shell 环境名是自动获取的。当然你可以在运行时手动指定
+
 生成的shell script 文件请参看： 
 
 - bash 环境 [auto-completion.bash](resource/auto-completion.bash) 
 - zsh 环境 [auto-completion.zsh](resource/auto-completion.zsh)
 
-> 运行后就会在当前目录下生成一个 `auto-completion.{zsh|bash}` 文件， shell 环境名是自动获取的。当然你可以在运行时手动指定
-
-- 预览效果: 
+预览效果: 
 
 ![auto-complete-tips](_examples/images/auto-complete-tips.jpg)
 

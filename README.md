@@ -155,16 +155,16 @@ Continue? [yes|no](default yes): y
 OK, auto-complete file generate successful
 ```
 
-generated shell script file ref： 
-
-- bash env [auto-completion.bash](resource/auto-completion.bash) 
-- zsh env [auto-completion.zsh](resource/auto-completion.zsh)
-
 > After running, it will generate an `auto-completion.{zsh|bash}` file in the current directory,
  and the shell environment name is automatically obtained.
  Of course you can specify it manually at runtime
 
-- preview: 
+Generated shell script file ref： 
+
+- bash env [auto-completion.bash](resource/auto-completion.bash) 
+- zsh env [auto-completion.zsh](resource/auto-completion.zsh)
+
+Preview: 
 
 ![auto-complete-tips](_examples/images/auto-complete-tips.jpg)
 
