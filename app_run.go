@@ -101,6 +101,7 @@ func (app *Application) prepareRun() (string, []string) {
 // Run running application
 func (app *Application) Run() {
 	rawName, args := app.prepareRun()
+	Logf(VerbCrazy, "console application process PID: %d", app.pid)
 	name := app.RealCommandName(rawName)
 	Logf(VerbDebug, "input command is: %s, real command: %s, args: %v", rawName, name, args)
 

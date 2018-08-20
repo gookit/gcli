@@ -12,7 +12,10 @@
 - 快速方便的添加选项绑定 `--long`，支持添加短选项 `-s`
 - 支持绑定参数到指定名称, 支持必须`required`，可选，数组`isArray` 三种设定
   - 运行命令时将会自动检测，并按对应关系收集参数
-- 支持丰富的颜色输出。同时支持html标签式的颜色渲染，兼容Windows
+- 支持丰富的颜色渲染输出, 由[gookit/color](https://github.com/gookit/color)提供
+  - 同时支持html标签式的颜色渲染，兼容Windows
+  - 内置`info,error,success,danger`等多种风格，可直接使用
+- 内置提供 `ReadLine`, `Confirm`, `Select` 等用户交互方法
 - 自动根据命令生成帮助信息，并且支持颜色显示
 - 支持为当前CLI应用生成 `zsh`,`bash` 下的命令补全脚本文件
 - 支持将单个命令当做独立应用运行
@@ -38,12 +41,6 @@ dep ensure -add github.com/gookit/cliapp
 go get gopkg.in/gookit/cliapp.v1 // 推荐
 // OR
 go get -u github.com/gookit/cliapp
-```
-
-- git 克隆
-
-```bash
-git clone https://github.com/gookit/cliapp
 ```
 
 ## 快速开始
@@ -251,16 +248,18 @@ func ExampleCommand() *cliapp.Command {
 func exampleExecute(c *cliapp.Command, args []string) int {
 	fmt.Print("hello, in example command\n")
 
-	color.Magentaln("All options:")
+	magentaln := color.Magenta.Println
+
+	magentaln("All options:")
 	fmt.Printf("%+v\n", exampleOpts)
-	color.Magentaln("Raw args:")
+	magentaln("Raw args:")
 	fmt.Printf("%v\n", args)
 
-	color.Magentaln("Get arg by name:")
+	magentaln("Get arg by name:")
 	arr := c.Arg("arrArg")
 	fmt.Printf("named array arg '%s', value: %v\n", arr.Name, arr.Value)
 
-	color.Magentaln("All named args:")
+	magentaln("All named args:")
 	for _, arg := range c.Args() {
 		fmt.Printf("named arg '%s': %+v\n", arg.Name, *arg)
 	}
@@ -292,20 +291,30 @@ package main
 
 import (
     "github.com/gookit/color"
- )
+)
 
 func main() {
 	// simple usage
-	color.FgCyan.Printf("Simple to use %s\n", "color")
+	color.Cyan.Printf("Simple to use %s\n", "color")
 
+	// internal theme/style:
+	color.Info.Tips("message")
+	color.Info.Prompt("message")
+	color.Info.Println("message")
+	color.Warn.Println("message")
+	color.Error.Println("message")
+	
 	// custom color
 	color.New(color.FgWhite, color.BgBlack).Println("custom color style")
 
 	// can also:
 	color.Style{color.FgCyan, color.OpBold}.Println("custom color style")
 	
-	// use style tag
-	color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>\n")
+	// use defined color tag
+	color.Print("use color tag: <suc>he</><comment>llo</>, <cyan>wel</><red>come</>\n")
+
+	// use custom color tag
+	color.Print("custom color tag: <fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
 
 	// set a style tag
 	color.Tag("info").Println("info style text")
@@ -347,46 +356,46 @@ color.Reset()
 
 ### 使用内置风格
 
-#### 基础颜色方法
+#### 基础颜色
 
 > 支持在windows `cmd.exe` 使用
 
-- `color.Bold(args ...interface{})`
-- `color.Black(args ...interface{})`
-- `color.White(args ...interface{})`
-- `color.Gray(args ...interface{})`
-- `color.Red(args ...interface{})`
-- `color.Green(args ...interface{})`
-- `color.Yellow(args ...interface{})`
-- `color.Blue(args ...interface{})`
-- `color.Magenta(args ...interface{})`
-- `color.Cyan(args ...interface{})`
+- `color.Bold`
+- `color.Black`
+- `color.White`
+- `color.Gray`
+- `color.Red`
+- `color.Green`
+- `color.Yellow`
+- `color.Blue`
+- `color.Magenta`
+- `color.Cyan`
 
 ```go
-color.Bold("bold message")
-color.Yellow("yellow message")
+color.Bold.Println("bold message")
+color.Yellow.Println("yellow message")
 ```
 
-#### 扩展风格方法 
+#### 扩展风格主题 
 
 > 支持在windows `cmd.exe` 使用
 
-- `color.Info(args ...interface{})`
-- `color.Note(args ...interface{})`
-- `color.Light(args ...interface{})`
-- `color.Error(args ...interface{})`
-- `color.Danger(args ...interface{})`
-- `color.Notice(args ...interface{})`
-- `color.Success(args ...interface{})`
-- `color.Comment(args ...interface{})`
-- `color.Primary(args ...interface{})`
-- `color.Warning(args ...interface{})`
-- `color.Question(args ...interface{})`
-- `color.Secondary(args ...interface{})`
+- `color.Info`
+- `color.Note`
+- `color.Light`
+- `color.Error`
+- `color.Danger`
+- `color.Notice`
+- `color.Success`
+- `color.Comment`
+- `color.Primary`
+- `color.Warning`
+- `color.Question`
+- `color.Secondary`
 
 ```go
-color.Info("Info message")
-color.Success("Success message")
+color.Info.Println("Info message")
+color.Success.Println("Success message")
 ```
 
 #### 使用颜色html标签
@@ -417,77 +426,7 @@ color.Tag("info").Printf("%s style text", "info")
 color.Tag("info").Println("info style text")
 ```
 
-### 内置的标签
-
-这里列出了内置的标签，基本上涵盖了各种风格和颜色搭配。它们都可用作颜色html标签，或者作为 `color.Tag` `color.Tips` 等的参数
-
-```text
-// Some internal defined style tags
-// usage: <tag>content text</>
-
-// basic tags
-- red
-- blue
-- cyan
-- black
-- green
-- brown
-- white
-- default  // no color
-- normal// no color
-- yellow  
-- magenta 
-
-// alert tags like bootstrap's alert
-- suc // same "green" and "bold"
-- success 
-- info // same "green"
-- comment  // same "brown"
-- note 
-- notice  
-- warn
-- warning 
-- primary 
-- danger // same "red"
-- err 
-- error
-
-// more tags
-- lightRed
-- light_red
-- lightGreen
-- light_green
-- lightBlue 
-- light_blue
-- lightCyan
-- light_cyan
-- lightDray
-- light_gray
-- gray
-- darkGray
-- dark_gray
-- lightYellow
-- light_yellow  
-- lightMagenta  
-- light_magenta 
-
-// extra
-- lightRedEx
-- light_red_ex
-- lightGreenEx
-- light_green_ex 
-- lightBlueEx
-- light_blue_ex  
-- lightCyanEx
-- light_cyan_ex  
-- whiteEx
-- white_ex
-
-// option
-- bold
-- underscore 
-- reverse
-```
+> **更多关于颜色库的使用请访问 [gookit/color](https://github.com/gookit/color)**
 
 ## 参考项目
 

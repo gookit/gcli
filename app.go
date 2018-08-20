@@ -20,7 +20,7 @@ const (
 	VerbWarn
 	VerbInfo
 	VerbDebug
-	// VerbCrazy
+	VerbCrazy
 )
 
 // HelpVar allow var replace in help info.

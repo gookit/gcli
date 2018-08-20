@@ -42,6 +42,20 @@ func IsMSys() bool {
 	return false
 }
 
+// HasShellEnv check
+// usage:
+// 	HasShellEnv("sh")
+// 	HasShellEnv("bash")
+func HasShellEnv(shell string) bool {
+	// can also use: "echo $0"
+	out, err := ShellExec("echo OK", "", shell)
+	if err != nil {
+		return false
+	}
+
+	return strings.TrimSpace(out) == "OK"
+}
+
 // IsSupportColor check console is support color.
 // supported: linux, mac, or windows's ConEmu, Cmder, putty, git-bash.exe
 // not support: windows cmd, powerShell

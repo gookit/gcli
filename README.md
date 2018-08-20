@@ -12,7 +12,10 @@ A simple to use command line application, written using golang
 - Support option binding `--long`, support for adding short options(`-s`)
 - Support binding argument to specified name, support `required`, optional, `array` three settings
   - It will be automatically detected and collected when the command is run.
-- Supports rich color output. supports html tab-style color rendering, compatible with Windows
+- Supports rich color output. powered by [gookit/color](https://github.com/gookit/color)
+  - Supports html tab-style color rendering, compatible with Windows
+  - Built-in `info, error, success, danger` and other styles, can be used directly
+- Built-in user interaction methods such as `ReadLine`, `Confirm`, `Select`
 - Automatically generate command help information and support color display
 - Supports generation of `zsh` and `bash` command completion script files
 - Supports a single command as a stand-alone application
@@ -38,12 +41,6 @@ dep ensure -add github.com/gookit/cliapp
 go get gopkg.in/gookit/cliapp.v1 // is recommended
 // OR
 go get -u github.com/gookit/cliapp
-```
-
-- git clone
-
-```bash
-git clone https://github.com/gookit/cliapp
 ```
 
 ## Quick start
@@ -95,7 +92,7 @@ func main() {
 - build a demo package 
 
 ```bash
-% go build ./demo/cliapp.go                                                           
+% go build ./_examples/cliapp.go                                                           
 ```
 
 ### Display version
@@ -252,17 +249,19 @@ func ExampleCommand() *cliapp.Command {
 // 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
 func exampleExecute(c *cliapp.Command, args []string) int {
 	fmt.Print("hello, in example command\n")
+	
+	magentaln := color.Magenta.Println
 
-	color.Magentaln("All options:")
+	magentaln("All options:")
 	fmt.Printf("%+v\n", exampleOpts)
-	color.Magentaln("Raw args:")
+	magentaln("Raw args:")
 	fmt.Printf("%v\n", args)
 
-	color.Magentaln("Get arg by name:")
+	magentaln("Get arg by name:")
 	arr := c.Arg("arrArg")
 	fmt.Printf("named array arg '%s', value: %v\n", arr.Name, arr.Value)
 
-	color.Magentaln("All named args:")
+	magentaln("All named args:")
 	for _, arg := range c.Args() {
 		fmt.Printf("named arg '%s': %+v\n", arg.Name, *arg)
 	}
@@ -292,20 +291,30 @@ package main
 
 import (
     "github.com/gookit/color"
-    )
+)
 
 func main() {
 	// simple usage
-	color.FgCyan.Printf("Simple to use %s\n", "color")
+	color.Cyan.Printf("Simple to use %s\n", "color")
 
+	// internal theme/style:
+	color.Info.Tips("message")
+	color.Info.Prompt("message")
+	color.Info.Println("message")
+	color.Warn.Println("message")
+	color.Error.Println("message")
+	
 	// custom color
 	color.New(color.FgWhite, color.BgBlack).Println("custom color style")
 
 	// can also:
 	color.Style{color.FgCyan, color.OpBold}.Println("custom color style")
 	
-	// use style tag
-	color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>\n")
+	// use defined color tag
+	color.Print("use color tag: <suc>he</><comment>llo</>, <cyan>wel</><red>come</>\n")
+
+	// use custom color tag
+	color.Print("custom color tag: <fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
 
 	// set a style tag
 	color.Tag("info").Println("info style text")
@@ -320,46 +329,46 @@ func main() {
 
 ### More usage
 
-#### Basic color functions
+#### Basic color
 
 > support on windows `cmd.exe`
 
-- `color.Bold(args ...interface{})`
-- `color.Black(args ...interface{})`
-- `color.White(args ...interface{})`
-- `color.Gray(args ...interface{})`
-- `color.Red(args ...interface{})`
-- `color.Green(args ...interface{})`
-- `color.Yellow(args ...interface{})`
-- `color.Blue(args ...interface{})`
-- `color.Magenta(args ...interface{})`
-- `color.Cyan(args ...interface{})`
+- `color.Bold`
+- `color.Black`
+- `color.White`
+- `color.Gray`
+- `color.Red`
+- `color.Green`
+- `color.Yellow`
+- `color.Blue`
+- `color.Magenta`
+- `color.Cyan`
 
 ```go
-color.Bold("bold message")
-color.Yellow("yellow message")
+color.Bold.Println("bold message")
+color.Yellow.Println("yellow message")
 ```
 
-#### Extra style functions 
+#### Extra themes
 
 > support on windows `cmd.exe`
 
-- `color.Info(args ...interface{})`
-- `color.Note(args ...interface{})`
-- `color.Light(args ...interface{})`
-- `color.Error(args ...interface{})`
-- `color.Danger(args ...interface{})`
-- `color.Notice(args ...interface{})`
-- `color.Success(args ...interface{})`
-- `color.Comment(args ...interface{})`
-- `color.Primary(args ...interface{})`
-- `color.Warning(args ...interface{})`
-- `color.Question(args ...interface{})`
-- `color.Secondary(args ...interface{})`
+- `color.Info`
+- `color.Note`
+- `color.Light`
+- `color.Error`
+- `color.Danger`
+- `color.Notice`
+- `color.Success`
+- `color.Comment`
+- `color.Primary`
+- `color.Warning`
+- `color.Question`
+- `color.Secondary`
 
 ```go
-color.Info("Info message")
-color.Success("Success message")
+color.Info.Println("Info message")
+color.Success.Println("Success message")
 ```
 
 #### Use like html tag
@@ -386,75 +395,7 @@ color.Tag("info").Printf("%s style text", "info")
 color.Tag("info").Println("info style text")
 ```
 
-### Internal color tags
-
-```text
-// Some internal defined style tags
-// usage: <tag>content text</>
-
-// basic tags
-- red
-- blue
-- cyan
-- black
-- green
-- brown
-- white
-- default  // no color
-- normal// no color
-- yellow  
-- magenta 
-
-// alert tags like bootstrap's alert
-- suc // same "green" and "bold"
-- success 
-- info // same "green"
-- comment  // same "brown"
-- note 
-- notice  
-- warn
-- warning 
-- primary 
-- danger // same "red"
-- err 
-- error
-
-// more tags
-- lightRed
-- light_red
-- lightGreen
-- light_green
-- lightBlue 
-- light_blue
-- lightCyan
-- light_cyan
-- lightDray
-- light_gray
-- gray
-- darkGray
-- dark_gray
-- lightYellow
-- light_yellow  
-- lightMagenta  
-- light_magenta 
-
-// extra
-- lightRedEx
-- light_red_ex
-- lightGreenEx
-- light_green_ex 
-- lightBlueEx
-- light_blue_ex  
-- lightCyanEx
-- light_cyan_ex  
-- whiteEx
-- white_ex
-
-// option
-- bold
-- underscore 
-- reverse
-```
+> **For more information on the use of color libraries, please visit [gookit/color](https://github.com/gookit/color)**
 
 ## Ref
 

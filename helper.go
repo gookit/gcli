@@ -11,14 +11,15 @@ var level2name = map[uint]string{
 	VerbWarn:  "WARNING",
 	VerbInfo:  "INFO",
 	VerbDebug: "DEBUG",
-	// VerbCrazy: "CRAZY",
+	VerbCrazy: "CRAZY",
 }
 
 var level2color = map[uint]color.Color{
 	VerbError: color.FgRed,
 	VerbWarn:  color.FgYellow,
-	VerbInfo:  color.FgCyan,
-	VerbDebug: color.FgGreen,
+	VerbInfo:  color.FgGreen,
+	VerbDebug: color.FgCyan,
+	VerbCrazy: color.FgMagenta,
 }
 
 // Logf print log message
@@ -29,11 +30,11 @@ func Logf(level uint, format string, v ...interface{}) {
 
 	name, has := level2name[level]
 	if !has {
-		name = "Unknown"
-	} else {
-		name = level2color[level].Render(name)
+		name = "CRAZY"
+		level = VerbCrazy
 	}
 
+	name = level2color[level].Render(name)
 	fmt.Printf("cliapp: [%s] %s\n", name, fmt.Sprintf(format, v...))
 }
 

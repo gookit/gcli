@@ -4,6 +4,8 @@ import (
 	"github.com/gookit/cliapp"
 	"github.com/gookit/cliapp/interact"
 	"github.com/gookit/color"
+	"fmt"
+	"os/exec"
 )
 
 // InteractDemoCommand create
@@ -11,7 +13,7 @@ func InteractDemoCommand() *cliapp.Command {
 	c := &cliapp.Command{
 		Name: "interact",
 		Func: interactDemo,
-		// Aliases: []string{"im"}
+		Aliases: []string{"itt"},
 		Description: "the command will show some interactive methods",
 		Examples: `{$fullCmd} confirm
   {$fullCmd} select
@@ -20,6 +22,7 @@ func InteractDemoCommand() *cliapp.Command {
 answerIsYes 	check user answer is Yes
 confirm 		confirm message
 select			select one from multi options
+password		read user hidden input
 `,
 	}
 
@@ -28,8 +31,10 @@ select			select one from multi options
 }
 
 var funcMap = map[string]func(c *cliapp.Command){
-	"select":      demoSelect,
-	"confirm":     demoConfirm,
+	"select":   demoSelect,
+	"confirm":  demoConfirm,
+	"password": demoPassword,
+
 	"answerIsYes": demoAnswerIsYes,
 }
 
@@ -59,7 +64,7 @@ func demoSelect(_ *cliapp.Command) {
 
 	ans = interact.QuickSelect(
 		"Your city name(use map)?",
-		map[string]string{"a":"chengdu", "b":"beijing", "c":"shanghai"},
+		map[string]string{"a": "chengdu", "b": "beijing", "c": "shanghai"},
 		"a",
 	)
 	color.Comment.Println("your select is: ", ans)
@@ -67,6 +72,31 @@ func demoSelect(_ *cliapp.Command) {
 
 func demoConfirm(_ *cliapp.Command) {
 
+}
+
+func demoPassword(_ *cliapp.Command) {
+	// hiddenInputTest()
+	// return
+	// pwd := interact.GetHiddenInput("Enter Password:", true)
+	// color.Comment.Println("you input password is: ", pwd)
+
+	pwd := interact.ReadPassword()
+	color.Comment.Println("you input password is: ", pwd)
+}
+
+func hiddenInputTest()  {
+	// COMMAND: sh -c 'read -p "Enter Password:" -s user_input && echo $user_input'
+	// str := fmt.Sprintf(`'read -p "%s" -s user_input && echo $user_input'`, "Enter Password:")
+	// cmd := exec.CommandContext()
+	cmd := exec.Command("sh", "-c", `read -p "Enter Password:" -s user_input && echo $user_input`)
+	err := cmd.Start()
+	fmt.Println("start", err)
+	err = cmd.Wait()
+	fmt.Println("wait", err, cmd.Process.Pid, cmd.ProcessState.Pid())
+
+	cmd = exec.Command("sh", "./read-pwd.sh")
+	bs, err := cmd.Output()
+	fmt.Println(string(bs), err)
 }
 
 func demoAnswerIsYes(_ *cliapp.Command) {

@@ -19,17 +19,31 @@ func Go(f func() error) chan error {
 	return ch
 }
 
-// ExecCmd exec a CLI command and return output.
-func ExecCmd(cmdStr string, dirAndShell ...string) (string, error) {
-	return ExecCommand(cmdStr, dirAndShell...)
+// ExecCmd a CLI bin file and return output.
+// usage:
+// 	ExecCmd("ls", []string{"-al"})
+func ExecCmd(binName string, args []string, workDir ...string) (string, error) {
+	// create a new Cmd instance
+	cmd := exec.Command(binName, args...)
+	if len(workDir) > 0 {
+		cmd.Dir = workDir[0]
+	}
+
+	bs, err := cmd.Output()
+	return string(bs), err
 }
 
-// ExecCommand exec a CLI command and return output.
-// usage:
-// 	utils.ExecCommand("ls -al")
-// 	utils.ExecCommand("ls -al", "/usr/lib")
-// 	utils.ExecCommand("ls -al", "/usr/lib", "/bin/zsh")
+// ExecCommand alias of the ShellExec
 func ExecCommand(cmdStr string, dirAndShell ...string) (string, error) {
+	return ShellExec(cmdStr, dirAndShell...)
+}
+
+// ShellExec exec a CLI command by shell and return output.
+// usage:
+// 	utils.ShellExec("ls -al")
+// 	utils.ShellExec("ls -al", "/usr/lib")
+// 	utils.ShellExec("ls -al", "/usr/lib", "/bin/zsh")
+func ShellExec(cmdStr string, dirAndShell ...string) (string, error) {
 	var workDir string
 	shell := "/bin/sh"
 
@@ -47,22 +61,13 @@ func ExecCommand(cmdStr string, dirAndShell ...string) (string, error) {
 		cmd.Dir = workDir
 	}
 
-	// rewrite cmd.Stdout to buffer
-	out := new(bytes.Buffer)
-	cmd.Stdout = out
-
-	// Run执行命令，并阻塞直到完成
-	if err := cmd.Run(); err != nil {
-		return "", err
-	}
-
-	return out.String(), nil
+	bs, err := cmd.Output()
+	return string(bs), err
 }
 
 // GetCurShell get current used shell env file. eg "/bin/zsh" "/bin/bash"
 func GetCurShell(onlyName bool) string {
 	path, err := ExecCommand("echo $SHELL")
-
 	if err != nil {
 		return ""
 	}
