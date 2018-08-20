@@ -13,17 +13,16 @@ import (
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	app := cliapp.NewApp(func(a *cliapp.Application) {
-		a.Hooks[cliapp.EvtInit] = func(a *cliapp.Application, data interface{}) {
+	app := cliapp.NewApp(func(app *cliapp.Application) {
+		app.Version = "1.0.6"
+		app.Description = "this is my cli application"
+		app.Hooks[cliapp.EvtInit] = func(a *cliapp.Application, data interface{}) {
 			// do something...
 			// fmt.Println("init app")
 		}
+		// app.SetVerbose(cliapp.VerbDebug)
+		// app.DefaultCommand("example")
 	})
-	app.Version = "1.0.6"
-	app.Description = "this is my cli application"
-
-	// app.SetVerbose(cliapp.VerbDebug)
-	// app.DefaultCommand("example")
 
 	app.Add(cmd.ExampleCommand())
 	app.Add(cmd.EnvInfoCommand())

@@ -38,6 +38,20 @@ func (s *Strings) Set(value string) error {
 	return nil
 }
 
+// Booleans The bool flag list, implemented flag.Value interface
+type Booleans []bool
+
+// String to string
+func (s *Booleans) String() string {
+	return fmt.Sprintf("%v", *s)
+}
+
+// Set new value
+func (s *Booleans) Set(value bool) error {
+	*s = append(*s, value)
+	return nil
+}
+
 /*************************************************************
  * command options
  *************************************************************/

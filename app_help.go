@@ -40,7 +40,7 @@ func (app *Application) showCommandsHelp() {
 	commandsHelp = color.ReplaceTag(commandsHelp)
 	// render help text template
 	str := utils.RenderTemplate(commandsHelp, map[string]interface{}{
-		"Cs": commands,
+		"Cs": app.commands,
 		// app version
 		"Version": app.Version,
 		// always upper first char
@@ -55,9 +55,9 @@ func (app *Application) showCommandsHelp() {
 // showCommandHelp display help for an command
 func (app *Application) showCommandHelp(list []string, quit bool) {
 	if len(list) != 1 {
-		color.Tips("error").Printf(
+		color.Error.Tips(
 			"Usage: %s help %s\n\nToo many arguments given.",
-			binName,
+			CLI.binName,
 			list[0],
 		)
 		Exit(ERR)
@@ -65,9 +65,9 @@ func (app *Application) showCommandHelp(list []string, quit bool) {
 
 	// get real name
 	name := app.RealCommandName(list[0])
-	cmd, exist := commands[name]
+	cmd, exist := app.commands[name]
 	if !exist {
-		color.Tips("error").Printf("Unknown command name %#q. Run '%s -h'", name, binName)
+		color.Tips("error").Printf("Unknown command name %#q. Run '%s -h'", name, CLI.binName)
 		Exit(ERR)
 	}
 

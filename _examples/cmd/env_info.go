@@ -34,13 +34,13 @@ func EnvInfoCommand() *cli.Command {
 }
 
 // do run
-func envInfoRun(cmd *cli.Command, args []string) int {
+func envInfoRun(c *cli.Command, _ []string) int {
 	eAble, _ := os.Executable()
 
 	data := map[string]interface{}{
 		"os":       runtime.GOOS,
-		"binName":  cli.BinName(),
-		"workDir":  cli.WorkDir(),
+		"binName":  c.BinName(),
+		"workDir":  c.WorkDir(),
 		"rawArgs":  os.Args,
 		"execAble": eAble,
 		"env":      os.Environ(),

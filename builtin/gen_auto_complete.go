@@ -68,7 +68,7 @@ func GenAutoCompleteScript() *cliapp.Command {
 
 func doGen(c *cliapp.Command, _ []string) int {
 	if len(genOpts.binName) == 0 {
-		genOpts.binName = cliapp.BinName()
+		genOpts.binName = c.BinName()
 	}
 
 	genOpts.binName = strings.TrimSuffix(strings.Trim(genOpts.binName, "./"), ".exe")

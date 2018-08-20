@@ -25,7 +25,7 @@ type Select struct {
 // NewSelect instance.
 // usage:
 //	s := NewSelect("Your city?", []string{"chengdu", "beijing"})
-//	val := s.Run()
+//	val := s.Run().String() // "1"
 func NewSelect(title string, options interface{}) *Select {
 	return &Select{Title: title, Options: options}
 }
@@ -33,7 +33,7 @@ func NewSelect(title string, options interface{}) *Select {
 func (s *Select) prepare() (valArr []string, valMap map[string]string) {
 	s.Title = strings.TrimSpace(s.Title)
 	if s.Title == "" || s.Options == nil {
-		exitWithErr("show.Select: must provide title title and options data")
+		exitWithErr("(interact.Select) must provide title title and options data")
 	}
 
 	switch optsData := s.Options.(type) {
@@ -56,14 +56,14 @@ func (s *Select) prepare() (valArr []string, valMap map[string]string) {
 			valArr[i] = v
 		}
 	default:
-		exitWithErr("(show.Select) invalid options data")
+		exitWithErr("(interact.Select) invalid options data")
 	}
 
 	// has default opt
 	if s.DefOpt != "" {
 		_, has := valMap[s.DefOpt]
 		if !has {
-			exitWithErr("(show.Select) default option '%s' don't exists", s.DefOpt)
+			exitWithErr("(interact.Select) default option '%s' don't exists", s.DefOpt)
 		}
 
 		s.defMsg = fmt.Sprintf("[default:%s]", color.Green.Render(s.DefOpt))
@@ -103,7 +103,7 @@ func (s *Select) Run() *Value {
 DoSelect:
 	ans, err := ReadLine("Your choice" + s.defMsg + ": ")
 	if err != nil {
-		exitWithErr("(show.Select) %s", err.Error())
+		exitWithErr("(interact.Select) %s", err.Error())
 	}
 
 	// don't input

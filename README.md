@@ -8,8 +8,10 @@ A simple to use command line application, written using golang
 
 - Simple to use
 - Support for adding multiple commands and supporting command aliases
-- When the command entered is incorrect, a similar command will be prompted (including an alias prompt)
-- Support option binding, support for adding short options
+- When the command entered is incorrect, a similar command will be prompted(including an alias prompt)
+- Support option binding `--long`, support for adding short options(`-s`)
+- Support binding argument to specified name, support `required`, optional, `array` three settings
+  - It will be automatically detected and collected when the command is run.
 - Supports rich color output. supports html tab-style color rendering, compatible with Windows
 - Automatically generate command help information and support color display
 - Supports generation of `zsh` and `bash` command completion script files

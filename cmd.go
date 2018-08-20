@@ -10,15 +10,15 @@ import (
 	"strings"
 )
 
-// CmdRunner interface
-type CmdRunner interface {
+// Runner interface
+type Runner interface {
 	Run(cmd *Command, args []string) int
 }
 
 // CmdFunc definition
 type CmdFunc func(cmd *Command, args []string) int
 
-// Run implement the CmdRunner interface
+// Run implement the Runner interface
 func (f CmdFunc) Run(cmd *Command, args []string) int {
 	return f(cmd, args)
 }
@@ -28,11 +28,13 @@ type HookFunc func(cmd *Command, data interface{})
 
 // Command a CLI command structure
 type Command struct {
+	// is internal use
+	*CmdLine
 	// Name is the command name.
 	Name string
 	// Func A callback func to runs the command.
 	// Func func(cmd *Command, args []string) int
-	// Func CmdRunner
+	// Func Runner
 	Func CmdFunc
 	// Hooks can setting some hooks func on running.
 	// allow hooks: "init", "before", "after", "error"
@@ -102,6 +104,9 @@ func (c *Command) Runnable() bool {
 
 // Init command
 func (c *Command) Init() *Command {
+	c.CmdLine = CLI
+
+	// format description
 	if len(c.Description) > 0 {
 		c.Description = utils.UcFirst(c.Description)
 
@@ -117,7 +122,7 @@ func (c *Command) Init() *Command {
 	c.AddVars(map[string]string{
 		"cmd": c.Name,
 		// full command
-		"fullCmd": binName + " " + c.Name,
+		"fullCmd": CLI.binName + " " + c.Name,
 	})
 
 	if c.Hooks == nil {
@@ -131,10 +136,16 @@ func (c *Command) Init() *Command {
 		c.Hooks[EvtError] = c.defaultErrHandler
 	}
 
-	// set help handler
+	// init for Flags
+	c.Flags.Init(c.Name, flag.ContinueOnError)
 	c.Flags.Usage = func() {
+		// call on exists "-h" "--help"
 		c.ShowHelp(true)
 	}
+
+	// bind some global options
+	// c.Flags.BoolVar(&gOpts.showHelp, "h", false, "")
+	// c.Flags.BoolVar(&gOpts.showHelp, "help", false, "")
 
 	return c
 }
@@ -276,11 +287,6 @@ func (c *Command) Error() error {
 // App returns the CLI application
 func (c *Command) App() *Application {
 	return app
-}
-
-// WorkDir returns command work dir
-func (c *Command) WorkDir() string {
-	return workDir
 }
 
 // AddVars add multi tpl vars

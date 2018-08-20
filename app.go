@@ -9,6 +9,8 @@ package cliapp
 import (
 	"fmt"
 	"os"
+	"runtime"
+	"strings"
 )
 
 // constants for error level 0 - 4
@@ -41,24 +43,74 @@ const (
 	ERR = 2
 )
 
+/*************************************************************
+ * Command Line: command data
+ *************************************************************/
+
+// CmdLine store common data for CLI
+type CmdLine struct {
+	// pid for current application
+	pid int
+	// os name.
+	osName string
+	// the CLI app work dir path. by `os.Getwd()`
+	workDir string
+	// bin script name, by `os.Args[0]`. eg "./cliapp"
+	binName string
+	// os.Args to string, but no binName.
+	argsStr string
+}
+
+// BinName get bin script name
+func (c *CmdLine) PID() int {
+	return c.pid
+}
+
+// OsName is equals to `runtime.GOOS`
+func (c *CmdLine) OsName() string {
+	return c.osName
+}
+
+// BinName get bin script name
+func (c *CmdLine) BinName() string {
+	return c.binName
+}
+
+// WorkDir get work dir
+func (c *CmdLine) WorkDir() string {
+	return c.workDir
+}
+
+// ArgsString os.Args to string, but no binName.
+func (c *CmdLine) ArgsString() string {
+	return c.argsStr
+}
+
+// create a default instance
+var CLI = &CmdLine{
+	pid: os.Getpid(),
+	// more info
+	osName:  runtime.GOOS,
+	binName: os.Args[0],
+	argsStr: strings.Join(os.Args[1:], " "),
+}
+
+/*************************************************************
+ * CLI application
+ *************************************************************/
+
 // Logo app logo, ASCII logo
 type Logo struct {
 	Text  string // ASCII logo string
 	Style string // eg "info"
 }
 
-// GlobalOpts global flags
-type GlobalOpts struct {
-	noColor  bool
-	verbose  uint // message report level
-	showVer  bool
-	showHelp bool
-}
-
 type appHookFunc func(app *Application, data interface{})
 
 // Application the cli app definition
 type Application struct {
+	// internal use
+	*CmdLine
 	// Name app name
 	Name string
 	// Version app version. like "1.0.1"
@@ -72,8 +124,6 @@ type Application struct {
 	Hooks map[string]appHookFunc
 	// Strict use strict mode. short opt must be begin '-', long opt must be begin '--'
 	Strict bool
-	// pid value for current application
-	pid int
 	// vars you can add some vars map for render help info
 	vars map[string]string
 	// command names. key is name, value is name string length
@@ -83,34 +133,28 @@ type Application struct {
 	errors []error
 	// command aliases map. {alias: name}
 	aliases map[string]string
+	// all commands for the app
+	commands map[string]*Command
 	// current command name
 	commandName string
 	// default command name
 	defaultCommand string
 }
 
+// GlobalOpts global flags
+type GlobalOpts struct {
+	noColor  bool
+	verbose  uint // message report level
+	showVer  bool
+	showHelp bool
+}
+
 // global options
 var gOpts = &GlobalOpts{verbose: VerbError}
-
-// bin script name eg "./cliapp"
-var binName = os.Args[0]
-
-// the app work dir path
-var workDir, _ = os.Getwd()
 
 // Exit program
 func Exit(code int) {
 	os.Exit(code)
-}
-
-// WorkDir get work dir
-func WorkDir() string {
-	return workDir
-}
-
-// BinName get bin script name
-func BinName() string {
-	return binName
 }
 
 // Verbose returns verbose level
@@ -118,20 +162,33 @@ func Verbose() uint {
 	return gOpts.verbose
 }
 
-// NewApp create new app.
+// New create new app instance
 // eg:
-// 	cliapp.NewApp()
-// 	cliapp.NewApp(func(a *Application) {
-//		// do something before init ....
+// 	cliapp.New()
+// 	cliapp.New(func(a *Application) {
+// 		// do something before init ....
 // 		a.Hooks[cliapp.EvtInit] = func () {}
 // 	})
 func NewApp(fn ...func(a *Application)) *Application {
+	return New(fn...)
+}
+
+// NewApp create new app
+// eg:
+// 	cliapp.NewApp()
+// 	cliapp.NewApp(func(a *Application) {
+// 		// do something before init ....
+// 		a.Hooks[cliapp.EvtInit] = func () {}
+// 	})
+func New(fn ...func(a *Application)) *Application {
 	app = &Application{
 		Name:  "My CLI Application",
 		Logo:  Logo{Style: "info"},
 		Hooks: make(map[string]appHookFunc, 0),
 		// set a default version
-		Version: "1.0.0",
+		Version:  "1.0.0",
+		CmdLine:  CLI,
+		commands: make(map[string]*Command),
 	}
 
 	if len(fn) > 0 {
@@ -146,15 +203,17 @@ func NewApp(fn ...func(a *Application)) *Application {
 
 // initialize application
 func (app *Application) Initialize() {
-	app.pid = os.Getpid()
 	app.names = make(map[string]int)
 
 	// init some tpl vars
 	app.vars = map[string]string{
-		"pid":     fmt.Sprint(app.pid),
-		"workDir": workDir,
-		"binName": binName,
+		"pid":     fmt.Sprint(CLI.pid),
+		"workDir": CLI.workDir,
+		"binName": CLI.binName,
 	}
+
+	// parse GlobalOpts
+	// parseGlobalOpts()
 
 	app.callHook(EvtInit, nil)
 }
@@ -190,6 +249,10 @@ func (app *Application) DefaultCommand(name string) {
 
 // Add add a command
 func (app *Application) Add(c *Command, more ...*Command) {
+	if app.commands == nil {
+		app.commands = make(map[string]*Command)
+	}
+
 	app.addCommand(c)
 
 	// if has more
@@ -210,8 +273,8 @@ func (app *Application) addCommand(c *Command) {
 		return
 	}
 
-	commands[c.Name] = c
 	app.names[c.Name] = len(c.Name)
+	app.commands[c.Name] = c
 	// add aliases for the command
 	app.AddAliases(c.Name, c.Aliases)
 	Logf(VerbDebug, "add command: %s", c.Name)
@@ -263,4 +326,9 @@ func (app *Application) GetVar(name string) string {
 // GetVars get all tpl vars
 func (app *Application) GetVars(name string, value string) map[string]string {
 	return app.vars
+}
+
+// Commands get all commands
+func (app *Application) Commands() map[string]*Command {
+	return app.commands
 }

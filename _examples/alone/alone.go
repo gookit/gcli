@@ -21,10 +21,10 @@ func main() {
 		Func:        run,
 	}
 
-	cmd.Flags.BoolVar(&opts.visualMode, "visual", false, "Prints the font name.")
-	cmd.Flags.StringVar(&opts.fontName, "font", "", "Choose a font name. Default is a random font.")
-	cmd.Flags.BoolVar(&opts.list, "list", false, "Lists all available fonts.")
-	cmd.Flags.BoolVar(&opts.sample, "sample", false, "Prints a sample with that font.")
+	cmd.BoolOpt(&opts.visualMode, "visual", "v", false, "Prints the font name.")
+	cmd.StrOpt(&opts.fontName, "font", "", "", "Choose a font name. Default is a random font.")
+	cmd.BoolOpt(&opts.list, "list", "", false, "Lists all available fonts.")
+	cmd.BoolOpt(&opts.sample, "sample", "", false, "Prints a sample with that font.")
 
 	// Alone Running
 	cmd.AloneRun()
