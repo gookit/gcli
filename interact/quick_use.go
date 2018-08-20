@@ -17,6 +17,25 @@ func Confirm(message string, defVal ...bool) bool {
 	return AnswerIsYes(defVal...)
 }
 
+// Ask a question and return the result of the input.
+// Usage:
+// 	answer := Ask("Your name?", "", nil)
+// 	answer := Ask("Your name?", "tom", nil)
+// 	answer := Ask("Your name?", "", nil, 3)
+func Ask(question, defVal string, fn func(ans string) (errMsg string), maxTimes ...int) string {
+	q := &Question{Q: question, Func: fn, DefVal: defVal}
+	if len(maxTimes) > 0 {
+		q.MaxTimes = maxTimes[0]
+	}
+
+	return q.Run().String()
+}
+
+// AskQuestion is alias of method Ask()
+func AskQuestion(question, defVal string, fn func(ans string) (errMsg string), maxTimes ...int) string {
+	return Ask(question, defVal, fn, maxTimes...)
+}
+
 // QuickSelect select one of the options, returns selected option value
 // map options:
 // 	{
@@ -39,6 +58,11 @@ func QuickSelect(title string, options interface{}, defOpt string, allowQuit ...
 	}
 
 	return s.Run().String()
+}
+
+// Choice is alias of method QuickSelect()
+func Choice(title string, options interface{}, defOpt string, allowQuit ...bool) string {
+	return QuickSelect(title, options, defOpt, allowQuit...)
 }
 
 // ReadPassword from terminal

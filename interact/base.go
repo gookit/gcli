@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gookit/color"
 	"os"
+	"strconv"
 )
 
 const (
@@ -14,13 +15,57 @@ const (
 	ERR = 2
 )
 
-type Interactive struct {
-	Name string
+// Value data store
+type Value struct {
+	val interface{}
 }
 
-func New(name string) *Interactive {
-	return &Interactive{Name: name}
+var emptyVal = &Value{}
+
+// Set val
+func (v Value) Set(val interface{}) {
+	v.val = val
 }
+
+// Val get
+func (v Value) Val() interface{} {
+	return v.val
+}
+
+// Int convert
+func (v Value) Int() (val int) {
+	if v.val == nil {
+		return
+	}
+	switch tpVal := v.val.(type) {
+	case int:
+		return tpVal
+	case string:
+		val, err := strconv.Atoi(tpVal)
+		if err == nil {
+			return val
+		}
+	}
+	return
+}
+
+// String convert
+func (v Value) String() string {
+	if v.val == nil {
+		return ""
+	}
+
+	return fmt.Sprintf("%v", v.val)
+}
+
+// IsEmpty value
+func (v Value) IsEmpty() bool {
+	return v.val == nil
+}
+
+/*************************************************************
+ * utils methods
+ *************************************************************/
 
 func exitWithErr(format string, v ...interface{}) {
 	fmt.Println(color.Red.Render("ERROR:"), fmt.Sprintf(format, v...))

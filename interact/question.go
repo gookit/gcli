@@ -1,14 +1,99 @@
 package interact
 
+import (
+	"fmt"
+	"github.com/gookit/color"
+	"strings"
+)
+
+// Question definition
 type Question struct {
-	question string
-	answer   string
+	// Q the question text
+	Q string
+	// Func validate user input answer is right. if not set, will only check answer is empty.
+	Func func(ans string) (errMsg string)
+	// DefVal default value
+	DefVal string
+	// MaxTimes maximum allowed number of errors, 0 is don't limited
+	MaxTimes int
+	errTimes int
 }
 
-func NewAsk(q string) {
+// NewQuestion instance.
+// usage:
+// 	q := NewQuestion("Please input your name?")
+// 	val := q.Run().String()
+func NewQuestion(q string, defVal ...string) *Question {
+	if len(defVal) > 0 {
+		return &Question{Q: q, DefVal: defVal[0]}
+	}
 
+	return &Question{Q: q}
 }
 
-func Ask() {
+func (q *Question) render() {
+	q.Q = strings.TrimSpace(q.Q)
+	if q.Q == "" {
+		exitWithErr("(interact.Question) must provide question message")
+	}
 
+	q.DefVal = strings.TrimSpace(q.DefVal)
+
+	var defMsg string
+	if q.DefVal != "" {
+		defMsg = fmt.Sprintf("[default:%s]", color.Green.Render(q.DefVal))
+	}
+
+	// print question
+	fmt.Printf("%s%s\n", color.Comment.Render(q.Q), defMsg)
+}
+
+// Run run and returns value
+func (q *Question) Run() *Value {
+	q.render()
+	echoErr := color.Error.Println
+
+DoASK:
+	ans, err := ReadLine("A: ")
+	if err != nil {
+		exitWithErr("(interact.Question) %s", err.Error())
+	}
+
+	// don't input
+	if ans == "" {
+		if q.DefVal != "" { // has default value
+			return &Value{q.DefVal}
+		}
+
+		q.checkErrTimes()
+		echoErr("A value is required.")
+		goto DoASK
+	}
+
+	// has validator func
+	if q.Func != nil {
+		errMsg := q.Func(ans)
+
+		if errMsg != "" {
+			q.checkErrTimes()
+			echoErr(errMsg)
+			goto DoASK
+		}
+	}
+
+	return &Value{ans}
+}
+
+func (q *Question) checkErrTimes() {
+	if q.MaxTimes <= 0 {
+		return
+	}
+
+	// limit error times
+	if q.MaxTimes == q.errTimes {
+		times := color.Magenta.Render(q.MaxTimes)
+		exitWithMsg(0, "\n  You've entered incorrectly", times, "times. Bye!")
+	}
+
+	q.errTimes++
 }

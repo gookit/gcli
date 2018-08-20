@@ -18,6 +18,7 @@ type Select struct {
 	DefOpt string
 	// NoQuit option. if is false, will display "quit" option
 	NoQuit bool
+	// QuitHandler func()
 	// build from field DefOpt
 	defMsg string
 }
@@ -33,7 +34,7 @@ func NewSelect(title string, options interface{}) *Select {
 func (s *Select) prepare() (valArr []string, valMap map[string]string) {
 	s.Title = strings.TrimSpace(s.Title)
 	if s.Title == "" || s.Options == nil {
-		exitWithErr("(interact.Select) must provide title title and options data")
+		exitWithErr("(interact.Select) must provide title and options data")
 	}
 
 	switch optsData := s.Options.(type) {
@@ -96,6 +97,11 @@ func (s *Select) render(valArr []string, valMap map[string]string) {
 // Run select and receive use input answer
 func (s *Select) Run() *Value {
 	valArr, valMap := s.prepare()
+	// reset data
+	defer func() {
+		valArr = nil
+		valMap = nil
+	}()
 
 	// render to console
 	s.render(valArr, valMap)
