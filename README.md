@@ -15,7 +15,7 @@ A simple to use command line application, written using golang
 - Supports rich color output. powered by [gookit/color](https://github.com/gookit/color)
   - Supports html tab-style color rendering, compatible with Windows
   - Built-in `info, error, success, danger` and other styles, can be used directly
-- Built-in user interaction methods such as `ReadLine`, `Confirm`, `Select`
+- Built-in user interaction methods such as `ReadLine`, `Confirm`, `Select`, `MultiSelect`
 - Automatically generate command help information and support color display
 - Supports generation of `zsh` and `bash` command completion script files
 - Supports a single command as a stand-alone application

@@ -36,7 +36,12 @@ func AskQuestion(question, defVal string, fn func(ans string) (errMsg string), m
 	return Ask(question, defVal, fn, maxTimes...)
 }
 
-// QuickSelect select one of the options, returns selected option value
+// Choice is alias of method SingleSelect()
+func Choice(title string, options interface{}, defOpt string, allowQuit ...bool) string {
+	return SingleSelect(title, options, defOpt, allowQuit...)
+}
+
+// SingleSelect select one of the options, returns selected option value
 // map options:
 // 	{
 //    // option value => option name
@@ -49,20 +54,32 @@ func AskQuestion(question, defVal string, fn func(ans string) (errMsg string), m
 //    'chengdu',
 //    'beijing'
 // 	}
-func QuickSelect(title string, options interface{}, defOpt string, allowQuit ...bool) string {
+func SingleSelect(title string, options interface{}, defOpt string, allowQuit ...bool) string {
 	s := NewSelect(title, options)
 	s.DefOpt = defOpt
 
 	if len(allowQuit) > 0 {
-		s.NoQuit = !allowQuit[0]
+		s.DisableQuit = !allowQuit[0]
 	}
 
 	return s.Run().String()
 }
 
-// Choice is alias of method QuickSelect()
-func Choice(title string, options interface{}, defOpt string, allowQuit ...bool) string {
-	return QuickSelect(title, options, defOpt, allowQuit...)
+// Checkbox is alias of method MultiSelect()
+func Checkbox(title string, options interface{}, defOpts []string, allowQuit ...bool) []string {
+	return MultiSelect(title, options, defOpts, allowQuit...)
+}
+
+// MultiSelect select multi of the options, returns selected option values.
+// like SingleSelect(), but allow select multi option
+func MultiSelect(title string, options interface{}, defOpts []string, allowQuit ...bool) []string {
+	s := &Select{Title: title, Options: options, DefOpts: defOpts, MultiSelect: true}
+
+	if len(allowQuit) > 0 {
+		s.DisableQuit = !allowQuit[0]
+	}
+
+	return s.Run().Strings()
 }
 
 // ReadPassword from terminal

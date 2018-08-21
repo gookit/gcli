@@ -15,7 +15,7 @@
 - 支持丰富的颜色渲染输出, 由[gookit/color](https://github.com/gookit/color)提供
   - 同时支持html标签式的颜色渲染，兼容Windows
   - 内置`info,error,success,danger`等多种风格，可直接使用
-- 内置提供 `ReadLine`, `Confirm`, `Select` 等用户交互方法
+- 内置提供 `ReadLine`, `Confirm`, `Select`, `MultiSelect` 等用户交互方法
 - 自动根据命令生成帮助信息，并且支持颜色显示
 - 支持为当前CLI应用生成 `zsh`,`bash` 下的命令补全脚本文件
 - 支持将单个命令当做独立应用运行
