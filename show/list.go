@@ -1,47 +1,53 @@
 package show
 
-// List list
+// List definition
 type List struct {
-	Name  string
+	Base // use for internal
+	// Title list title name
+	Title string
+	// Items list items.
+	// allow:
+	// 	struct, []int, []string, []interface{}, map[string]string, map[string]interface{}
 	Items interface{}
+	// NewLine print "\n" at last
+	NewLine bool
+	// formatted string
+	formatted string
 }
 
-// NewList
-func NewList(name string, items interface{}) *List {
-	return &List{name, items}
+// NewList instance
+func NewList(title string, items interface{}) *List {
+	return &List{Title: title, Items: items, NewLine: true}
 }
 
 func (l *List) Format() string {
-	panic("implement me")
-}
+	if l.Items == nil {
+		return ""
+	}
 
-func (l *List) String() string {
-	panic("implement me")
+	return ""
 }
 
 func (l *List) Print() {
 
 }
 
-// Lists lists
+// Lists definition
 type Lists struct {
+	Base  // use for internal
 	Title string
 	Rows  []List
 }
 
 // NewLists
 func NewLists(title string, lists []List) *Lists {
-	return &Lists{title, lists}
+	return &Lists{Title: title, Rows: lists}
 }
 
-func (ls *Lists) Format() {
+func (ls *Lists) Format() string {
 	panic("implement me")
 }
 
 func (ls *Lists) Print() {
-	panic("implement me")
-}
-
-func (ls *Lists) String() string {
 	panic("implement me")
 }

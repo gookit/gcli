@@ -1,7 +1,6 @@
 package show
 
 import (
-	"fmt"
 	"github.com/gookit/color"
 )
 
@@ -12,26 +11,41 @@ const (
 	ERR = 2
 )
 
-// show shown
-type IShow interface {
+// FormatterFace
+type FormatterFace interface {
+	Format() string
+}
+
+// ShownFace shown
+type ShownFace interface {
+	// data to string
+	String() string
 	// print current message
 	Print()
-	// trans to string
-	String() string
+	// print current message
+	Println()
 }
 
-type Title struct {
-	Title     string
-	Formatter func(t *Title) string
-	// Formatter IFormatter
+// Base formatter
+type Base struct {
 }
 
-func NewTitle(title string) *Title {
-	return &Title{Title: title}
+// Format given data to string
+func (f *Base) Format() string {
+	panic("please implement the method")
 }
 
-// Error message print
-func Error(format string, v ...interface{}) int {
-	fmt.Println(color.FgRed.Render("ERROR:"), fmt.Sprintf(format, v...))
-	return ERR
+// String returns formatted string
+func (f *Base) String() string {
+	return f.Format()
+}
+
+// Print formatted message
+func (f *Base) Print() {
+	color.Print(f.Format())
+}
+
+// Println formatted message and print newline
+func (f *Base) Println() {
+	color.Println(f.Format())
 }

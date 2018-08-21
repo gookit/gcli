@@ -2,28 +2,28 @@ package show
 
 // Table a cli Table show
 type Table struct {
-	Name       string
-	Cols       []string
-	Rows       []interface{}
-	Border     bool
-	RowBorder  bool
+	Base // use for internal
+	// Title for the table
+	Title string
+	// Cols the table head col data
+	Cols []string
+	// Rows table data rows
+	Rows []interface{}
+	// Border show border
+	Border bool
+	// RowBorder show row border
+	RowBorder bool
+	// HeadBorder show head border
 	HeadBorder bool
+	// WrapBorder wrap border for table
 	WrapBorder bool
 }
 
 // NewTable
-func NewTable(name string) *Table {
-	return &Table{Name: name}
+func NewTable(title string) *Table {
+	return &Table{Title: title}
 }
 
 func (t *Table) Format() string {
 	panic("implement me")
-}
-
-func (t *Table) Print() {
-
-}
-
-func (t *Table) String() string {
-	return ""
 }

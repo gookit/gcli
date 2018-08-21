@@ -13,7 +13,3 @@ contains `section, panel, padding, helpPanel, table, tree, title, list, multiLis
 
 - markdown
 - json
-
-- progress text
-- progress bar
-- counter

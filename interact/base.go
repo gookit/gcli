@@ -16,12 +16,15 @@ const (
 	ERR = 2
 )
 
+// RunFace for interact methods
+type RunFace interface {
+	Run() *Value
+}
+
 // Value data store
 type Value struct {
 	val interface{}
 }
-
-var emptyVal = &Value{}
 
 // Set val
 func (v Value) Set(val interface{}) {
@@ -74,7 +77,7 @@ func (v Value) IsEmpty() bool {
 }
 
 /*************************************************************
- * utils methods
+ * helper methods
  *************************************************************/
 
 func exitWithErr(format string, v ...interface{}) {
