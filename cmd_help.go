@@ -41,14 +41,14 @@ func (c *Command) ShowHelp(quit ...bool) {
 	str := utils.RenderTemplate(commandHelp, map[string]interface{}{
 		"Cmd": c,
 		// parse options to string
-		"Options": color.RenderStr(c.ParseDefaults()),
+		"Options": color.String(c.ParseDefaults()),
 		// always upper first char
-		"Description": color.RenderStr(c.Description),
+		"Description": color.String(c.Description),
 	}, false)
 
 	// parse help vars
 	str = replaceVars(str, c.Vars)
-	fmt.Print(color.RenderStr(str))
+	fmt.Print(color.String(str))
 
 	if len(quit) > 0 && quit[0] {
 		Exit(OK)

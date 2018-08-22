@@ -9,8 +9,8 @@ type Table struct {
 	Cols []string
 	// Rows table data rows
 	Rows []interface{}
-	// Border show border
-	Border bool
+	// HasBorder show border line
+	HasBorder bool
 	// RowBorder show row border
 	RowBorder bool
 	// HeadBorder show head border

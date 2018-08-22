@@ -282,7 +282,7 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 
 ### Color output display
 
-![colored-out](_examples/images/colored-out.jpg)
+![colored-demo](_examples/images/color-demo.jpg)
 
 ### Usage
 

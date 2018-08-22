@@ -48,7 +48,7 @@ func (app *Application) showCommandsHelp() {
 	}, false)
 
 	// parse help vars and render color tags
-	fmt.Print(color.RenderStr(replaceVars(str, app.vars)))
+	fmt.Print(color.String(replaceVars(str, app.vars)))
 	Exit(OK)
 }
 
