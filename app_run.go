@@ -106,7 +106,7 @@ func (app *Application) Run() {
 	Logf(VerbDebug, "input command is: %s, real command: %s, args: %v", rawName, name, args)
 
 	if !app.IsCommand(name) {
-		color.Tips("error").Printf("unknown input command '%s'", name)
+		color.Error.Prompt("unknown input command '%s'", name)
 
 		ns := app.findSimilarCmd(name)
 		if len(ns) > 0 {
@@ -150,7 +150,7 @@ func (app *Application) Run() {
 // SubRun running other command in current command
 func (app *Application) SubRun(name string, args []string) int {
 	if !app.IsCommand(name) {
-		color.Tips("error").Printf("unknown command name '%s'", name)
+		color.Error.Prompt("unknown command name '%s'", name)
 		return ERR
 	}
 

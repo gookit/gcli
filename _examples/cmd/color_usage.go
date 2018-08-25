@@ -47,16 +47,15 @@ func colorUsage(cmd *cliapp.Command, args []string) int {
 	// set a color tag
 	color.Tag("info").Println("info style message")
 
-	// tips
-	color.Tips("info").Print("tips style message")
-	color.Tips("warn").Print("tips style message")
+	// prompt message
+	color.Info.Prompt("prompt style message")
+	color.Warn.Prompt("prompt style message")
 
-	// lite tips
-	color.LiteTips("info").Print("lite tips style message")
-	color.LiteTips("warn").Print("lite tips style message")
+	// tips message
+	color.Info.Tips("tips style message")
+	color.Warn.Tips("tips style message")
 
 	i := 0
-
 	fmt.Print("\n- All Available color Tags: \n\n")
 
 	for tag, _ := range color.GetColorTags() {

@@ -67,7 +67,7 @@ func (app *Application) showCommandHelp(list []string, quit bool) {
 	name := app.RealCommandName(list[0])
 	cmd, exist := app.commands[name]
 	if !exist {
-		color.Tips("error").Printf("Unknown command name %#q. Run '%s -h'", name, CLI.binName)
+		color.Error.Prompt("Unknown command name %#q. Run '%s -h'", name, CLI.binName)
 		Exit(ERR)
 	}
 

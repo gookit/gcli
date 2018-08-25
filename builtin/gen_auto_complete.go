@@ -84,8 +84,7 @@ func doGen(c *cliapp.Command, _ []string) int {
 		}
 	}
 
-	color.LiteTips("info").Printf("\n  %+v\n", genOpts)
-
+	color.Info.Tips("\n  %+v\n", genOpts)
 	data := map[string]interface{}{
 		"Shell":    genOpts.shell,
 		"BinName":  genOpts.binName,
@@ -97,8 +96,8 @@ func doGen(c *cliapp.Command, _ []string) int {
 	} else if genOpts.shell == ZshShell {
 		data = buildForZshShell(data)
 	} else {
-		color.LiteTips("error").Println("--shell option only allow: zsh,bash")
-		return -2
+		color.Error.Tips("--shell option only allow: zsh,bash")
+		return cliapp.ERR
 	}
 
 	str := utils.RenderTemplate(shellTpls[genOpts.shell], &data)
