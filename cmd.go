@@ -192,7 +192,7 @@ func (c *Command) collectNamedArgs(inArgs []string) error {
 	inNum := len(inArgs)
 
 	for i, arg := range c.args {
-		num = i + 1 // num is equal index + 1
+		num = i + 1      // num is equal index + 1
 		if num > inNum { // no enough arg
 			if arg.Required {
 				return fmt.Errorf("must set a value for the argument: %s (position %d)", arg.Name, arg.index)

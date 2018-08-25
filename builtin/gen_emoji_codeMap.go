@@ -1,12 +1,12 @@
 package builtin
 
 import (
-	"github.com/gookit/cliapp"
-	"time"
 	"fmt"
-	"os"
-	"net/http"
+	"github.com/gookit/cliapp"
 	"io"
+	"net/http"
+	"os"
+	"time"
 )
 
 type genEmojiMap struct {

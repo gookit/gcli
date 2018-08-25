@@ -1,10 +1,10 @@
 package interact
 
 import (
-	"fmt"
 	"bufio"
-	"os"
 	"context"
+	"fmt"
+	"os"
 	"strings"
 )
 
@@ -24,7 +24,7 @@ func Prompt(ctx context.Context, query, defaultAnswer string) (string, error) {
 	ch := make(chan result, 1)
 	go func() {
 		s := bufio.NewScanner(os.Stdin)
-		if !s.Scan() {// reading
+		if !s.Scan() { // reading
 			ch <- result{"", s.Err()}
 			return
 		}

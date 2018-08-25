@@ -83,7 +83,7 @@ func AnswerIsYes(defVal ...bool) bool {
 		} else if fChar == "n" {
 			return false
 		}
-	} else if len(defVal) > 0 {// has default value
+	} else if len(defVal) > 0 { // has default value
 		return defVal[0]
 	}
 
