@@ -9,7 +9,9 @@ import (
 	"runtime"
 )
 
-// run: go run ./_examples/cliapp.go
+// run:
+// go run ./_examples/cliapp.go
+// go build ./_examples/cliapp.go && ./cliapp
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 

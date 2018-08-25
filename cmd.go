@@ -16,15 +16,15 @@ type Runner interface {
 }
 
 // CmdFunc definition
-type CmdFunc func(cmd *Command, args []string) int
+type CmdFunc func(c *Command, args []string) int
 
 // Run implement the Runner interface
-func (f CmdFunc) Run(cmd *Command, args []string) int {
-	return f(cmd, args)
+func (f CmdFunc) Run(c *Command, args []string) int {
+	return f(c, args)
 }
 
 // HookFunc definition
-type HookFunc func(cmd *Command, data interface{})
+type HookFunc func(c *Command, data interface{})
 
 // Command a CLI command structure
 type Command struct {
@@ -32,8 +32,9 @@ type Command struct {
 	*CmdLine
 	// Name is the command name.
 	Name string
+	// Init func, will call on `initialize`
+	Init func(c *Command)
 	// Func A callback func to runs the command.
-	// Func func(cmd *Command, args []string) int
 	// Func Runner
 	Func CmdFunc
 	// Hooks can setting some hooks func on running.
@@ -102,8 +103,8 @@ func (c *Command) Runnable() bool {
 	return c.Func != nil
 }
 
-// Init command
-func (c *Command) Init() *Command {
+// initialize command
+func (c *Command) initialize() *Command {
 	c.CmdLine = CLI
 
 	// format description
@@ -114,6 +115,10 @@ func (c *Command) Init() *Command {
 		if strings.Contains(c.Description, "{$cmd}") {
 			c.Description = strings.Replace(c.Description, "{$cmd}", c.Name, -1)
 		}
+	}
+
+	if c.Init != nil {
+		c.Init(c)
 	}
 
 	// set help vars
@@ -138,15 +143,13 @@ func (c *Command) Init() *Command {
 
 	// init for Flags
 	c.Flags.Init(c.Name, flag.ContinueOnError)
-	c.Flags.Usage = func() {
-		// call on exists "-h" "--help"
+	c.Flags.Usage = func() { // call on exists "-h" "--help"
 		c.ShowHelp(true)
 	}
 
 	// bind some global options
 	// c.Flags.BoolVar(&gOpts.showHelp, "h", false, "")
 	// c.Flags.BoolVar(&gOpts.showHelp, "help", false, "")
-
 	return c
 }
 
@@ -247,7 +250,7 @@ func (c *Command) AloneRun() int {
 	c.alone = true
 	// args := parseGlobalOpts()
 	// init
-	c.Init()
+	c.initialize()
 	// parse args and opts
 	c.Flags.Parse(os.Args[1:])
 

@@ -5,5 +5,5 @@
 - pending/loading
 - pointing
 - spinner
-- counter Txt, 
+- counter Txt
 - dynamic Text

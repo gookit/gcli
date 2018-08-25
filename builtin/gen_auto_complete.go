@@ -33,7 +33,7 @@ func GenAutoCompleteScript() *cliapp.Command {
 	c := cliapp.Command{
 		Func:    doGen,
 		Name:    "gen-ac",
-		Aliases: []string{"genac"},
+		Aliases: []string{"genac", "gen:ac"},
 
 		Description: "generate auto complete scripts for current application",
 	}

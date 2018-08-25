@@ -264,6 +264,7 @@ func (app *Application) Add(c *Command, more ...*Command) {
 }
 
 func (app *Application) addCommand(c *Command) {
+	c.Name = strings.TrimSpace(c.Name)
 	if c.Name == "" {
 		exitWithErr("The added command must have a command name")
 	}
@@ -281,7 +282,7 @@ func (app *Application) addCommand(c *Command) {
 
 	// init command
 	c.app = app
-	c.Init()
+	c.initialize()
 }
 
 func (app *Application) callHook(event string, data interface{}) {
