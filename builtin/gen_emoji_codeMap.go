@@ -1,13 +1,22 @@
 package builtin
 
-import "github.com/gookit/cliapp"
+import (
+	"github.com/gookit/cliapp"
+	"time"
+	"fmt"
+	"os"
+	"net/http"
+	"io"
+)
 
 type genEmojiMap struct {
-	// muan - https://github.com/muan/emoji/blob/gh-pages/javascripts/emojilib/emojis.json
+	c *cliapp.Command
+	// muan - https://raw.githubusercontent.com/muan/emoji/gh-pages/javascripts/emojilib/emojis.json
 	// gemoji - https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json
 	// unicode - https://unicode.org/Public/emoji/11.0/emoji-test.txt
 	source  string // allow: gemoji
 	saveDir string
+	onlyGen bool
 }
 
 type Gemoji struct {
@@ -23,22 +32,55 @@ func GenEmojiMapCommand() *cliapp.Command {
 
 	return &cliapp.Command{
 		Name:    "gen:emojis",
-		Aliases: []string{"gen:emoji"},
+		Aliases: []string{"gen:emoji", "gen:emj"},
 		// handler func
 		Func: gem.run,
 		// des
-		Description: "fetch all emoji codes form https://www.unicode.org, generate a go file.",
-		Init: func(c *cliapp.Command) {
-			c.StrOpt(&gem.source, "source", "s", "gemoji",
-				"the emoji data source, allow: muan, gemoji, unicode")
+		Description: "fetch emoji codes form data source url, then generate a go file.",
+		// config options
+		Config: func(c *cliapp.Command) {
+			gem.c = c
+			c.StrOpt(
+				&gem.source, "source", "s", "gemoji",
+				"the emoji data source, allow: muan, gemoji, unicode",
+			)
 			c.StrOpt(&gem.saveDir, "dir", "d", "./", "the generated go file save `DIR` path")
+			c.BoolOpt(&gem.onlyGen, "onlyGen", "", false, "whether only generate go file from exists emoji data file")
 		},
+		Help: `source allow:
+ muan - https://raw.githubusercontent.com/muan/emoji/gh-pages/javascripts/emojilib/emojis.json
+ gemoji - https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json
+ unicode - https://unicode.org/Public/emoji/11.0/emoji-test.txt
+`,
 	}
 }
 
 func (g *genEmojiMap) run(c *cliapp.Command, _ []string) int {
 
 	return 0
+}
+
+// 实现单个文件的下载
+func (g *genEmojiMap) Download(remoteFile string, saveAs string) error {
+	nt := time.Now().Format("2006-01-02 15:04:05")
+	fmt.Printf("[%s]To download %s\n", nt, remoteFile)
+
+	newFile, err := os.Create(saveAs)
+	if err != nil {
+		return err
+	}
+	defer newFile.Close()
+
+	client := http.Client{Timeout: 900 * time.Second}
+	resp, err := client.Get(remoteFile)
+	defer resp.Body.Close()
+
+	_, err = io.Copy(newFile, resp.Body)
+	if err != nil {
+		fmt.Println(err.Error())
+	}
+
+	return nil
 }
 
 const templateString = `

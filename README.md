@@ -282,6 +282,7 @@ go build ./_examples/cliapp.go && ./cliapp example -h
    
 console interactive methods
 
+- `ReadInput`
 - `ReadLine`
 - `ReadFirst`
 - `Confirm`

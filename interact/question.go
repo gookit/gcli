@@ -8,10 +8,11 @@ import (
 
 // Question definition
 type Question struct {
-	// Q the question text
+	// Q the question string
 	Q string
-	// Func validate user input answer is right. if not set, will only check answer is empty.
-	Func func(ans string) (errMsg string)
+	// Func validate user input answer is right.
+	// if not set, will only check answer is empty.
+	Func func(ans string) error
 	// DefVal default value
 	DefVal string
 	// MaxTimes maximum allowed number of errors, 0 is don't limited
@@ -37,9 +38,9 @@ func (q *Question) render() {
 		exitWithErr("(interact.Question) must provide question message")
 	}
 
-	q.DefVal = strings.TrimSpace(q.DefVal)
-
 	var defMsg string
+
+	q.DefVal = strings.TrimSpace(q.DefVal)
 	if q.DefVal != "" {
 		defMsg = fmt.Sprintf("[default:%s]", color.Green.Render(q.DefVal))
 	}
@@ -72,11 +73,10 @@ DoASK:
 
 	// has validator func
 	if q.Func != nil {
-		errMsg := q.Func(ans)
-
-		if errMsg != "" {
+		err := q.Func(ans)
+		if err != nil {
 			q.checkErrTimes()
-			echoErr(errMsg)
+			echoErr(err.Error())
 			goto DoASK
 		}
 	}

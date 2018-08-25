@@ -32,11 +32,11 @@ type Command struct {
 	*CmdLine
 	// Name is the command name.
 	Name string
-	// Init func, will call on `initialize`
-	Init func(c *Command)
-	// Func A callback func to runs the command.
+	// Func is the command handler func.
 	// Func Runner
 	Func CmdFunc
+	// Config func, will call on `initialize`. you can config options and other works
+	Config func(c *Command)
 	// Hooks can setting some hooks func on running.
 	// allow hooks: "init", "before", "after", "error"
 	Hooks map[string]HookFunc
@@ -117,8 +117,9 @@ func (c *Command) initialize() *Command {
 		}
 	}
 
-	if c.Init != nil {
-		c.Init(c)
+	// call Config func
+	if c.Config != nil {
+		c.Config(c)
 	}
 
 	// set help vars
@@ -165,11 +166,16 @@ func (c *Command) Execute(args []string) int {
 		return ERR
 	}
 
+	var eCode int
 	c.callHook(EvtBefore, args)
 
 	// call command handler func
-	// eCode := c.Func.Run(c, args)
-	eCode := c.Func(c, args)
+	if c.Func == nil {
+		Logf(VerbWarn, "the command '%s' no handler func to running.", c.Name)
+	} else {
+		// eCode := c.Func.Run(c, args)
+		eCode = c.Func(c, args)
+	}
 
 	if c.error != nil {
 		c.app.AddError(c.error)
@@ -186,7 +192,7 @@ func (c *Command) collectNamedArgs(inArgs []string) error {
 	inNum := len(inArgs)
 
 	for i, arg := range c.args {
-		num = i + 1      // num is equal index + 1
+		num = i + 1 // num is equal index + 1
 		if num > inNum { // no enough arg
 			if arg.Required {
 				return fmt.Errorf("must set a value for the argument: %s (position %d)", arg.Name, arg.index)

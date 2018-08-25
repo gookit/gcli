@@ -32,9 +32,9 @@ var shellTpls = map[string]string{
 func GenAutoCompleteScript() *cliapp.Command {
 	c := cliapp.Command{
 		Func:    doGen,
-		Name:    "gen-ac",
-		Aliases: []string{"genac", "gen:ac"},
-
+		Name:    "gen:ac",
+		Aliases: []string{"genac", "gen-ac"},
+		// des
 		Description: "generate auto complete scripts for current application",
 	}
 

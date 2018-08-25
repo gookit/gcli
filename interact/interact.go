@@ -34,7 +34,7 @@ func Unconfirmed(message string, defVal ...bool) bool {
 // 	answer := Ask("Your name?", "", nil)
 // 	answer := Ask("Your name?", "tom", nil)
 // 	answer := Ask("Your name?", "", nil, 3)
-func Ask(question, defVal string, fn func(ans string) (errMsg string), maxTimes ...int) string {
+func Ask(question, defVal string, fn func(ans string) error, maxTimes ...int) string {
 	q := &Question{Q: question, Func: fn, DefVal: defVal}
 	if len(maxTimes) > 0 {
 		q.MaxTimes = maxTimes[0]
@@ -43,8 +43,8 @@ func Ask(question, defVal string, fn func(ans string) (errMsg string), maxTimes 
 	return q.Run().String()
 }
 
-// AskQuestion is alias of method Ask()
-func AskQuestion(question, defVal string, fn func(ans string) (errMsg string), maxTimes ...int) string {
+// Query is alias of method Ask()
+func Query(question, defVal string, fn func(ans string) error, maxTimes ...int) string {
 	return Ask(question, defVal, fn, maxTimes...)
 }
 

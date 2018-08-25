@@ -31,6 +31,7 @@ func main() {
 	app.Add(cmd.GitCommand())
 	app.Add(cmd.ColorCommand())
 	app.Add(cmd.ShowDemoCommand(), cmd.InteractDemoCommand())
+	app.Add(builtin.GenEmojiMapCommand())
 
 	// app.Add(filewatcher.FileWatcher(nil))
 	// app.Add(reverseproxy.ReverseProxyCommand())

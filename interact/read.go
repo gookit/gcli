@@ -12,9 +12,25 @@ import (
 	"syscall"
 )
 
-// ReadLine read line for user input
-// in := ReadLine("")
-// ans := ReadLine("your name?")
+// ReadInput read user input form Stdin
+func ReadInput(question string) (string, error) {
+	if len(question) > 0 {
+		color.Print(question)
+	}
+
+	scanner := bufio.NewScanner(os.Stdin)
+	if !scanner.Scan() { // reading
+		return "", scanner.Err()
+	}
+
+	answer := scanner.Text()
+	return strings.TrimSpace(answer), nil
+}
+
+// ReadLine read one line from user input.
+// Usage:
+// 	in := ReadLine("")
+// 	ans := ReadLine("your name?")
 func ReadLine(question string) (string, error) {
 	if len(question) > 0 {
 		color.Print(question)
@@ -36,15 +52,15 @@ func ReadFirst(question string) (string, error) {
 }
 
 // AnswerIsYes check user inputted answer is right
-// fmt.Print("are you OK?")
-// ok := AnswerIsYes()
-// ok := AnswerIsYes(true)
-func AnswerIsYes(def ...bool) bool {
+// Usage:
+// 	fmt.Print("are you OK?")
+// 	ok := AnswerIsYes()
+// 	ok := AnswerIsYes(true)
+func AnswerIsYes(defVal ...bool) bool {
 	mark := " [yes|no]: "
-
-	if len(def) > 0 {
+	if len(defVal) > 0 {
 		var defShow string
-		if def[0] {
+		if defVal[0] {
 			defShow = "yes"
 		} else {
 			defShow = "no"
@@ -67,8 +83,8 @@ func AnswerIsYes(def ...bool) bool {
 		} else if fChar == "n" {
 			return false
 		}
-	} else if len(def) > 0 {
-		return def[0]
+	} else if len(defVal) > 0 {// has default value
+		return defVal[0]
 	}
 
 	fmt.Print("Please try again")

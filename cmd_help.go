@@ -27,9 +27,9 @@ var commandHelp = `{{.Description}}
   <info>{{$a.Name | printf "%-12s"}}</>{{$a.Description | ucFirst}}{{if $a.Required}}<red>*</>{{end}}{{end}}
 {{end}} {{if .Cmd.Examples}}
 <comment>Examples:</>
-  {{.Cmd.Examples}}{{end}}
+{{.Cmd.Examples}}{{end}}
 {{if .Cmd.Help}}<comment>Help:</>
-  {{.Cmd.Help}}{{end}}`
+{{.Cmd.Help}}{{end}}`
 
 // ShowHelp show command help info
 func (c *Command) ShowHelp(quit ...bool) {
