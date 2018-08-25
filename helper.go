@@ -39,24 +39,22 @@ func Logf(level uint, format string, v ...interface{}) {
 }
 
 // Print messages
-func Print(args ...interface{}) (int, error) {
-	return color.Print(args...)
+func Print(args ...interface{}) {
+	color.Print(args...)
 }
 
 // Println messages
-func Println(args ...interface{}) (int, error) {
-	return color.Println(args...)
+func Println(args ...interface{}) {
+	color.Println(args...)
 }
 
 // Printf messages
-func Printf(format string, args ...interface{}) (int, error) {
-	return color.Printf(format, args...)
+func Printf(format string, args ...interface{}) {
+	color.Printf(format, args...)
 }
 
 func exitWithErr(format string, v ...interface{}) {
-	fmt.Println(
-		color.FgRed.Render("ERROR:"), fmt.Sprintf(format, v...),
-	)
+	color.Error.Tips(format, v...)
 	Exit(ERR)
 }
 

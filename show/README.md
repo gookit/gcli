@@ -1,4 +1,4 @@
-# formatted message show 
+# Format message 
 
 contains `section, panel, padding, helpPanel, table, tree, title, list, multiList`
 

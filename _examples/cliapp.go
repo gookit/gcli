@@ -4,8 +4,8 @@ import (
 	"github.com/gookit/cliapp"
 	"github.com/gookit/cliapp/builtin"
 	"github.com/gookit/cliapp/_examples/cmd"
-	"github.com/gookit/cliapp/builtin/filewatcher"
-	"github.com/gookit/cliapp/builtin/reverseproxy"
+	// "github.com/gookit/cliapp/builtin/filewatcher"
+	// "github.com/gookit/cliapp/builtin/reverseproxy"
 	"runtime"
 )
 
@@ -30,8 +30,8 @@ func main() {
 	app.Add(cmd.ColorCommand())
 	app.Add(cmd.ShowDemoCommand(), cmd.InteractDemoCommand())
 
-	app.Add(filewatcher.FileWatcher(nil))
-	app.Add(reverseproxy.ReverseProxyCommand())
+	// app.Add(filewatcher.FileWatcher(nil))
+	// app.Add(reverseproxy.ReverseProxyCommand())
 
 	app.Add(&cliapp.Command{
 		Name:        "test",

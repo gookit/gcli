@@ -81,8 +81,8 @@ func (v Value) IsEmpty() bool {
  *************************************************************/
 
 func exitWithErr(format string, v ...interface{}) {
-	fmt.Println(color.Red.Render("ERROR:"), fmt.Sprintf(format, v...))
-	os.Exit(2)
+	color.Error.Tips(format, v...)
+	os.Exit(ERR)
 }
 
 func exitWithMsg(exitCode int, messages ...interface{}) {

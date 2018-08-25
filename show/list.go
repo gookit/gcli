@@ -1,6 +1,9 @@
 package show
 
 // List definition
+//
+// String len:
+// 	len("你好"), len("hello"), len("hello你好") -> 6 5 11
 type List struct {
 	Base // use for internal
 	// Title list title name

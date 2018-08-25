@@ -278,6 +278,39 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 
 ![cmd-help](_examples/images/cmd-help.jpg)
 
+## Interactive methods
+   
+console interactive methods
+
+- `ReadLine`
+- `ReadFirst`
+- `Confirm`
+- `Select/Choice`
+- `MultiSelect/Checkbox`
+- `Question/Ask`
+- `ReadPassword`
+
+An example:
+
+```go
+package main
+
+import "fmt"
+import "github.com/gookit/cliapp/interact"
+
+func main() {
+	username, _ := interact.ReadLine("Your name?")
+	password := interact.ReadPassword("Your password?")
+	
+	ok := interact.Confirm("ensure continue?")
+	if !ok {
+		// do something...
+	}
+    
+	fmt.Printf("username: %s, password: %s\n", username, password)
+}
+```
+
 ## CLI Color
 
 ### Color output display
