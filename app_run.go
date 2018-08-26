@@ -143,7 +143,7 @@ func (app *Application) Run() {
 		app.callHook(EvtAfter, exitCode)
 	}
 
-	Logf(VerbDebug, "command %s run complete, exit with code: ", name, exitCode)
+	Logf(VerbDebug, "command %s run complete, exit with code: %d", name, exitCode)
 	Exit(exitCode)
 }
 

@@ -154,7 +154,6 @@ func (c *Command) isShortcut(short string) bool {
 	}
 
 	_, ok := c.shortcuts[short]
-
 	return ok
 }
 
@@ -190,25 +189,6 @@ func (c *Command) OptDes(name string) string {
 // OptNames return all option names
 func (c *Command) OptNames() map[string]string {
 	return c.optNames
-}
-
-// Option is config info for a option
-// usage:
-// cmd.AddOpt(Option{
-// 	Name: "name"
-//	Short: "n"
-// 	DType: "string"
-// })
-// cmd.Flags.String()
-type Option struct {
-	Name   string
-	Short  string
-	DType  string // int, string, bool, value
-	VarPtr interface{}
-
-	Required    bool
-	DefValue    interface{}
-	Description string
 }
 
 /*************************************************************

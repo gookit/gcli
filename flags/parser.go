@@ -1,4 +1,4 @@
-package utils
+package flags
 
 import (
 	"fmt"
@@ -18,42 +18,81 @@ func ParseBool(str string) (bool, error) {
 	return false, fmt.Errorf("'%s' cannot convert to bool", str)
 }
 
-// ResultSet the values for parsed arguments and options
-type ResultSet struct {
-	// value allow: bool, string, array
-	longOpts  map[string]interface{}
-	shortOpts map[string]interface{}
-	// args list
-	args []string
-}
-
-func (r *ResultSet) OptString(name string) string {
-	return ""
-}
-
 // ArgsParser definition. a simple command line args parser
 type ArgsParser struct {
-	// BoolOpts define. list all bool value options.
+	// BoolOpts bool option names. list all bool value options.
 	// eg. "--debug -h" -> []string{"debug", "h"}
 	BoolOpts []string
-	// ArrayOpts list all array value options.
+	// bool option name map. it's flip from BoolOpts.
+	// eg. {"name": false}
+	boolOpts map[string]bool
+	// ArrayOpts array option names. list all array value options.
 	// eg. "--name tom --name john" should add []string{"name"}
 	ArrayOpts []string
-	// ValidOpts list all valid option names.
-	ValidOpts []string
-	//
-	args []string
-	// current index for loop
-	index int
-	// args length
-	length int
-	// boolOpts {"name": false}
-	boolOpts map[string]bool
-	// arrayOpts {"name": false}
+	// array option name map. it's flip from ArrayOpts.
+	// eg. {"name": false}
 	arrayOpts map[string]bool
-	// result
-	result *ResultSet
+	// ValidOpts list all valid option names.
+	// ValidOpts []string
+	// current index for loop rawArgs
+	index int
+	// raw args
+	rawArgs []string
+	// raw args length
+	length int
+	// parsed longs options. value allow: bool, string, array
+	longOpts map[string]interface{}
+	// parsed shorts options. value allow: bool, string, array
+	shortOpts map[string]interface{}
+	// parsed arguments
+	args []string
 }
+
+// ParseArgs parse os.Args to options.
+func ParseArgs(args []string, boolOpts []string, arrayOpts []string) *ArgsParser {
+	p := &ArgsParser{
+		BoolOpts:  boolOpts,
+		ArrayOpts: arrayOpts,
+	}
+
+	p.Parse(args)
+	return p
+}
+
+// Opts get parsed opts
+func (p *ArgsParser) Opts() map[string]interface{} {
+	return map[string]interface{}{
+		"longs":  p.longOpts,
+		"shorts": p.shortOpts,
+	}
+}
+
+// Args get parsed args
+func (p *ArgsParser) Args() []string {
+	return p.args
+}
+
+// String the all options
+func (p *ArgsParser) OptsString() string {
+	return fmt.Sprintf("long opts: %#v\nshort opts: %#v\n", p.longOpts, p.shortOpts)
+}
+
+func (p *ArgsParser) prepare() {
+	if len(p.BoolOpts) > 0 {
+		p.boolOpts = p.flipSlice(p.BoolOpts)
+	}
+
+	if len(p.ArrayOpts) > 0 {
+		p.arrayOpts = p.flipSlice(p.ArrayOpts)
+	}
+
+	p.longOpts = make(map[string]interface{})
+	p.shortOpts = make(map[string]interface{})
+}
+
+/*************************************************************
+ * command options and arguments parse
+ *************************************************************/
 
 // Parse args list to options
 //
@@ -65,9 +104,9 @@ type ArgsParser struct {
 // 	--bool-opt // bool, lang option
 // 	--long-opt <value> // lang option
 // 	--long-opt=<value>
-func (p *ArgsParser) Parse(args []string) *ResultSet {
+func (p *ArgsParser) Parse(args []string) {
 	var val string
-	p.args = args
+	p.rawArgs = args
 	p.prepare()
 	p.length = len(args)
 
@@ -116,7 +155,7 @@ func (p *ArgsParser) Parse(args []string) *ResultSet {
 				p.index++
 			} else if !isLong && noVal { // short bool opts. like -e -abc
 				for _, n := range []rune(opt) {
-					p.result.shortOpts[string(n)] = val
+					p.shortOpts[string(n)] = noVal
 				}
 				continue
 			}
@@ -124,11 +163,9 @@ func (p *ArgsParser) Parse(args []string) *ResultSet {
 			// collect option and value
 			p.collectOption(opt, val, isLong)
 		} else { // args
-			p.result.args = append(p.result.args, cur)
+			p.args = append(p.args, cur)
 		}
 	}
-
-	return p.result
 }
 
 func (p *ArgsParser) next() (val string, valid bool) {
@@ -136,49 +173,48 @@ func (p *ArgsParser) next() (val string, valid bool) {
 		return
 	}
 
-	return p.args[p.index], true
+	return p.rawArgs[p.index], true
 }
 
 func (p *ArgsParser) collectOption(opt, val string, isLong bool) {
 	isArray := p.isArrayOpt(opt)
 	if isLong {
 		if isArray {
-			vs, ok := p.result.longOpts[opt]
+			vs, ok := p.longOpts[opt]
 			if !ok {
 				vs = []string{val}
 			} else {
 				vs = append(vs.([]string), val)
 			}
 
-			p.result.longOpts[opt] = vs
+			p.longOpts[opt] = vs
 		} else {
 			bl, err := ParseBool(val)
 			if err != nil {
-				p.result.longOpts[opt] = val
+				p.longOpts[opt] = val
 			} else {
-				p.result.longOpts[opt] = bl
+				p.longOpts[opt] = bl
 			}
 		}
-
 		return
 	}
 
 	// short
 	if isArray {
-		vs, ok := p.result.shortOpts[opt]
+		vs, ok := p.shortOpts[opt]
 		if !ok {
 			vs = []string{val}
 		} else {
 			vs = append(vs.([]string), val)
 		}
 
-		p.result.shortOpts[opt] = vs
+		p.shortOpts[opt] = vs
 	} else {
 		bl, err := ParseBool(val)
 		if err != nil {
-			p.result.shortOpts[opt] = val
+			p.shortOpts[opt] = val
 		} else {
-			p.result.shortOpts[opt] = bl
+			p.shortOpts[opt] = bl
 		}
 	}
 }
@@ -189,22 +225,6 @@ func (p *ArgsParser) isValue(str string) bool {
 	}
 
 	return str[0] != '-'
-}
-
-func (p *ArgsParser) prepare() {
-	if len(p.BoolOpts) > 0 {
-		p.boolOpts = p.flipSlice(p.BoolOpts)
-	}
-
-	if len(p.ArrayOpts) > 0 {
-		p.arrayOpts = p.flipSlice(p.ArrayOpts)
-	}
-
-	p.result = &ResultSet{
-		longOpts:  make(map[string]interface{}),
-		shortOpts: make(map[string]interface{}),
-	}
-
 }
 
 func (p *ArgsParser) flipSlice(ss []string) map[string]bool {
