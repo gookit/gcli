@@ -308,7 +308,7 @@ func (c *Command) AddArg(name, description string, requiredAndIsArray ...bool) *
 
 	// add argument
 	newArg := &Argument{
-		Name: name, ShowName:name, Description: description, Required: required, IsArray: isArray, index: argIndex,
+		Name: name, ShowName: name, Description: description, Required: required, IsArray: isArray, index: argIndex,
 	}
 	c.args = append(c.args, newArg)
 

@@ -64,3 +64,11 @@ func formatMemoryVal(bytes uint64) string {
 		return fmt.Sprintf("%.2fG", float64(bytes)/1024/1024/1024)
 	}
 }
+
+func repeatRune(char rune, length int) (chars []rune) {
+	for i := 0; i < length; i++ {
+		chars = append(chars, char)
+	}
+
+	return
+}

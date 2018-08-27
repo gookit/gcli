@@ -3,73 +3,17 @@ package progress
 import (
 	"fmt"
 	"regexp"
-	"runtime"
 	"strings"
 	"time"
 )
 
 // internal format for Progress
 const (
-	MinFormat  = "{@message}{@current}/{@max}"
+	MinFormat  = "{@message}{@current}"
 	TxtFormat  = "{@message}{@percent:4s}%({@current}/{@max})"
 	DefFormat  = "{@message}{@percent:4s}%({@current}/{@max})"
 	FullFormat = "{@percent:4s}%({@current}/{@max}) {@elapsed:6s}/{@estimated:-6s} {@memory:6s}"
 )
-
-var builtinWidgets = map[string]WidgetFunc{
-	"elapsed": func(p *Progress) string { // 消耗时间
-		// fmt.Sprintf("%.3f", time.Since(startTime).Seconds()*1000)
-		sec := time.Since(p.StartedAt()).Seconds()
-		return HowLongAgo(int64(sec))
-	},
-	"remaining": func(p *Progress) string { // 剩余时间
-		step := p.Progress() // current progress
-
-		// not set max steps OR current progress is 0
-		if p.MaxSteps == 0 || step == 0 {
-			return "unknown"
-		}
-
-		// calc remaining time
-		sec64 := int64(time.Since(p.StartedAt()).Seconds())
-		remaining := uint(sec64) / step * (p.MaxSteps - step)
-		return HowLongAgo(int64(remaining))
-	},
-	"estimated": func(p *Progress) string { // 计算总的预计时间
-		step := p.Progress() // current progress
-
-		// not set max steps OR current progress is 0
-		if p.MaxSteps == 0 || step == 0 {
-			return "unknown"
-		}
-
-		// calc estimated time
-		sec64 := int64(time.Since(p.StartedAt()).Seconds())
-		estimated := uint(sec64) / step * p.MaxSteps
-		return HowLongAgo(int64(estimated))
-	},
-	"memory": func(p *Progress) string {
-		mem := new(runtime.MemStats)
-		runtime.ReadMemStats(mem)
-		return formatMemoryVal(mem.Sys)
-	},
-	"max": func(p *Progress) string {
-		return fmt.Sprint(p.MaxSteps)
-	},
-	"current": func(p *Progress) string {
-		step := fmt.Sprint(p.Progress())
-		width := fmt.Sprint(p.StepWidth)
-		diff := len(width) - len(step)
-		if diff <= 0 {
-			return step
-		}
-
-		return strings.Repeat(" ", diff) + step
-	},
-	"percent": func(p *Progress) string {
-		return fmt.Sprintf("%.1f", p.Percent()*100)
-	},
-}
 
 // use for match like "{@bar}" "{@percent:3s}"
 var widgetMatch = regexp.MustCompile(`{@([\w]+)(?::([\w-]+))?}`)
@@ -82,7 +26,7 @@ type ProgressFace interface {
 	Start(maxSteps ...int)
 	Advance(steps ...uint)
 	AdvanceTo(step uint)
-	Finish()
+	Finish(msg ...string)
 	Binding() ProgressFace
 }
 
@@ -170,6 +114,12 @@ func (p *Progress) Config(fn func(p *Progress)) *Progress {
 	return p
 }
 
+// WithMaxSteps setting max steps
+func (p *Progress) WithMaxSteps(maxSteps int) *Progress {
+	p.MaxSteps = uint(maxSteps)
+	return p
+}
+
 // SetBinding instance
 func (p *Progress) SetBinding(binding ProgressFace) {
 	p.binding = binding
@@ -192,10 +142,12 @@ func (p *Progress) AddMessages(msgMap map[string]string) {
 }
 
 // AddWidget to progress
-func (p *Progress) AddWidget(name string, handler WidgetFunc) {
+func (p *Progress) AddWidget(name string, handler WidgetFunc) *Progress {
 	if _, ok := p.Widgets[name]; !ok {
 		p.Widgets[name] = handler
 	}
+
+	return p
 }
 
 // SetWidget to progress
@@ -295,7 +247,8 @@ func (p *Progress) AdvanceTo(step uint) {
 }
 
 // Finish the progress output.
-func (p *Progress) Finish() {
+// if provide finish message, will delete progress bar then print the message.
+func (p *Progress) Finish(message ...string) {
 	p.checkStart()
 	p.finishedAt = time.Now()
 
@@ -309,6 +262,11 @@ func (p *Progress) Finish() {
 	}
 
 	p.AdvanceTo(p.MaxSteps)
+
+	if len(message) > 0 {
+		p.render(message[0])
+	}
+
 	fmt.Println() // new line
 }
 
@@ -341,7 +299,7 @@ func (p *Progress) render(text string) {
 		if p.firstRun { // first run. create new line
 			fmt.Println()
 			p.firstRun = false
-			return
+			// return
 		}
 
 		// \x0D - Move the cursor to the beginning of the line

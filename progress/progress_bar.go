@@ -4,29 +4,10 @@ import "strings"
 
 // internal format for ProgressBar
 const (
-	DefBarWidth = 60
+	DefBarWidth   = 60
 	DefBarFormat  = "[{@bar}] {@percent:4s}%({@current}/{@max}){@message}"
 	FullBarFormat = "[{@bar}] {@percent:4s}%({@current}/{@max}) {@elapsed:6s}/{@estimated:-6s} {@memory:6s}"
 )
-
-// BarChars setting for a progress bar. default {'#', '>', ' '}
-type BarChars struct {
-	Completed, Processing, Remaining rune
-}
-
-// ProgressBar definition.
-// Preview:
-// 		1 [->--------------------------]
-// 		3 [■■■>------------------------]
-// 	25/50 [==============>-------------]  50%
-//
-type ProgressBar struct {
-	Progress
-	// Width for the bar. default is 100
-	Width uint8
-	// Chars config for the bar. default {'#', '>', ' '}
-	Chars *BarChars
-}
 
 var barWidgets = map[string]WidgetFunc{
 	"bar": func(p *Progress) string {
@@ -48,6 +29,25 @@ var barWidgets = map[string]WidgetFunc{
 
 		return bar
 	},
+}
+
+// BarChars setting for a progress bar. default {'#', '>', ' '}
+type BarChars struct {
+	Completed, Processing, Remaining rune
+}
+
+// ProgressBar definition.
+// Preview:
+// 		1 [->--------------------------]
+// 		3 [■■■>------------------------]
+// 	25/50 [==============>-------------]  50%
+//
+type ProgressBar struct {
+	Progress
+	// Width for the bar. default is 100
+	Width uint8
+	// Chars config for the bar. default {'#', '>', ' '}
+	Chars *BarChars
 }
 
 // Config the progress instance
@@ -75,11 +75,6 @@ func defaultBarChars() *BarChars {
 	return &BarChars{'#', '>', ' '}
 }
 
-// Tape create new tape progress bar.
-func Tape(maxSteps ...int) *ProgressBar {
-	return Bar(maxSteps ...)
-}
-
 // Bar create new image progress bar.
 func Bar(maxSteps ...int) *ProgressBar {
 	p := &ProgressBar{
@@ -92,6 +87,11 @@ func Bar(maxSteps ...int) *ProgressBar {
 	p.Format = DefBarFormat
 	p.SetBinding(p)
 	return p
+}
+
+// Tape create new tape progress bar. is alias of Bar()
+func Tape(maxSteps ...int) *ProgressBar {
+	return Bar(maxSteps...)
 }
 
 // FullBar create new progress bar, contains all widgets

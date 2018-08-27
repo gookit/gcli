@@ -10,7 +10,7 @@ import (
 // help template for all commands
 var commandsHelp = `{{.Description}} (Version: <info>{{.Version}}</>)
 <comment>Usage:</>
-  {$binName} [global options...] <info>{command}</> [--option ...] [argument ...]
+  {$binName} [Global Options...] <info>{command}</> [--option ...] [argument ...]
 
 <comment>Global Options:</>
       <info>--verbose</>     Set error reporting level(quiet 0 - 4 debug)

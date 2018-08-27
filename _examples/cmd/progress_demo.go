@@ -14,15 +14,18 @@ func ProgressDemoCmd() *cliapp.Command {
 	pd := &progressDemo{}
 
 	return &cliapp.Command{
-		Name: "prog",
-		UseFor: "there are some progress bar run demos",
+		Name:    "prog",
+		UseFor:  "there are some progress bar run demos",
 		Aliases: []string{"prg:demo", "progress"},
-		Func: pd.Run,
+		Func:    pd.Run,
 		Config: func(c *cliapp.Command) {
 			c.IntOpt(&pd.maxSteps, "max-step", "", 110, "setting the max step value")
-			c.AddArg("name", "the progress bar type name. allow: bar,txt", true)
+			c.AddArg("name",
+				"progress bar type name. allow: bar,txt,loading,roundTrip",
+				true,
+			)
 		},
-		Examples:`Text progress bar:
+		Examples: `Text progress bar:
   {$fullCmd} txt
 Image progress bar:
   {$fullCmd} bar`,
@@ -39,34 +42,45 @@ func (d *progressDemo) Run(c *cliapp.Command, _ []string) int {
 		imgProgressBar(max)
 	case "txt":
 		txtProgressBar(max)
+	case "loading":
+		runLoadingBar(max)
+	case "rt", "roundTrip":
+		runRoundTripBar(max)
 	default:
 		return c.Errorf("the progress bar type name only allow: bar,txt. input is: %s", name)
 	}
 	return 0
 }
 
-func txtProgressBar(maxStep int)  {
+func runRoundTripBar(max int) {
+	p := progress.RoundTrip(0).WithMaxSteps(max)
+
+	// running
+	runProgressBar(p, max, 120)
+
+	p.Finish()
+}
+
+func txtProgressBar(maxStep int) {
 	txt := progress.Txt(maxStep)
 	txt.AddMessage("message", "handling ... ")
 	// txt.Overwrite = false
-	txt.Start()
 
 	// running
-	for i := 0; i < maxStep; i++ {
-		time.Sleep(200 * time.Millisecond)
-		txt.Advance()
-	}
+	runProgressBar(txt, maxStep, 80)
 
 	txt.Finish()
 }
 
-func imgProgressBar(maxStep int)  {
-	img := progress.Bar(maxStep)
-	// img.Overwrite = false
-	img.Chars.Processing = ' '
-	// img.AddMessage("message", " handling ...")
+func imgProgressBar(maxStep int) {
+	p := progress.Bar(maxStep)
+	// p.Overwrite = false
+	p.Chars.Completed = progress.CharWell
+	p.Chars.Processing = '>'
+	p.Chars.Remaining = '-'
+	// p.AddMessage("message", " handling ...")
 	// use dynamic message
-	img.AddWidget("message", func(p *progress.Progress) string {
+	p.AddWidget("message", func(p *progress.Progress) string {
 		var message string
 		percent := int(p.Percent() * 100)
 		if percent < 20 {
@@ -83,13 +97,31 @@ func imgProgressBar(maxStep int)  {
 
 		return message
 	})
-	img.Start()
 
 	// running
-	for i := 0; i < maxStep; i++ {
-		time.Sleep(150 * time.Millisecond)
-		img.Advance()
-	}
+	runProgressBar(p, maxStep, 90)
 
-	img.Finish()
+	p.Finish()
+}
+
+func runLoadingBar(maxStep int) {
+	// chars := []rune(`∷∵∴∶`)
+	p := progress.LoadingBar(progress.LoadingTheme1)
+	p.MaxSteps = uint(maxStep)
+	p.AddMessage("message", "data loading ... ...")
+
+	// running
+	runProgressBar(p, maxStep, 70)
+
+	// p.Finish()
+	p.Finish("data load complete")
+}
+
+// running
+func runProgressBar(p progress.ProgressFace, maxStep int, speed int) {
+	p.Start()
+	for i := 0; i < maxStep; i++ {
+		time.Sleep(time.Duration(speed) * time.Millisecond)
+		p.Advance()
+	}
 }
