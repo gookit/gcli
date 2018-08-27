@@ -102,7 +102,7 @@ func (c *Command) BoolOpt(p *bool, name string, short string, defValue bool, des
 
 // VarOpt binding a custom var option
 // usage:
-// 		cmd.VarOpt(&opts.Strings, "tables", "t", "Description ...")
+// 		cmd.VarOpt(&opts.Strings, "tables", "t", "description ...")
 func (c *Command) VarOpt(p flag.Value, name string, short string, description string) *Command {
 	c.Flags.Var(p, name, description)
 

@@ -33,7 +33,7 @@ func ExampleCommand() *cliapp.Command {
 		Func:    exampleExecute,
 		Name:    "example",
 		Aliases: []string{"exp", "ex"},
-		Description: "this is a description message",
+		UseFor:  "this is a description message",
 		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
 		Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1
   <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,

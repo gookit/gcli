@@ -19,7 +19,7 @@ var commandsHelp = `{{.Description}} (Version: <info>{{.Version}}</>)
   <info>-V, --version</>     Display app version information
 
 <comment>Available Commands:</>{{range .Cs}}{{if .Runnable}}
-  <info>{{.Name | printf "%-12s"}}</> {{.Description}}{{if .Aliases}} (alias: <cyan>{{ join .Aliases ","}}</>){{end}}{{end}}{{end}}
+  <info>{{.Name | printf "%-12s"}}</> {{.UseFor}}{{if .Aliases}} (alias: <cyan>{{ join .Aliases ","}}</>){{end}}{{end}}{{end}}
   <info>help</>         Display help information
 
 Use "<cyan>{$binName} {command} -h</>" for more information about a command

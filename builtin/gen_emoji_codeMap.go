@@ -36,7 +36,7 @@ func GenEmojiMapCommand() *cliapp.Command {
 		// handler func
 		Func: gem.run,
 		// des
-		Description: "fetch emoji codes form data source url, then generate a go file.",
+		UseFor: "fetch emoji codes form data source url, then generate a go file.",
 		// config options
 		Config: func(c *cliapp.Command) {
 			gem.c = c

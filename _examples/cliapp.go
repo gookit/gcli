@@ -37,9 +37,9 @@ func main() {
 	// app.Add(reverseproxy.ReverseProxyCommand())
 
 	app.Add(&cliapp.Command{
-		Name:        "test",
-		Aliases:     []string{"ts"},
-		Description: "this is a description <info>message</> for command {$cmd}",
+		Name:    "test",
+		Aliases: []string{"ts"},
+		UseFor:  "this is a description <info>message</> for command {$cmd}",
 		Func: func(cmd *cliapp.Command, args []string) int {
 			cliapp.Print("hello, in the test command\n")
 			return 0

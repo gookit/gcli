@@ -72,9 +72,9 @@ func main() {
     app.Add(cmd.ExampleCommand())
     app.Add(&cliapp.Command{
         Name: "demo",
-        Aliases: []string{"dm"},
         // allow color tag and {$cmd} will be replace to 'demo'
-        Description: "this is a description <info>message</> for {$cmd}", 
+        UseFor: "this is a description <info>message</> for {$cmd}", 
+        Aliases: []string{"dm"},
         Func: func (cmd *cliapp.Command, args []string) int {
             cliapp.Stdout("hello, in the demo command\n")
             return 0
@@ -181,9 +181,9 @@ Preview:
 ```go
 app.Add(&cliapp.Command{
     Name: "demo",
-    Aliases: []string{"dm"},
     // allow color tag and {$cmd} will be replace to 'demo'
-    Description: "this is a description <info>message</> for command", 
+    UseFor: "this is a description <info>message</> for command", 
+    Aliases: []string{"dm"},
     Func: func (cmd *cliapp.Command, args []string) int {
         cliapp.Stdout("hello, in the demo command\n")
         return 0
@@ -217,7 +217,7 @@ var exampleOpts = struct {
 func ExampleCommand() *cliapp.Command {
 	cmd := &cliapp.Command{
 		Name:        "example",
-		Description: "this is a description message",
+		UseFor: "this is a description message",
 		Aliases:     []string{"exp", "ex"},
 		Func:          exampleExecute,
 		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
@@ -353,11 +353,13 @@ func main() {
 	// set a style tag
 	color.Tag("info").Println("info style text")
 
-	// use info style tips
-	color.Tips("info").Print("tips style text")
+	// prompt message
+	color.Info.Prompt("prompt style message")
+	color.Warn.Prompt("prompt style message")
 
-	// use info style blocked tips
-	color.LiteTips("info").Print("blocked tips style text")
+	// tips message
+	color.Info.Tips("tips style message")
+	color.Warn.Tips("tips style message")
 }
 ```
 

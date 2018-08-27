@@ -43,7 +43,6 @@ const FLASH = "⚡"
 
 const EYE = "👀"
 const HEART = "💖"
-const HEART1 = '💖'
 const HEARTBREAK = "💔"
 
 const SUC = "✅"

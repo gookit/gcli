@@ -35,7 +35,7 @@ func GenAutoCompleteScript() *cliapp.Command {
 		Name:    "gen:ac",
 		Aliases: []string{"genac", "gen-ac"},
 		// des
-		Description: "generate auto complete scripts for current application",
+		UseFor: "generate auto complete scripts for current application",
 	}
 
 	shell := utils.GetCurShell(true)
@@ -266,7 +266,7 @@ func buildForZshShell(data map[string]interface{}) map[string]interface{} {
 		if n == "genac" || n == "gen-ac" {
 			continue
 		}
-		nameDes[c.Name] = fmtDes(c.Description) + "(alias " + c.AliasesString() + ")"
+		nameDes[c.Name] = fmtDes(c.UseFor) + "(alias " + c.AliasesString() + ")"
 
 		ops := c.OptNames()
 		oplen := len(ops)

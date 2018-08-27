@@ -28,7 +28,7 @@ func FileWatcher(handler func(event fsnotify.Event)) *cliapp.Command {
 		Name: "watch",
 		Func: watch,
 
-		Description: "file system change notification, by fsnotify",
+		UseFor: "file system change notification, by fsnotify",
 
 		Aliases: []string{"fwatch", "fswatch"},
 		Examples: `watch a dir:

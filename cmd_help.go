@@ -10,10 +10,10 @@ import (
 )
 
 // help template for a command
-var commandHelp = `{{.Description}}
+var commandHelp = `{{.UseFor}}
 {{if .Cmd.NotAlone}}
 <comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.AliasesString}}</>){{end}}{{end}}
-<comment>Usage:</> {$binName} [global options...] {{if .Cmd.NotAlone}}{{.Cmd.Name}} {{end}}[--option ...] [argument ...]
+<comment>Usage:</> {$binName} [Global Options...] {{if .Cmd.NotAlone}}<info>{{.Cmd.Name}}</> {{end}}[--option ...] [argument ...]
 
 <comment>Global Options:</>
       <info>--verbose</>     Set error reporting level(quiet 0 - 4 debug)
@@ -43,7 +43,7 @@ func (c *Command) ShowHelp(quit ...bool) {
 		// parse options to string
 		"Options": color.String(c.ParseDefaults()),
 		// always upper first char
-		"Description": color.String(c.Description),
+		"UseFor": color.String(c.UseFor),
 	}, false)
 
 	// parse help vars

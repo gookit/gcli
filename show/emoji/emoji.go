@@ -24,6 +24,26 @@ func GetByName(name string) string {
 	return name
 }
 
+// Search emoji by name
+func Search(kw string, limit int) (ret map[string]string) {
+	kw = strings.TrimSpace(kw)
+	if kw == "" || len(kw) > 12 {
+		return
+	}
+
+	if limit <= 0 {
+		limit = 5
+	}
+	ret = make(map[string]string, limit)
+	for name, code := range emojiMap {
+		if strings.Contains(name, kw) {
+			ret[name] = code
+		}
+	}
+
+	return
+}
+
 // Render a string, parse emoji name, returns rendered string.
 // Usage:
 // 	msg := Render("a :smile: message")
@@ -56,20 +76,18 @@ func FromUnicode(s string) string {
 		}
 	}
 
-	ToUnicode('💖')
-
 	return s
 }
 
 // ToUnicode unicode string to emoji string
 // Usage:
-// 	unicode := ToUnicode('💖')
+// 	unicode := ToUnicode("💖")
 //	fmt.Print(unicode) // "1f496"
 //	// with prefix
-// 	unicode := ToUnicode('💖', "\U000") // "\U0001f496"
+// 	unicode := ToUnicode("💖", "\U000") // "\U0001f496"
 //	fmt.Print(unicode) // "💖"
-func ToUnicode(emoji rune, prefix ...string) string {
-	code := strconv.FormatInt(int64(emoji), 16)
+func ToUnicode(emoji string, prefix ...string) string {
+	code := strconv.FormatInt(int64(emoji[0]), 16)
 
 	if len(prefix) > 0 {
 		return prefix[0] + code
@@ -94,8 +112,6 @@ func Decode(s string) string {
 			s = strings.Replace(s, src[i], string(rune(p)), -1)
 		}
 	}
-
-	ToUnicode('💖')
 
 	return s
 }

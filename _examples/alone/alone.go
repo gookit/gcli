@@ -15,10 +15,10 @@ var opts = struct {
 // test run: go build ./demo/alone.go && ./alone -h
 func main() {
 	cmd := cliapp.Command{
-		Name:        "test",
-		Aliases:     []string{"ts"},
-		Description: "this is a description <info>message</> for {$cmd}", // // {$cmd} will be replace to 'test'
-		Func:        run,
+		Name:    "test",
+		Aliases: []string{"ts"},
+		UseFor:  "this is a description <info>message</> for {$cmd}", // // {$cmd} will be replace to 'test'
+		Func:    run,
 	}
 
 	cmd.BoolOpt(&opts.visualMode, "visual", "v", false, "Prints the font name.")

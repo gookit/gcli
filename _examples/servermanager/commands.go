@@ -59,8 +59,8 @@ func startServer() int {
 
 func ServerStop() *cliapp.Command {
 	cmd := &cliapp.Command{
-		Name:        "stop",
-		Description: "stop the running server by PID file",
+		Name:   "stop",
+		UseFor: "stop the running server by PID file",
 	}
 
 	cmd.Func = func(_ *cliapp.Command, _ []string) int {
@@ -81,8 +81,8 @@ func stopServer() int {
 
 func ServerRestart() *cliapp.Command {
 	cmd := &cliapp.Command{
-		Name:        "restart",
-		Description: "restart the running server by PID file",
+		Name:   "restart",
+		UseFor: "restart the running server by PID file",
 	}
 
 	cmd.Func = func(c *cliapp.Command, _ []string) int {

@@ -15,10 +15,10 @@ var colorOpts = struct {
 // ColorCommand command definition
 func ColorCommand() *cliapp.Command {
 	cmd := cliapp.Command{
-		Name:        "color",
-		Description: "this is a example for cli color usage",
-		Aliases:     []string{"clr", "colors"},
-		Func:        colorUsage,
+		Name:     "color",
+		UseFor:   "this is a example for cli color usage",
+		Aliases:  []string{"clr", "colors"},
+		Func:     colorUsage,
 		Examples: "{$binName} {$cmd} --id 12 -c val ag0 ag1",
 	}
 

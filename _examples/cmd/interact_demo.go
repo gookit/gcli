@@ -11,10 +11,10 @@ import (
 // InteractDemoCommand create
 func InteractDemoCommand() *cliapp.Command {
 	c := &cliapp.Command{
-		Name: "interact",
-		Func: interactDemo,
+		Name:    "interact",
+		Func:    interactDemo,
 		Aliases: []string{"itt"},
-		Description: "the command will show some interactive methods",
+		UseFor:  "the command will show some interactive methods",
 		Examples: `{$fullCmd} confirm
   {$fullCmd} select
 `,

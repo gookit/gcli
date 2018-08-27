@@ -19,9 +19,9 @@ var eiOpts = struct {
 // EnvInfoCommand
 func EnvInfoCommand() *cli.Command {
 	cmd := cli.Command{
-		Name:        "env",
-		Aliases:     []string{"env-info", "ei"},
-		Description: "collect project info by git info",
+		Name:    "env",
+		Aliases: []string{"env-info", "ei"},
+		UseFor:  "collect project info by git info",
 
 		Func: envInfoRun,
 	}

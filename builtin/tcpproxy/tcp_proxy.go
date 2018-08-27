@@ -28,7 +28,7 @@ func TCPProxyCommand() *cliapp.Command {
 		Func: runServer,
 		Name: "watch",
 
-		Description: "file system change notification",
+		UseFor: "file system change notification",
 
 		Aliases: []string{"fwatch", "fswatch"},
 		Examples: `watch a dir:

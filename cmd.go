@@ -42,8 +42,8 @@ type Command struct {
 	Hooks map[string]HookFunc
 	// Aliases is the command name's alias names
 	Aliases []string
-	// Description is the command description for 'go help'
-	Description string
+	// UseFor is the command description message.
+	UseFor string
 	// Flags(command options) is a set of flags specific to this command.
 	Flags flag.FlagSet
 	// CustomFlags indicates that the command will do its own flag parsing.
@@ -108,12 +108,12 @@ func (c *Command) initialize() *Command {
 	c.CmdLine = CLI
 
 	// format description
-	if len(c.Description) > 0 {
-		c.Description = utils.UcFirst(c.Description)
+	if len(c.UseFor) > 0 {
+		c.UseFor = utils.UcFirst(c.UseFor)
 
 		// contains help var "{$cmd}". replace on here is for 'app help'
-		if strings.Contains(c.Description, "{$cmd}") {
-			c.Description = strings.Replace(c.Description, "{$cmd}", c.Name, -1)
+		if strings.Contains(c.UseFor, "{$cmd}") {
+			c.UseFor = strings.Replace(c.UseFor, "{$cmd}", c.Name, -1)
 		}
 	}
 

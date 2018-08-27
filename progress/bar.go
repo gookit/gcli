@@ -21,15 +21,6 @@ type ProgressBar struct {
 	Chars *BarChars
 }
 
-/*
-$completeBars = floor($bar->getMaxSteps() > 0 ? $bar->getPercent() * $bar->getBarWidth() : $bar->getProgress() % $bar->getBarWidth());
-$display = str_repeat($bar->getCompleteChar(), $completeBars);
-if ($completeBars < $bar->getBarWidth()) {
-	$emptyBars = $bar->getBarWidth() - $completeBars;
-	$display .= $bar->getProgressChar() . str_repeat($bar->getRemainingChar(), $emptyBars);
-}
-return $display;
-*/
 var barWidgets = map[string]WidgetFunc{
 	"bar": func(pf ProgressFace) string {
 		var completeLen float32

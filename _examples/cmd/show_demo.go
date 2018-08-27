@@ -8,7 +8,7 @@ func ShowDemoCommand() *cliapp.Command {
 		Name: "show",
 		Func: runShow,
 		//
-		Description: "the command will show some data format methods",
+		UseFor: "the command will show some data format methods",
 	}
 
 	return c

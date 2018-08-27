@@ -33,9 +33,9 @@ var dnsServers = []string{
 // ReverseProxyCommand create command
 func ReverseProxyCommand() *cliapp.Command {
 	c := &cliapp.Command{
-		Name:        "proxy",
-		Func:        rp.Run,
-		Description: "start a reverse proxy http server",
+		Name:   "proxy",
+		Func:   rp.Run,
+		UseFor: "start a reverse proxy http server",
 	}
 
 	c.StrOpt(
