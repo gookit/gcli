@@ -17,13 +17,12 @@ const (
 )
 
 var builtinWidgets = map[string]WidgetFunc{
-	"elapsed": func(p ProgressFace) string { // 消耗时间
+	"elapsed": func(p *Progress) string { // 消耗时间
 		// fmt.Sprintf("%.3f", time.Since(startTime).Seconds()*1000)
-		sec := time.Since(p.(*Progress).StartedAt()).Seconds()
+		sec := time.Since(p.StartedAt()).Seconds()
 		return HowLongAgo(int64(sec))
 	},
-	"remaining": func(pf ProgressFace) string { // 剩余时间
-		p := pf.(*Progress)
+	"remaining": func(p *Progress) string { // 剩余时间
 		step := p.Progress() // current progress
 
 		// not set max steps OR current progress is 0
@@ -36,8 +35,7 @@ var builtinWidgets = map[string]WidgetFunc{
 		remaining := uint(sec64) / step * (p.MaxSteps - step)
 		return HowLongAgo(int64(remaining))
 	},
-	"estimated": func(pf ProgressFace) string { // 计算总的预计时间
-		p := pf.(*Progress)
+	"estimated": func(p *Progress) string { // 计算总的预计时间
 		step := p.Progress() // current progress
 
 		// not set max steps OR current progress is 0
@@ -50,16 +48,15 @@ var builtinWidgets = map[string]WidgetFunc{
 		estimated := uint(sec64) / step * p.MaxSteps
 		return HowLongAgo(int64(estimated))
 	},
-	"memory": func(pf ProgressFace) string {
+	"memory": func(p *Progress) string {
 		mem := new(runtime.MemStats)
 		runtime.ReadMemStats(mem)
 		return formatMemoryVal(mem.Sys)
 	},
-	"max": func(pf ProgressFace) string {
-		return fmt.Sprint(pf.(*Progress).MaxSteps)
+	"max": func(p *Progress) string {
+		return fmt.Sprint(p.MaxSteps)
 	},
-	"current": func(pf ProgressFace) string {
-		p := pf.(*Progress)
+	"current": func(p *Progress) string {
 		step := fmt.Sprint(p.Progress())
 		width := fmt.Sprint(p.StepWidth)
 		diff := len(width) - len(step)
@@ -69,8 +66,8 @@ var builtinWidgets = map[string]WidgetFunc{
 
 		return strings.Repeat(" ", diff) + step
 	},
-	"percent": func(pf ProgressFace) string {
-		return fmt.Sprintf("%.1f", pf.(*Progress).Percent() * 100)
+	"percent": func(p *Progress) string {
+		return fmt.Sprintf("%.1f", p.Percent()*100)
 	},
 }
 
@@ -78,7 +75,7 @@ var builtinWidgets = map[string]WidgetFunc{
 var widgetMatch = regexp.MustCompile(`{@([\w]+)(?::([\w-]+))?}`)
 
 // WidgetFunc handler func for progress widget
-type WidgetFunc func(pf ProgressFace) string
+type WidgetFunc func(p *Progress) string
 
 // ProgressFace interface
 type ProgressFace interface {
@@ -86,6 +83,7 @@ type ProgressFace interface {
 	Advance(steps ...uint)
 	AdvanceTo(step uint)
 	Finish()
+	Binding() ProgressFace
 }
 
 // Progress definition
@@ -139,7 +137,7 @@ func New(maxSteps ...int) *Progress {
 	return &Progress{
 		Format:    DefFormat,
 		MaxSteps:  max,
-		StepWidth: 2,
+		StepWidth: 3,
 		Overwrite: true,
 		// init widgets
 		Widgets: make(map[string]WidgetFunc),
@@ -247,14 +245,14 @@ func (p *Progress) init(maxSteps ...int) {
 		p.MaxSteps = uint(maxSteps[0])
 	}
 
-	if p.StepWidth == 0 {
-		p.StepWidth = 2
+	// use MaxSteps len as StepWidth. eg: MaxSteps=1000 -> StepWidth=4
+	if p.MaxSteps > 0 {
+		maxStepsLen := len(fmt.Sprint(p.MaxSteps))
+		p.StepWidth = uint8(maxStepsLen)
+	}
 
-		// use MaxSteps len as StepWidth. eg: MaxSteps=1000 -> StepWidth=4
-		if p.MaxSteps > 0 {
-			maxStepsLen := len(fmt.Sprint(p.MaxSteps))
-			p.StepWidth = uint8(maxStepsLen)
-		}
+	if p.StepWidth == 0 {
+		p.StepWidth = 3
 	}
 
 	// load default widgets
@@ -377,11 +375,7 @@ func (p *Progress) buildLine() string {
 		}
 
 		if handler, ok := p.Widgets[name]; ok {
-			if p.binding == nil {
-				text = handler(p)
-			} else {
-				text = handler(p.binding)
-			}
+			text = handler(p)
 		} else if msg, ok := p.Messages[name]; ok {
 			text = msg
 		} else {
@@ -408,6 +402,11 @@ func (p *Progress) Handler(name string) WidgetFunc {
 /*************************************************************
  * getter methods
  *************************************************************/
+
+// Binding get bounded sub struct instance
+func (p *Progress) Binding() ProgressFace {
+	return p.binding
+}
 
 // Percent gets the current percent
 func (p *Progress) Percent() float32 {

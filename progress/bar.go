@@ -4,7 +4,8 @@ import "strings"
 
 // internal format for ProgressBar
 const (
-	DefBarFormat  = "{@percent:4s}%({@current}/{@max}){@message}"
+	DefBarWidth = 60
+	DefBarFormat  = "[{@bar}] {@percent:4s}%({@current}/{@max}){@message}"
 	FullBarFormat = "[{@bar}] {@percent:4s}%({@current}/{@max}) {@elapsed:6s}/{@estimated:-6s} {@memory:6s}"
 )
 
@@ -28,21 +29,21 @@ type ProgressBar struct {
 }
 
 var barWidgets = map[string]WidgetFunc{
-	"bar": func(pf ProgressFace) string {
+	"bar": func(p *Progress) string {
 		var completeLen float32
-		p := pf.(*ProgressBar)
+		b := p.Binding().(*ProgressBar)
 
 		if p.MaxSteps > 0 { // MaxSteps is valid
-			completeLen = p.percent * float32(p.Width)
+			completeLen = p.percent * float32(b.Width)
 		} else { // not set MaxSteps
-			completeLen = float32(p.step % uint(p.Width))
+			completeLen = float32(p.step % uint(b.Width))
 		}
 
-		bar := strings.Repeat(string(p.Chars.Completed), int(completeLen))
+		bar := strings.Repeat(string(b.Chars.Completed), int(completeLen))
 
-		if diff := int(p.Width) - int(completeLen); diff > 0 {
-			ingChar := string(p.Chars.Processing)
-			bar += ingChar + strings.Repeat(string(p.Chars.Remaining), diff-len(ingChar))
+		if diff := int(b.Width) - int(completeLen); diff > 0 {
+			ingChar := string(b.Chars.Processing)
+			bar += ingChar + strings.Repeat(string(b.Chars.Remaining), diff-len(ingChar))
 		}
 
 		return bar
@@ -58,7 +59,7 @@ func (p *ProgressBar) Config(fn func(p *ProgressBar)) *ProgressBar {
 // Start progress bar
 func (p *ProgressBar) Start(maxSteps ...int) {
 	if p.Width == 0 {
-		p.Width = 100
+		p.Width = DefBarWidth
 	}
 
 	if p.Chars == nil {
@@ -84,7 +85,7 @@ func Bar(maxSteps ...int) *ProgressBar {
 	p := &ProgressBar{
 		Progress: *New(maxSteps...),
 		// settings for bar
-		Width: 100,
+		Width: DefBarWidth,
 		Chars: defaultBarChars(),
 	}
 
