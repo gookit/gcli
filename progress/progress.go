@@ -8,10 +8,12 @@ import (
 	"time"
 )
 
+// internal format for Progress
 const (
-	TxtFormat  = "[{@percent:3s}%({@current}/{@max})"
-	DefFormat  = "[{@bar}] {@percent:3s}%({@current}/{@max})"
-	FullFormat = "[{@bar}] {@percent:3s}%({@current}/{@max}) {@elapsed:6s}/{@estimated:-6s} {@memory:6s}"
+	MinFormat  = "{@message}{@current}/{@max}"
+	TxtFormat  = "{@message}{@percent:4s}%({@current}/{@max})"
+	DefFormat  = "{@message}{@percent:4s}%({@current}/{@max})"
+	FullFormat = "{@percent:4s}%({@current}/{@max}) {@elapsed:6s}/{@estimated:-6s} {@memory:6s}"
 )
 
 var builtinWidgets = map[string]WidgetFunc{
@@ -68,7 +70,7 @@ var builtinWidgets = map[string]WidgetFunc{
 		return strings.Repeat(" ", diff) + step
 	},
 	"percent": func(pf ProgressFace) string {
-		return fmt.Sprint(pf.(*Progress).Percent() * 100)
+		return fmt.Sprintf("%.1f", pf.(*Progress).Percent() * 100)
 	},
 }
 
@@ -80,7 +82,7 @@ type WidgetFunc func(pf ProgressFace) string
 
 // ProgressFace interface
 type ProgressFace interface {
-	Start(maxSteps uint)
+	Start(maxSteps ...int)
 	Advance(steps ...uint)
 	AdvanceTo(step uint)
 	Finish()
@@ -111,6 +113,9 @@ type Progress struct {
 	step uint
 	// mark start status
 	started bool
+	// binding current progress instance. use for widget handler(p.binding)
+	// if you extends this Progress, must setting it.
+	binding ProgressFace
 	// completed percent. eg: "83.8"
 	percent float32
 	// mark is first running
@@ -125,27 +130,52 @@ type Progress struct {
  *************************************************************/
 
 // New Progress instance
-func New(maxSteps uint) *Progress {
+func New(maxSteps ...int) *Progress {
+	var max uint
+	if len(maxSteps) > 0 {
+		max = uint(maxSteps[0])
+	}
+
 	return &Progress{
 		Format:    DefFormat,
-		MaxSteps:  maxSteps,
+		MaxSteps:  max,
 		StepWidth: 2,
-		Widgets:   make(map[string]WidgetFunc),
-		Messages:  make(map[string]string),
+		Overwrite: true,
+		// init widgets
+		Widgets: make(map[string]WidgetFunc),
+		// add a default message
+		Messages: map[string]string{"message": ""},
 	}
 }
 
 // Txt progress bar create.
-func Txt(maxSteps uint) *Progress {
-	p := New(maxSteps)
-	p.Format = TxtFormat
+func Txt(maxSteps ...int) *Progress {
+	return New(maxSteps...).Config(func(p *Progress) {
+		p.Format = TxtFormat
+	})
+}
 
-	return p
+// Full progress bar create.
+func Full(maxSteps ...int) *Progress {
+	return New(maxSteps...).Config(func(p *Progress) {
+		p.Format = FullFormat
+	})
 }
 
 /*************************************************************
  * config
  *************************************************************/
+
+// Config the progress instance
+func (p *Progress) Config(fn func(p *Progress)) *Progress {
+	fn(p)
+	return p
+}
+
+// SetBinding instance
+func (p *Progress) SetBinding(binding ProgressFace) {
+	p.binding = binding
+}
 
 // AddMessage to progress
 func (p *Progress) AddMessage(name, message string) {
@@ -186,7 +216,24 @@ func (p *Progress) AddWidgets(widgets map[string]WidgetFunc) {
 	}
 }
 
-func (p *Progress) init(maxSteps uint) {
+/*************************************************************
+ * running
+ *************************************************************/
+
+// Start the progress bar
+func (p *Progress) Start(maxSteps ...int) {
+	if p.started {
+		panic("Progress bar already started")
+	}
+
+	// init
+	p.init(maxSteps...)
+
+	// render
+	p.Display()
+}
+
+func (p *Progress) init(maxSteps ...int) {
 	p.step = 0
 	p.percent = 0.0
 	p.started = true
@@ -196,8 +243,8 @@ func (p *Progress) init(maxSteps uint) {
 		p.RedrawFreq = 1
 	}
 
-	if maxSteps > 0 {
-		p.MaxSteps = maxSteps
+	if len(maxSteps) > 0 {
+		p.MaxSteps = uint(maxSteps[0])
 	}
 
 	if p.StepWidth == 0 {
@@ -212,22 +259,6 @@ func (p *Progress) init(maxSteps uint) {
 
 	// load default widgets
 	p.AddWidgets(builtinWidgets)
-}
-
-/*************************************************************
- * running
- *************************************************************/
-
-// Start the progress bar
-func (p *Progress) Start(maxSteps uint) {
-	if p.started {
-		panic("Progress bar already started")
-	}
-
-	p.init(maxSteps)
-
-	// render
-	p.Display()
 }
 
 // Advance specified step size. default is 1
@@ -257,7 +288,7 @@ func (p *Progress) AdvanceTo(step uint) {
 
 	p.step = step
 	if p.MaxSteps > 0 {
-		p.percent = float32(p.step / p.MaxSteps)
+		p.percent = float32(p.step) / float32(p.MaxSteps)
 	}
 
 	if prevPeriod != currPeriod || p.MaxSteps == step {
@@ -309,59 +340,58 @@ func (p *Progress) Destroy() {
 // render progress bar to terminal
 func (p *Progress) render(text string) {
 	if p.Overwrite {
-		if !p.firstRun {
-			// \x0D - Move the cursor to the beginning of the line
-			// \x1B[2K - Erase(Delete) the line
-			fmt.Print("\x0D\x1B[2K")
-			fmt.Print(text)
+		if p.firstRun { // first run. create new line
+			fmt.Println()
+			p.firstRun = false
+			return
 		}
+
+		// \x0D - Move the cursor to the beginning of the line
+		// \x1B[2K - Erase(Delete) the line
+		fmt.Print("\x0D\x1B[2K")
+		fmt.Print(text)
 	} else if p.step > 0 {
-		fmt.Println()
-	}
-
-	p.firstRun = false
-}
-
-func (p *Progress) calcStepWidth() {
-	// use MaxSteps len as StepWidth. eg: MaxSteps=1000 -> StepWidth=4
-	if p.MaxSteps > 0 {
-		maxStepsLen := len(fmt.Sprint(p.MaxSteps))
-		p.StepWidth = uint8(maxStepsLen)
+		fmt.Println(text)
 	}
 }
+
 func (p *Progress) checkStart() {
 	if !p.started {
 		panic("Progress bar has not yet been started.")
 	}
 }
 
+// build widgets form Format string.
 func (p *Progress) buildLine() string {
 	return widgetMatch.ReplaceAllStringFunc(p.Format, func(s string) string {
 		var text string
 		// {@current} -> current
 		// {@percent:3s} -> percent:3s
 		name := strings.Trim(s, "{@}")
-		arg := ""
+		fmtArg := ""
 
 		// percent:3s
 		if pos := strings.IndexRune(name, ':'); pos > 0 {
-			name = name[0 : pos-1]
-			arg = name[pos:]
+			fmtArg = name[pos+1:]
+			name = name[0:pos]
 		}
 
 		if handler, ok := p.Widgets[name]; ok {
-			text = handler(p)
+			if p.binding == nil {
+				text = handler(p)
+			} else {
+				text = handler(p.binding)
+			}
 		} else if msg, ok := p.Messages[name]; ok {
 			text = msg
 		} else {
 			return s
 		}
 
-		if arg != "" {
-			// {@percent:3s} "7%" -> "7.0%"
-			text = fmt.Sprintf("%"+arg, text)
+		if fmtArg != "" { // like {@percent:3s} "7%" -> "  7%"
+			text = fmt.Sprintf("%"+fmtArg, text)
 		}
-
+		// fmt.Println("info:", arg, name, ", text:", text)
 		return text
 	})
 }

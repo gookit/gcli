@@ -199,6 +199,8 @@ func (c *Command) OptNames() map[string]string {
 type Argument struct {
 	// Name argument name
 	Name string
+	// ShowName is a name for display help. default is equals to Name.
+	ShowName string
 	// Description argument description message
 	Description string
 	// IsArray if is array, can allow accept multi values, and must in last.
@@ -306,7 +308,7 @@ func (c *Command) AddArg(name, description string, requiredAndIsArray ...bool) *
 
 	// add argument
 	newArg := &Argument{
-		Name: name, Description: description, Required: required, IsArray: isArray, index: argIndex,
+		Name: name, ShowName:name, Description: description, Required: required, IsArray: isArray, index: argIndex,
 	}
 	c.args = append(c.args, newArg)
 

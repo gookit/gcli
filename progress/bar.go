@@ -2,6 +2,12 @@ package progress
 
 import "strings"
 
+// internal format for ProgressBar
+const (
+	DefBarFormat  = "{@percent:4s}%({@current}/{@max}){@message}"
+	FullBarFormat = "[{@bar}] {@percent:4s}%({@current}/{@max}) {@elapsed:6s}/{@estimated:-6s} {@memory:6s}"
+)
+
 // BarChars setting for a progress bar. default {'#', '>', ' '}
 type BarChars struct {
 	Completed, Processing, Remaining rune
@@ -43,8 +49,14 @@ var barWidgets = map[string]WidgetFunc{
 	},
 }
 
+// Config the progress instance
+func (p *ProgressBar) Config(fn func(p *ProgressBar)) *ProgressBar {
+	fn(p)
+	return p
+}
+
 // Start progress bar
-func (p *ProgressBar) Start(maxSteps uint) {
+func (p *ProgressBar) Start(maxSteps ...int) {
 	if p.Width == 0 {
 		p.Width = 100
 	}
@@ -54,7 +66,7 @@ func (p *ProgressBar) Start(maxSteps uint) {
 	}
 
 	p.AddWidgets(barWidgets)
-	p.Progress.Start(maxSteps)
+	p.Progress.Start(maxSteps...)
 }
 
 // default chars config
@@ -62,14 +74,28 @@ func defaultBarChars() *BarChars {
 	return &BarChars{'#', '>', ' '}
 }
 
-// Bar create new progress bar
-func Bar(maxSteps uint) *ProgressBar {
+// Tape create new tape progress bar.
+func Tape(maxSteps ...int) *ProgressBar {
+	return Bar(maxSteps ...)
+}
+
+// Bar create new image progress bar.
+func Bar(maxSteps ...int) *ProgressBar {
 	p := &ProgressBar{
-		Progress: *New(maxSteps),
-		// settings
+		Progress: *New(maxSteps...),
+		// settings for bar
 		Width: 100,
 		Chars: defaultBarChars(),
 	}
 
+	p.Format = DefBarFormat
+	p.SetBinding(p)
 	return p
+}
+
+// FullBar create new progress bar, contains all widgets
+func FullBar(maxSteps ...int) *ProgressBar {
+	return Bar(maxSteps...).Config(func(p *ProgressBar) {
+		p.Format = FullBarFormat
+	})
 }

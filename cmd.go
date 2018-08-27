@@ -195,7 +195,7 @@ func (c *Command) collectNamedArgs(inArgs []string) error {
 		num = i + 1      // num is equal index + 1
 		if num > inNum { // no enough arg
 			if arg.Required {
-				return fmt.Errorf("must set a value for the argument: %s (position %d)", arg.Name, arg.index)
+				return fmt.Errorf("must set value for the argument: %s (position %d)", arg.ShowName, arg.index)
 			}
 			break
 		}

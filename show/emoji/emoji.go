@@ -25,17 +25,23 @@ func GetByName(name string) string {
 }
 
 // Search emoji by name
-func Search(kw string, limit int) (ret map[string]string) {
+func Search(kw string, limits ...int) (ret map[string]string) {
 	kw = strings.TrimSpace(kw)
 	if kw == "" || len(kw) > 12 {
 		return
 	}
 
-	if limit <= 0 {
-		limit = 5
+	limit := 8
+	if len(limits) > 0 {
+		limit = limits[0]
 	}
+
 	ret = make(map[string]string, limit)
 	for name, code := range emojiMap {
+		if len(ret) == limit {
+			return
+		}
+
 		if strings.Contains(name, kw) {
 			ret[name] = code
 		}
@@ -55,7 +61,7 @@ func Render(str string) string {
 	}
 
 	return nameMatch.ReplaceAllStringFunc(str, func(name string) string {
-		return GetByName(str) // + " "
+		return GetByName(name) // + " "
 	})
 }
 
