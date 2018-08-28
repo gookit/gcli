@@ -164,7 +164,6 @@ func ProgressBarWidget(width int, cs BarChars) WidgetFunc {
 
 	return func(p *Progress) string {
 		var completeLen float32
-		b := p.Bound().(ProgressBar)
 
 		if p.MaxSteps > 0 { // MaxSteps is valid
 			completeLen = p.percent * float32(width)

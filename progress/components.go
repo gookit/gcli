@@ -37,6 +37,11 @@ func Counter(maxSteps ...int) *Progress {
 	})
 }
 
+// DynamicText progress bar create
+func DynamicText(messages map[int]string) *Progress {
+	return New().AddWidget("message", DynamicTextWidget(messages))
+}
+
 /*************************************************************
  * Generic progress bar
  *************************************************************/
@@ -79,13 +84,13 @@ func (pb ProgressBar) Create(maxSteps ...int) *Progress {
 }
 
 // Bar create a default progress bar.
-func Bar() *Progress {
-	return CustomBar(DefBarWidth, DefaultBarChars())
+func Bar(maxSteps ...int) *Progress {
+	return CustomBar(DefBarWidth, DefaultBarChars()).WithMaxSteps(maxSteps...)
 }
 
 // Tape create new tape progress bar. is alias of Bar()
-func Tape() *Progress {
-	return Bar()
+func Tape(maxSteps ...int) *Progress {
+	return Bar(maxSteps...)
 }
 
 // CustomBar create a custom progress bar.

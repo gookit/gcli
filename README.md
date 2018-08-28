@@ -15,7 +15,8 @@ A simple to use command line application, written using golang
 - Supports rich color output. powered by [gookit/color](https://github.com/gookit/color)
   - Supports html tab-style color rendering, compatible with Windows
   - Built-in `info, error, success, danger` and other styles, can be used directly
-- Built-in user interaction methods such as `ReadLine`, `Confirm`, `Select`, `MultiSelect`
+- Built-in user interaction methods: `ReadLine`, `Confirm`, `Select`, `MultiSelect` ...
+- Built-in progress display methods: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` ...
 - Automatically generate command help information and support color display
 - Supports generation of `zsh` and `bash` command completion script files
 - Supports a single command as a stand-alone application
@@ -278,13 +279,62 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 
 ![cmd-help](_examples/images/cmd-help.jpg)
 
-## progress display
+## Progress display
  
 - `progress.Bar` progress bar
+
+```text
+25/50 [==============>-------------]  50%
+```
+
 - `progress.Txt` text progress bar
+
+```text
+Data handling ... ... 50% (25/50)
+```
+
 - `progress.LoadBar` pending/loading progress bar
 - `progress.Counter` counter 
-- `progress.Counter` dynamic Text
+- `progress.RoundTrip` round trip progress bar
+
+```text
+[===     ] -> [    === ] -> [ ===    ]
+```
+
+- `progress.DynamicText` dynamic text message
+
+Examples:
+
+```go
+package main
+
+import "time"
+import "github.com/gookit/cliapp/progress"
+
+func main()  {
+	speed := 100
+	maxSteps := 110
+	p := progress.Bar(maxSteps)
+	p.Start()
+
+	for i := 0; i < maxSteps; i++ {
+		time.Sleep(time.Duration(speed) * time.Millisecond)
+		p.Advance()
+	}
+
+	p.Finish()
+}
+```
+
+> more demos please see [progress_demo.go](_examples/cmd/progress_demo.go)
+
+run demos:
+
+```bash
+go run ./_examples/cliapp.go prog txt
+go run ./_examples/cliapp.go prog bar
+go run ./_examples/cliapp.go prog roundTrip
+```
 
 ## Interactive methods
    
@@ -299,7 +349,7 @@ console interactive methods
 - `interact.Question/Ask`
 - `interact.ReadPassword`
 
-An example:
+Examples:
 
 ```go
 package main

@@ -15,7 +15,8 @@
 - 支持丰富的颜色渲染输出, 由[gookit/color](https://github.com/gookit/color)提供
   - 同时支持html标签式的颜色渲染，兼容Windows
   - 内置`info,error,success,danger`等多种风格，可直接使用
-- 内置提供 `ReadLine`, `Confirm`, `Select`, `MultiSelect` 等用户交互方法
+- 内置提供用户交互方法: `ReadLine`, `Confirm`, `Select`, `MultiSelect` 等
+- 内置提供进度显示方法: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` 等
 - 自动根据命令生成帮助信息，并且支持颜色显示
 - 支持为当前CLI应用生成 `zsh`,`bash` 下的命令补全脚本文件
 - 支持将单个命令当做独立应用运行
@@ -277,6 +278,100 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 > 漂亮的帮助信息就已经自动生成并展示出来了
 
 ![cmd-help](_examples/images/cmd-help.jpg)
+
+
+## 进度显示
+ 
+- `progress.Bar` 通用的进度条
+
+```text
+25/50 [==============>-------------]  50%
+```
+
+- `progress.Txt` 文本进度条
+
+```text
+Data handling ... ... 50% (25/50)
+```
+
+- `progress.LoadBar` 加载中
+- `progress.Counter` 计数
+- `progress.RoundTrip` 来回滚动的进度条 
+
+```text
+[===     ] -> [    === ] -> [ ===    ]
+```
+
+- `progress.DynamicText` 动态消息，执行进度到不同的百分比显示不同的消息
+
+示例:
+
+```go
+package main
+
+import "time"
+import "github.com/gookit/cliapp/progress"
+
+func main()  {
+	speed := 100
+	maxSteps := 110
+	p := progress.Bar(maxSteps)
+	p.Start()
+
+	for i := 0; i < maxSteps; i++ {
+		time.Sleep(time.Duration(speed) * time.Millisecond)
+		p.Advance()
+	}
+
+	p.Finish()
+}
+```
+
+> 更多示例和使用请看 [progress_demo.go](_examples/cmd/progress_demo.go)
+
+run demos:
+
+```bash
+go run ./_examples/cliapp.go prog txt
+go run ./_examples/cliapp.go prog bar
+go run ./_examples/cliapp.go prog roundTrip
+```
+
+## 交互方法
+   
+console interactive methods
+
+- `interact.ReadInput`
+- `interact.ReadLine`
+- `interact.ReadFirst`
+- `interact.Confirm`
+- `interact.Select/Choice`
+- `interact.MultiSelect/Checkbox`
+- `interact.Question/Ask`
+- `interact.ReadPassword`
+
+示例:
+
+```go
+package main
+
+import "fmt"
+import "github.com/gookit/cliapp/interact"
+
+func main() {
+	username, _ := interact.ReadLine("Your name?")
+	password := interact.ReadPassword("Your password?")
+	
+	ok := interact.Confirm("ensure continue?")
+	if !ok {
+		// do something...
+	}
+    
+	fmt.Printf("username: %s, password: %s\n", username, password)
+}
+```
+
+> 更多示例和使用请看 [interact_demo.go](_examples/cmd/interact_demo.go)
 
 ## 使用颜色输出
 
