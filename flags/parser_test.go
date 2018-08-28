@@ -39,7 +39,7 @@ func TestArgsParser_Parse(t *testing.T) {
 	assertOptions(str)
 
 	// define array options
-	sample = "-n 10 --name tom --name john --debug -aux --age 24 arg0 arg1"
+	sample = "-n 10 --name tom --name john --debug false -aux --age 24 arg0 arg1"
 	args = strings.Split(sample, " ")
 	// 加上 []string{"name"} 解析器就能正确解析 "--name --name john"
 	p = ParseArgs(args, nil, []string{"name"})
@@ -47,7 +47,7 @@ func TestArgsParser_Parse(t *testing.T) {
 	str = p.OptsString()
 	at.Contains(str, `"n":"10"`)
 	at.Contains(str, `"name":[]string{"tom", "john"}`)
-	at.Contains(str, `"debug":true`)
+	at.Contains(str, `"debug":false`)
 	at.Contains(str, `"age":"24"`)
 	at.Contains(str, `"a":true`)
 	at.Contains(str, `"u":true`)

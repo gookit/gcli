@@ -19,9 +19,13 @@ func (s *Ints) String() string {
 }
 
 // Set new value
-func (s *Ints) Set(value int) error {
-	*s = append(*s, value)
-	return nil
+func (s *Ints) Set(value string) error {
+	intVal, err := strconv.Atoi(value)
+	if err == nil {
+		*s = append(*s, intVal)
+	}
+
+	return err
 }
 
 // Strings The string flag list, implemented flag.Value interface
@@ -47,9 +51,13 @@ func (s *Booleans) String() string {
 }
 
 // Set new value
-func (s *Booleans) Set(value bool) error {
-	*s = append(*s, value)
-	return nil
+func (s *Booleans) Set(value string) error {
+	boolVal, err := strconv.ParseBool(value)
+	if err == nil {
+		*s = append(*s, boolVal)
+	}
+
+	return err
 }
 
 /*************************************************************
@@ -272,9 +280,9 @@ func (a *Argument) Strings() (ss []string) {
 // 	- The (array) argument of multiple values ​​can only be defined at the end
 //
 // usage:
-//	cmd.AddArg("name", "description")
-//	cmd.AddArg("name", "description", true) // required
-//	cmd.AddArg("names", "description", true, true) // required and is array
+// 	cmd.AddArg("name", "description")
+// 	cmd.AddArg("name", "description", true) // required
+// 	cmd.AddArg("names", "description", true, true) // required and is array
 func (c *Command) AddArg(name, description string, requiredAndIsArray ...bool) *Argument {
 	if c.argsIndexes == nil {
 		c.argsIndexes = make(map[string]int)

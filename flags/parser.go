@@ -5,19 +5,6 @@ import (
 	"strings"
 )
 
-// ParseBool parse string to bool
-func ParseBool(str string) (bool, error) {
-	lower := strings.ToLower(str)
-	switch lower {
-	case "1", "on", "yes", "true":
-		return true, nil
-	case "0", "off", "no", "false":
-		return false, nil
-	}
-
-	return false, fmt.Errorf("'%s' cannot convert to bool", str)
-}
-
 // ArgsParser definition. a simple command line args parser
 type ArgsParser struct {
 	// BoolOpts bool option names. list all bool value options.
@@ -105,67 +92,71 @@ func (p *ArgsParser) prepare() {
 // 	--long-opt <value> // lang option
 // 	--long-opt=<value>
 func (p *ArgsParser) Parse(args []string) {
-	var val string
 	p.rawArgs = args
 	p.prepare()
 	p.length = len(args)
 
 	for p.index < p.length {
-		cur := args[p.index]
+		current := args[p.index]
 		p.index++
 
-		if cur[0] == '-' { // option
-			val = "true"
-			noVal := true // mark current option is no value assigned
-			opt := cur[1:]
-			isLong := false
-
-			if opt[0] == '-' { // lang option: --opt
-				opt = strings.TrimLeft(opt, "-=")
-				if opt == "" { // invalid. eg "--="
-					continue
-				}
-
-				isLong = true
-				if strings.IndexByte(opt, '=') > -1 { // has val: --opt=VAL
-					ss := strings.SplitN(opt, "=", 2)
-					opt, val = ss[0], ss[1]
-					noVal = false
-				}
-			} else { // short option
-				opt = strings.TrimLeft(opt, "-=")
-				if opt == "" { // invalid. eg "-="
-					continue
-				}
-
-				// has val: -s=VAL
-				if len(opt) > 1 && strings.IndexByte(opt, '=') > -1 {
-					ss := strings.SplitN(opt, "=", 2)
-					opt, val = ss[0], ss[1]
-					noVal = false
-				}
-			}
-
-			// get next elem value
-			nxt, valid := p.next()
-
-			// current opt no value and next is value.
-			if valid && noVal && !p.isBoolOpt(opt) && p.isValue(nxt) {
-				val = nxt
-				p.index++
-			} else if !isLong && noVal { // short bool opts. like -e -abc
-				for _, n := range []rune(opt) {
-					p.shortOpts[string(n)] = noVal
-				}
-				continue
-			}
-
-			// collect option and value
-			p.collectOption(opt, val, isLong)
-		} else { // args
-			p.args = append(p.args, cur)
+		if current != "" && current[0] == '-' { // is option
+			p.parseOne(current)
+		} else { // is argument
+			p.args = append(p.args, current)
 		}
 	}
+}
+
+func (p *ArgsParser) parseOne(current string) {
+	var val string
+	val = "true"
+	noVal := true // mark current option is no value assigned
+	isLong := false
+	opt := current[1:]
+
+	if opt[0] == '-' { // lang option: --opt
+		opt = strings.TrimLeft(opt, "-=")
+		if opt == "" { // invalid. eg "--="
+			return
+		}
+
+		isLong = true
+		if strings.IndexByte(opt, '=') > -1 { // has val: --opt=VAL
+			ss := strings.SplitN(opt, "=", 2)
+			opt, val = ss[0], ss[1]
+			noVal = false
+		}
+	} else { // short option
+		opt = strings.TrimLeft(opt, "-=")
+		if opt == "" { // invalid. eg "-="
+			return
+		}
+
+		// has val: -s=VAL
+		if len(opt) > 1 && strings.IndexByte(opt, '=') > -1 {
+			ss := strings.SplitN(opt, "=", 2)
+			opt, val = ss[0], ss[1]
+			noVal = false
+		}
+	}
+
+	// get next elem value
+	nxt, valid := p.next()
+
+	// current opt no value and next is value.
+	if valid && noVal && !p.isBoolOpt(opt) && p.isValue(nxt) {
+		val = nxt
+		p.index++
+	} else if !isLong && noVal { // short bool opts. like -e -abc
+		for _, n := range []rune(opt) {
+			p.shortOpts[string(n)] = noVal
+		}
+		return
+	}
+
+	// collect option and value
+	p.collectOption(opt, val, isLong)
 }
 
 func (p *ArgsParser) next() (val string, valid bool) {
@@ -189,7 +180,7 @@ func (p *ArgsParser) collectOption(opt, val string, isLong bool) {
 
 			p.longOpts[opt] = vs
 		} else {
-			bl, err := ParseBool(val)
+			bl, err := parseBool(val)
 			if err != nil {
 				p.longOpts[opt] = val
 			} else {
@@ -210,7 +201,7 @@ func (p *ArgsParser) collectOption(opt, val string, isLong bool) {
 
 		p.shortOpts[opt] = vs
 	} else {
-		bl, err := ParseBool(val)
+		bl, err := parseBool(val)
 		if err != nil {
 			p.shortOpts[opt] = val
 		} else {
@@ -252,4 +243,17 @@ func (p *ArgsParser) isArrayOpt(n string) bool {
 	}
 
 	return false
+}
+
+// parseBool parse string to bool
+func parseBool(str string) (bool, error) {
+	lower := strings.ToLower(str)
+	switch lower {
+	case "1", "on", "yes", "true":
+		return true, nil
+	case "0", "off", "no", "false":
+		return false, nil
+	}
+
+	return false, fmt.Errorf("'%s' cannot convert to bool", str)
 }
