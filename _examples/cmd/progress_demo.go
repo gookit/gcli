@@ -8,6 +8,7 @@ import (
 
 type progressDemo struct {
 	maxSteps int
+	overwrite bool
 }
 
 func ProgressDemoCmd() *cliapp.Command {
@@ -20,6 +21,7 @@ func ProgressDemoCmd() *cliapp.Command {
 		Func:    pd.Run,
 		Config: func(c *cliapp.Command) {
 			c.IntOpt(&pd.maxSteps, "max-step", "", 110, "setting the max step value")
+			c.BoolOpt(&pd.overwrite, "overwrite", "o", true, "setting overwrite progress bar line")
 			c.AddArg("name",
 				"progress bar type name. allow: bar,txt,loading,roundTrip",
 				true,
@@ -40,14 +42,14 @@ func (d *progressDemo) Run(c *cliapp.Command, _ []string) int {
 	switch name {
 	case "bar":
 		imgProgressBar(max)
-	case "txt":
+	case "txt", "text":
 		txtProgressBar(max)
-	case "loading":
+	case "load", "loading":
 		runLoadingBar(max)
 	case "rt", "roundTrip":
 		runRoundTripBar(max)
 	default:
-		return c.Errorf("the progress bar type name only allow: bar,txt. input is: %s", name)
+		return c.Errorf("the progress bar type name only allow: bar,txt,loading,roundTrip. input is: %s", name)
 	}
 	return 0
 }
@@ -73,33 +75,27 @@ func txtProgressBar(maxStep int) {
 }
 
 func imgProgressBar(maxStep int) {
-	p := progress.Bar(maxStep)
+	pb := progress.Bar()
+	pb.Chars.Completed = progress.CharWell
+	pb.Chars.Processing = '>'
+	pb.Chars.Remaining = '-'
+
+	p := pb.Create(maxStep)
+	p.Format = progress.FullBarFormat
 	// p.Overwrite = false
-	p.Chars.Completed = progress.CharWell
-	p.Chars.Processing = '>'
-	p.Chars.Remaining = '-'
+
 	// p.AddMessage("message", " handling ...")
 	// use dynamic message
-	p.AddWidget("message", func(p *progress.Progress) string {
-		var message string
-		percent := int(p.Percent() * 100)
-		if percent < 20 {
-			message = " Prepare ..."
-		} else if percent < 40 {
-			message = " Request ..."
-		} else if percent < 60 {
-			message = " Transport ..."
-		} else if percent < 95 {
-			message = " Saving ..."
-		} else {
-			message = " Complete."
-		}
-
-		return message
-	})
+	p.AddWidget("message", progress.DynamicTextWidget(map[int]string{
+		20: " Prepare ...",
+		40: " Request ...",
+		65: " Transport ...",
+		95: " Saving ...",
+		100: " Handle Complete.",
+	}))
 
 	// running
-	runProgressBar(p, maxStep, 90)
+	runProgressBar(p, maxStep, 100)
 
 	p.Finish()
 }
@@ -118,7 +114,7 @@ func runLoadingBar(maxStep int) {
 }
 
 // running
-func runProgressBar(p progress.ProgressFace, maxStep int, speed int) {
+func runProgressBar(p *progress.Progress, maxStep int, speed int) {
 	p.Start()
 	for i := 0; i < maxStep; i++ {
 		time.Sleep(time.Duration(speed) * time.Millisecond)

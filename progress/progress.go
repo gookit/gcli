@@ -2,6 +2,7 @@ package progress
 
 import (
 	"fmt"
+	"github.com/gookit/color"
 	"regexp"
 	"strings"
 	"time"
@@ -12,7 +13,7 @@ const (
 	MinFormat  = "{@message}{@current}"
 	TxtFormat  = "{@message}{@percent:4s}%({@current}/{@max})"
 	DefFormat  = "{@message}{@percent:4s}%({@current}/{@max})"
-	FullFormat = "{@percent:4s}%({@current}/{@max}) {@elapsed:6s}/{@estimated:-6s} {@memory:6s}"
+	FullFormat = "{@percent:4s}%({@current}/{@max}) {@elapsed:7s}/{@estimated:-7s} {@memory:6s}"
 )
 
 // use for match like "{@bar}" "{@percent:3s}"
@@ -27,7 +28,7 @@ type ProgressFace interface {
 	Advance(steps ...uint)
 	AdvanceTo(step uint)
 	Finish(msg ...string)
-	Binding() ProgressFace
+	Bound() interface{}
 }
 
 // Progress definition
@@ -53,11 +54,10 @@ type Progress struct {
 	Messages map[string]string
 	// current step value
 	step uint
+	// bound user custom data.
+	bound interface{}
 	// mark start status
 	started bool
-	// binding current progress instance. use for widget handler(p.binding)
-	// if you extends this Progress, must setting it.
-	binding ProgressFace
 	// completed percent. eg: "83.8"
 	percent float32
 	// mark is first running
@@ -90,18 +90,9 @@ func New(maxSteps ...int) *Progress {
 	}
 }
 
-// Txt progress bar create.
-func Txt(maxSteps ...int) *Progress {
-	return New(maxSteps...).Config(func(p *Progress) {
-		p.Format = TxtFormat
-	})
-}
-
-// Full progress bar create.
-func Full(maxSteps ...int) *Progress {
-	return New(maxSteps...).Config(func(p *Progress) {
-		p.Format = FullFormat
-	})
+// NewWithConfig create new Progress
+func NewWithConfig(fn func(p *Progress), maxSteps ...int) *Progress {
+	return New(maxSteps...).Config(fn)
 }
 
 /*************************************************************
@@ -115,22 +106,31 @@ func (p *Progress) Config(fn func(p *Progress)) *Progress {
 }
 
 // WithMaxSteps setting max steps
-func (p *Progress) WithMaxSteps(maxSteps int) *Progress {
-	p.MaxSteps = uint(maxSteps)
+func (p *Progress) WithMaxSteps(maxSteps ...int) *Progress {
+	if len(maxSteps) > 0 {
+		p.MaxSteps = uint(maxSteps[0])
+	}
+
 	return p
 }
 
-// SetBinding instance
-func (p *Progress) SetBinding(binding ProgressFace) {
-	p.binding = binding
+// Binding user custom data to instance
+func (p *Progress) Binding(data interface{}) *Progress {
+	p.bound = data
+	return p
 }
 
-// AddMessage to progress
+// Bound get bound sub struct instance
+func (p *Progress) Bound() interface{} {
+	return p.bound
+}
+
+// AddMessage to progress instance
 func (p *Progress) AddMessage(name, message string) {
 	p.Messages[name] = message
 }
 
-// AddMessages to progress
+// AddMessages to progress instance
 func (p *Progress) AddMessages(msgMap map[string]string) {
 	if p.Messages == nil {
 		p.Messages = make(map[string]string)
@@ -141,7 +141,7 @@ func (p *Progress) AddMessages(msgMap map[string]string) {
 	}
 }
 
-// AddWidget to progress
+// AddWidget to progress instance
 func (p *Progress) AddWidget(name string, handler WidgetFunc) *Progress {
 	if _, ok := p.Widgets[name]; !ok {
 		p.Widgets[name] = handler
@@ -150,12 +150,13 @@ func (p *Progress) AddWidget(name string, handler WidgetFunc) *Progress {
 	return p
 }
 
-// SetWidget to progress
-func (p *Progress) SetWidget(name string, handler WidgetFunc) {
+// SetWidget to progress instance
+func (p *Progress) SetWidget(name string, handler WidgetFunc) *Progress {
 	p.Widgets[name] = handler
+	return p
 }
 
-// AddWidgets to progress
+// AddWidgets to progress instance
 func (p *Progress) AddWidgets(widgets map[string]WidgetFunc) {
 	if p.Widgets == nil {
 		p.Widgets = make(map[string]WidgetFunc)
@@ -300,14 +301,15 @@ func (p *Progress) render(text string) {
 			fmt.Println()
 			p.firstRun = false
 			// return
+		} else { // delete prev rendered line.
+			// \x0D - Move the cursor to the beginning of the line
+			// \x1B[2K - Erase(Delete) the line
+			fmt.Print("\x0D\x1B[2K")
 		}
 
-		// \x0D - Move the cursor to the beginning of the line
-		// \x1B[2K - Erase(Delete) the line
-		fmt.Print("\x0D\x1B[2K")
-		fmt.Print(text)
+		color.Print(text)
 	} else if p.step > 0 {
-		fmt.Println(text)
+		color.Println(text)
 	}
 }
 
@@ -360,11 +362,6 @@ func (p *Progress) Handler(name string) WidgetFunc {
 /*************************************************************
  * getter methods
  *************************************************************/
-
-// Binding get bounded sub struct instance
-func (p *Progress) Binding() ProgressFace {
-	return p.binding
-}
 
 // Percent gets the current percent
 func (p *Progress) Percent() float32 {

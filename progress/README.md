@@ -1,9 +1,7 @@
 # progress display
 
-- progress text
 - progress bar
-- pending/loading
-- pointing
-- spinner
-- counter Txt
+- text progress bar
+- pending/loading progress bar
+- counter 
 - dynamic Text

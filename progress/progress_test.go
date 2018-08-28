@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestProgress_Display(t *testing.T) {
@@ -28,4 +29,33 @@ func TestLoading(t *testing.T) {
 	str := "◐◑◒◓"
 
 	fmt.Println(chars, string(chars[0]), str, string(str[0]))
+}
+
+func ExampleDynamicTextWidget() {
+	widget := DynamicTextWidget(map[int]string{
+		// int is percent, range is 0 - 100.
+		20:  " Prepare ...",
+		40:  " Request ...",
+		65:  " Transport ...",
+		95:  " Saving ...",
+		100: " Handle Complete.",
+	})
+
+	maxStep := 105
+	p := New(maxStep).Config(func(p *Progress) {
+		p.Format = "{@percent:4s}%({@current}/{@max}) {@message}"
+	}).AddWidget("message", widget)
+
+	runProgressBar(p, maxStep, 80)
+
+	p.Finish()
+}
+
+// running
+func runProgressBar(p *Progress, maxStep int, speed int) {
+	p.Start()
+	for i := 0; i < maxStep; i++ {
+		time.Sleep(time.Duration(speed) * time.Millisecond)
+		p.Advance()
+	}
 }

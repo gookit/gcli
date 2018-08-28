@@ -278,18 +278,26 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 
 ![cmd-help](_examples/images/cmd-help.jpg)
 
+## progress display
+ 
+- `progress.Bar` progress bar
+- `progress.Txt` text progress bar
+- `progress.LoadBar` pending/loading progress bar
+- `progress.Counter` counter 
+- `progress.Counter` dynamic Text
+
 ## Interactive methods
    
 console interactive methods
 
-- `ReadInput`
-- `ReadLine`
-- `ReadFirst`
-- `Confirm`
-- `Select/Choice`
-- `MultiSelect/Checkbox`
-- `Question/Ask`
-- `ReadPassword`
+- `interact.ReadInput`
+- `interact.ReadLine`
+- `interact.ReadFirst`
+- `interact.Confirm`
+- `interact.Select/Choice`
+- `interact.MultiSelect/Checkbox`
+- `interact.Question/Ask`
+- `interact.ReadPassword`
 
 An example:
 
