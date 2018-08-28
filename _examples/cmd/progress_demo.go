@@ -67,7 +67,6 @@ func txtProgressBar(maxStep int) {
 	txt := progress.Txt(maxStep)
 	txt.AddMessage("message", "handling ... ")
 	// txt.Overwrite = false
-
 	// running
 	runProgressBar(txt, maxStep, 80)
 
@@ -75,11 +74,7 @@ func txtProgressBar(maxStep int) {
 }
 
 func imgProgressBar(maxStep int) {
-	cs := progress.BarChars{
-		Completed: progress.CharWell,
-		Processing: progress.CharRightArrow,
-		Remaining: progress.CharHyphen,
-	}
+	cs := progress.BarCharsStyle4
 
 	p := progress.CustomBar(60, cs)
 	p.MaxSteps = uint(maxStep)
@@ -98,13 +93,11 @@ func imgProgressBar(maxStep int) {
 
 	// running
 	runProgressBar(p, maxStep, 100)
-
 	p.Finish()
 }
 
 func runLoadingBar(maxStep int) {
-	// chars := []rune(`∷∵∴∶`)
-	p := progress.LoadingBar(progress.LoadingTheme1)
+	p := progress.LoadingBar(progress.LoadingTheme7)
 	p.MaxSteps = uint(maxStep)
 	p.AddMessage("message", "data loading ... ...")
 

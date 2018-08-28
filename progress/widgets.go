@@ -171,11 +171,10 @@ func ProgressBarWidget(width int, cs BarChars) WidgetFunc {
 			completeLen = float32(p.step % uint(width))
 		}
 
-		bar := strings.Repeat(string(cs.Completed), int(completeLen))
+		bar := string(repeatRune(cs.Completed, int(completeLen)))
 
 		if diff := int(width) - int(completeLen); diff > 0 {
-			ingChar := string(cs.Processing)
-			bar += ingChar + strings.Repeat(string(cs.Remaining), diff-len(ingChar))
+			bar += string(cs.Processing) + string(repeatRune(cs.Remaining, diff-1))
 		}
 
 		return bar

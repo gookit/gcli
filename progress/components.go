@@ -2,18 +2,25 @@ package progress
 
 // some built in chars
 const (
-	CharStar   rune = '*'
-	CharPlus   rune = '+'
-	CharWell   rune = '#'
-	CharEqual  rune = '='
-	CharSpace  rune = ' '
-	CharSquare rune = '■'
+	CharStar    rune = '*'
+	CharPlus    rune = '+'
+	CharWell    rune = '#'
+	CharEqual   rune = '='
+	CharEqual1  rune = '═'
+	CharSpace   rune = ' '
+	CharCenter  rune = '●'
+	CharSquare  rune = '■'
+	CharSquare1 rune = '▇'
+	CharSquare2 rune = '▉'
+	CharSquare3 rune = '░'
+	CharSquare4 rune = '▒'
 	// Hyphen Minus
-	CharHyphen     rune = '-'
-	CharCNHyphen   rune = '—'
-	CharUnderline  rune = '_'
-	CharLeftArrow  rune = '<'
-	CharRightArrow rune = '>'
+	CharHyphen      rune = '-'
+	CharCNHyphen    rune = '—'
+	CharUnderline   rune = '_'
+	CharLeftArrow   rune = '<'
+	CharRightArrow  rune = '>'
+	CharRightArrow1 rune = '▶'
 )
 
 // Txt progress bar create.
@@ -49,8 +56,8 @@ func DynamicText(messages map[int]string) *Progress {
 // internal format for ProgressBar
 const (
 	DefBarWidth   = 60
-	DefBarFormat  = "[{@bar}] {@percent:4s}%({@current}/{@max}){@message}"
-	FullBarFormat = "[{@bar}] {@percent:4s}%({@current}/{@max}) {@elapsed:7s}/{@estimated:-7s} {@memory:6s}"
+	DefBarFormat  = "{@bar} {@percent:4s}%({@current}/{@max}){@message}"
+	FullBarFormat = "{@bar} {@percent:4s}%({@current}/{@max}) {@elapsed:7s}/{@estimated:-7s} {@memory:6s}"
 )
 
 // BarChars setting for a progress bar. default {'#', '>', ' '}
@@ -58,10 +65,14 @@ type BarChars struct {
 	Completed, Processing, Remaining rune
 }
 
-// DefaultBarChars default chars config
-func DefaultBarChars() BarChars {
-	return BarChars{'#', '>', ' '}
-}
+// some built in BarChars style
+var (
+	BarCharsStyle  = BarChars{'#', '>', ' '}
+	BarCharsStyle1 = BarChars{'▉', '▉', '░'}
+	BarCharsStyle2 = BarChars{'■', '■', ' '}
+	BarCharsStyle3 = BarChars{'■', '▶', ' '}
+	BarCharsStyle4 = BarChars{'=', '>', ' '}
+)
 
 // ProgressBar definition.
 // Preview:
@@ -85,7 +96,7 @@ func (pb ProgressBar) Create(maxSteps ...int) *Progress {
 
 // Bar create a default progress bar.
 func Bar(maxSteps ...int) *Progress {
-	return CustomBar(DefBarWidth, DefaultBarChars()).WithMaxSteps(maxSteps...)
+	return CustomBar(DefBarWidth, BarCharsStyle).WithMaxSteps(maxSteps...)
 }
 
 // Tape create new tape progress bar. is alias of Bar()
@@ -150,6 +161,9 @@ var (
 	LoadingTheme2 = []rune{'◐', '◒', '◓', '◑'}
 	LoadingTheme3 = []rune{'✣', '✤', '✥', '❉'}
 	LoadingTheme4 = []rune{'卍', '卐'}
+	LoadingTheme5 = []rune("⌞⌟⌝⌜")
+	LoadingTheme6 = []rune("◎●◯◌○⊙")
+	LoadingTheme7 = []rune("㊎㊍㊌㊋㊏")
 )
 
 // LoadingBar alias of load bar LoadBar()
