@@ -84,7 +84,7 @@ func DynamicTextWidget(messages map[int]string) WidgetFunc {
 // LoadingWidget create a loading progress widget
 func LoadingWidget(chars []rune) WidgetFunc {
 	if len(chars) == 0 {
-		chars = LoadingTheme1
+		chars = RandomCharsTheme()
 	}
 
 	index := 0

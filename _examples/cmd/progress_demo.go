@@ -23,7 +23,7 @@ func ProgressDemoCmd() *cliapp.Command {
 			c.IntOpt(&pd.maxSteps, "max-step", "", 110, "setting the max step value")
 			c.BoolOpt(&pd.overwrite, "overwrite", "o", true, "setting overwrite progress bar line")
 			c.AddArg("name",
-				"progress bar type name. allow: bar,txt,loading,roundTrip",
+				"progress bar type name. allow: bar,txt,loading,spinner,roundTrip",
 				true,
 			)
 		},
@@ -44,12 +44,14 @@ func (d *progressDemo) Run(c *cliapp.Command, _ []string) int {
 		imgProgressBar(max)
 	case "txt", "text":
 		txtProgressBar(max)
+	case "spinner":
+		runSpinnerBar()
 	case "load", "loading":
 		runLoadingBar(max)
 	case "rt", "roundTrip":
 		runRoundTripBar(max)
 	default:
-		return c.Errorf("the progress bar type name only allow: bar,txt,loading,roundTrip. input is: %s", name)
+		return c.Errorf("the progress bar type name only allow: bar,txt,loading,spinner,roundTrip. input is: %s", name)
 	}
 	return 0
 }
@@ -96,8 +98,16 @@ func imgProgressBar(maxStep int) {
 	p.Finish()
 }
 
+func runSpinnerBar() {
+	// Build our new spinner
+	s := progress.NewSpinner(progress.RandomCharsTheme(), 100*time.Millisecond)
+	s.Start("%s work handling ... ...")
+	time.Sleep(4 * time.Second)                                  // Run for some time to simulate work
+	s.Stop("work handle complete")
+}
+
 func runLoadingBar(maxStep int) {
-	p := progress.LoadingBar(progress.LoadingTheme7)
+	p := progress.LoadBar(progress.RandomCharsTheme())
 	p.MaxSteps = uint(maxStep)
 	p.AddMessage("message", "data loading ... ...")
 
