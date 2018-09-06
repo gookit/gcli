@@ -30,7 +30,7 @@ func main() {
 	app.Add(cmd.EnvInfoCommand())
 	app.Add(cmd.GitCommand())
 	app.Add(cmd.ColorCommand(), cmd.EmojiDemoCmd())
-	app.Add(cmd.ShowDemoCommand(), cmd.ProgressDemoCmd(), cmd.InteractDemoCommand())
+	app.Add(cmd.ShowDemoCommand(), cmd.ProgressDemoCmd(), cmd.SpinnerDemoCmd(), cmd.InteractDemoCommand())
 	app.Add(builtin.GenEmojiMapCommand())
 
 	// app.Add(filewatcher.FileWatcher(nil))

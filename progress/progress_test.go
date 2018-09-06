@@ -2,19 +2,17 @@ package progress
 
 import (
 	"fmt"
-	"strings"
+	"github.com/stretchr/testify/assert"
 	"testing"
 	"time"
 )
 
 func TestProgress_Display(t *testing.T) {
+	is := assert.New(t)
 	ss := widgetMatch.FindAllString(TxtFormat, -1)
-	fmt.Println(ss)
+	is.Len(ss, 4)
 
-	widgetMatch.ReplaceAllStringFunc(TxtFormat, func(s string) string {
-		fmt.Println(s, strings.Trim(s, "{@}"))
-		return s
-	})
+	is.Contains(ss, "{@message}")
 }
 
 func TestSpinner(t *testing.T) {
@@ -31,31 +29,39 @@ func TestLoading(t *testing.T) {
 	fmt.Println(chars, string(chars[0]), str, string(str[0]))
 }
 
-func ExampleDynamicTextWidget() {
-	widget := DynamicTextWidget(map[int]string{
-		// int is percent, range is 0 - 100.
+func ExampleBar() {
+	maxStep := 105
+	p := CustomBar(60, BarStyle, maxStep)
+	p.MaxSteps = uint(maxStep)
+	p.Format = FullBarFormat
+
+	p.Start()
+	for i := 0; i < maxStep; i++ {
+		time.Sleep(80 * time.Millisecond)
+		p.Advance()
+	}
+	p.Finish()
+}
+
+func ExampleDynamicText() {
+	messages := map[int]string{
+		// key is percent, range is 0 - 100.
 		20:  " Prepare ...",
 		40:  " Request ...",
 		65:  " Transport ...",
 		95:  " Saving ...",
 		100: " Handle Complete.",
-	})
+	}
 
 	maxStep := 105
-	p := New(maxStep).Config(func(p *Progress) {
-		p.Format = "{@percent:4s}%({@current}/{@max}) {@message}"
-	}).AddWidget("message", widget)
+	p := DynamicText(messages, maxStep)
 
-	runProgressBar(p, maxStep, 80)
-
-	p.Finish()
-}
-
-// running
-func runProgressBar(p *Progress, maxStep int, speed int) {
 	p.Start()
+
 	for i := 0; i < maxStep; i++ {
-		time.Sleep(time.Duration(speed) * time.Millisecond)
+		time.Sleep(80 * time.Millisecond)
 		p.Advance()
 	}
+
+	p.Finish()
 }

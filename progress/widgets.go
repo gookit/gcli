@@ -83,22 +83,10 @@ func DynamicTextWidget(messages map[int]string) WidgetFunc {
 
 // LoadingWidget create a loading progress widget
 func LoadingWidget(chars []rune) WidgetFunc {
-	if len(chars) == 0 {
-		chars = RandomCharsTheme()
-	}
+	builder := loadingCharBuilder(chars)
 
-	index := 0
-	length := len(chars)
-
-	return func(p *Progress) string {
-		char := string(chars[index])
-		if index+1 == length { // reset
-			index = 0
-		} else {
-			index++
-		}
-
-		return char
+	return func(_ *Progress) string {
+		return builder()
 	}
 }
 
@@ -106,47 +94,10 @@ func LoadingWidget(chars []rune) WidgetFunc {
 //
 // Output like `[  ====   ]`
 func RoundTripWidget(char rune, charNum, boxWidth int) WidgetFunc {
-	if char == 0 {
-		char = CharEqual
-	}
+	builder := roundTripTextBuilder(char, charNum, boxWidth)
 
-	if charNum < 1 {
-		charNum = 4
-	}
-
-	if boxWidth < 1 {
-		boxWidth = 12
-	}
-
-	cursor := string(repeatRune(char, charNum))
-	// control direction. False: -> True: <->
-	direction := false
-	// record cursor position
-	position := 0
-
-	return func(p *Progress) string {
-		var bar string
-		if position > 0 {
-			bar += strings.Repeat(" ", position)
-		}
-
-		bar += cursor + strings.Repeat(" ", boxWidth-position-charNum)
-
-		if direction { // left <-
-			if position <= 0 { // begin ->
-				direction = false
-			} else {
-				position--
-			}
-		} else { // -> right
-			if position+charNum >= boxWidth { // begin <-
-				direction = true
-			} else {
-				position++
-			}
-		}
-
-		return bar
+	return func(_ *Progress) string {
+		return builder()
 	}
 }
 
@@ -175,6 +126,71 @@ func ProgressBarWidget(width int, cs BarChars) WidgetFunc {
 
 		if diff := int(width) - int(completeLen); diff > 0 {
 			bar += string(cs.Processing) + string(repeatRune(cs.Remaining, diff-1))
+		}
+
+		return bar
+	}
+}
+
+func loadingCharBuilder(chars []rune) func() string {
+	if len(chars) == 0 {
+		chars = RandomCharsTheme()
+	}
+
+	index := 0
+	length := len(chars)
+
+	return func() string {
+		char := string(chars[index])
+		if index+1 == length { // reset
+			index = 0
+		} else {
+			index++
+		}
+
+		return char
+	}
+}
+
+func roundTripTextBuilder(char rune, charNum, boxWidth int) func() string {
+	if char == 0 {
+		char = CharEqual
+	}
+
+	if charNum < 1 {
+		charNum = 4
+	}
+
+	if boxWidth < 1 {
+		boxWidth = 12
+	}
+
+	cursor := string(repeatRune(char, charNum))
+	// control direction. False: -> True: <->
+	direction := false
+	// record cursor position
+	position := 0
+
+	return func() string {
+		var bar string
+		if position > 0 {
+			bar += strings.Repeat(" ", position)
+		}
+
+		bar += cursor + strings.Repeat(" ", boxWidth-position-charNum)
+
+		if direction { // left <-
+			if position <= 0 { // begin ->
+				direction = false
+			} else {
+				position--
+			}
+		} else { // -> right
+			if position+charNum >= boxWidth { // begin <-
+				direction = true
+			} else {
+				position++
+			}
 		}
 
 		return bar

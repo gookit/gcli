@@ -8,37 +8,76 @@ import (
 	"time"
 )
 
-// Spinner definition. ref https://github.com/briandowns/spinner
-type Spinner struct {
-	// Delay is the running speed
-	Delay  time.Duration
+// BuilderFunc build char string
+type BuilderFunc func() string
+
+// SpinnerFactory definition. ref https://github.com/briandowns/spinner
+type SpinnerFactory struct {
+	// Speed is the running speed
+	Speed time.Duration
+	// Format setting display format
 	Format string
-	chars  []rune
+	// Builder build custom spinner text
+	Builder BuilderFunc
+	// locker
+	lock *sync.RWMutex
+	// mark spinner status
 	active bool
-	lock   *sync.RWMutex
 	// control the spinner running.
 	stopCh chan struct{}
 }
 
-// SpinnerBar instance create
-func SpinnerBar(cs []rune, speed time.Duration) *Spinner {
-	return NewSpinner(cs, speed)
-}
-
-// NewSpinner instance
-func NewSpinner(cs []rune, speed time.Duration) *Spinner {
-	return &Spinner{
-		Delay:  speed,
+// Spinner instance
+func Spinner(speed time.Duration) *SpinnerFactory {
+	return &SpinnerFactory{
+		Speed:  speed,
 		Format: "%s",
 		// color: color.Normal.Sprint,
-		lock:  &sync.RWMutex{},
-		chars: cs,
+		lock: &sync.RWMutex{},
 		// writer:   os.Stdout,
 		stopCh: make(chan struct{}, 1),
 	}
 }
 
-func (s *Spinner) prepare(format []string) {
+// RoundTripLoading create
+func RoundTripLoading(char rune, speed time.Duration, charNumAndBoxWidth ...int) *SpinnerFactory {
+	return RoundTripSpinner(char, speed, charNumAndBoxWidth...)
+}
+
+// RoundTripSpinner instance create
+func RoundTripSpinner(char rune, speed time.Duration, charNumAndBoxWidth ...int) *SpinnerFactory {
+	charNum := 4
+	boxWidth := 12
+	if ln := len(charNumAndBoxWidth); ln > 0 {
+		charNum = charNumAndBoxWidth[0]
+		if ln > 1 {
+			boxWidth = charNumAndBoxWidth[1]
+		}
+	}
+
+	return Spinner(speed).WithBuilder(roundTripTextBuilder(char, charNum, boxWidth))
+}
+
+// LoadingSpinner instance create
+func LoadingSpinner(chars []rune, speed time.Duration) *SpinnerFactory {
+	return Spinner(speed).WithBuilder(loadingCharBuilder(chars))
+}
+
+/*************************************************************
+ * spinner running
+ *************************************************************/
+
+// WithBuilder set spinner text builder
+func (s *SpinnerFactory) WithBuilder(builder BuilderFunc) *SpinnerFactory {
+	s.Builder = builder
+	return s
+}
+
+func (s *SpinnerFactory) prepare(format []string) {
+	if s.Builder == nil {
+		panic("spinner: field SpinnerFactory.Builder must be setting")
+	}
+
 	if len(format) > 0 {
 		s.Format = format[0]
 	}
@@ -47,17 +86,13 @@ func (s *Spinner) prepare(format []string) {
 		s.Format = "%s " + s.Format
 	}
 
-	if len(s.chars) == 0 {
-		s.chars = RandomCharsTheme()
-	}
-
-	if s.Delay == 0 {
-		s.Delay = 100 * time.Millisecond
+	if s.Speed == 0 {
+		s.Speed = 100 * time.Millisecond
 	}
 }
 
 // Start run spinner
-func (s *Spinner) Start(format ...string) {
+func (s *SpinnerFactory) Start(format ...string) {
 	if s.active {
 		return
 	}
@@ -66,36 +101,27 @@ func (s *Spinner) Start(format ...string) {
 	s.prepare(format)
 
 	go func() {
-		index := 0
-		length := len(s.chars)
-
 		for {
 			select {
 			case <-s.stopCh:
 				return
 			default:
 				s.lock.Lock()
-				char := string(s.chars[index])
-				if index+1 == length { // reset
-					index = 0
-				} else {
-					index++
-				}
 
 				// \x0D - Move the cursor to the beginning of the line
 				// \x1B[2K - Erase(Delete) the line
 				fmt.Print("\x0D\x1B[2K")
-				color.Printf(s.Format, char)
+				color.Printf(s.Format, s.Builder())
 				s.lock.Unlock()
 
-				time.Sleep(s.Delay)
+				time.Sleep(s.Speed)
 			}
 		}
 	}()
 }
 
 // Stop run spinner
-func (s *Spinner) Stop(finalMsg ...string) {
+func (s *SpinnerFactory) Stop(finalMsg ...string) {
 	if !s.active {
 		return
 	}
@@ -113,12 +139,12 @@ func (s *Spinner) Stop(finalMsg ...string) {
 }
 
 // Restart will stop and start the spinner
-func (s *Spinner) Restart() {
+func (s *SpinnerFactory) Restart() {
 	s.Stop()
 	s.Start()
 }
 
 // Active status
-func (s *Spinner) Active() bool {
+func (s *SpinnerFactory) Active() bool {
 	return s.active
 }

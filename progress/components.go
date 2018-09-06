@@ -1,10 +1,5 @@
 package progress
 
-import (
-	"math/rand"
-	"time"
-)
-
 // some built in chars
 const (
 	CharStar    rune = '*'
@@ -50,8 +45,8 @@ func Counter(maxSteps ...int) *Progress {
 }
 
 // DynamicText progress bar create
-func DynamicText(messages map[int]string) *Progress {
-	return New().AddWidget("message", DynamicTextWidget(messages))
+func DynamicText(messages map[int]string, maxSteps ...int) *Progress {
+	return New(maxSteps...).AddWidget("message", DynamicTextWidget(messages))
 }
 
 /*************************************************************
@@ -72,11 +67,11 @@ type BarChars struct {
 
 // some built in BarChars style
 var (
-	BarCharsStyle  = BarChars{'#', '>', ' '}
-	BarCharsStyle1 = BarChars{'▉', '▉', '░'}
-	BarCharsStyle2 = BarChars{'■', '■', ' '}
-	BarCharsStyle3 = BarChars{'■', '▶', ' '}
-	BarCharsStyle4 = BarChars{'=', '>', ' '}
+	BarStyle  = BarChars{'#', '>', ' '}
+	BarStyle1 = BarChars{'▉', '▉', '░'}
+	BarStyle2 = BarChars{'■', '■', ' '}
+	BarStyle3 = BarChars{'■', '▶', ' '}
+	BarStyle4 = BarChars{'=', '>', ' '}
 )
 
 // ProgressBar definition.
@@ -101,7 +96,7 @@ func (pb ProgressBar) Create(maxSteps ...int) *Progress {
 
 // Bar create a default progress bar.
 func Bar(maxSteps ...int) *Progress {
-	return CustomBar(DefBarWidth, BarCharsStyle).WithMaxSteps(maxSteps...)
+	return CustomBar(DefBarWidth, BarStyle, maxSteps...)
 }
 
 // Tape create new tape progress bar. is alias of Bar()
@@ -110,8 +105,8 @@ func Tape(maxSteps ...int) *Progress {
 }
 
 // CustomBar create a custom progress bar.
-func CustomBar(width int, cs BarChars) *Progress {
-	return New().Config(func(p *Progress) {
+func CustomBar(width int, cs BarChars, maxSteps ...int) *Progress {
+	return New(maxSteps...).Config(func(p *Progress) {
 		p.Format = DefBarFormat
 	}).AddWidget("bar", ProgressBarWidget(width, cs))
 }
@@ -120,16 +115,9 @@ func CustomBar(width int, cs BarChars) *Progress {
  * RoundTrip progress bar: `[ ====   ] Pending ...`
  *************************************************************/
 
-// RoundTripBar config
-type RoundTripBar struct {
-	Char     rune
-	CharNum  int
-	BoxWidth int
-}
-
-// Create Progress bar from RoundTripBar config.
-func (rt RoundTripBar) Create(maxSteps ...int) *Progress {
-	return RoundTrip(rt.Char, rt.CharNum, rt.BoxWidth).WithMaxSteps(maxSteps...)
+// RoundTripBar alias of RoundTrip()
+func RoundTripBar(char rune, charNumAndBoxWidth ...int) *Progress {
+	return RoundTrip(char, charNumAndBoxWidth...)
 }
 
 // RoundTrip create a RoundTrip progress bar.
@@ -160,42 +148,20 @@ func RoundTrip(char rune, charNumAndBoxWidth ...int) *Progress {
  * Loading bar
  *************************************************************/
 
-// CharsThemes collection
-var CharsThemes = [][]rune{
-	{'卍', '卐'},
-	{'◐', '◒', '◓', '◑'},
-	{'✣', '✤', '✥', '❉'},
-	{'-', '\\', '|', '/'},
-	[]rune("▖▘▝▗"),
-	[]rune("◢◣◤◥"),
-	[]rune("⌞⌟⌝⌜"),
-	[]rune("◎●◯◌○⊙"),
-	[]rune("◡◡⊙⊙◠◠"),
-	[]rune("←↖↑↗→↘↓↙"),
-	[]rune("㊎㊍㊌㊋㊏"),
-	[]rune("⣾⣽⣻⢿⡿⣟⣯⣷"),
-	[]rune("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏"),
-	[]rune("▉▊▋▌▍▎▏▎▍▌▋▊▉"),
-	[]rune("🌍🌎🌏"),
-	[]rune("⠋⠙⠚⠒⠂⠂⠒⠲⠴⠦⠖⠒⠐⠐⠒⠓⠋"),
-	[]rune("🕐🕑🕒🕓🕔🕕🕖🕗🕘🕙🕚🕛"),
+// LoadingBar alias of load bar LoadBar()
+func LoadingBar(chars []rune, maxSteps ...int) *Progress {
+	return LoadBar(chars, maxSteps...)
 }
 
-// LoadingBar alias of load bar LoadBar()
-func LoadingBar(chars []rune) *Progress {
-	return LoadBar(chars)
+// SpinnerBar alias of load bar LoadBar()
+func SpinnerBar(chars []rune, maxSteps ...int) *Progress {
+	return LoadBar(chars, maxSteps...)
 }
 
 // LoadBar create a loading progress bar
-func LoadBar(chars []rune) *Progress {
-	return New().Config(func(p *Progress) {
-		p.Format = "{@loading} {@message}"
+func LoadBar(chars []rune, maxSteps ...int) *Progress {
+	return New(maxSteps...).Config(func(p *Progress) {
+		p.Format = "{@loading} ({@current}/{@max}){@message}"
 		p.AddWidget("loading", LoadingWidget(chars))
 	})
-}
-
-// RandomCharsTheme get
-func RandomCharsTheme() []rune {
-	rand.Seed(time.Now().UnixNano())
-	return CharsThemes[rand.Intn(len(CharsThemes)-1)]
 }
