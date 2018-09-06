@@ -5,3 +5,6 @@
 - pending/loading progress bar
 - counter 
 - dynamic Text
+
+
+## spinner

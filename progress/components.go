@@ -157,30 +157,8 @@ func RoundTrip(char rune, charNumAndBoxWidth ...int) *Progress {
 }
 
 /*************************************************************
- * Loading/Spinner bar
+ * Loading bar
  *************************************************************/
-
-// default spinner chars: -\|/
-var (
-	LoadingTheme1  = []rune{'-', '\\', '|', '/'}
-	LoadingTheme2  = []rune{'◐', '◒', '◓', '◑'}
-	LoadingTheme3  = []rune{'✣', '✤', '✥', '❉'}
-	LoadingTheme4  = []rune{'卍', '卐'}
-	LoadingTheme5  = []rune("⌞⌟⌝⌜")
-	LoadingTheme6  = []rune("◎●◯◌○⊙")
-	LoadingTheme7  = []rune("㊎㊍㊌㊋㊏")
-	LoadingTheme8  = []rune("⠋⠙⠹⠸⠼⠴⠦⠧⠇⠏")
-	LoadingTheme9  = []rune("▉▊▋▌▍▎▏▎▍▌▋▊▉")
-	LoadingTheme10 = []rune("▖▘▝▗")
-	LoadingTheme11 = []rune("←↖↑↗→↘↓↙")
-	LoadingTheme12 = []rune("◢◣◤◥")
-	LoadingTheme13 = []rune("◡◡⊙⊙◠◠")
-	LoadingTheme14 = []rune("⣾⣽⣻⢿⡿⣟⣯⣷")
-	LoadingTheme15 = []rune("╫╪")
-	LoadingTheme16 = []rune("⠋⠙⠚⠒⠂⠂⠒⠲⠴⠦⠖⠒⠐⠐⠒⠓⠋")
-	LoadingTheme17 = []rune("🕐🕑🕒🕓🕔🕕🕖🕗🕘🕙🕚🕛")
-	LoadingTheme18 = []rune("🌍🌎🌏")
-)
 
 // CharsThemes collection
 var CharsThemes = [][]rune{

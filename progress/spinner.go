@@ -8,7 +8,7 @@ import (
 	"time"
 )
 
-// Spinner definition
+// Spinner definition. ref https://github.com/briandowns/spinner
 type Spinner struct {
 	// Delay is the running speed
 	Delay  time.Duration

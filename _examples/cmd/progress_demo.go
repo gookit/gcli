@@ -107,7 +107,7 @@ func runSpinnerBar() {
 }
 
 func runLoadingBar(maxStep int) {
-	p := progress.LoadBar(progress.RandomCharsTheme())
+	p := progress.LoadingBar(progress.RandomCharsTheme())
 	p.MaxSteps = uint(maxStep)
 	p.AddMessage("message", "data loading ... ...")
 
