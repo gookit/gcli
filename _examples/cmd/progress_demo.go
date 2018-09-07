@@ -23,7 +23,7 @@ func ProgressDemoCmd() *cliapp.Command {
 			c.IntOpt(&pd.maxSteps, "max-step", "", 110, "setting the max step value")
 			c.BoolOpt(&pd.overwrite, "overwrite", "o", true, "setting overwrite progress bar line")
 			c.AddArg("name",
-				"progress bar type name. allow: bar,txt,loading,roundTrip",
+				"progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
 				true,
 			)
 		},
@@ -42,6 +42,8 @@ func (d *progressDemo) Run(c *cliapp.Command, _ []string) int {
 	switch name {
 	case "bar":
 		imgProgressBar(max)
+	case "dt", "dtxt", "dynamicText":
+		dynamicTextBar(max)
 	case "txt", "text":
 		txtProgressBar(max)
 	case "load", "loading", "spinner":
@@ -49,7 +51,7 @@ func (d *progressDemo) Run(c *cliapp.Command, _ []string) int {
 	case "rt", "roundTrip":
 		runRoundTripBar(max)
 	default:
-		return c.Errorf("the progress bar type name only allow: bar,txt,loading,roundTrip. input is: %s", name)
+		return c.Errorf("the progress bar type name only allow: bar,txt,dtxt,loading,roundTrip. input is: %s", name)
 	}
 	return 0
 }
@@ -73,8 +75,27 @@ func txtProgressBar(maxStep int) {
 	txt.Finish()
 }
 
+func dynamicTextBar(maxStep int)  {
+	messages := map[int]string{
+		// key is percent, range is 0 - 100.
+		20:  " Prepare ...",
+		40:  " Request ...",
+		65:  " Transport ...",
+		95:  " Saving ...",
+		100: " Handle Complete.",
+	}
+
+	// maxStep = 10
+	p := progress.DynamicText(messages, maxStep)
+	// p.Overwrite = false
+
+	// running
+	runProgressBar(p, maxStep, 100)
+	p.Finish()
+}
+
 func imgProgressBar(maxStep int) {
-	cs := progress.BarStyle4
+	cs := progress.RandomBarStyle()
 
 	p := progress.CustomBar(60, cs)
 	p.MaxSteps = uint(maxStep)
@@ -82,14 +103,6 @@ func imgProgressBar(maxStep int) {
 	// p.Overwrite = false
 
 	// p.AddMessage("message", " handling ...")
-	// use dynamic message
-	p.AddWidget("message", progress.DynamicTextWidget(map[int]string{
-		20: " Prepare ...",
-		40: " Request ...",
-		65: " Transport ...",
-		95: " Saving ...",
-		100: " Handle Complete.",
-	}))
 
 	// running
 	runProgressBar(p, maxStep, 100)

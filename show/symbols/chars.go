@@ -2,7 +2,6 @@ package symbols
 
 // links:
 //  http://cn.piliapp.com/symbol/
-
 // 卍 卐 ■ ▶ ☐☑☒ ❖
 const OK = "✔"
 const NO = "✘"

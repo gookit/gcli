@@ -3,6 +3,7 @@ package progress
 import (
 	"fmt"
 	"runtime"
+	"sort"
 	"strings"
 	"time"
 )
@@ -69,11 +70,19 @@ var builtinWidgets = map[string]WidgetFunc{
 // for param messages: int is percent, range is 0 - 100. value is message string.
 // Usage please example.
 func DynamicTextWidget(messages map[int]string) WidgetFunc {
+	var numbers []int
+	for val := range messages {
+		numbers = append(numbers, val)
+	}
+
+	// sort
+	sort.Ints(numbers)
+
 	return func(p *Progress) string {
 		percent := int(p.Percent() * 100)
-		for val, message := range messages {
+		for _, val := range numbers {
 			if percent <= val {
-				return message
+				return messages[val]
 			}
 		}
 

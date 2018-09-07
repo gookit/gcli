@@ -1,5 +1,10 @@
 package progress
 
+import (
+	"math/rand"
+	"time"
+)
+
 // some built in chars
 const (
 	CharStar    rune = '*'
@@ -14,6 +19,7 @@ const (
 	CharSquare2 rune = '▉'
 	CharSquare3 rune = '░'
 	CharSquare4 rune = '▒'
+	CharSquare5 rune = '▢'
 	// Hyphen Minus
 	CharHyphen      rune = '-'
 	CharCNHyphen    rune = '—'
@@ -32,21 +38,24 @@ func Txt(maxSteps ...int) *Progress {
 
 // Full text progress bar create.
 func Full(maxSteps ...int) *Progress {
-	return New(maxSteps...).Config(func(p *Progress) {
+	return NewWithConfig(func(p *Progress) {
 		p.Format = FullFormat
-	})
+	}, maxSteps...)
 }
 
 // Counter progress bar create
 func Counter(maxSteps ...int) *Progress {
-	return New(maxSteps...).Config(func(p *Progress) {
+	return NewWithConfig(func(p *Progress) {
 		p.Format = MinFormat
-	})
+	}, maxSteps...)
 }
 
 // DynamicText progress bar create
 func DynamicText(messages map[int]string, maxSteps ...int) *Progress {
-	return New(maxSteps...).AddWidget("message", DynamicTextWidget(messages))
+	return NewWithConfig(func(p *Progress) {
+		p.Format = "{@percent:4s}%({@current}/{@max}){@message}"
+		p.AddWidget("message", DynamicTextWidget(messages))
+	}, maxSteps...)
 }
 
 /*************************************************************
@@ -65,14 +74,16 @@ type BarChars struct {
 	Completed, Processing, Remaining rune
 }
 
-// some built in BarChars style
-var (
-	BarStyle  = BarChars{'#', '>', ' '}
-	BarStyle1 = BarChars{'▉', '▉', '░'}
-	BarStyle2 = BarChars{'■', '■', ' '}
-	BarStyle3 = BarChars{'■', '▶', ' '}
-	BarStyle4 = BarChars{'=', '>', ' '}
-)
+// BarStyles some built in BarChars style collection
+var BarStyles = []BarChars{
+	{'=', '>', ' '},
+	{'#', '>', ' '},
+	{'-', '>', '-'},
+	{'▉', '▉', '░'},
+	{'■', '■', ' '},
+	{'■', '■', '▢'},
+	{'■', '▶', ' '},
+}
 
 // ProgressBar definition.
 // Preview:
@@ -94,9 +105,15 @@ func (pb ProgressBar) Create(maxSteps ...int) *Progress {
 	}).AddWidget("bar", ProgressBarWidget(pb.Width, pb.Chars))
 }
 
+// RandomBarStyle get
+func RandomBarStyle() BarChars {
+	rand.Seed(time.Now().UnixNano())
+	return BarStyles[rand.Intn(len(BarStyles)-1)]
+}
+
 // Bar create a default progress bar.
 func Bar(maxSteps ...int) *Progress {
-	return CustomBar(DefBarWidth, BarStyle, maxSteps...)
+	return CustomBar(DefBarWidth, BarStyles[0], maxSteps...)
 }
 
 // Tape create new tape progress bar. is alias of Bar()

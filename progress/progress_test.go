@@ -31,7 +31,7 @@ func TestLoading(t *testing.T) {
 
 func ExampleBar() {
 	maxStep := 105
-	p := CustomBar(60, BarStyle, maxStep)
+	p := CustomBar(60, BarStyles[0], maxStep)
 	p.MaxSteps = uint(maxStep)
 	p.Format = FullBarFormat
 
