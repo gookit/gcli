@@ -4,6 +4,10 @@
 
 **[EN Readme](README.md)**
 
+## 截图展示
+
+![app-help](_examples/images/app-help.jpg)
+
 ## 功能特色
 
 - 使用简单方便
@@ -113,7 +117,13 @@ Version: 1.0.3
 
 使用 `./cliapp` 或者 `./cliapp -h` 来显示应用的帮助信息，包含所有的可用命令和一些全局选项
 
-![app-help](_examples/images/app-help.jpg)
+示例：
+
+```bash
+./cliapp
+./cliapp -h # can also
+./cliapp --help # can also
+```
 
 ### 运行一个命令
 

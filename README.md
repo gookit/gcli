@@ -4,6 +4,10 @@ A simple to use command line application, written using golang
 
 **[中文说明](README_cn.md)**
 
+## Screenshots
+
+![app-help](_examples/images/app-help.jpg)
+
 ## Features
 
 - Simple to use
@@ -109,7 +113,13 @@ Version: 1.0.3
 
 > by `./cliapp` or `./cliapp -h` or `./cliapp --help`
 
-![app-help](_examples/images/app-help.jpg)
+Examples:
+
+```bash
+./cliapp
+./cliapp -h # can also
+./cliapp --help # can also
+```
 
 ### Run a command
 
