@@ -11,12 +11,12 @@ const (
 	ERR = 2
 )
 
-// FormatterFace
+// FormatterFace interface
 type FormatterFace interface {
 	Format() string
 }
 
-// ShownFace shown
+// ShownFace shown interface
 type ShownFace interface {
 	// data to string
 	String() string

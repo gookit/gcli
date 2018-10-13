@@ -2,16 +2,17 @@ package interact
 
 import "github.com/gookit/color"
 
-// Interactive
+// Interactive definition
 type Interactive struct {
 	Name string
 }
 
+// New Interactive instance
 func New(name string) *Interactive {
 	return &Interactive{Name: name}
 }
 
-// Option
+// Option definition
 type Option struct {
 	Quit bool
 	// default value

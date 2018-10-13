@@ -47,7 +47,7 @@ func AList() {
 
 }
 
-// AList show multi list data
+// MList show multi list data
 func MList() {
 
 }

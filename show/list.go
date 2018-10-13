@@ -44,7 +44,7 @@ type Lists struct {
 	Rows  []List
 }
 
-// NewLists
+// NewLists create lists
 func NewLists(title string, lists []List) *Lists {
 	return &Lists{Title: title, Rows: lists}
 }

@@ -1,8 +1,8 @@
 package utils
 
-// SimilarComparator
+// SimilarComparator definition
 // links:
-// https://github.com/mkideal/cli/blob/master/fuzzy.go
+// 	https://github.com/mkideal/cli/blob/master/fuzzy.go
 type SimilarComparator struct {
 	src, dst string
 }

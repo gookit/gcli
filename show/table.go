@@ -19,7 +19,7 @@ type Table struct {
 	WrapBorder bool
 }
 
-// NewTable
+// NewTable create table
 func NewTable(title string) *Table {
 	return &Table{Title: title}
 }
