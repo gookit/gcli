@@ -74,6 +74,9 @@ func (g *genEmojiMap) Download(remoteFile string, saveAs string) error {
 
 	client := http.Client{Timeout: 900 * time.Second}
 	resp, err := client.Get(remoteFile)
+	if err != nil {
+		return err
+	}
 	defer resp.Body.Close()
 
 	_, err = io.Copy(newFile, resp.Body)

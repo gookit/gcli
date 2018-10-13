@@ -8,6 +8,7 @@ import (
 	"os/exec"
 )
 
+// DefaultEditor definition
 const DefaultEditor = "vim"
 
 // GetEditor sets callback to get editor program
@@ -35,6 +36,7 @@ func LaunchEditor(editor string) (content []byte, err error) {
 	return LaunchEditorWithFilename(editor, randomFilename())
 }
 
+// LaunchEditorWithFilename launch the specified editor with a filename
 func LaunchEditorWithFilename(editor, filename string) (content []byte, err error) {
 	cmd := exec.Command(editor, filename)
 	cmd.Stdin = os.Stdin

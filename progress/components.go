@@ -98,7 +98,7 @@ type ProgressBar struct {
 	Chars BarChars
 }
 
-// Config the progress instance
+// Create the progress instance
 func (pb ProgressBar) Create(maxSteps ...int) *Progress {
 	return New(maxSteps...).Config(func(p *Progress) {
 		p.Format = DefBarFormat
