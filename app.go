@@ -61,7 +61,7 @@ type CmdLine struct {
 	argsStr string
 }
 
-// BinName get bin script name
+// PID get PID
 func (c *CmdLine) PID() int {
 	return c.pid
 }
@@ -86,7 +86,7 @@ func (c *CmdLine) ArgsString() string {
 	return c.argsStr
 }
 
-// create a default instance
+// CLI create a default instance
 var CLI = &CmdLine{
 	pid: os.Getpid(),
 	// more info
@@ -162,7 +162,7 @@ func Verbose() uint {
 	return gOpts.verbose
 }
 
-// New create new app instance
+// NewApp create new app instance. alias of the New()
 // eg:
 // 	cliapp.New()
 // 	cliapp.New(func(a *Application) {
@@ -173,7 +173,7 @@ func NewApp(fn ...func(a *Application)) *Application {
 	return New(fn...)
 }
 
-// NewApp create new app
+// New create new app instance.
 // eg:
 // 	cliapp.NewApp()
 // 	cliapp.NewApp(func(a *Application) {
@@ -201,7 +201,7 @@ func New(fn ...func(a *Application)) *Application {
 	return app
 }
 
-// initialize application
+// Initialize application
 func (app *Application) Initialize() {
 	app.names = make(map[string]int)
 
@@ -304,7 +304,7 @@ func (app *Application) AddError(err error) {
 }
 
 // AddVar get command name
-func (app *Application) AddVar(name string, value string) {
+func (app *Application) AddVar(name, value string) {
 	app.vars[name] = value
 }
 

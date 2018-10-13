@@ -70,5 +70,5 @@ func max(x, y int) int {
 // Usage:
 //	rate, ok := Similarity("hello", "he")
 func Similarity(s, t string, rate float32) (float32, bool) {
-	return NewComparator(s,t).Similar(rate)
+	return NewComparator(s, t).Similar(rate)
 }

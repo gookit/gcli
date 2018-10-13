@@ -19,6 +19,7 @@ type genEmojiMap struct {
 	onlyGen bool
 }
 
+// Gemoji definition
 type Gemoji struct {
 	Aliases     []string `json:"aliases"`
 	Description string   `json:"description"`
@@ -60,7 +61,7 @@ func (g *genEmojiMap) run(c *cliapp.Command, _ []string) int {
 	return 0
 }
 
-// 实现单个文件的下载
+// Download 实现单个文件的下载
 func (g *genEmojiMap) Download(remoteFile string, saveAs string) error {
 	nt := time.Now().Format("2006-01-02 15:04:05")
 	fmt.Printf("[%s]To download %s\n", nt, remoteFile)

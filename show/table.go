@@ -24,6 +24,7 @@ func NewTable(title string) *Table {
 	return &Table{Title: title}
 }
 
+// Format as string
 func (t *Table) Format() string {
 	panic("implement me")
 }

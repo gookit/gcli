@@ -3,34 +3,36 @@ package symbols
 // links:
 //  http://cn.piliapp.com/symbol/
 // 卍 卐 ■ ▶ ☐☑☒ ❖
-const OK = "✔"
-const NO = "✘"
-const PEN = "✎"
+const (
+	OK  = "✔"
+	NO  = "✘"
+	PEN = "✎"
 
-const HEART = "❤"
-const HEART1 = "♥"
-const SMILE = "☺"
+	HEART  = "❤"
+	HEART1 = "♥"
+	SMILE  = "☺"
 
-const FLOWER = "✿"
-const MUSIC = "♬"
+	FLOWER = "✿"
+	MUSIC  = "♬"
 
-// ☚ ☜ ☛ ☞
-const UP = "⇧"
-const DOWN = "⇩"
-const LEFT = "⇦"
-const RIGHT = "⇨"
-const SEARCH = ""
+	// ☚ ☜ ☛ ☞
+	UP     = "⇧"
+	DOWN   = "⇩"
+	LEFT   = "⇦"
+	RIGHT  = "⇨"
+	SEARCH = ""
 
-// ❝❞❛❜
-// ⌜⌝⌞⌟
-// ▶➔➙➛➜➞➟➠➡➢➣➥➦➧➨➩➪➫➬➭➮➯➱➵
+	// ❝❞❛❜
+	// ⌜⌝⌞⌟
+	// ▶➔➙➛➜➞➟➠➡➢➣➥➦➧➨➩➪➫➬➭➮➯➱➵
 
-const MALE = "♂"
-const FEMALE = "♀"
+	MALE   = "♂"
+	FEMALE = "♀"
 
-const SUN = "☀"
-const STAR = "★"
-const SNOW = "❈"
-const CLOUD = "☁"
+	SUN   = "☀"
+	STAR  = "★"
+	SNOW  = "❈"
+	CLOUD = "☁"
 
-const ENTER = "⌥"
+	ENTER = "⌥"
+)

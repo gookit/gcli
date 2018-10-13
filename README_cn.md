@@ -1,5 +1,8 @@
 # cliapp
 
+[![GoDoc](https://godoc.org/github.com/gookit/cliapp?status.svg)](https://godoc.org/github.com/gookit/cliapp)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gookit/cliapp)](https://goreportcard.com/report/github.com/gookit/cliapp)
+
 一个golang下的简单易用的命令行应用，工具库。
 
 **[EN Readme](README.md)**
@@ -25,28 +28,10 @@
 - 支持为当前CLI应用生成 `zsh`,`bash` 下的命令补全脚本文件
 - 支持将单个命令当做独立应用运行
 
-## Godoc
+## GoDoc
 
 - [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v1)
 - [godoc for github](https://godoc.org/github.com/gookit/cliapp)
-
-## 获取安装
-
-- 使用 dep 包管理
-
-```bash
-dep ensure -add gopkg.in/gookit/cliapp.v1 // 推荐
-// OR
-dep ensure -add github.com/gookit/cliapp
-```
-
-- 使用 go get
-
-```bash
-go get gopkg.in/gookit/cliapp.v1 // 推荐
-// OR
-go get -u github.com/gookit/cliapp
-```
 
 ## 快速开始
 

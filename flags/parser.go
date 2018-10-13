@@ -59,7 +59,7 @@ func (p *ArgsParser) Args() []string {
 	return p.args
 }
 
-// String the all options
+// OptsString convert all options to string
 func (p *ArgsParser) OptsString() string {
 	return fmt.Sprintf("long opts: %#v\nshort opts: %#v\n", p.longOpts, p.shortOpts)
 }

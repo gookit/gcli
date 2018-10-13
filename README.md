@@ -1,6 +1,9 @@
 # cliapp 
 
-A simple to use command line application, written using golang
+[![GoDoc](https://godoc.org/github.com/gookit/cliapp?status.svg)](https://godoc.org/github.com/gookit/cliapp)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gookit/cliapp)](https://goreportcard.com/report/github.com/gookit/cliapp)
+
+A simple to use command line application, written using golang.
 
 **[中文说明](README_cn.md)**
 
@@ -25,28 +28,10 @@ A simple to use command line application, written using golang
 - Supports generation of `zsh` and `bash` command completion script files
 - Supports a single command as a stand-alone application
 
-## Godoc
+## GoDoc
 
 - [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v1)
 - [godoc for github](https://godoc.org/github.com/gookit/cliapp)
-
-## Install
-
-- use dep
-
-```bash
-dep ensure -add gopkg.in/gookit/cliapp.v1 // is recommended
-// OR
-dep ensure -add github.com/gookit/cliapp
-```
-
-- go get
-
-```bash
-go get gopkg.in/gookit/cliapp.v1 // is recommended
-// OR
-go get -u github.com/gookit/cliapp
-```
 
 ## Quick start
 

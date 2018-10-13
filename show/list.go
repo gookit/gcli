@@ -23,6 +23,7 @@ func NewList(title string, items interface{}) *List {
 	return &List{Title: title, Items: items, NewLine: true}
 }
 
+// Format as string
 func (l *List) Format() string {
 	if l.Items == nil {
 		return ""
@@ -31,6 +32,7 @@ func (l *List) Format() string {
 	return ""
 }
 
+// Print to console
 func (l *List) Print() {
 
 }
@@ -47,10 +49,12 @@ func NewLists(title string, lists []List) *Lists {
 	return &Lists{Title: title, Rows: lists}
 }
 
+// Format as string
 func (ls *Lists) Format() string {
 	panic("implement me")
 }
 
+// Print to console
 func (ls *Lists) Print() {
 	panic("implement me")
 }

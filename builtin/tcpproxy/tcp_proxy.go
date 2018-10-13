@@ -5,24 +5,27 @@ import (
 	"sync"
 )
 
-// ref links:
-// https://www.jianshu.com/p/53e219fbf3c5
-// https://github.com/yangxikun/gsproxy
+// TCPProxy definition.
+// refs:
+// 	https://www.jianshu.com/p/53e219fbf3c5
+// 	https://github.com/yangxikun/gsproxy
 type TCPProxy struct {
 	lock sync.Mutex
 }
 
+// Run server
 func (p *TCPProxy) Run() {
 
 }
 
+// Handle connection
 func (p *TCPProxy) Handle() {
 
 }
 
 var tp = TCPProxy{}
 
-// FileWatcher command definition
+// TCPProxyCommand command definition
 func TCPProxyCommand() *cliapp.Command {
 	cmd := &cliapp.Command{
 		Func: runServer,
