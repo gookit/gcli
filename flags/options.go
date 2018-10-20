@@ -56,3 +56,12 @@ type Option struct {
 	// Description
 	Description string
 }
+
+// NewOpt create new option
+func NewOpt(name, description string) *Option {
+	return &Option{}
+}
+
+func (opt *Option) StrVar(s *string)  *Option {
+	return opt
+}

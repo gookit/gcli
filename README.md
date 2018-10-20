@@ -17,6 +17,7 @@ A simple to use command line application, written using golang.
 - Support for adding multiple commands and supporting command aliases
 - When the command entered is incorrect, a similar command will be prompted(including an alias prompt)
 - Support option binding `--long`, support for adding short options(`-s`)
+- POSIX-style short flag combining (`-a -b` = `-ab`).
 - Support binding argument to specified name, support `required`, optional, `array` three settings
   - It will be automatically detected and collected when the command is run.
 - Supports rich color output. powered by [gookit/color](https://github.com/gookit/color)

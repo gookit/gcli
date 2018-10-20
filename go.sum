@@ -2,6 +2,10 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/fsnotify/fsnotify v1.4.7 h1:IXs+QLmnXW2CcXuY+8Mzv/fWEsPGWxqefPtCP5CnV9I=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
+github.com/golang/crypto v0.0.0-20180802221118-56440b844dfe h1:UYdbqCXzKJrqx471nIQWY+TeE49cOslUNivhSZ0KyXI=
+github.com/golang/crypto v0.0.0-20180802221118-56440b844dfe/go.mod h1:uZvAcrsnNaCxlh1HorK5dUQHGmEKPh2H/Rl1kehswPo=
+github.com/golang/sys v0.0.0-20180806143827-98c5dad5d1a0 h1:qSTmt4/yt7Q8UDhJF7064UuckGa7bi5LqWgj92Kz348=
+github.com/golang/sys v0.0.0-20180806143827-98c5dad5d1a0/go.mod h1:5JyrLPvD/ZdaYkT7IqKhsP5xt7aLjA99KXRtk4EIYDk=
 github.com/gookit/color v1.1.4 h1:YyM/XVlwmgyzYqnrKEbEDm/cnYgjslml1CgTZE+QwCw=
 github.com/gookit/color v1.1.4/go.mod h1:655QfvFggjTrC1SaAufon2qad0RLgbdQa40lCeOdU64=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
