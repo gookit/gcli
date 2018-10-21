@@ -26,7 +26,7 @@ Use "<cyan>{$binName} {command} -h</>" for more information about a command
 `
 
 // display app version info
-func (app *Application) showVersionInfo() {
+func (app *App) showVersionInfo() {
 	fmt.Printf(
 		"%s\n\nVersion: %s\n",
 		utils.UcFirst(app.Description),
@@ -36,7 +36,7 @@ func (app *Application) showVersionInfo() {
 }
 
 // display app commands help
-func (app *Application) showCommandsHelp() {
+func (app *App) showCommandsHelp() {
 	commandsHelp = color.ReplaceTag(commandsHelp)
 	// render help text template
 	str := utils.RenderTemplate(commandsHelp, map[string]interface{}{
@@ -53,7 +53,7 @@ func (app *Application) showCommandsHelp() {
 }
 
 // showCommandHelp display help for an command
-func (app *Application) showCommandHelp(list []string, quit bool) {
+func (app *App) showCommandHelp(list []string, quit bool) {
 	if len(list) != 1 {
 		color.Error.Tips(
 			"Usage: %s help %s\n\nToo many arguments given.",
@@ -75,7 +75,7 @@ func (app *Application) showCommandHelp(list []string, quit bool) {
 }
 
 // findSimilarCmd find similar cmd by input string
-func (app *Application) findSimilarCmd(input string) []string {
+func (app *App) findSimilarCmd(input string) []string {
 	var ss []string
 	// ins := strings.Split(input, "")
 	// fmt.Print(input, ins)

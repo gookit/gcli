@@ -28,6 +28,8 @@ type ShownFace interface {
 
 // Base formatter
 type Base struct {
+	// formatted string
+	formatted string
 }
 
 // Format given data to string

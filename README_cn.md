@@ -3,7 +3,7 @@
 [![GoDoc](https://godoc.org/github.com/gookit/cliapp?status.svg)](https://godoc.org/github.com/gookit/cliapp)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gookit/cliapp)](https://goreportcard.com/report/github.com/gookit/cliapp)
 
-一个golang下的简单易用的命令行应用，工具库。
+一个golang下的简单易用的命令行应用，工具库。包含运行命令，颜色风格，数据展示，进度显示，交互方法等
 
 **[EN Readme](README.md)**
 
@@ -13,8 +13,8 @@
 
 ## 功能特色
 
-- 使用简单方便
-- 支持添加多个命令，并且支持命令别名
+- 使用简单方便，轻量级，无额外依赖
+- 支持添加多个命令，并且支持给命令添加别名
 - 输入的命令错误时，将会提示相似命令（包含别名提示）
 - 快速方便的添加选项绑定 `--long`，支持添加短选项 `-s`
 - 支持绑定参数到指定名称, 支持必须`required`，可选，数组`isArray` 三种设定

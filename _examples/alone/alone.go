@@ -27,7 +27,8 @@ func main() {
 	cmd.BoolOpt(&opts.sample, "sample", "", false, "Prints a sample with that font.")
 
 	// Alone Running
-	cmd.AloneRun()
+	cmd.Run(nil)
+	// cmd.Run(os.Args[1:])
 }
 
 func run(cmd *cliapp.Command, args []string) int {

@@ -74,7 +74,7 @@ type Command struct {
 	hasOptionalArg bool
 
 	// application
-	app *Application
+	app *App
 	// mark is alone running.
 	alone bool
 	// store a command error
@@ -85,6 +85,29 @@ type Command struct {
 	optNames map[string]string
 	// shortcuts for command options(Flags) {short:name} eg. {"n": "name", "o": "opt"}
 	shortcuts map[string]string
+}
+
+// NewCommand create a new command instance.
+// Usage:
+// 	cmd := NewCommand("my-cmd", "description", func(c *Command) { ... })
+//	app.Add(cmd) // OR cmd.AttachTo(app)
+func NewCommand(name, useFor string, config func(c *Command)) *Command {
+	return &Command{
+		Name:   name,
+		UseFor: useFor,
+		Config: config,
+	}
+}
+
+// SetFunc Settings command handler func
+func (c *Command) SetFunc(fn CmdFunc) *Command {
+	c.Func = fn
+	return c
+}
+
+// AttachTo attach the command to CLI application
+func (c *Command) AttachTo(app *App) {
+	app.AddCommand(c)
 }
 
 // Disable set cmd is disabled
@@ -124,7 +147,7 @@ func (c *Command) initialize() *Command {
 
 	// set help vars
 	// c.Vars = c.app.vars // Error: var is map, map is ref addr
-	c.AddVars(c.app.vars)
+	c.AddVars(CLI.helpVars())
 	c.AddVars(map[string]string{
 		"cmd": c.Name,
 		// full command
@@ -135,9 +158,9 @@ func (c *Command) initialize() *Command {
 		c.Hooks = make(map[string]HookFunc, 1)
 	}
 
-	c.callHook(EvtInit, nil)
+	c.fireEvent(EvtInit, nil)
 
-	// add default error handler
+	// add default error handler.
 	if _, ok := c.Hooks[EvtError]; !ok {
 		c.Hooks[EvtError] = c.defaultErrHandler
 	}
@@ -148,9 +171,6 @@ func (c *Command) initialize() *Command {
 		c.ShowHelp(true)
 	}
 
-	// bind some global options
-	// c.Flags.BoolVar(&gOpts.showHelp, "h", false, "")
-	// c.Flags.BoolVar(&gOpts.showHelp, "help", false, "")
 	return c
 }
 
@@ -162,16 +182,16 @@ func (c *Command) initialize() *Command {
 func (c *Command) Execute(args []string) int {
 	// collect named args
 	if err := c.collectNamedArgs(args); err != nil {
-		fmt.Println(color.FgRed.Render("ERROR:"), err.Error())
+		color.Error.Tips(err.Error())
 		return ERR
 	}
 
 	var eCode int
-	c.callHook(EvtBefore, args)
+	c.fireEvent(EvtBefore, args)
 
 	// call command handler func
 	if c.Func == nil {
-		Logf(VerbWarn, "the command '%s' no handler func to running.", c.Name)
+		Logf(VerbWarn, "[Command.Execute] the command '%s' no handler func to running.", c.Name)
 	} else {
 		// eCode := c.Func.Run(c, args)
 		eCode = c.Func(c, args)
@@ -179,9 +199,9 @@ func (c *Command) Execute(args []string) int {
 
 	if c.error != nil {
 		c.app.AddError(c.error)
-		c.callHook(EvtError, c.error)
+		c.fireEvent(EvtError, c.error)
 	} else {
-		c.callHook(EvtAfter, eCode)
+		c.fireEvent(EvtAfter, eCode)
 	}
 
 	return eCode
@@ -208,15 +228,15 @@ func (c *Command) collectNamedArgs(inArgs []string) error {
 		}
 	}
 
-	if c.app.Strict && inNum > num {
+	if !c.alone && c.app.Strict && inNum > num {
 		return fmt.Errorf("enter too many arguments: %v", inArgs[num:])
 	}
 
 	return nil
 }
 
-func (c *Command) callHook(event string, data interface{}) {
-	Logf(VerbDebug, "command '%s' trigger the hook: %s", c.Name, event)
+func (c *Command) fireEvent(event string, data interface{}) {
+	Logf(VerbDebug, "command '%s' trigger the event: %s", c.Name, event)
 
 	if handler, ok := c.Hooks[event]; ok {
 		handler(c, data)
@@ -224,8 +244,10 @@ func (c *Command) callHook(event string, data interface{}) {
 }
 
 func (c *Command) defaultErrHandler(_ *Command, data interface{}) {
-	err := data.(error)
-	fmt.Println(color.FgRed.Render("ERROR:"), err.Error())
+	if data != nil {
+		color.Error.Tips(data.(error).Error())
+		// fmt.Println(color.Red.Render("ERROR:"), err.Error())
+	}
 }
 
 // Copy a new command for current
@@ -248,19 +270,32 @@ func (c *Command) On(name string, handler func(c *Command, data interface{})) {
  * alone running
  *************************************************************/
 
-// AloneRun current command
-func (c *Command) AloneRun() int {
-	// don't display date on print log
-	log.SetFlags(0)
-	// mark is alone
-	c.alone = true
-	// args := parseGlobalOpts()
-	// init
-	c.initialize()
-	// parse args and opts
-	c.Flags.Parse(os.Args[1:])
+// Run the current command
+func (c *Command) Run(inArgs []string) int {
+	if c.app == nil {
+		// don't display date on print log
+		log.SetFlags(0)
 
-	return c.Execute(c.Flags.Args())
+		// mark is alone
+		c.alone = true
+
+		// init the command
+		c.initialize()
+
+		// check input args
+		if len(inArgs) == 0 {
+			inArgs = os.Args[1:]
+		}
+
+		// parse args and opts
+		if err := c.Flags.Parse(inArgs); err != nil {
+			exitWithErr(err.Error())
+		}
+
+		inArgs = c.Flags.Args()
+	}
+
+	return c.Execute(inArgs)
 }
 
 // IsAlone running
@@ -282,7 +317,8 @@ func (c *Command) Errorf(format string, v ...interface{}) int {
 	return c.WithError(fmt.Errorf(format, v...))
 }
 
-// WithError for the command
+// WithError add a error for the command.
+// Notice: By default the error will be handled by c.defaultErrHandler()
 func (c *Command) WithError(err error) int {
 	c.error = err
 	return ERR
@@ -294,8 +330,8 @@ func (c *Command) Error() error {
 }
 
 // App returns the CLI application
-func (c *Command) App() *Application {
-	return app
+func (c *Command) App() *App {
+	return c.app
 }
 
 // AddVars add multi tpl vars

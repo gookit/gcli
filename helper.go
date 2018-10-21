@@ -87,7 +87,6 @@ func strictFormatArgs(args []string) []string {
 			if l == 3 {
 				arg = "-" + string(arg[2])
 			}
-
 		} else if strings.Index(arg, "-") == 0 {
 			if l > 2 {
 				bools := strings.Split(strings.Trim(arg, "-"), "")

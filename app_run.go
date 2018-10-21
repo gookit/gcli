@@ -7,11 +7,24 @@ import (
 	"github.com/gookit/color"
 	"log"
 	"os"
+	"runtime"
 	"strings"
 )
 
-// store current application instance
-var app *Application
+var (
+	// store current application instance
+	defApp *App
+	// global options
+	gOpts = &GlobalOpts{verbose: VerbError}
+	// CLI create a default instance
+	CLI = &CmdLine{
+		pid: os.Getpid(),
+		// more info
+		osName:  runtime.GOOS,
+		binName: os.Args[0],
+		argLine: strings.Join(os.Args[1:], " "),
+	}
+)
 
 // init
 func init() {
@@ -24,19 +37,24 @@ func init() {
 	}
 }
 
-// App returns the current application instance
-func App() *Application {
-	return app
+// Instance returns the current application instance
+func Instance() *App {
+	return defApp
 }
 
 // AllCommands returns all commands
 func AllCommands() map[string]*Command {
-	return app.commands
+	return defApp.commands
 }
 
 // parseGlobalOpts parse global options
-func parseGlobalOpts() []string {
+func (app *App) parseGlobalOpts() []string {
+	// don't display date on print log
+	log.SetFlags(0)
+
+	// bind help func
 	flag.Usage = app.showCommandsHelp
+
 	// binding global options
 	flag.UintVar(&gOpts.verbose, "verbose", gOpts.verbose, "")
 	flag.BoolVar(&gOpts.showHelp, "h", false, "")
@@ -49,12 +67,9 @@ func parseGlobalOpts() []string {
 	return flag.Args()
 }
 
-// prepare to running
-func (app *Application) prepareRun() (string, []string) {
-	// don't display date on print log
-	log.SetFlags(0)
-	args := parseGlobalOpts()
-	// args := flag.Args()
+// prepare to running, parse args, get command name and command args
+func (app *App) prepareRun() (string, []string) {
+	args := app.parseGlobalOpts()
 
 	if gOpts.showHelp {
 		app.showCommandsHelp()
@@ -69,7 +84,7 @@ func (app *Application) prepareRun() (string, []string) {
 	}
 
 	// if no input command
-	if len(args) < 1 {
+	if len(args) == 0 {
 		// will try run defaultCommand
 		defCmd := app.defaultCommand
 		if len(defCmd) == 0 {
@@ -82,16 +97,12 @@ func (app *Application) prepareRun() (string, []string) {
 		}
 
 		args = []string{defCmd}
-	}
-
-	// is help command
-	if args[0] == "help" {
-		// like 'go help'
-		if len(args) == 1 {
+	} else if args[0] == "help" { // is help command
+		if len(args) == 1 { // like 'help'
 			app.showCommandsHelp()
 		}
 
-		// like 'go help COMMAND'
+		// like 'help COMMAND'
 		app.showCommandHelp(args[1:], true)
 	}
 
@@ -99,11 +110,11 @@ func (app *Application) prepareRun() (string, []string) {
 }
 
 // Run running application
-func (app *Application) Run() {
+func (app *App) Run() {
 	rawName, args := app.prepareRun()
-	Logf(VerbCrazy, "console application process PID: %d", app.pid)
 	name := app.RealCommandName(rawName)
-	Logf(VerbDebug, "input command is: %s, real command: %s, args: %v", rawName, name, args)
+	Logf(VerbCrazy, "[App.Run] begin run console application, process ID: %d", app.pid)
+	Logf(VerbDebug, "[App.Run] input command is: %s, real command: %s, args: %v", rawName, name, args)
 
 	if !app.IsCommand(name) {
 		color.Error.Prompt("unknown input command '%s'", name)
@@ -124,31 +135,34 @@ func (app *Application) Run() {
 	}
 
 	// fmt.Println(cmd.argsStr, len(cmd.argsStr), strings.LastIndex(cmd.argsStr, " -h"))
-	app.callHook(EvtBefore, cmd.Copy())
+	app.fireEvent(EvtBefore, cmd.Copy())
 
 	// parse args, don't contains command name.
 	if !cmd.CustomFlags {
+		if CLI.hasHelpKeywords() { // contains keywords "-h" OR "--help"
+			cmd.ShowHelp(true)
+		}
+
 		cmd.Flags.Parse(args)
 		args = cmd.Flags.Args()
 	}
 
-	Logf(VerbDebug, "args for the command %s: %v", name, args)
+	Logf(VerbDebug, "[App.Run] args for the command '%s': %v", name, args)
 
 	// do execute command
 	exitCode := cmd.Execute(args)
-
 	if len(app.errors) > 0 {
-		app.callHook(EvtError, app.errors)
+		app.fireEvent(EvtError, app.errors)
 	} else {
-		app.callHook(EvtAfter, exitCode)
+		app.fireEvent(EvtAfter, exitCode)
 	}
 
-	Logf(VerbDebug, "command %s run complete, exit with code: %d", name, exitCode)
+	Logf(VerbDebug, "[App.Run] command %s run complete, exit with code: %d", name, exitCode)
 	Exit(exitCode)
 }
 
 // SubRun running other command in current command
-func (app *Application) SubRun(name string, args []string) int {
+func (app *App) SubRun(name string, args []string) int {
 	if !app.IsCommand(name) {
 		color.Error.Prompt("unknown command name '%s'", name)
 		return ERR
@@ -165,27 +179,19 @@ func (app *Application) SubRun(name string, args []string) int {
 	return cmd.Execute(args)
 }
 
-// Add add a command
-// func (app *Application) AddCommander(c Commander) {
-// 	// run command configure
-// 	cmd := c.Configure()
-//
-// 	app.Add(cmd)
-// }
-
 // IsCommand name check
-func (app *Application) IsCommand(name string) bool {
+func (app *App) IsCommand(name string) bool {
 	_, has := app.names[name]
 	return has
 }
 
 // CommandName get current command name
-func (app *Application) CommandName() string {
+func (app *App) CommandName() string {
 	return app.commandName
 }
 
 // CommandNames get all command names
-func (app *Application) CommandNames() []string {
+func (app *App) CommandNames() []string {
 	var ss []string
 	for n := range app.names {
 		ss = append(ss, n)
@@ -195,7 +201,7 @@ func (app *Application) CommandNames() []string {
 }
 
 // AddAliases add alias names for a command
-func (app *Application) AddAliases(command string, names []string) {
+func (app *App) AddAliases(command string, names []string) {
 	if app.aliases == nil {
 		app.aliases = make(map[string]string)
 	}
@@ -211,7 +217,7 @@ func (app *Application) AddAliases(command string, names []string) {
 }
 
 // RealCommandName get real command name by alias
-func (app *Application) RealCommandName(alias string) string {
+func (app *App) RealCommandName(alias string) string {
 	if name, has := app.aliases[alias]; has {
 		return name
 	}

@@ -62,6 +62,6 @@ func NewOpt(name, description string) *Option {
 	return &Option{}
 }
 
-func (opt *Option) StrVar(s *string)  *Option {
+func (opt *Option) StrVar(s *string) *Option {
 	return opt
 }

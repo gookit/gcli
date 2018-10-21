@@ -2,8 +2,10 @@ package main
 
 import (
 	"github.com/gookit/cliapp"
-	"github.com/gookit/cliapp/builtin"
 	"github.com/gookit/cliapp/_examples/cmd"
+	"github.com/gookit/cliapp/builtin"
+	"github.com/gookit/color"
+
 	// "github.com/gookit/cliapp/builtin/filewatcher"
 	// "github.com/gookit/cliapp/builtin/reverseproxy"
 	"runtime"
@@ -15,10 +17,10 @@ import (
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	app := cliapp.NewApp(func(app *cliapp.Application) {
+	app := cliapp.NewApp(func(app *cliapp.App) {
 		app.Version = "1.0.6"
 		app.Description = "this is my cli application"
-		app.Hooks[cliapp.EvtInit] = func(a *cliapp.Application, data interface{}) {
+		app.Hooks[cliapp.EvtInit] = func(a *cliapp.App, data interface{}) {
 			// do something...
 			// fmt.Println("init app")
 		}
@@ -47,6 +49,16 @@ func main() {
 	})
 
 	app.Add(builtin.GenAutoCompleteScript())
+	// create by func
+	app.NewCommand("test1", "description1", func(c *cliapp.Command) {
+		// some config for the command
+	}).SetFunc(func(c *cliapp.Command, args []string) int {
+		color.Green.Println("hello, command is: ", c.Name)
+		return 0
+	}).AttachTo(app)
+
 	// fmt.Printf("%+v\n", cliapp.CommandNames())
+
+	// running
 	app.Run()
 }

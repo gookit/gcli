@@ -9,7 +9,6 @@ package cliapp
 import (
 	"fmt"
 	"os"
-	"runtime"
 	"strings"
 )
 
@@ -28,7 +27,7 @@ const (
 // 	"{$binName}" "{$cmd}" "{$fullCmd}" "{$workDir}"
 const HelpVar = "{$%s}"
 
-// constants for hooks event, there are default allowed hook names
+// constants for hooks event, there are default allowed event names
 const (
 	EvtInit   = "init"
 	EvtBefore = "before"
@@ -58,7 +57,7 @@ type CmdLine struct {
 	// bin script name, by `os.Args[0]`. eg "./cliapp"
 	binName string
 	// os.Args to string, but no binName.
-	argsStr string
+	argLine string
 }
 
 // PID get PID
@@ -81,18 +80,21 @@ func (c *CmdLine) WorkDir() string {
 	return c.workDir
 }
 
-// ArgsString os.Args to string, but no binName.
-func (c *CmdLine) ArgsString() string {
-	return c.argsStr
+// ArgLine os.Args to string, but no binName.
+func (c *CmdLine) ArgLine() string {
+	return c.argLine
 }
 
-// CLI create a default instance
-var CLI = &CmdLine{
-	pid: os.Getpid(),
-	// more info
-	osName:  runtime.GOOS,
-	binName: os.Args[0],
-	argsStr: strings.Join(os.Args[1:], " "),
+func (c *CmdLine) helpVars() map[string]string {
+	return map[string]string{
+		"pid":     fmt.Sprint(CLI.pid),
+		"workDir": CLI.workDir,
+		"binName": CLI.binName,
+	}
+}
+
+func (c *CmdLine) hasHelpKeywords() bool {
+	return strings.HasSuffix(c.argLine, " -h") || strings.HasSuffix(c.argLine, " --help")
 }
 
 /*************************************************************
@@ -105,10 +107,10 @@ type Logo struct {
 	Style string // eg "info"
 }
 
-type appHookFunc func(app *Application, data interface{})
+type appHookFunc func(app *App, data interface{})
 
-// Application the cli app definition
-type Application struct {
+// App the cli app definition
+type App struct {
 	// internal use
 	*CmdLine
 	// Name app name
@@ -149,9 +151,6 @@ type GlobalOpts struct {
 	showHelp bool
 }
 
-// global options
-var gOpts = &GlobalOpts{verbose: VerbError}
-
 // Exit program
 func Exit(code int) {
 	os.Exit(code)
@@ -165,24 +164,24 @@ func Verbose() uint {
 // NewApp create new app instance. alias of the New()
 // eg:
 // 	cliapp.New()
-// 	cliapp.New(func(a *Application) {
+// 	cliapp.New(func(a *App) {
 // 		// do something before init ....
 // 		a.Hooks[cliapp.EvtInit] = func () {}
 // 	})
-func NewApp(fn ...func(a *Application)) *Application {
+func NewApp(fn ...func(a *App)) *App {
 	return New(fn...)
 }
 
 // New create new app instance.
 // eg:
 // 	cliapp.NewApp()
-// 	cliapp.NewApp(func(a *Application) {
+// 	cliapp.NewApp(func(a *App) {
 // 		// do something before init ....
 // 		a.Hooks[cliapp.EvtInit] = func () {}
 // 	})
-func New(fn ...func(a *Application)) *Application {
-	app = &Application{
-		Name:  "My CLI Application",
+func New(fn ...func(a *App)) *App {
+	defApp = &App{
+		Name:  "My CLI App",
 		Logo:  Logo{Style: "info"},
 		Hooks: make(map[string]appHookFunc, 0),
 		// set a default version
@@ -192,101 +191,103 @@ func New(fn ...func(a *Application)) *Application {
 	}
 
 	if len(fn) > 0 {
-		fn[0](app)
+		fn[0](defApp)
 	}
 
 	// init
-	app.Initialize()
+	defApp.Initialize()
+	return defApp
+}
 
-	return app
+// Config application. must be called before adding a command
+func (app *App) Config(fn ...func(a *App)) {
+
 }
 
 // Initialize application
-func (app *Application) Initialize() {
+func (app *App) Initialize() {
 	app.names = make(map[string]int)
 
-	// init some tpl vars
-	app.vars = map[string]string{
-		"pid":     fmt.Sprint(CLI.pid),
-		"workDir": CLI.workDir,
-		"binName": CLI.binName,
-	}
+	// init some help tpl vars
+	app.vars = CLI.helpVars()
 
 	// parse GlobalOpts
 	// parseGlobalOpts()
 
-	app.callHook(EvtInit, nil)
+	app.fireEvent(EvtInit, nil)
 }
 
 // SetLogo text and color style
-func (app *Application) SetLogo(logo string, style ...string) {
+func (app *App) SetLogo(logo string, style ...string) {
 	app.Logo.Text = logo
-
 	if len(style) > 0 {
 		app.Logo.Style = style[0]
 	}
 }
 
 // DebugMode level
-func (app *Application) DebugMode() {
+func (app *App) DebugMode() {
 	gOpts.verbose = VerbDebug
 }
 
 // QuietMode level
-func (app *Application) QuietMode() {
+func (app *App) QuietMode() {
 	gOpts.verbose = VerbQuiet
 }
 
 // SetVerbose level
-func (app *Application) SetVerbose(verbose uint) {
+func (app *App) SetVerbose(verbose uint) {
 	gOpts.verbose = verbose
 }
 
 // DefaultCommand set default command name
-func (app *Application) DefaultCommand(name string) {
+func (app *App) DefaultCommand(name string) {
 	app.defaultCommand = name
 }
 
-// Add add a command
-func (app *Application) Add(c *Command, more ...*Command) {
-	if app.commands == nil {
-		app.commands = make(map[string]*Command)
-	}
+// NewCommand create a new command
+func (app *App) NewCommand(name, useFor string, config func(c *Command)) *Command {
+	return NewCommand(name, useFor, config)
+}
 
-	app.addCommand(c)
+// Add add one or multi command(s)
+func (app *App) Add(c *Command, more ...*Command) {
+	app.AddCommand(c)
 
-	// if has more
+	// if has more command
 	if len(more) > 0 {
 		for _, cmd := range more {
-			app.addCommand(cmd)
+			app.AddCommand(cmd)
 		}
 	}
 }
 
-func (app *Application) addCommand(c *Command) {
+// AddCommand add a new command
+func (app *App) AddCommand(c *Command) *Command {
 	c.Name = strings.TrimSpace(c.Name)
 	if c.Name == "" {
-		exitWithErr("The added command must have a command name")
+		exitWithErr("The added command name can not be empty.")
 	}
 
 	if c.IsDisabled() {
 		Logf(VerbDebug, "command %s has been disabled, skip add", c.Name)
-		return
+		return nil
 	}
 
 	app.names[c.Name] = len(c.Name)
 	app.commands[c.Name] = c
 	// add aliases for the command
 	app.AddAliases(c.Name, c.Aliases)
-	Logf(VerbDebug, "add command: %s", c.Name)
+	Logf(VerbDebug, "[App.AddCommand] add a new CLI command: %s", c.Name)
 
 	// init command
 	c.app = app
 	c.initialize()
+	return c
 }
 
-func (app *Application) callHook(event string, data interface{}) {
-	Logf(VerbDebug, "application trigger the hook: %s", event)
+func (app *App) fireEvent(event string, data interface{}) {
+	Logf(VerbDebug, "trigger the application event: %s", event)
 
 	if handler, ok := app.Hooks[event]; ok {
 		handler(app, data)
@@ -294,29 +295,29 @@ func (app *Application) callHook(event string, data interface{}) {
 }
 
 // On add hook handler for a hook event
-func (app *Application) On(name string, handler func(a *Application, data interface{})) {
+func (app *App) On(name string, handler func(a *App, data interface{})) {
 	app.Hooks[name] = handler
 }
 
 // AddError to the application
-func (app *Application) AddError(err error) {
+func (app *App) AddError(err error) {
 	app.errors = append(app.errors, err)
 }
 
 // AddVar get command name
-func (app *Application) AddVar(name, value string) {
+func (app *App) AddVar(name, value string) {
 	app.vars[name] = value
 }
 
 // AddVars add multi tpl vars
-func (app *Application) AddVars(vars map[string]string) {
+func (app *App) AddVars(vars map[string]string) {
 	for n, v := range vars {
 		app.AddVar(n, v)
 	}
 }
 
 // GetVar get a help var by name
-func (app *Application) GetVar(name string) string {
+func (app *App) GetVar(name string) string {
 	if v, ok := app.vars[name]; ok {
 		return v
 	}
@@ -325,11 +326,11 @@ func (app *Application) GetVar(name string) string {
 }
 
 // GetVars get all tpl vars
-func (app *Application) GetVars(name string, value string) map[string]string {
+func (app *App) GetVars(name string, value string) map[string]string {
 	return app.vars
 }
 
 // Commands get all commands
-func (app *Application) Commands() map[string]*Command {
+func (app *App) Commands() map[string]*Command {
 	return app.commands
 }

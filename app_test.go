@@ -8,7 +8,7 @@ import (
 func TestApp(t *testing.T) {
 	is := assert.New(t)
 
-	New(func(a *Application) {
+	New(func(a *App) {
 		a.Name = "test-name"
 	})
 
