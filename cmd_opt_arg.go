@@ -234,8 +234,7 @@ func (a *Argument) Int(defVal ...int) int {
 		return def
 	}
 
-	str := a.Value.(string)
-	if str != "" {
+	if str, ok := a.Value.(string); ok {
 		val, err := strconv.Atoi(str)
 		if err != nil {
 			return val
@@ -256,7 +255,11 @@ func (a *Argument) String(defVal ...string) string {
 		return def
 	}
 
-	return a.Value.(string)
+	if str, ok := a.Value.(string); ok {
+		return str
+	}
+
+	return def
 }
 
 // Array alias of the Strings()
@@ -271,6 +274,11 @@ func (a *Argument) Strings() (ss []string) {
 	}
 
 	return
+}
+
+// HasValue value is empty
+func (a *Argument) HasValue() bool {
+	return a.Value != nil
 }
 
 // AddArg binding a named argument for the command.

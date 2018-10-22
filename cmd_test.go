@@ -1,1 +1,1 @@
-package cliapp
+package cliapp_test

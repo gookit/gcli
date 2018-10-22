@@ -1,6 +1,7 @@
-package cliapp
+package cliapp_test
 
 import (
+	"github.com/gookit/cliapp"
 	"github.com/stretchr/testify/assert"
 	"testing"
 )
@@ -8,9 +9,9 @@ import (
 func TestApp(t *testing.T) {
 	is := assert.New(t)
 
-	New(func(a *App) {
+	cliapp.New(func(a *cliapp.App) {
 		a.Name = "test-name"
 	})
 
-	is.Equal("test-name", App().Name)
+	is.Equal("test-name", cliapp.Instance().Name)
 }

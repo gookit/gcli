@@ -4,35 +4,56 @@ package symbols
 //  http://cn.piliapp.com/symbol/
 // 卍 卐 ■ ▶ ☐☑☒ ❖
 const (
-	OK  = "✔"
-	NO  = "✘"
-	PEN = "✎"
+	OK  = '✔'
+	NO  = '✘'
+	PEN = '✎'
 
-	HEART  = "❤"
-	HEART1 = "♥"
-	SMILE  = "☺"
+	Center  rune = '●'
+	Square  rune = '■'
+	Square1 rune = '▇'
+	Square2 rune = '▉'
+	Square3 rune = '░'
+	Square4 rune = '▒'
+	Square5 rune = '▢'
+	
+	HEART  = '❤'
+	HEART1 = '♥'
+	SMILE  = '☺'
 
-	FLOWER = "✿"
-	MUSIC  = "♬"
+	FLOWER = '✿'
+	MUSIC  = '♬'
 
 	// ☚ ☜ ☛ ☞
-	UP     = "⇧"
-	DOWN   = "⇩"
-	LEFT   = "⇦"
-	RIGHT  = "⇨"
-	SEARCH = ""
+	UP     = '⇧'
+	DOWN   = '⇩'
+	LEFT   = '⇦'
+	RIGHT  = '⇨'
+	SEARCH = ''
 
 	// ❝❞❛❜
 	// ⌜⌝⌞⌟
 	// ▶➔➙➛➜➞➟➠➡➢➣➥➦➧➨➩➪➫➬➭➮➯➱➵
 
-	MALE   = "♂"
-	FEMALE = "♀"
+	MALE   = '♂'
+	FEMALE = '♀'
 
-	SUN   = "☀"
-	STAR  = "★"
-	SNOW  = "❈"
-	CLOUD = "☁"
+	SUN   = '☀'
+	STAR  = '★'
+	SNOW  = '❈'
+	CLOUD = '☁'
 
-	ENTER = "⌥"
+	ENTER = '⌥'
+
+	Star    rune = '*'
+	Plus    rune = '+'
+	Well    rune = '#'
+	Equal   rune = '='
+	Equal1  rune = '═'
+	Space   rune = ' '
+	// Hyphen Minus
+	Hyphen      rune = '-'
+	CNHyphen    rune = '—'
+	Underline   rune = '_'
+	LeftArrow   rune = '<'
+	RightArrow  rune = '>'
 )

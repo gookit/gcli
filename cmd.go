@@ -32,8 +32,9 @@ type Command struct {
 	*CmdLine
 	// Name is the command name.
 	Name string
-	// Func is the command handler func.
-	// Func Runner
+	// UseFor is the command description message.
+	UseFor string
+	// Func is the command handler func. Func Runner
 	Func CmdFunc
 	// Config func, will call on `initialize`. you can config options and other works
 	Config func(c *Command)
@@ -42,8 +43,6 @@ type Command struct {
 	Hooks map[string]HookFunc
 	// Aliases is the command name's alias names
 	Aliases []string
-	// UseFor is the command description message.
-	UseFor string
 	// Flags(command options) is a set of flags specific to this command.
 	Flags flag.FlagSet
 	// CustomFlags indicates that the command will do its own flag parsing.

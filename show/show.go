@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"github.com/gookit/color"
+	"io"
+	"text/tabwriter"
 )
 
 // Error tips message print
@@ -42,12 +44,29 @@ func JSON(v interface{}, settings ...string) int {
 	return OK
 }
 
-// AList show a list data
-func AList() {
-
+// AList create a List instance and print
+func AList(title string, data interface{}) {
+	NewList(title, data).Println()
 }
 
 // MList show multi list data
-func MList() {
+func MList(listMap map[string]interface{}) {
+	NewLists(listMap).Println()
+}
 
+// TabWriter create.
+// more please see: package text/tabwriter/example_test.go
+// Usage:
+// 	w := TabWriter(os.Stdout, []string{
+// 		"a\tb\tc\td\t.",
+// 		"123\t12345\t1234567\t123456789\t."
+// 	})
+// 	w.Flush()
+func TabWriter(outTo io.Writer, rows []string) *tabwriter.Writer {
+	w := tabwriter.NewWriter(outTo, 0, 4, 2, ' ', tabwriter.Debug)
+	for _, row := range rows {
+		fmt.Fprintln(w, row)
+	}
+
+	return w
 }
