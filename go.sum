@@ -8,6 +8,10 @@ github.com/golang/sys v0.0.0-20180806143827-98c5dad5d1a0 h1:qSTmt4/yt7Q8UDhJF706
 github.com/golang/sys v0.0.0-20180806143827-98c5dad5d1a0/go.mod h1:5JyrLPvD/ZdaYkT7IqKhsP5xt7aLjA99KXRtk4EIYDk=
 github.com/gookit/color v1.1.4 h1:YyM/XVlwmgyzYqnrKEbEDm/cnYgjslml1CgTZE+QwCw=
 github.com/gookit/color v1.1.4/go.mod h1:655QfvFggjTrC1SaAufon2qad0RLgbdQa40lCeOdU64=
+github.com/gookit/filter v1.0.8 h1:Tu1q3mIrBXPvjgeQ2kj9OnlMiwIWQqE3eSl/PQESo8g=
+github.com/gookit/filter v1.0.8/go.mod h1:dJvhTHD8/+idp3TqMBuHk0zvvUSdmIvA2XMR42jSUZU=
+github.com/gookit/goutil v0.0.0-20181022075743-4a30479feb86 h1:TVtFv1K/mkJuheKU/46f1RcLmSyM5LysbIuNPm83/Do=
+github.com/gookit/goutil v0.0.0-20181022075743-4a30479feb86/go.mod h1:3lBTrzsCHr3OpPJIsaRy+MRiLEXkb20MGLmEmYnlfto=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=
 github.com/pmezard/go-difflib v1.0.0/go.mod h1:iKH77koFhYxTK1pcRnkKkqfTogsbg7gZNVY4sRDYZ/4=
 github.com/stretchr/testify v1.2.2 h1:bSDNvY7ZPG5RlJ8otE/7V6gMiyenm9RtJ7IUVIAoJ1w=
