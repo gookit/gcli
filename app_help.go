@@ -32,6 +32,11 @@ func (app *App) showVersionInfo() {
 		utils.UcFirst(app.Description),
 		color.ApplyTag("cyan", app.Version),
 	)
+
+	if app.Logo.Text != "" {
+		fmt.Printf("%s\n", color.ApplyTag(app.Logo.Style, app.Logo.Text))
+	}
+
 	Exit(OK)
 }
 

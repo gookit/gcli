@@ -23,7 +23,7 @@ func TestList(t *testing.T) {
 		"key2" : "list item 2",
 		"key3" : "", // empty value
 	})
-	l.SepChar = " | "
+	l.Opts.SepChar = " | "
 	l.Println()
 }
 
@@ -41,6 +41,7 @@ func TestLists(t *testing.T) {
 			"key3" : "", // empty value
 		},
 	})
+	ls.Opts.SepChar = " : "
 	ls.Println()
 }
 

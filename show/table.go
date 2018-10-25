@@ -9,6 +9,7 @@ type Table struct {
 	Cols []string
 	// Rows table data rows
 	Rows []interface{}
+	// options ...
 	// HasBorder show border line
 	HasBorder bool
 	// RowBorder show row border

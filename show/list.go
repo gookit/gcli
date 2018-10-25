@@ -16,13 +16,12 @@ type ListOption struct {
 	UpperFirst  bool
 	SepChar     string // split key value
 	LeftIndent  string
-	KeyWidth 	int // if not set, will auto detect.
+	KeyWidth    int // if not set, will auto detect.
 	KeyMinWidth int
 	KeyStyle    string
 	ValueStyle  string
 	TitleStyle  string
 }
-
 
 /*************************************************************
  * List
@@ -34,22 +33,14 @@ type ListOption struct {
 // 	len("你好"), len("hello"), len("hello你好") -> 6 5 11
 type List struct {
 	Base // use for internal
+	// options
+	Opts *ListOption
 	// Title list title name
 	title string
 	// list data. allow type: struct, slice, array, map
 	data interface{}
+	// formatted data buffer
 	buffer *bytes.Buffer
-	// IgnoreEmpty ignore empty value item
-	IgnoreEmpty bool
-	// UpperFirst upper first char for the item.value
-	UpperFirst  bool
-	SepChar     string // split key value
-	LeftIndent  string
-	KeyWidth 	int // if not set, will auto detect.
-	KeyMinWidth int
-	KeyStyle    string
-	ValueStyle  string
-	TitleStyle  string
 }
 
 // SetBuffer field
@@ -65,13 +56,15 @@ func NewList(title string, data interface{}) *List {
 		// base
 		Base: Base{output: os.Stdout},
 		// options
-		SepChar:    " ",
-		LeftIndent: "  ",
-		KeyStyle:   "info",
-		//
-		KeyMinWidth: 8,
-		IgnoreEmpty: true,
-		TitleStyle:  "comment",
+		Opts: &ListOption{
+			SepChar:    " ",
+			KeyStyle:   "info",
+			LeftIndent: "  ",
+			//
+			KeyMinWidth: 8,
+			IgnoreEmpty: true,
+			TitleStyle:  "comment",
+		},
 	}
 }
 
@@ -87,37 +80,34 @@ func (l *List) Format() string {
 
 	if l.title != "" { // has title
 		title := filter.UpperWord(l.title)
-		l.buffer.WriteString(color.WrapTag(title, l.TitleStyle) + "\n")
+		l.buffer.WriteString(color.WrapTag(title, l.Opts.TitleStyle) + "\n")
 	}
 
 	items := NewItems(l.data) // build items
-	keyWidth := l.KeyWidth
-	if keyWidth <= 0 {
-		keyWidth = items.KeyMaxWidth()
-	}
+	keyWidth := items.KeyMaxWidth(l.Opts.KeyWidth)
 
-	if keyWidth < l.KeyMinWidth {
-		keyWidth = l.KeyMinWidth
+	if keyWidth < l.Opts.KeyMinWidth {
+		keyWidth = l.Opts.KeyMinWidth
 	}
 
 	for _, item := range items.List {
-		if l.IgnoreEmpty && item.Val == "" {
+		if l.Opts.IgnoreEmpty && item.Val == "" {
 			continue
 		}
 
-		if l.LeftIndent != "" {
-			l.buffer.WriteString(l.LeftIndent)
+		if l.Opts.LeftIndent != "" {
+			l.buffer.WriteString(l.Opts.LeftIndent)
 		}
 
 		// parsed from map, struct
 		if items.itemType == ItemMap {
 			key := str.PadRight(item.Key, " ", keyWidth)
-			key = color.WrapTag(key, l.KeyStyle)
-			l.buffer.WriteString(key + l.SepChar)
+			key = color.WrapTag(key, l.Opts.KeyStyle)
+			l.buffer.WriteString(key + l.Opts.SepChar)
 		}
 
 		val := item.Val
-		if l.UpperFirst {
+		if l.Opts.UpperFirst {
 			val = str.UpperFirst(val)
 		}
 
@@ -159,15 +149,26 @@ func (l *List) Flush() {
 // Lists definition
 type Lists struct {
 	Base // use for internal
-	rows  []*List
-	// NewLine print "\n" at last
-	NewLine bool
+	// options
+	Opts *ListOption
+	rows []*List
+	// data buffer
 	buffer *bytes.Buffer
 }
 
 // NewLists create lists
 func NewLists(listMap map[string]interface{}) *Lists {
-	ls := &Lists{}
+	ls := &Lists{
+		Opts: &ListOption{
+			SepChar:    " ",
+			KeyStyle:   "info",
+			LeftIndent: "  ",
+			//
+			KeyMinWidth: 8,
+			IgnoreEmpty: true,
+			TitleStyle:  "comment",
+		},
+	}
 
 	for title, data := range listMap {
 		ls.rows = append(ls.rows, NewList(title, data))
@@ -185,6 +186,7 @@ func (ls *Lists) Format() string {
 	ls.buffer = new(bytes.Buffer)
 
 	for _, list := range ls.rows {
+		list.Opts = ls.Opts
 		list.SetBuffer(ls.buffer)
 		list.Format()
 	}

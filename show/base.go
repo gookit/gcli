@@ -153,7 +153,11 @@ func NewItems(data interface{}) *Items {
 }
 
 // KeyMaxWidth get
-func (its *Items) KeyMaxWidth() int {
+func (its *Items) KeyMaxWidth(userSetting int) int {
+	if userSetting > 0 {
+		return userSetting
+	}
+
 	return its.keyMaxWidth
 }
 

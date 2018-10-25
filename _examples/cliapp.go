@@ -26,6 +26,12 @@ func main() {
 		}
 		// app.SetVerbose(cliapp.VerbDebug)
 		// app.DefaultCommand("example")
+		app.Logo.Text = `   ________    _______
+  / ____/ /   /  _/   |  ____  ____
+ / /   / /    / // /| | / __ \/ __ \
+/ /___/ /____/ // ___ |/ /_/ / /_/ /
+\____/_____/___/_/  |_/ .___/ .___/
+                     /_/   /_/`
 	})
 
 	app.Add(cmd.ExampleCommand())

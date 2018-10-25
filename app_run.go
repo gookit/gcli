@@ -16,6 +16,9 @@ var (
 	defApp *App
 	// global options
 	gOpts = &GlobalOpts{verbose: VerbError}
+	// command auto completion mode.
+	// eg "./cli --cmd-completion [COMMAND --OPT ARG]"
+	inCompletion bool
 	// CLI create a default instance
 	CLI = &CmdLine{
 		pid: os.Getpid(),
@@ -62,6 +65,8 @@ func (app *App) parseGlobalOpts() []string {
 	flag.BoolVar(&gOpts.showVer, "V", false, "")
 	flag.BoolVar(&gOpts.showVer, "version", false, "")
 	flag.BoolVar(&gOpts.noColor, "no-color", false, "")
+	// this is a internal command
+	flag.BoolVar(&inCompletion, "cmd-completion", false, "")
 
 	flag.Parse()
 	return flag.Args()
@@ -70,7 +75,6 @@ func (app *App) parseGlobalOpts() []string {
 // prepare to running, parse args, get command name and command args
 func (app *App) prepareRun() (string, []string) {
 	args := app.parseGlobalOpts()
-
 	if gOpts.showHelp {
 		app.showCommandsHelp()
 	}
@@ -161,8 +165,8 @@ func (app *App) Run() {
 	Exit(exitCode)
 }
 
-// SubRun running other command in current command
-func (app *App) SubRun(name string, args []string) int {
+// Exec running other command in current command
+func (app *App) Exec(name string, args []string) int {
 	if !app.IsCommand(name) {
 		color.Error.Prompt("unknown command name '%s'", name)
 		return ERR
