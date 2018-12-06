@@ -199,9 +199,12 @@ func New(fn ...func(a *App)) *App {
 	return defApp
 }
 
-// Config application. must be called before adding a command
-func (app *App) Config(fn ...func(a *App)) {
-
+// Config the application.
+// Notice: must be called before adding a command
+func (app *App) Config(fn func(a *App)) {
+	if fn != nil {
+		fn(app)
+	}
 }
 
 // Initialize application

@@ -79,6 +79,10 @@ func (app *App) showCommandHelp(list []string, quit bool) {
 	cmd.ShowHelp(quit)
 }
 
+func (app *App) showCompletion(args []string) {
+
+}
+
 // findSimilarCmd find similar cmd by input string
 func (app *App) findSimilarCmd(input string) []string {
 	var ss []string

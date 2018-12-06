@@ -70,7 +70,10 @@ func NewList(title string, data interface{}) *List {
 
 // WithOptions with options func
 func (l *List) WithOptions(fn func(opts *ListOption)) *List {
-	fn(l.Opts)
+	if fn != nil {
+		fn(l.Opts)
+	}
+
 	return l
 }
 
@@ -185,7 +188,10 @@ func NewLists(listMap map[string]interface{}) *Lists {
 
 // WithOptions with options func
 func (ls *Lists) WithOptions(fn func(opts *ListOption)) *Lists {
-	fn(ls.Opts)
+	if fn != nil {
+		fn(ls.Opts)
+	}
+
 	return ls
 }
 

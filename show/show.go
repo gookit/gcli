@@ -44,14 +44,21 @@ func JSON(v interface{}, settings ...string) int {
 	return OK
 }
 
-// AList create a List instance and print
-func AList(title string, data interface{}) {
-	NewList(title, data).Println()
+// AList create a List instance and print.
+// Usage:
+// 	show.AList("some info", map[string]string{"name": "tom"}, nil)
+func AList(title string, data interface{}, fn func(opts *ListOption)) {
+	NewList(title, data).WithOptions(fn).Println()
 }
 
-// MList show multi list data
-func MList(listMap map[string]interface{}) {
-	NewLists(listMap).Println()
+// MList show multi list data.
+// Usage:
+// 	show.MList(data, nil)
+// 	show.MList(data, func(opts *ListOption) {
+// 		opts.LeftIndent = "    "
+// 	})
+func MList(listMap map[string]interface{}, fn func(opts *ListOption)) {
+	NewLists(listMap).WithOptions(fn).Println()
 }
 
 // TabWriter create.
@@ -64,8 +71,11 @@ func MList(listMap map[string]interface{}) {
 // 	w.Flush()
 func TabWriter(outTo io.Writer, rows []string) *tabwriter.Writer {
 	w := tabwriter.NewWriter(outTo, 0, 4, 2, ' ', tabwriter.Debug)
+
 	for _, row := range rows {
-		fmt.Fprintln(w, row)
+		if _, err := fmt.Fprintln(w, row); err != nil {
+			panic(err)
+		}
 	}
 
 	return w

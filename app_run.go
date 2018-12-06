@@ -15,7 +15,7 @@ var (
 	// store current application instance
 	defApp *App
 	// global options
-	gOpts = &GlobalOpts{verbose: VerbError}
+	gOpts = &GlobalOpts{}
 	// command auto completion mode.
 	// eg "./cli --cmd-completion [COMMAND --OPT ARG]"
 	inCompletion bool
@@ -59,7 +59,7 @@ func (app *App) parseGlobalOpts() []string {
 	flag.Usage = app.showCommandsHelp
 
 	// binding global options
-	flag.UintVar(&gOpts.verbose, "verbose", gOpts.verbose, "")
+	flag.UintVar(&gOpts.verbose, "verbose", VerbError, "")
 	flag.BoolVar(&gOpts.showHelp, "h", false, "")
 	flag.BoolVar(&gOpts.showHelp, "help", false, "")
 	flag.BoolVar(&gOpts.showVer, "V", false, "")
@@ -68,13 +68,10 @@ func (app *App) parseGlobalOpts() []string {
 	// this is a internal command
 	flag.BoolVar(&inCompletion, "cmd-completion", false, "")
 
+	// parse global options
 	flag.Parse()
-	return flag.Args()
-}
 
-// prepare to running, parse args, get command name and command args
-func (app *App) prepareRun() (string, []string) {
-	args := app.parseGlobalOpts()
+	// check global options
 	if gOpts.showHelp {
 		app.showCommandsHelp()
 	}
@@ -85,6 +82,17 @@ func (app *App) prepareRun() (string, []string) {
 
 	if gOpts.noColor {
 		color.Enable = false
+	}
+
+	return flag.Args()
+}
+
+// prepare to running, parse args, get command name and command args
+func (app *App) prepareRun() (string, []string) {
+	args := app.parseGlobalOpts()
+
+	if inCompletion {
+		app.showCompletion(args)
 	}
 
 	// if no input command
