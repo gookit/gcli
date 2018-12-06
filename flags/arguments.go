@@ -24,6 +24,6 @@ type Arguments struct {
 }
 
 // Add a new argument
-func (ags *Arguments) Add(name, description string)  {
+func (ags *Arguments) Add(name, description string) {
 	// todo ...
 }

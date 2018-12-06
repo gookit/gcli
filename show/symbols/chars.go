@@ -15,7 +15,7 @@ const (
 	Square3 rune = '░'
 	Square4 rune = '▒'
 	Square5 rune = '▢'
-	
+
 	HEART  = '❤'
 	HEART1 = '♥'
 	SMILE  = '☺'
@@ -44,16 +44,16 @@ const (
 
 	ENTER = '⌥'
 
-	Star    rune = '*'
-	Plus    rune = '+'
-	Well    rune = '#'
-	Equal   rune = '='
-	Equal1  rune = '═'
-	Space   rune = ' '
+	Star   rune = '*'
+	Plus   rune = '+'
+	Well   rune = '#'
+	Equal  rune = '='
+	Equal1 rune = '═'
+	Space  rune = ' '
 	// Hyphen Minus
-	Hyphen      rune = '-'
-	CNHyphen    rune = '—'
-	Underline   rune = '_'
-	LeftArrow   rune = '<'
-	RightArrow  rune = '>'
+	Hyphen     rune = '-'
+	CNHyphen   rune = '—'
+	Underline  rune = '_'
+	LeftArrow  rune = '<'
+	RightArrow rune = '>'
 )

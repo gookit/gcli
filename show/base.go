@@ -80,7 +80,7 @@ func (b *Base) Println() {
 
 const (
 	// parsed from map, struct
-	ItemMap  = "map"
+	ItemMap = "map"
 	// parsed from array, slice
 	ItemList = "list"
 )
@@ -175,8 +175,8 @@ func (its *Items) Each(fn func(item *Item)) {
 
 // Item definition
 type Item struct {
-	Key    string
-	Val    string
+	Key string
+	Val string
 	// info
 	index  int
 	keyLen int

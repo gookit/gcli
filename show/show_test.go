@@ -18,10 +18,10 @@ func TestList(t *testing.T) {
 	l.Println()
 
 	l = show.NewList("test list1", map[string]string{
-		"key0" : "list item 0",
-		"the key1" : "list item 1",
-		"key2" : "list item 2",
-		"key3" : "", // empty value
+		"key0":     "list item 0",
+		"the key1": "list item 1",
+		"key2":     "list item 2",
+		"key3":     "", // empty value
 	})
 	l.Opts.SepChar = " | "
 	l.Println()
@@ -35,10 +35,10 @@ func TestLists(t *testing.T) {
 			"list item 2",
 		},
 		"test list1": map[string]string{
-			"key0" : "list item 0",
-			"the key1" : "list item 1",
-			"key2" : "list item 2",
-			"key3" : "", // empty value
+			"key0":     "list item 0",
+			"the key1": "list item 1",
+			"key2":     "list item 2",
+			"key3":     "", // empty value
 		},
 	})
 	ls.Opts.SepChar = " : "

@@ -13,12 +13,12 @@ func NewWriter(output io.Writer) *Writer {
 }
 
 // Write
-func (w *Writer) Write(buf []byte) (n int, err error){
+func (w *Writer) Write(buf []byte) (n int, err error) {
 	return
 }
 
 // Print data to io.Writer
-func (w *Writer) Print()  {
+func (w *Writer) Print() {
 
 }
 

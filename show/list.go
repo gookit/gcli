@@ -68,6 +68,12 @@ func NewList(title string, data interface{}) *List {
 	}
 }
 
+// WithOptions with options func
+func (l *List) WithOptions(fn func(opts *ListOption)) *List {
+	fn(l.Opts)
+	return l
+}
+
 // Format as string
 func (l *List) Format() string {
 	if l.data == nil || l.formatted != "" {
@@ -174,6 +180,12 @@ func NewLists(listMap map[string]interface{}) *Lists {
 		ls.rows = append(ls.rows, NewList(title, data))
 	}
 
+	return ls
+}
+
+// WithOptions with options func
+func (ls *Lists) WithOptions(fn func(opts *ListOption)) *Lists {
+	fn(ls.Opts)
 	return ls
 }
 
