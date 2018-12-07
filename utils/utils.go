@@ -2,6 +2,7 @@ package utils
 
 import (
 	"bytes"
+	"github.com/gookit/goutil/str"
 	"os/exec"
 	"path/filepath"
 	"strings"
@@ -122,9 +123,9 @@ func RenderTemplate(input string, data interface{}, isFile ...bool) string {
 			return strings.Join(ss, sep)
 		},
 		// lower first char
-		"lcFirst": LcFirst,
+		"lcFirst": str.LowerFirst,
 		// upper first char
-		"ucFirst": UcFirst,
+		"ucFirst": str.UpperFirst,
 	})
 
 	if isFilename {

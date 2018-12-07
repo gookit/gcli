@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/env"
 	"golang.org/x/crypto/ssh/terminal"
 	"io/ioutil"
 	"os"
@@ -118,7 +119,7 @@ func GetHiddenInput(message string, trimmed bool) string {
 	var hasResult bool
 
 	// like *nix, git-bash ...
-	if utils.HasShellEnv("sh") {
+	if env.HasShellEnv("sh") {
 		// COMMAND: sh -c 'read -p "Enter Password:" -s user_input && echo $user_input'
 		cmd := fmt.Sprintf(`'read -p "%s" -s user_input && echo $user_input'`, message)
 		input, err = utils.ShellExec(cmd)
@@ -129,7 +130,7 @@ func GetHiddenInput(message string, trimmed bool) string {
 
 		println() // new line
 		hasResult = true
-	} else if utils.IsWin() { // at windows cmd.exe
+	} else if env.IsWin() { // at windows cmd.exe
 		// create a temp VB script file
 		vbFile, err := ioutil.TempFile("", "cliapp")
 		if err != nil {
@@ -138,11 +139,11 @@ func GetHiddenInput(message string, trimmed bool) string {
 		defer func() {
 			// delete file
 			vbFile.Close()
-			os.Remove(vbFile.Name())
+			_ = os.Remove(vbFile.Name())
 		}()
 
 		script := fmt.Sprintf(`wscript.echo(InputBox("%s", "", "password here"))`, message)
-		vbFile.WriteString(script)
+		_, _ = vbFile.WriteString(script)
 		hasResult = true
 
 		// exec VB script

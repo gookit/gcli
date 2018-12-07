@@ -2,6 +2,7 @@ package progress
 
 import (
 	"fmt"
+	"github.com/gookit/goutil/format"
 	"runtime"
 	"sort"
 	"strings"
@@ -12,7 +13,7 @@ var builtinWidgets = map[string]WidgetFunc{
 	"elapsed": func(p *Progress) string { // 消耗时间
 		// fmt.Sprintf("%.3f", time.Since(startTime).Seconds()*1000)
 		elapsed := time.Since(p.StartedAt()).Seconds()
-		return HowLongAgo(int64(elapsed))
+		return format.HowLongAgo(int64(elapsed))
 	},
 	"remaining": func(p *Progress) string { // 剩余时间
 		step := p.Progress() // current progress
@@ -26,7 +27,7 @@ var builtinWidgets = map[string]WidgetFunc{
 		elapsed := int64(time.Since(p.StartedAt()).Seconds())
 		// calc remaining time
 		remaining := uint(elapsed) / step * (p.MaxSteps - step)
-		return HowLongAgo(int64(remaining))
+		return format.HowLongAgo(int64(remaining))
 	},
 	"estimated": func(p *Progress) string { // 计算总的预计时间
 		step := p.Progress() // current progress
@@ -41,12 +42,12 @@ var builtinWidgets = map[string]WidgetFunc{
 		// calc estimated time
 		estimated := float32(elapsed) / float32(step) * float32(p.MaxSteps)
 
-		return HowLongAgo(int64(estimated))
+		return format.HowLongAgo(int64(estimated))
 	},
 	"memory": func(p *Progress) string {
 		mem := new(runtime.MemStats)
 		runtime.ReadMemStats(mem)
-		return formatMemoryVal(mem.Sys)
+		return format.DataSize(mem.Sys)
 	},
 	"max": func(p *Progress) string {
 		return fmt.Sprint(p.MaxSteps)

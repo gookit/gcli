@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/str"
 	"reflect"
 	"strings"
 )
@@ -38,7 +39,7 @@ func (c *Command) ShowHelp(quit ...bool) {
 	// render and output help info
 	// RenderTplStr(os.Stdout, commandHelp, map[string]interface{}{
 	// render but not output
-	str := utils.RenderTemplate(commandHelp, map[string]interface{}{
+	s := utils.RenderTemplate(commandHelp, map[string]interface{}{
 		"Cmd": c,
 		// parse options to string
 		"Options": color.String(c.ParseDefaults()),
@@ -47,8 +48,8 @@ func (c *Command) ShowHelp(quit ...bool) {
 	}, false)
 
 	// parse help vars
-	str = replaceVars(str, c.Vars)
-	fmt.Print(color.String(str))
+	s = replaceVars(s, c.Vars)
+	fmt.Print(color.String(s))
 
 	if len(quit) > 0 && quit[0] {
 		Exit(OK)
@@ -96,7 +97,7 @@ func (c *Command) ParseDefaults() string {
 			// for both 4- and 8-space tab stops.
 			s += "\n    \t"
 		}
-		s += strings.Replace(utils.UcFirst(usage), "\n", "\n    \t", -1)
+		s += strings.Replace(str.UpperFirst(usage), "\n", "\n    \t", -1)
 
 		if !isZeroValue(fg, fg.DefValue) {
 			if _, ok := fg.Value.(*stringValue); ok {

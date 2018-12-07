@@ -3,8 +3,8 @@ package cliapp
 import (
 	"flag"
 	"fmt"
-	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/env"
 	"log"
 	"os"
 	"runtime"
@@ -35,7 +35,7 @@ func init() {
 	CLI.workDir = workDir
 
 	// binName will contains work dir path on windows
-	if utils.IsWin() {
+	if env.IsWin() {
 		CLI.binName = strings.Replace(CLI.binName, workDir+"\\", "", 1)
 	}
 }

@@ -3,8 +3,8 @@ package cliapp
 import (
 	"flag"
 	"fmt"
-	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/str"
 	"log"
 	"os"
 	"strings"
@@ -131,7 +131,7 @@ func (c *Command) initialize() *Command {
 
 	// format description
 	if len(c.UseFor) > 0 {
-		c.UseFor = utils.UcFirst(c.UseFor)
+		c.UseFor = str.UpperFirst(c.UseFor)
 
 		// contains help var "{$cmd}". replace on here is for 'app help'
 		if strings.Contains(c.UseFor, "{$cmd}") {
