@@ -2,6 +2,7 @@ package utils
 
 import (
 	"fmt"
+	"github.com/gookit/cliapp/progress"
 	"github.com/gookit/goutil/format"
 	"io"
 	"log"
@@ -89,6 +90,10 @@ func Download(url, saveDir string, rename ...string) error {
 	}
 	defer resp.Body.Close()
 
+	if resp.StatusCode != 200 {
+		log.Fatalf("status code error: %d %s", resp.StatusCode, resp.Status)
+	}
+
 	n, err := io.Copy(outFile, resp.Body)
 	if err != nil {
 		panic(err)
@@ -97,8 +102,7 @@ func Download(url, saveDir string, rename ...string) error {
 	done <- n
 
 	elapsed := time.Since(start)
-	fmt.Printf("Download completed in %s", elapsed)
-
+	fmt.Printf("Download completed in %s\n", elapsed)
 	return nil
 }
 
@@ -143,4 +147,40 @@ func printDownloadPercent(done chan int64, path string, total int64) {
 
 		time.Sleep(time.Second)
 	}
+}
+
+// SimpleDownload simple download
+func SimpleDownload(url, saveAs string) (err error) {
+	newFile, err := os.Create(saveAs)
+	if err != nil {
+		return err
+	}
+	defer newFile.Close()
+
+	s := progress.LoadingSpinner(
+		progress.GetCharsTheme(18),
+		time.Duration(100)*time.Millisecond,
+	)
+
+	s.Start("%s Downloading ... ...")
+
+	client := http.Client{Timeout: 300 * time.Second}
+	// Request the remote url.
+	resp, err := client.Get(url)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer resp.Body.Close()
+
+	if resp.StatusCode != 200 {
+		log.Fatalf("status code error: %d %s", resp.StatusCode, resp.Status)
+	}
+
+	_, err = io.Copy(newFile, resp.Body)
+	if err != nil {
+		return
+	}
+
+	s.Stop("Download completed")
+	return
 }
