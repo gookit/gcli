@@ -57,8 +57,7 @@ func GenEmojiMapCommand() *gcli.Command {
 }
 
 func (g *genEmojiMap) run(c *gcli.Command, _ []string) error {
-
-	return 0
+	return nil
 }
 
 // Download 实现单个文件的下载

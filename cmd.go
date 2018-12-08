@@ -73,8 +73,6 @@ type Command struct {
 	app *App
 	// mark is alone running.
 	alone bool
-	// store a command error
-	error error
 	// mark is disabled. if true will skip register to cli-app.
 	disabled bool
 	// option names {name:short}
@@ -184,26 +182,14 @@ func (c *Command) NotAlone() bool {
  * helper methods
  *************************************************************/
 
-// Errorf format message and add error to the command
-func (c *Command) Errorf(format string, v ...interface{}) error {
-	return fmt.Errorf(format, v...)
-}
-
-// WithError add a error for the command.
-// Notice: By default the error will be handled by c.defaultErrHandler()
-func (c *Command) WithError(err error) int {
-	c.error = err
-	return ERR
-}
-
-// Error get error of the command
-func (c *Command) Error() error {
-	return c.error
-}
-
 // App returns the CLI application
 func (c *Command) App() *App {
 	return c.app
+}
+
+// Errorf format message and add error to the command
+func (c *Command) Errorf(format string, v ...interface{}) error {
+	return fmt.Errorf(format, v...)
 }
 
 // AddVars add multi tpl vars

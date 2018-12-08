@@ -180,7 +180,7 @@ func (app *App) Exec(name string, args []string) (err error) {
 	cmd := app.commands[name]
 	if !cmd.CustomFlags {
 		// parse args, don't contains command name.
-		if err := cmd.Flags.Parse(args); err != nil {
+		if err = cmd.Flags.Parse(args); err != nil {
 			color.Error.Prompt("Flags parse error: %s", err.Error())
 			return
 		}

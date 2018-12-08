@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"github.com/gookit/color"
 	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/helper"
 	"github.com/gookit/gcli/interact"
-	"github.com/gookit/gcli/utils"
 	"github.com/gookit/goutil/cliUtil"
 	"io/ioutil"
 	"strings"
@@ -97,11 +97,10 @@ func doGen(c *gcli.Command, _ []string) (err error) {
 	} else if genOpts.shell == ZshShell {
 		data = buildForZshShell(data)
 	} else {
-		color.Error.Tips("--shell option only allow: zsh,bash")
-		return gcli.ERR
+		return c.Errorf("--shell option only allow: zsh,bash")
 	}
 
-	str := utils.RenderText(shellTpls[genOpts.shell], &data)
+	str := helper.RenderText(shellTpls[genOpts.shell], &data)
 
 	color.Info.Println("Now, will write content to file ", genOpts.output)
 	color.Normal.Print("Continue?")
@@ -112,7 +111,7 @@ func doGen(c *gcli.Command, _ []string) (err error) {
 	}
 
 	// 以读写方式打开文件，如果不存在，则创建
-	err := ioutil.WriteFile(genOpts.output, []byte(str), 0664)
+	err = ioutil.WriteFile(genOpts.output, []byte(str), 0664)
 	if err != nil {
 		return c.Errorf("Write file error: %s", err.Error())
 	}

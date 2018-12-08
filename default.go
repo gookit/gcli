@@ -1,7 +1,7 @@
 package gcli
 
 var (
-	// store default application instance
+	// DefaultApp store default application instance
 	DefaultApp *App
 )
 
