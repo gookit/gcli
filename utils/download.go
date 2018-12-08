@@ -19,7 +19,7 @@ import (
 type Downloader struct {
 	saveAs string // build by SaveDir + Filename
 
-	FileUrl  string
+	FileURL  string
 	SaveDir  string
 	Filename string // save file name.
 	Progress bool   // display progress info

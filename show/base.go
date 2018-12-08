@@ -79,9 +79,9 @@ func (b *Base) Println() {
  *************************************************************/
 
 const (
-	// parsed from map, struct
+	// ItemMap parsed from map, struct
 	ItemMap = "map"
-	// parsed from array, slice
+	// ItemList parsed from array, slice
 	ItemList = "list"
 )
 

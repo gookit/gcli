@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"github.com/gookit/color"
 	"github.com/gookit/filter"
-	"github.com/gookit/goutil/str"
+	"github.com/gookit/goutil/strUtil"
 	"os"
 )
 
@@ -110,14 +110,14 @@ func (l *List) Format() string {
 
 		// parsed from map, struct
 		if items.itemType == ItemMap {
-			key := str.PadRight(item.Key, " ", keyWidth)
+			key := strUtil.PadRight(item.Key, " ", keyWidth)
 			key = color.WrapTag(key, l.Opts.KeyStyle)
 			l.buffer.WriteString(key + l.Opts.SepChar)
 		}
 
 		val := item.Val
 		if l.Opts.UpperFirst {
-			val = str.UpperFirst(val)
+			val = strUtil.UpperFirst(val)
 		}
 
 		l.buffer.WriteString(val + "\n")
@@ -132,7 +132,7 @@ func (l *List) String() string {
 	return l.Format()
 }
 
-// Println formatted message
+// Print formatted message
 func (l *List) Print() {
 	l.Format()
 	l.Base.Print()
@@ -218,7 +218,7 @@ func (ls *Lists) String() string {
 	return ls.Format()
 }
 
-// Println formatted message
+// Print formatted message
 func (ls *Lists) Print() {
 	ls.Format()
 	ls.Base.Print()

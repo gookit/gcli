@@ -6,5 +6,4 @@
 - counter 
 - dynamic Text
 
-
 ## spinner

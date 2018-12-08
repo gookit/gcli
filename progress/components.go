@@ -85,33 +85,11 @@ var BarStyles = []BarChars{
 	{'■', '▶', ' '},
 }
 
-// ProgressBar definition.
+// Bar create a default progress bar.
 // Preview:
 // 		1 [->--------------------------]
 // 		3 [■■■>------------------------]
 // 	25/50 [==============>-------------]  50%
-//
-type ProgressBar struct {
-	// Width for the bar. default is 100
-	Width int
-	// Chars config for the bar. default {'#', '>', ' '}
-	Chars BarChars
-}
-
-// Create the progress instance
-func (pb ProgressBar) Create(maxSteps ...int) *Progress {
-	return New(maxSteps...).Config(func(p *Progress) {
-		p.Format = DefBarFormat
-	}).AddWidget("bar", ProgressBarWidget(pb.Width, pb.Chars))
-}
-
-// RandomBarStyle get
-func RandomBarStyle() BarChars {
-	rand.Seed(time.Now().UnixNano())
-	return BarStyles[rand.Intn(len(BarStyles)-1)]
-}
-
-// Bar create a default progress bar.
 func Bar(maxSteps ...int) *Progress {
 	return CustomBar(DefBarWidth, BarStyles[0], maxSteps...)
 }
@@ -125,7 +103,13 @@ func Tape(maxSteps ...int) *Progress {
 func CustomBar(width int, cs BarChars, maxSteps ...int) *Progress {
 	return New(maxSteps...).Config(func(p *Progress) {
 		p.Format = DefBarFormat
-	}).AddWidget("bar", ProgressBarWidget(width, cs))
+	}).AddWidget("bar", BarWidget(width, cs))
+}
+
+// RandomBarStyle get
+func RandomBarStyle() BarChars {
+	rand.Seed(time.Now().UnixNano())
+	return BarStyles[rand.Intn(len(BarStyles)-1)]
 }
 
 /*************************************************************

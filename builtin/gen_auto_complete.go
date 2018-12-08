@@ -6,6 +6,7 @@ import (
 	"github.com/gookit/cliapp/interact"
 	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/cliUtil"
 	"io/ioutil"
 	"strings"
 )
@@ -38,7 +39,7 @@ func GenAutoCompleteScript() *cliapp.Command {
 		UseFor: "generate auto complete scripts for current application",
 	}
 
-	shell := utils.GetCurShell(true)
+	shell := cliUtil.GetCurShell(true)
 	if shell == "" {
 		shell = "bash"
 	}

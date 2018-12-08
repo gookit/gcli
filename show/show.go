@@ -1,3 +1,4 @@
+// Package show provides some formatter tools for display data.
 package show
 
 import (

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
-	"github.com/gookit/goutil/str"
+	"github.com/gookit/goutil/strUtil"
 	"strings"
 )
 
@@ -30,7 +30,7 @@ Use "<cyan>{$binName} {command} -h</>" for more information about a command
 func (app *App) showVersionInfo() {
 	fmt.Printf(
 		"%s\n\nVersion: %s\n",
-		str.UpperFirst(app.Description),
+		strUtil.UpperFirst(app.Description),
 		color.ApplyTag("cyan", app.Version),
 	)
 
@@ -50,7 +50,7 @@ func (app *App) showCommandsHelp() {
 		// app version
 		"Version": app.Version,
 		// always upper first char
-		"Description": str.UpperFirst(app.Description),
+		"Description": strUtil.UpperFirst(app.Description),
 	}, false)
 
 	// parse help vars and render color tags

@@ -1,4 +1,4 @@
-package launchEditor
+package launcheditor
 
 import (
 	"crypto/rand"

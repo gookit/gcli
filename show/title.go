@@ -2,6 +2,7 @@ package show
 
 import "github.com/gookit/cliapp/show/symbols"
 
+// some constants
 const (
 	// position
 	Left = iota

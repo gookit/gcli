@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
-	"github.com/gookit/goutil/str"
+	"github.com/gookit/goutil/strUtil"
 	"reflect"
 	"strings"
 )
@@ -97,7 +97,7 @@ func (c *Command) ParseDefaults() string {
 			// for both 4- and 8-space tab stops.
 			s += "\n    \t"
 		}
-		s += strings.Replace(str.UpperFirst(usage), "\n", "\n    \t", -1)
+		s += strings.Replace(strUtil.UpperFirst(usage), "\n", "\n    \t", -1)
 
 		if !isZeroValue(fg, fg.DefValue) {
 			if _, ok := fg.Value.(*stringValue); ok {

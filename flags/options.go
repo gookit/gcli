@@ -62,6 +62,7 @@ func NewOpt(name, description string) *Option {
 	return &Option{}
 }
 
+// StrVar binding
 func (opt *Option) StrVar(s *string) *Option {
 	return opt
 }

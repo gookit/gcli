@@ -111,10 +111,10 @@ func RoundTripWidget(char rune, charNum, boxWidth int) WidgetFunc {
 	}
 }
 
-// ProgressBarWidget create a progress bar widget.
+// BarWidget create a progress bar widget.
 //
 // Output like `[==============>-------------]`
-func ProgressBarWidget(width int, cs BarChars) WidgetFunc {
+func BarWidget(width int, cs BarChars) WidgetFunc {
 	if width < 1 {
 		width = DefBarWidth
 	}

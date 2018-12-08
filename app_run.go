@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gookit/color"
-	"github.com/gookit/goutil/env"
+	"github.com/gookit/goutil/envUtil"
 	"log"
 	"os"
 	"runtime"
@@ -35,7 +35,7 @@ func init() {
 	CLI.workDir = workDir
 
 	// binName will contains work dir path on windows
-	if env.IsWin() {
+	if envUtil.IsWin() {
 		CLI.binName = strings.Replace(CLI.binName, workDir+"\\", "", 1)
 	}
 }
@@ -155,7 +155,11 @@ func (app *App) Run() {
 			cmd.ShowHelp(true)
 		}
 
-		cmd.Flags.Parse(args)
+		if err := cmd.Flags.Parse(args); err != nil {
+			color.Error.Prompt("Flags parse error: %s", err.Error())
+			Exit(ERR)
+		}
+
 		args = cmd.Flags.Args()
 	}
 
@@ -183,7 +187,11 @@ func (app *App) Exec(name string, args []string) int {
 	cmd := app.commands[name]
 	if !cmd.CustomFlags {
 		// parse args, don't contains command name.
-		cmd.Flags.Parse(args)
+		if err := cmd.Flags.Parse(args); err != nil {
+			color.Error.Prompt("Flags parse error: %s", err.Error())
+			return ERR
+		}
+
 		args = cmd.Flags.Args()
 	}
 

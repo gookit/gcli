@@ -2,37 +2,11 @@ package utils
 
 import (
 	"bytes"
-	"github.com/gookit/goutil/str"
+	"github.com/gookit/goutil/strUtil"
 	"os/exec"
-	"path/filepath"
 	"strings"
 	"text/template"
 )
-
-// Go is a basic promise implementation: it wraps calls a function in a goroutine
-// and returns a channel which will later return the function's return value.
-// from beego/bee
-func Go(f func() error) chan error {
-	ch := make(chan error)
-	go func() {
-		ch <- f()
-	}()
-	return ch
-}
-
-// ExecCmd a CLI bin file and return output.
-// usage:
-// 	ExecCmd("ls", []string{"-al"})
-func ExecCmd(binName string, args []string, workDir ...string) (string, error) {
-	// create a new Cmd instance
-	cmd := exec.Command(binName, args...)
-	if len(workDir) > 0 {
-		cmd.Dir = workDir[0]
-	}
-
-	bs, err := cmd.Output()
-	return string(bs), err
-}
 
 // ExecCommand alias of the ShellExec
 func ExecCommand(cmdStr string, dirAndShell ...string) (string, error) {
@@ -66,36 +40,6 @@ func ShellExec(cmdStr string, dirAndShell ...string) (string, error) {
 	return string(bs), err
 }
 
-// GetCurShell get current used shell env file. eg "/bin/zsh" "/bin/bash"
-func GetCurShell(onlyName bool) string {
-	path, err := ExecCommand("echo $SHELL")
-	if err != nil {
-		return ""
-	}
-
-	path = strings.TrimSpace(path)
-	if onlyName && len(path) > 0 {
-		path = filepath.Base(path)
-	}
-
-	return path
-}
-
-// GetKeyMaxLen get key max length of the map
-// usage:
-// 	utils.GetKeyMaxLen(map[string]string{"k1":"v1", "key2": "v2"}, 0)
-func GetKeyMaxLen(kv map[string]interface{}, defLen int) (max int) {
-	max = defLen
-	for k := range kv {
-		kl := len(k)
-		if kl > max {
-			max = kl
-		}
-	}
-
-	return
-}
-
 // GetScreenSize for current console terminal
 func GetScreenSize() (w int, h int) {
 	return
@@ -123,9 +67,9 @@ func RenderTemplate(input string, data interface{}, isFile ...bool) string {
 			return strings.Join(ss, sep)
 		},
 		// lower first char
-		"lcFirst": str.LowerFirst,
+		"lcFirst": strUtil.LowerFirst,
 		// upper first char
-		"ucFirst": str.UpperFirst,
+		"ucFirst": strUtil.UpperFirst,
 	})
 
 	if isFilename {
