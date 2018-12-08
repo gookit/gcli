@@ -1,4 +1,4 @@
-package cliapp
+package gcli
 
 import (
 	"flag"

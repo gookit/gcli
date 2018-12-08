@@ -1,7 +1,7 @@
 package tcpproxy
 
 import (
-	"github.com/gookit/cliapp"
+	"github.com/gookit/gcli"
 	"sync"
 )
 
@@ -26,8 +26,8 @@ func (p *TCPProxy) Handle() {
 var tp = TCPProxy{}
 
 // TCPProxyCommand command definition
-func TCPProxyCommand() *cliapp.Command {
-	cmd := &cliapp.Command{
+func TCPProxyCommand() *gcli.Command {
+	cmd := &gcli.Command{
 		Func: runServer,
 		Name: "watch",
 
@@ -52,6 +52,6 @@ func TCPProxyCommand() *cliapp.Command {
 	return cmd
 }
 
-func runServer(c *cliapp.Command, _ []string) int {
+func runServer(c *gcli.Command, _ []string) int {
 	return 0
 }

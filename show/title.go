@@ -1,6 +1,6 @@
 package show
 
-import "github.com/gookit/cliapp/show/symbols"
+import "github.com/gookit/gcli/show/symbols"
 
 // some constants
 const (

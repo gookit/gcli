@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gookit/cliapp"
+	"github.com/gookit/gcli"
 	"github.com/gookit/color"
 )
 
@@ -28,8 +28,8 @@ var exampleOpts = struct {
 }{}
 
 // ExampleCommand command definition
-func ExampleCommand() *cliapp.Command {
-	cmd := &cliapp.Command{
+func ExampleCommand() *gcli.Command {
+	cmd := &gcli.Command{
 		Func:    exampleExecute,
 		Name:    "example",
 		Aliases: []string{"exp", "ex"},
@@ -61,7 +61,7 @@ func ExampleCommand() *cliapp.Command {
 // command running
 // example run:
 // 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
-func exampleExecute(c *cliapp.Command, args []string) int {
+func exampleExecute(c *gcli.Command, args []string) int {
 	fmt.Print("hello, in example command\n")
 
 	magentaln := color.Magenta.Println

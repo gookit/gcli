@@ -45,15 +45,10 @@ func GetScreenSize() (w int, h int) {
 	return
 }
 
-// RenderTemplate render text template with data
-func RenderTemplate(input string, data interface{}, isFile ...bool) string {
+// RenderText render text template with data
+func RenderText(input string, data interface{}, isFile ...bool) string {
 	// use buffer receive rendered content
 	var buf bytes.Buffer
-	var isFilename bool
-
-	if len(isFile) > 0 {
-		isFilename = isFile[0]
-	}
 
 	t := template.New("cli")
 	t.Funcs(template.FuncMap{
@@ -72,7 +67,7 @@ func RenderTemplate(input string, data interface{}, isFile ...bool) string {
 		"ucFirst": strUtil.UpperFirst,
 	})
 
-	if isFilename {
+	if len(isFile) > 0 && isFile[0] {
 		template.Must(t.ParseFiles(input))
 	} else {
 		template.Must(t.Parse(input))

@@ -1,9 +1,9 @@
-package cliapp
+package gcli
 
 import (
 	"fmt"
-	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/utils"
 	"github.com/gookit/goutil/strUtil"
 	"strings"
 )
@@ -45,7 +45,7 @@ func (app *App) showVersionInfo() {
 func (app *App) showCommandsHelp() {
 	commandsHelp = color.ReplaceTag(commandsHelp)
 	// render help text template
-	s := utils.RenderTemplate(commandsHelp, map[string]interface{}{
+	s := utils.RenderText(commandsHelp, map[string]interface{}{
 		"Cs": app.commands,
 		// app version
 		"Version": app.Version,

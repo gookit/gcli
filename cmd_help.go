@@ -1,10 +1,10 @@
-package cliapp
+package gcli
 
 import (
 	"flag"
 	"fmt"
-	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/utils"
 	"github.com/gookit/goutil/strUtil"
 	"reflect"
 	"strings"
@@ -39,7 +39,7 @@ func (c *Command) ShowHelp(quit ...bool) {
 	// render and output help info
 	// RenderTplStr(os.Stdout, commandHelp, map[string]interface{}{
 	// render but not output
-	s := utils.RenderTemplate(commandHelp, map[string]interface{}{
+	s := utils.RenderText(commandHelp, map[string]interface{}{
 		"Cmd": c,
 		// parse options to string
 		"Options": color.String(c.ParseDefaults()),

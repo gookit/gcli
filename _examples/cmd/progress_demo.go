@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/gookit/cliapp"
-	"github.com/gookit/cliapp/progress"
+	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/progress"
 	"time"
 )
 
@@ -11,15 +11,15 @@ type progressDemo struct {
 	overwrite bool
 }
 
-func ProgressDemoCmd() *cliapp.Command {
+func ProgressDemoCmd() *gcli.Command {
 	pd := &progressDemo{}
 
-	return &cliapp.Command{
+	return &gcli.Command{
 		Name:    "prog",
 		UseFor:  "there are some progress bar run demos",
 		Aliases: []string{"prg:demo", "progress"},
 		Func:    pd.Run,
-		Config: func(c *cliapp.Command) {
+		Config: func(c *gcli.Command) {
 			c.IntOpt(&pd.maxSteps, "max-step", "", 110, "setting the max step value")
 			c.BoolOpt(&pd.overwrite, "overwrite", "o", true, "setting overwrite progress bar line")
 			c.AddArg("name",
@@ -35,7 +35,7 @@ Image progress bar:
 }
 
 // Run command
-func (d *progressDemo) Run(c *cliapp.Command, _ []string) int {
+func (d *progressDemo) Run(c *gcli.Command, _ []string) int {
 	name := c.Arg("name").String()
 	max := d.maxSteps
 

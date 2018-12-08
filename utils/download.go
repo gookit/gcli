@@ -2,7 +2,7 @@ package utils
 
 import (
 	"fmt"
-	"github.com/gookit/cliapp/progress"
+	"github.com/gookit/gcli/progress"
 	"github.com/gookit/goutil/format"
 	"io"
 	"log"

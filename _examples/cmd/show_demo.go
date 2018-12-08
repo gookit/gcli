@@ -1,10 +1,10 @@
 package cmd
 
-import "github.com/gookit/cliapp"
+import "github.com/gookit/gcli"
 
 // ShowDemoCommand create
-func ShowDemoCommand() *cliapp.Command {
-	c := &cliapp.Command{
+func ShowDemoCommand() *gcli.Command {
+	c := &gcli.Command{
 		Name: "show",
 		Func: runShow,
 		//
@@ -14,7 +14,7 @@ func ShowDemoCommand() *cliapp.Command {
 	return c
 }
 
-func runShow(c *cliapp.Command, _ []string) int {
+func runShow(c *gcli.Command, _ []string) int {
 
 	return 0
 }

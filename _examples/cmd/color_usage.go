@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gookit/cliapp"
+	"github.com/gookit/gcli"
 	"github.com/gookit/color"
 )
 
@@ -13,8 +13,8 @@ var colorOpts = struct {
 }{}
 
 // ColorCommand command definition
-func ColorCommand() *cliapp.Command {
-	cmd := cliapp.Command{
+func ColorCommand() *gcli.Command {
+	cmd := gcli.Command{
 		Name:     "color",
 		UseFor:   "this is a example for cli color usage",
 		Aliases:  []string{"clr", "colors"},
@@ -29,7 +29,7 @@ func ColorCommand() *cliapp.Command {
 	return &cmd
 }
 
-func colorUsage(cmd *cliapp.Command, args []string) int {
+func colorUsage(cmd *gcli.Command, args []string) int {
 	// simple usage
 	color.FgCyan.Printf("Simple to use %s\n", "color")
 

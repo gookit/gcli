@@ -2,7 +2,7 @@ package show_test
 
 import (
 	"fmt"
-	"github.com/gookit/cliapp/show"
+	"github.com/gookit/gcli/show"
 	"github.com/stretchr/testify/assert"
 	"os"
 	"testing"

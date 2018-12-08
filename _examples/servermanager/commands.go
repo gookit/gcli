@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/gookit/cliapp"
+	"github.com/gookit/gcli"
 	"io/ioutil"
 	"os/exec"
 	"github.com/gookit/color"
@@ -27,8 +27,8 @@ var config *Config
 var confFile string
 
 // eg: cliapp serve:start
-func ServerStart() *cliapp.Command {
-	c := &cliapp.Command{
+func ServerStart() *gcli.Command {
+	c := &gcli.Command{
 		Name: "start",
 	}
 
@@ -57,13 +57,13 @@ func startServer() int {
 	return 0
 }
 
-func ServerStop() *cliapp.Command {
-	cmd := &cliapp.Command{
+func ServerStop() *gcli.Command {
+	cmd := &gcli.Command{
 		Name:   "stop",
 		UseFor: "stop the running server by PID file",
 	}
 
-	cmd.Func = func(_ *cliapp.Command, _ []string) int {
+	cmd.Func = func(_ *gcli.Command, _ []string) int {
 		return stopServer()
 	}
 
@@ -79,13 +79,13 @@ func stopServer() int {
 	return 0
 }
 
-func ServerRestart() *cliapp.Command {
-	cmd := &cliapp.Command{
+func ServerRestart() *gcli.Command {
+	cmd := &gcli.Command{
 		Name:   "restart",
 		UseFor: "restart the running server by PID file",
 	}
 
-	cmd.Func = func(c *cliapp.Command, _ []string) int {
+	cmd.Func = func(c *gcli.Command, _ []string) int {
 		// c.App().SubRun("stop", []string{"-c", confFile})
 		stopServer()
 		startServer()

@@ -2,10 +2,10 @@ package builtin
 
 import (
 	"fmt"
-	"github.com/gookit/cliapp"
-	"github.com/gookit/cliapp/interact"
-	"github.com/gookit/cliapp/utils"
 	"github.com/gookit/color"
+	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/interact"
+	"github.com/gookit/gcli/utils"
 	"github.com/gookit/goutil/cliUtil"
 	"io/ioutil"
 	"strings"
@@ -30,8 +30,8 @@ var shellTpls = map[string]string{
 }
 
 // GenAutoCompleteScript create command
-func GenAutoCompleteScript() *cliapp.Command {
-	c := cliapp.Command{
+func GenAutoCompleteScript() *gcli.Command {
+	c := gcli.Command{
 		Func:    doGen,
 		Name:    "gen:ac",
 		Aliases: []string{"genac", "gen-ac"},
@@ -67,7 +67,7 @@ func GenAutoCompleteScript() *cliapp.Command {
 	return &c
 }
 
-func doGen(c *cliapp.Command, _ []string) int {
+func doGen(c *gcli.Command, _ []string) int {
 	if len(genOpts.binName) == 0 {
 		genOpts.binName = c.BinName()
 	}
@@ -98,10 +98,10 @@ func doGen(c *cliapp.Command, _ []string) int {
 		data = buildForZshShell(data)
 	} else {
 		color.Error.Tips("--shell option only allow: zsh,bash")
-		return cliapp.ERR
+		return gcli.ERR
 	}
 
-	str := utils.RenderTemplate(shellTpls[genOpts.shell], &data)
+	str := utils.RenderText(shellTpls[genOpts.shell], &data)
 
 	color.Info.Println("Now, will write content to file ", genOpts.output)
 	color.Normal.Print("Continue?")
@@ -165,7 +165,7 @@ func buildForBashShell(data map[string]interface{}) map[string]interface{} {
 	// {cmd name: opts}
 	nameOpts := make(map[string]string)
 
-	for n, c := range cliapp.AllCommands() {
+	for n, c := range gcli.AllCommands() {
 		// skip self
 		if n == "genac" || n == "gen-ac" {
 			continue
@@ -262,7 +262,7 @@ func buildForZshShell(data map[string]interface{}) map[string]interface{} {
 	// {-h,--help}'[Show usage message]' // multi name
 	nameOpts := make(map[string]opInfos)
 
-	for n, c := range cliapp.AllCommands() {
+	for n, c := range gcli.AllCommands() {
 		// skip self
 		if n == "genac" || n == "gen-ac" {
 			continue

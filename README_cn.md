@@ -1,9 +1,9 @@
-# cliapp
+# GCli
 
-[![GoDoc](https://godoc.org/github.com/gookit/cliapp?status.svg)](https://godoc.org/github.com/gookit/cliapp)
-[![Go Report Card](https://goreportcard.com/badge/github.com/gookit/cliapp)](https://goreportcard.com/report/github.com/gookit/cliapp)
+[![GoDoc](https://godoc.org/github.com/gookit/gcli?status.svg)](https://godoc.org/github.com/gookit/gcli)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gcli)](https://goreportcard.com/report/github.com/gookit/gcli)
 
-一个golang下的简单易用的命令行应用，工具库。包含运行命令，颜色风格，数据展示，进度显示，交互方法等
+一个Golang下的简单易用的命令行应用，工具库。包含运行命令，颜色风格，数据展示，进度显示，交互方法等
 
 **[EN Readme](README.md)**
 
@@ -31,16 +31,16 @@
 ## GoDoc
 
 - [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v1)
-- [godoc for github](https://godoc.org/github.com/gookit/cliapp)
+- [godoc for github](https://godoc.org/github.com/gookit/gcli)
 
 ## 快速开始
 
 如下，引入当前包就可以快速的编写cli应用了
 
 ```bash
-import "gopkg.in/gookit/cliapp.v1" // 推荐
+import "gopkg.in/gookit/gcli.v2" // 推荐
 // or
-import "github.com/gookit/cliapp"
+import "github.com/gookit/gcli"
 ```
 
 ```go 
@@ -48,8 +48,8 @@ package main
 
 import (
     "runtime"
-    "github.com/gookit/cliapp"
-    "github.com/gookit/cliapp/_examples/cmd"
+    "github.com/gookit/gcli"
+    "github.com/gookit/gcli/_examples/cmd"
 )
 
 // for test run: go run ./_examples/cliapp.go && ./cliapp
@@ -129,7 +129,7 @@ you can see:
 ### 生成命令补全脚本
 
 ```go
-import  "github.com/gookit/cliapp/builtin"
+import  "github.com/gookit/gcli/builtin"
 
     // ...
     // 添加内置提供的生成命令
@@ -178,8 +178,8 @@ app.Add(&cliapp.Command{
     // allow color tag and {$cmd} will be replace to 'demo'
     UseFor: "this is a description <info>message</> for command", 
     Aliases: []string{"dm"},
-    Func: func (cmd *cliapp.Command, args []string) int {
-        cliapp.Stdout("hello, in the demo command\n")
+    Func: func (cmd *gcli.Command, args []string) int {
+        gcli.Stdout("hello, in the demo command\n")
         return 0
     },
 })
@@ -193,9 +193,9 @@ app.Add(&cliapp.Command{
 package cmd
 
 import (
-	"github.com/gookit/cliapp"
-	"github.com/gookit/color"
 	"fmt"
+	"github.com/gookit/color"
+	"github.com/gookit/gcli"
 )
 
 // options for the command
@@ -204,12 +204,12 @@ var exampleOpts = struct {
 	c   string
 	dir string
 	opt string
-	names cliapp.Strings
+	names gcli.Strings
 }{}
 
 // ExampleCommand command definition
-func ExampleCommand() *cliapp.Command {
-	cmd := &cliapp.Command{
+func ExampleCommand() *gcli.Command {
+	cmd := &gcli.Command{
 		Name:        "example",
 		UseFor: "this is a description message",
 		Aliases:     []string{"exp", "ex"},
@@ -241,7 +241,7 @@ func ExampleCommand() *cliapp.Command {
 // command running
 // example run:
 // 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
-func exampleExecute(c *cliapp.Command, args []string) int {
+func exampleExecute(c *gcli.Command, args []string) int {
 	fmt.Print("hello, in example command\n")
 
 	magentaln := color.Magenta.Println
@@ -305,7 +305,7 @@ Data handling ... ... 50% (25/50)
 package main
 
 import "time"
-import "github.com/gookit/cliapp/progress"
+import "github.com/gookit/gcli/progress"
 
 func main()  {
 	speed := 100
@@ -351,7 +351,7 @@ console interactive methods
 package main
 
 import "fmt"
-import "github.com/gookit/cliapp/interact"
+import "github.com/gookit/gcli/interact"
 
 func main() {
 	username, _ := interact.ReadLine("Your name?")
@@ -435,17 +435,6 @@ style.Println("custom color style")
 color.Style{color.FgCyan, color.OpBold}.Println("custom color style")
 ```
 
-```go
-// 设置console颜色
-color.Set(color.FgCyan)
-
-// 输出信息
-fmt.Print("message")
-
-// 重置console颜色
-color.Reset()
-```
-
 ### 使用内置风格
 
 #### 基础颜色
@@ -505,17 +494,6 @@ color.Println("<warning>hello</>")
 
 // 自定义颜色属性
 color.Print("<fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
-```
-
-#### 使用 `color.Tag`
-
-给后面输出的文本信息加上给定的颜色风格标签
-
-```go
-// set a style tag
-color.Tag("info").Print("info style text")
-color.Tag("info").Printf("%s style text", "info")
-color.Tag("info").Println("info style text")
 ```
 
 > **更多关于颜色库的使用请访问 [gookit/color](https://github.com/gookit/color)**

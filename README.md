@@ -1,7 +1,7 @@
-# cliapp 
+# GCli 
 
-[![GoDoc](https://godoc.org/github.com/gookit/cliapp?status.svg)](https://godoc.org/github.com/gookit/cliapp)
-[![Go Report Card](https://goreportcard.com/badge/github.com/gookit/cliapp)](https://goreportcard.com/report/github.com/gookit/cliapp)
+[![GoDoc](https://godoc.org/github.com/gookit/gcli?status.svg)](https://godoc.org/github.com/gookit/gcli)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gcli)](https://goreportcard.com/report/github.com/gookit/gcli)
 
 A simple to use command line application, written using golang.
 
@@ -31,15 +31,15 @@ A simple to use command line application, written using golang.
 
 ## GoDoc
 
-- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v1)
-- [godoc for github](https://godoc.org/github.com/gookit/cliapp)
+- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/gcli.v1)
+- [godoc for github](https://godoc.org/github.com/gookit/gcli)
 
 ## Quick start
 
 ```bash
-import "gopkg.in/gookit/cliapp.v1" // is recommended
+import "gopkg.in/gookit/gcli.v1" // is recommended
 // or
-import "github.com/gookit/cliapp"
+import "github.com/gookit/gcli"
 ```
 
 ```go 
@@ -47,27 +47,27 @@ package main
 
 import (
     "runtime"
-    "github.com/gookit/cliapp"
-    "github.com/gookit/cliapp/demo/cmd"
+    "github.com/gookit/gcli"
+    "github.com/gookit/gcli/demo/cmd"
 )
 
-// for test run: go build ./demo/cliapp.go && ./cliapp
+// for test run: go build ./_examples/cliapp.go && ./cliapp
 func main() {
     runtime.GOMAXPROCS(runtime.NumCPU())
 
-    app := cliapp.NewApp()
+    app := gcli.NewApp()
     app.Version = "1.0.3"
     app.Description = "this is my cli application"
-    // app.SetVerbose(cliapp.VerbDebug)
+    // app.SetVerbose(gcli.VerbDebug)
 
     app.Add(cmd.ExampleCommand())
-    app.Add(&cliapp.Command{
+    app.Add(&gcli.Command{
         Name: "demo",
         // allow color tag and {$cmd} will be replace to 'demo'
         UseFor: "this is a description <info>message</> for {$cmd}", 
         Aliases: []string{"dm"},
-        Func: func (cmd *cliapp.Command, args []string) int {
-            cliapp.Stdout("hello, in the demo command\n")
+        Func: func (cmd *gcli.Command, args []string) int {
+            gcli.Stdout("hello, in the demo command\n")
             return 0
         },
     })
@@ -130,7 +130,7 @@ you can see:
 ### Generate auto completion scripts
 
 ```go
-import  "github.com/gookit/cliapp/builtin"
+import  "github.com/gookit/gcli/builtin"
 
     // ...
     // add gen command(gen successful you can remove it)
@@ -143,6 +143,11 @@ Build and run command(_This command can be deleted after success._)：
 ```bash
 % go build ./_examples/cliapp.go && ./cliapp genac -h // display help
 % go build ./_examples/cliapp.go && ./cliapp genac // run gen command
+```
+
+will see:
+
+```text
 INFO: 
   {shell:zsh binName:cliapp output:auto-completion.zsh}
 
@@ -176,13 +181,13 @@ Preview:
 ### Simple use
 
 ```go
-app.Add(&cliapp.Command{
+app.Add(&gcli.Command{
     Name: "demo",
     // allow color tag and {$cmd} will be replace to 'demo'
     UseFor: "this is a description <info>message</> for command", 
     Aliases: []string{"dm"},
-    Func: func (cmd *cliapp.Command, args []string) int {
-        cliapp.Stdout("hello, in the demo command\n")
+    Func: func (cmd *gcli.Command, args []string) int {
+        gcli.Stdout("hello, in the demo command\n")
         return 0
     },
 })
@@ -196,9 +201,9 @@ app.Add(&cliapp.Command{
 package cmd
 
 import (
-	"github.com/gookit/cliapp"
-	"github.com/gookit/color"
 	"fmt"
+	"github.com/gookit/color"
+	"github.com/gookit/gcli"
 )
 
 // options for the command
@@ -207,12 +212,12 @@ var exampleOpts = struct {
 	c   string
 	dir string
 	opt string
-	names cliapp.Strings
+	names gcli.Strings
 }{}
 
 // ExampleCommand command definition
-func ExampleCommand() *cliapp.Command {
-	cmd := &cliapp.Command{
+func ExampleCommand() *gcli.Command {
+	cmd := &gcli.Command{
 		Name:        "example",
 		UseFor: "this is a description message",
 		Aliases:     []string{"exp", "ex"},
@@ -244,7 +249,7 @@ func ExampleCommand() *cliapp.Command {
 // command running
 // example run:
 // 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
-func exampleExecute(c *cliapp.Command, args []string) int {
+func exampleExecute(c *gcli.Command, args []string) int {
 	fmt.Print("hello, in example command\n")
 	
 	magentaln := color.Magenta.Println
@@ -305,7 +310,7 @@ Examples:
 package main
 
 import "time"
-import "github.com/gookit/cliapp/progress"
+import "github.com/gookit/gcli/progress"
 
 func main()  {
 	speed := 100
@@ -351,7 +356,7 @@ Examples:
 package main
 
 import "fmt"
-import "github.com/gookit/cliapp/interact"
+import "github.com/gookit/gcli/interact"
 
 func main() {
 	username, _ := interact.ReadLine("Your name?")
@@ -474,15 +479,6 @@ color.Println("<warning>hello</>")
 
 // custom color attributes
 color.Print("<fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
-```
-
-- `color.Tag`
-
-```go
-// set a style tag
-color.Tag("info").Print("info style text")
-color.Tag("info").Printf("%s style text", "info")
-color.Tag("info").Println("info style text")
 ```
 
 > **For more information on the use of color libraries, please visit [gookit/color](https://github.com/gookit/color)**

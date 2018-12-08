@@ -1,1 +1,1 @@
-package cliapp_test
+package gcli_test
