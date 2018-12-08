@@ -1,16 +1,6 @@
-// Package gcli is a simple to use command line application and tool library.
-//
-// Contains: cli app, flags parse, interact, progress, data show tools.
-//
-// Source code and other details for the project are available at GitHub:
-// 		https://github.com/gookit/gcli
-//
-// Usage please refer examples and README
 package gcli
 
 import (
-	"fmt"
-	"os"
 	"strings"
 )
 
@@ -37,62 +27,9 @@ const (
 	OK = 0
 	// ERR error exit code
 	ERR = 2
+	// HelpCommand name
+	HelpCommand = "help"
 )
-
-/*************************************************************
- * Command Line: command data
- *************************************************************/
-
-// CmdLine store common data for CLI
-type CmdLine struct {
-	// pid for current application
-	pid int
-	// os name.
-	osName string
-	// the CLI app work dir path. by `os.Getwd()`
-	workDir string
-	// bin script name, by `os.Args[0]`. eg "./cliapp"
-	binName string
-	// os.Args to string, but no binName.
-	argLine string
-}
-
-// PID get PID
-func (c *CmdLine) PID() int {
-	return c.pid
-}
-
-// OsName is equals to `runtime.GOOS`
-func (c *CmdLine) OsName() string {
-	return c.osName
-}
-
-// BinName get bin script name
-func (c *CmdLine) BinName() string {
-	return c.binName
-}
-
-// WorkDir get work dir
-func (c *CmdLine) WorkDir() string {
-	return c.workDir
-}
-
-// ArgLine os.Args to string, but no binName.
-func (c *CmdLine) ArgLine() string {
-	return c.argLine
-}
-
-func (c *CmdLine) helpVars() map[string]string {
-	return map[string]string{
-		"pid":     fmt.Sprint(CLI.pid),
-		"workDir": CLI.workDir,
-		"binName": CLI.binName,
-	}
-}
-
-func (c *CmdLine) hasHelpKeywords() bool {
-	return strings.HasSuffix(c.argLine, " -h") || strings.HasSuffix(c.argLine, " --help")
-}
 
 /*************************************************************
  * CLI application
@@ -142,43 +79,15 @@ type App struct {
 	defaultCommand string
 }
 
-// GlobalOpts global flags
-type GlobalOpts struct {
-	noColor  bool
-	verbose  uint // message report level
-	showVer  bool
-	showHelp bool
-}
-
-// Exit program
-func Exit(code int) {
-	os.Exit(code)
-}
-
-// Verbose returns verbose level
-func Verbose() uint {
-	return gOpts.verbose
-}
-
-// NewApp create new app instance. alias of the New()
+// NewApp create new app instance.
 // eg:
-// 	gcli.New()
-// 	gcli.New(func(a *App) {
+// 	New()
+// 	// Or with a func.
+// 	New(func(a *App) {
 // 		// do something before init ....
 // 		a.Hooks[gcli.EvtInit] = func () {}
 // 	})
 func NewApp(fn ...func(a *App)) *App {
-	return New(fn...)
-}
-
-// New create new app instance.
-// eg:
-// 	gcli.NewApp()
-// 	gcli.NewApp(func(a *App) {
-// 		// do something before init ....
-// 		a.Hooks[gcli.EvtInit] = func () {}
-// 	})
-func New(fn ...func(a *App)) *App {
 	app := &App{
 		Name:  "My CLI App",
 		Logo:  Logo{Style: "info"},
@@ -211,7 +120,7 @@ func (app *App) Initialize() {
 	app.names = make(map[string]int)
 
 	// init some help tpl vars
-	app.AddVars(CLI.helpVars())
+	app.AddVars(app.helpVars())
 
 	// parse GlobalOpts
 	// parseGlobalOpts()
@@ -222,24 +131,25 @@ func (app *App) Initialize() {
 // SetLogo text and color style
 func (app *App) SetLogo(logo string, style ...string) {
 	app.Logo.Text = logo
+
 	if len(style) > 0 {
 		app.Logo.Style = style[0]
 	}
 }
 
-// DebugMode level
-func (app *App) DebugMode() {
-	gOpts.verbose = VerbDebug
+// SetDebugMode level
+func (app *App) SetDebugMode() {
+	SetDebugMode()
 }
 
-// QuietMode level
-func (app *App) QuietMode() {
-	gOpts.verbose = VerbQuiet
+// SetQuietMode level
+func (app *App) SetQuietMode() {
+	SetQuietMode()
 }
 
 // SetVerbose level
 func (app *App) SetVerbose(verbose uint) {
-	gOpts.verbose = verbose
+	SetVerbose(verbose)
 }
 
 // DefaultCommand set default command name
@@ -304,6 +214,11 @@ func (app *App) On(name string, handler func(a *App, data interface{})) {
 // AddError to the application
 func (app *App) AddError(err error) {
 	app.errors = append(app.errors, err)
+}
+
+// Names get all command names
+func (app *App) Names() map[string]int {
+	return app.names
 }
 
 // Commands get all commands

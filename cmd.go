@@ -141,11 +141,11 @@ func (c *Command) initialize() *Command {
 
 	// set help vars
 	// c.Vars = c.app.vars // Error: var is map, map is ref addr
-	c.AddVars(CLI.helpVars())
+	c.AddVars(c.helpVars())
 	c.AddVars(map[string]string{
 		"cmd": c.Name,
 		// full command
-		"fullCmd": CLI.binName + " " + c.Name,
+		"fullCmd": c.binName + " " + c.Name,
 	})
 
 	if c.Hooks == nil {

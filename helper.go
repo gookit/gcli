@@ -130,6 +130,11 @@ func exitWithErr(format string, v ...interface{}) {
 	Exit(ERR)
 }
 
+func exitWithMsg(format string, v ...interface{}) {
+	fmt.Printf(format, v...)
+	Exit(0)
+}
+
 // strictFormatArgs '-ab' will split to '-a -b', '--o' -> '-o'
 func strictFormatArgs(args []string) []string {
 	if len(args) == 0 {

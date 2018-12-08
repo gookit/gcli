@@ -5,40 +5,10 @@ import (
 	"fmt"
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/helper"
-	"github.com/gookit/goutil/envUtil"
 	"github.com/gookit/goutil/strUtil"
 	"log"
-	"os"
-	"runtime"
 	"strings"
 )
-
-var (
-	// global options
-	gOpts = &GlobalOpts{}
-	// command auto completion mode.
-	// eg "./cli --cmd-completion [COMMAND --OPT ARG]"
-	inCompletion bool
-	// CLI create a default instance
-	CLI = &CmdLine{
-		pid: os.Getpid(),
-		// more info
-		osName:  runtime.GOOS,
-		binName: os.Args[0],
-		argLine: strings.Join(os.Args[1:], " "),
-	}
-)
-
-// init
-func init() {
-	workDir, _ := os.Getwd()
-	CLI.workDir = workDir
-
-	// binName will contains work dir path on windows
-	if envUtil.IsWin() {
-		CLI.binName = strings.Replace(CLI.binName, workDir+"\\", "", 1)
-	}
-}
 
 // parseGlobalOpts parse global options
 func (app *App) parseGlobalOpts() []string {
@@ -49,12 +19,12 @@ func (app *App) parseGlobalOpts() []string {
 	flag.Usage = app.showCommandsHelp
 
 	// binding global options
-	flag.UintVar(&gOpts.verbose, "verbose", VerbError, "")
+	flag.UintVar(&gOpts.verbose, "verbose", gOpts.verbose, "")
 	flag.BoolVar(&gOpts.showHelp, "h", false, "")
 	flag.BoolVar(&gOpts.showHelp, "help", false, "")
 	flag.BoolVar(&gOpts.showVer, "V", false, "")
 	flag.BoolVar(&gOpts.showVer, "version", false, "")
-	flag.BoolVar(&gOpts.noColor, "no-color", false, "")
+	flag.BoolVar(&gOpts.noColor, "no-color", gOpts.noColor, "")
 	// this is a internal command
 	flag.BoolVar(&inCompletion, "cmd-completion", false, "")
 
@@ -126,7 +96,7 @@ func (app *App) Run() {
 			fmt.Println("\nMaybe you mean:\n  ", color.Green.Render(strings.Join(ns, ", ")))
 		}
 
-		fmt.Printf("\nUse \"%s\" to see available commands\n", color.Cyan.Render(CLI.binName+" -h"))
+		fmt.Printf("\nUse \"%s\" to see available commands\n", color.Cyan.Render(app.binName+" -h"))
 		Exit(ERR)
 	}
 
@@ -146,8 +116,7 @@ func (app *App) Run() {
 		}
 
 		if err := cmd.Flags.Parse(args); err != nil {
-			color.Error.Prompt("Flags parse error: %s", err.Error())
-			Exit(ERR)
+			exitWithErr("Flags parse error: %s", err.Error())
 		}
 
 		args = cmd.Flags.Args()
@@ -295,22 +264,24 @@ func (app *App) showCommandsHelp() {
 // showCommandHelp display help for an command
 func (app *App) showCommandHelp(list []string, quit bool) {
 	if len(list) != 1 {
-		color.Error.Tips(
-			"Usage: %s help %s\n\nToo many arguments given.",
-			CLI.binName,
-			list[0],
-		)
-		Exit(ERR)
+		exitWithErr("Too many arguments given.\n\nUsage: %s help COMMAND", app.binName)
 	}
 
 	// get real name
 	name := app.RealCommandName(list[0])
+	if name == HelpCommand || name == "-h" {
+		fmt.Printf("Display help message for application or command.\n\n")
+		fmt.Printf("Usage: %s help COMMAND\n", app.binName)
+		Exit(0)
+	}
+
 	cmd, exist := app.commands[name]
 	if !exist {
-		color.Error.Prompt("Unknown command name %#q. Run '%s -h'", name, CLI.binName)
+		color.Error.Prompt("Unknown command name %#q. Run '%s -h'", name, app.binName)
 		Exit(ERR)
 	}
 
+	// show help for the command.
 	cmd.ShowHelp(quit)
 }
 
@@ -326,8 +297,11 @@ func (app *App) findSimilarCmd(input string) []string {
 	// fmt.Print(input, ins)
 	ln := len(input)
 
+	names := app.Names()
+	names["help"] = 4 // add 'help' command
+
 	// find from command names
-	for name := range app.names {
+	for name := range names {
 		cln := len(name)
 		if cln > ln && strings.Contains(name, input) {
 			ss = append(ss, name)
