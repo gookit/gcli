@@ -30,7 +30,7 @@
 
 ## GoDoc
 
-- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v1)
+- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v2)
 - [godoc for github](https://godoc.org/github.com/gookit/gcli)
 
 ## 快速开始

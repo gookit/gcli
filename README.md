@@ -31,13 +31,13 @@ A simple to use command line application, written using golang.
 
 ## GoDoc
 
-- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/gcli.v1)
+- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/gcli.v2)
 - [godoc for github](https://godoc.org/github.com/gookit/gcli)
 
 ## Quick start
 
 ```bash
-import "gopkg.in/gookit/gcli.v1" // is recommended
+import "gopkg.in/gookit/gcli.v2" // is recommended
 // or
 import "github.com/gookit/gcli"
 ```
