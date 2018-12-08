@@ -24,11 +24,6 @@ const (
 	VerbCrazy
 )
 
-// HelpVar allow var replace in help info.
-// default support:
-// 	"{$binName}" "{$cmd}" "{$fullCmd}" "{$workDir}"
-const HelpVar = "{$%s}"
-
 // constants for hooks event, there are default allowed event names
 const (
 	EvtInit   = "init"
@@ -115,6 +110,8 @@ type appHookFunc func(app *App, data interface{})
 type App struct {
 	// internal use
 	*CmdLine
+	HelpVars
+
 	// Name app name
 	Name string
 	// Version app version. like "1.0.1"
@@ -214,7 +211,7 @@ func (app *App) Initialize() {
 	app.names = make(map[string]int)
 
 	// init some help tpl vars
-	app.vars = CLI.helpVars()
+	app.AddVars(CLI.helpVars())
 
 	// parse GlobalOpts
 	// parseGlobalOpts()
@@ -307,32 +304,6 @@ func (app *App) On(name string, handler func(a *App, data interface{})) {
 // AddError to the application
 func (app *App) AddError(err error) {
 	app.errors = append(app.errors, err)
-}
-
-// AddVar get command name
-func (app *App) AddVar(name, value string) {
-	app.vars[name] = value
-}
-
-// AddVars add multi tpl vars
-func (app *App) AddVars(vars map[string]string) {
-	for n, v := range vars {
-		app.AddVar(n, v)
-	}
-}
-
-// GetVar get a help var by name
-func (app *App) GetVar(name string) string {
-	if v, ok := app.vars[name]; ok {
-		return v
-	}
-
-	return ""
-}
-
-// GetVars get all tpl vars
-func (app *App) GetVars(name string, value string) map[string]string {
-	return app.vars
 }
 
 // Commands get all commands

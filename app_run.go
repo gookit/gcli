@@ -288,7 +288,7 @@ func (app *App) showCommandsHelp() {
 	}, false)
 
 	// parse help vars and render color tags
-	fmt.Print(color.String(replaceVars(s, app.vars)))
+	fmt.Print(color.String(app.ReplaceVars(s)))
 	Exit(OK)
 }
 
@@ -314,6 +314,7 @@ func (app *App) showCommandHelp(list []string, quit bool) {
 	cmd.ShowHelp(quit)
 }
 
+// show bash/zsh completion
 func (app *App) showCompletion(args []string) {
 
 }

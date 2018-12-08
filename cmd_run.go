@@ -176,8 +176,7 @@ func (c *Command) ShowHelp(quit ...bool) {
 	}, false)
 
 	// parse help vars
-	s = replaceVars(s, c.Vars)
-	fmt.Print(color.String(s))
+	fmt.Print(color.String(c.ReplaceVars(s)))
 
 	if len(quit) > 0 && quit[0] {
 		Exit(OK)

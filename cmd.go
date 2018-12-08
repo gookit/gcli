@@ -27,6 +27,8 @@ type HookFunc func(c *Command, data interface{})
 type Command struct {
 	// is internal use
 	*CmdLine
+	HelpVars
+
 	// Name is the command name.
 	Name string
 	// UseFor is the command description message.
@@ -44,8 +46,6 @@ type Command struct {
 	Flags flag.FlagSet
 	// CustomFlags indicates that the command will do its own flag parsing.
 	CustomFlags bool
-	// Vars you can add some vars map for render help info
-	Vars map[string]string
 	// Help is the long help message text
 	Help string
 	// Examples some usage example display
@@ -190,26 +190,6 @@ func (c *Command) App() *App {
 // Errorf format message and add error to the command
 func (c *Command) Errorf(format string, v ...interface{}) error {
 	return fmt.Errorf(format, v...)
-}
-
-// AddVars add multi tpl vars
-func (c *Command) AddVars(vars map[string]string) {
-	if c.Vars == nil {
-		c.Vars = make(map[string]string)
-	}
-
-	for n, v := range vars {
-		c.Vars[n] = v
-	}
-}
-
-// GetVar get a help var by name
-func (c *Command) GetVar(name string) string {
-	if v, ok := c.Vars[name]; ok {
-		return v
-	}
-
-	return ""
 }
 
 // AliasesString returns aliases string

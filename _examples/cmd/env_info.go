@@ -1,7 +1,7 @@
 package cmd
 
 import (
-	cli "github.com/gookit/gcli"
+	"github.com/gookit/gcli"
 	"github.com/gookit/gcli/show"
 	"os"
 	"runtime"
@@ -17,8 +17,8 @@ var eiOpts = struct {
 }{}
 
 // EnvInfoCommand
-func EnvInfoCommand() *cli.Command {
-	cmd := cli.Command{
+func EnvInfoCommand() *gcli.Command {
+	cmd := gcli.Command{
 		Name:    "env",
 		Aliases: []string{"env-info", "ei"},
 		UseFor:  "collect project info by git info",
@@ -34,7 +34,7 @@ func EnvInfoCommand() *cli.Command {
 }
 
 // do run
-func envInfoRun(c *cli.Command, _ []string) error {
+func envInfoRun(c *gcli.Command, _ []string) error {
 	eAble, _ := os.Executable()
 
 	data := map[string]interface{}{
