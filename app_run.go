@@ -4,7 +4,9 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/helper"
 	"github.com/gookit/goutil/envUtil"
+	"github.com/gookit/goutil/strUtil"
 	"log"
 	"os"
 	"runtime"
@@ -12,8 +14,6 @@ import (
 )
 
 var (
-	// store current application instance
-	defApp *App
 	// global options
 	gOpts = &GlobalOpts{}
 	// command auto completion mode.
@@ -38,16 +38,6 @@ func init() {
 	if envUtil.IsWin() {
 		CLI.binName = strings.Replace(CLI.binName, workDir+"\\", "", 1)
 	}
-}
-
-// Instance returns the current application instance
-func Instance() *App {
-	return defApp
-}
-
-// AllCommands returns all commands
-func AllCommands() map[string]*Command {
-	return defApp.commands
 }
 
 // parseGlobalOpts parse global options
@@ -166,11 +156,14 @@ func (app *App) Run() {
 	Logf(VerbDebug, "[App.Run] args for the command '%s': %v", name, args)
 
 	// do execute command
-	exitCode := cmd.Execute(args)
-	if len(app.errors) > 0 {
-		app.fireEvent(EvtError, app.errors)
+	err := cmd.Execute(args)
+	exitCode := 0
+
+	if err != nil {
+		exitCode = ERR
+		app.fireEvent(EvtError, err)
 	} else {
-		app.fireEvent(EvtAfter, exitCode)
+		app.fireEvent(EvtAfter, nil)
 	}
 
 	Logf(VerbDebug, "[App.Run] command %s run complete, exit with code: %d", name, exitCode)
@@ -178,10 +171,10 @@ func (app *App) Run() {
 }
 
 // Exec running other command in current command
-func (app *App) Exec(name string, args []string) int {
+func (app *App) Exec(name string, args []string) (err error) {
 	if !app.IsCommand(name) {
 		color.Error.Prompt("unknown command name '%s'", name)
-		return ERR
+		return
 	}
 
 	cmd := app.commands[name]
@@ -189,7 +182,7 @@ func (app *App) Exec(name string, args []string) int {
 		// parse args, don't contains command name.
 		if err := cmd.Flags.Parse(args); err != nil {
 			color.Error.Prompt("Flags parse error: %s", err.Error())
-			return ERR
+			return
 		}
 
 		args = cmd.Flags.Args()
@@ -243,4 +236,125 @@ func (app *App) RealCommandName(alias string) string {
 	}
 
 	return alias
+}
+
+/*************************************************************
+ * display app help
+ *************************************************************/
+
+// help template for all commands
+var commandsHelp = `{{.Description}} (Version: <info>{{.Version}}</>)
+<comment>Usage:</>
+  {$binName} [Global Options...] <info>{command}</> [--option ...] [argument ...]
+
+<comment>Global Options:</>
+      <info>--verbose</>     Set error reporting level(quiet 0 - 4 debug)
+      <info>--no-color</>    Disable color when outputting message
+  <info>-h, --help</>        Display the help information
+  <info>-V, --version</>     Display app version information
+
+<comment>Available Commands:</>{{range .Cs}}{{if .Runnable}}
+  <info>{{.Name | printf "%-12s"}}</> {{.UseFor}}{{if .Aliases}} (alias: <cyan>{{ join .Aliases ","}}</>){{end}}{{end}}{{end}}
+  <info>help</>         Display help information
+
+Use "<cyan>{$binName} {command} -h</>" for more information about a command
+`
+
+// display app version info
+func (app *App) showVersionInfo() {
+	fmt.Printf(
+		"%s\n\nVersion: %s\n",
+		strUtil.UpperFirst(app.Description),
+		color.ApplyTag("cyan", app.Version),
+	)
+
+	if app.Logo.Text != "" {
+		fmt.Printf("%s\n", color.ApplyTag(app.Logo.Style, app.Logo.Text))
+	}
+
+	Exit(OK)
+}
+
+// display app commands help
+func (app *App) showCommandsHelp() {
+	commandsHelp = color.ReplaceTag(commandsHelp)
+	// render help text template
+	s := helper.RenderText(commandsHelp, map[string]interface{}{
+		"Cs": app.commands,
+		// app version
+		"Version": app.Version,
+		// always upper first char
+		"Description": strUtil.UpperFirst(app.Description),
+	}, false)
+
+	// parse help vars and render color tags
+	fmt.Print(color.String(replaceVars(s, app.vars)))
+	Exit(OK)
+}
+
+// showCommandHelp display help for an command
+func (app *App) showCommandHelp(list []string, quit bool) {
+	if len(list) != 1 {
+		color.Error.Tips(
+			"Usage: %s help %s\n\nToo many arguments given.",
+			CLI.binName,
+			list[0],
+		)
+		Exit(ERR)
+	}
+
+	// get real name
+	name := app.RealCommandName(list[0])
+	cmd, exist := app.commands[name]
+	if !exist {
+		color.Error.Prompt("Unknown command name %#q. Run '%s -h'", name, CLI.binName)
+		Exit(ERR)
+	}
+
+	cmd.ShowHelp(quit)
+}
+
+func (app *App) showCompletion(args []string) {
+
+}
+
+// findSimilarCmd find similar cmd by input string
+func (app *App) findSimilarCmd(input string) []string {
+	var ss []string
+	// ins := strings.Split(input, "")
+	// fmt.Print(input, ins)
+	ln := len(input)
+
+	// find from command names
+	for name := range app.names {
+		cln := len(name)
+		if cln > ln && strings.Contains(name, input) {
+			ss = append(ss, name)
+		} else if ln > cln && strings.Contains(input, name) {
+			// sns := strings.Split(str, "")
+			ss = append(ss, name)
+		}
+
+		// max find 5 items
+		if len(ss) == 5 {
+			break
+		}
+	}
+
+	// find from aliases
+	for alias := range app.aliases {
+		// max find 5 items
+		if len(ss) >= 5 {
+			break
+		}
+
+		cln := len(alias)
+		if cln > ln && strings.Contains(alias, input) {
+			ss = append(ss, alias)
+		} else if ln > cln && strings.Contains(input, alias) {
+			ss = append(ss, alias)
+		}
+	}
+
+	return ss
 }

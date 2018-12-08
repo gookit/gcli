@@ -67,7 +67,7 @@ func GenAutoCompleteScript() *gcli.Command {
 	return &c
 }
 
-func doGen(c *gcli.Command, _ []string) int {
+func doGen(c *gcli.Command, _ []string) (err error) {
 	if len(genOpts.binName) == 0 {
 		genOpts.binName = c.BinName()
 	}
@@ -108,7 +108,7 @@ func doGen(c *gcli.Command, _ []string) int {
 
 	if !interact.AnswerIsYes(true) {
 		color.Info.Print("\nBye :)\n")
-		return 0
+		return
 	}
 
 	// 以读写方式打开文件，如果不存在，则创建
@@ -118,7 +118,7 @@ func doGen(c *gcli.Command, _ []string) int {
 	}
 
 	color.Success.Println("\nOK, auto-complete file generate successful")
-	return 0
+	return
 }
 
 var bashCompleteScriptTpl = `#!/usr/bin/env {{.Shell}}

@@ -1,10 +1,10 @@
 package cmd
 
 import (
+	"fmt"
+	"github.com/gookit/color"
 	"github.com/gookit/gcli"
 	"github.com/gookit/gcli/interact"
-	"github.com/gookit/color"
-	"fmt"
 	"os/exec"
 )
 
@@ -36,13 +36,13 @@ var funcMap = map[string]func(c *gcli.Command){
 	"confirm":  demoConfirm,
 	"password": demoPassword,
 
-	"ms":   demoMultiSelect,
+	"ms": demoMultiSelect,
 
-	"multiSelect":   demoMultiSelect,
+	"multiSelect": demoMultiSelect,
 	"answerIsYes": demoAnswerIsYes,
 }
 
-func interactDemo(c *gcli.Command, _ []string) int {
+func interactDemo(c *gcli.Command, _ []string) error {
 	name := c.Arg("name").String()
 	if handler, ok := funcMap[name]; ok {
 		handler(c)
@@ -50,7 +50,7 @@ func interactDemo(c *gcli.Command, _ []string) int {
 		return c.Errorf("want run unknown demo method: %s", name)
 	}
 
-	return 0
+	return nil
 }
 
 func demoSelect(_ *gcli.Command) {
@@ -117,7 +117,7 @@ func demoPassword(_ *gcli.Command) {
 	color.Comment.Println("you input password is: ", pwd)
 }
 
-func hiddenInputTest()  {
+func hiddenInputTest() {
 	// COMMAND: sh -c 'read -p "Enter Password:" -s user_input && echo $user_input'
 	// str := fmt.Sprintf(`'read -p "%s" -s user_input && echo $user_input'`, "Enter Password:")
 	// cmd := exec.CommandContext()

@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gookit/gcli"
 	"github.com/gookit/color"
+	"github.com/gookit/gcli"
 )
 
 var colorOpts = struct {
@@ -29,7 +29,7 @@ func ColorCommand() *gcli.Command {
 	return &cmd
 }
 
-func colorUsage(cmd *gcli.Command, args []string) int {
+func colorUsage(_ *gcli.Command, _ []string) error {
 	// simple usage
 	color.FgCyan.Printf("Simple to use %s\n", "color")
 
@@ -70,7 +70,7 @@ func colorUsage(cmd *gcli.Command, args []string) int {
 	}
 	fmt.Print("\n")
 
-	return 0
+	return nil
 }
 
 func byte8color() {

@@ -7,7 +7,7 @@ import (
 )
 
 type progressDemo struct {
-	maxSteps int
+	maxSteps  int
 	overwrite bool
 }
 
@@ -35,7 +35,7 @@ Image progress bar:
 }
 
 // Run command
-func (d *progressDemo) Run(c *gcli.Command, _ []string) int {
+func (d *progressDemo) Run(c *gcli.Command, _ []string) error {
 	name := c.Arg("name").String()
 	max := d.maxSteps
 
@@ -53,7 +53,7 @@ func (d *progressDemo) Run(c *gcli.Command, _ []string) int {
 	default:
 		return c.Errorf("the progress bar type name only allow: bar,txt,dtxt,loading,roundTrip. input is: %s", name)
 	}
-	return 0
+	return nil
 }
 
 func runRoundTripBar(max int) {
@@ -75,7 +75,7 @@ func txtProgressBar(maxStep int) {
 	txt.Finish()
 }
 
-func dynamicTextBar(maxStep int)  {
+func dynamicTextBar(maxStep int) {
 	messages := map[int]string{
 		// key is percent, range is 0 - 100.
 		20:  " Prepare ...",

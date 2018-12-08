@@ -2,9 +2,9 @@ package cmd
 
 import (
 	cli "github.com/gookit/gcli"
+	"github.com/gookit/gcli/show"
 	"os"
 	"runtime"
-	"github.com/gookit/gcli/show"
 )
 
 // options for the command
@@ -34,7 +34,7 @@ func EnvInfoCommand() *cli.Command {
 }
 
 // do run
-func envInfoRun(c *cli.Command, _ []string) int {
+func envInfoRun(c *cli.Command, _ []string) error {
 	eAble, _ := os.Executable()
 
 	data := map[string]interface{}{
@@ -47,5 +47,5 @@ func envInfoRun(c *cli.Command, _ []string) int {
 	}
 
 	show.JSON(&data)
-	return 0
+	return nil
 }

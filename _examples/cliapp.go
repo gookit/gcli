@@ -48,9 +48,9 @@ func main() {
 		Name:    "test",
 		Aliases: []string{"ts"},
 		UseFor:  "this is a description <info>message</> for command {$cmd}",
-		Func: func(cmd *gcli.Command, args []string) int {
+		Func: func(cmd *gcli.Command, args []string) error {
 			gcli.Print("hello, in the test command\n")
-			return 0
+			return nil
 		},
 	})
 
@@ -58,9 +58,9 @@ func main() {
 	// create by func
 	app.NewCommand("test1", "description1", func(c *gcli.Command) {
 		// some config for the command
-	}).SetFunc(func(c *gcli.Command, args []string) int {
+	}).SetFunc(func(c *gcli.Command, args []string) error {
 		color.Green.Println("hello, command is: ", c.Name)
-		return 0
+		return nil
 	}).AttachTo(app)
 
 	// fmt.Printf("%+v\n", gcli.CommandNames())

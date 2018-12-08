@@ -57,14 +57,14 @@ func ReverseProxyCommand() *gcli.Command {
 	return c
 }
 
-func (rp *reverseProxy) Run(cmd *gcli.Command, args []string) int {
+func (rp *reverseProxy) Run(cmd *gcli.Command, args []string) error {
 	if rp.remote == "" {
 		return cmd.Errorf("must be setting the remote server by -r, --remote ")
 	}
 
 	urlObj, err := url.Parse(rp.remote)
 	if err != nil {
-		return cmd.WithError(err)
+		return err
 	}
 
 	rpHandler := ReverseProxy(urlObj)
@@ -72,7 +72,7 @@ func (rp *reverseProxy) Run(cmd *gcli.Command, args []string) int {
 	log.Printf("Listening on %s, forwarding to %s", rp.listen, rp.remote)
 	log.Fatal(http.ListenAndServe(rp.listen, rpHandler))
 
-	return 0
+	return nil
 }
 
 /*************************************************************

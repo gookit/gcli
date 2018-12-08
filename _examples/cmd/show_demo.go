@@ -14,7 +14,7 @@ func ShowDemoCommand() *gcli.Command {
 	return c
 }
 
-func runShow(c *gcli.Command, _ []string) int {
+func runShow(c *gcli.Command, _ []string) error {
 
-	return 0
+	return nil
 }

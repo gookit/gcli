@@ -2,33 +2,31 @@ package cmd
 
 import (
 	"fmt"
+	"github.com/gookit/color"
 	"github.com/gookit/gcli"
 	"github.com/gookit/gcli/show/emoji"
-	"github.com/gookit/color"
 )
 
 func EmojiDemoCmd() *gcli.Command {
 	return &gcli.Command{
-		Name: "emoji",
-		UseFor: "this is a emoji usage example command",
+		Name:    "emoji",
+		UseFor:  "this is a emoji usage example command",
 		Aliases: []string{"emoj"},
 		Config: func(c *gcli.Command) {
 			c.AddArg("subcmd", "The name of the subcommand you want to run. allow: render, search", true)
 			c.AddArg("param", "Used in the previous subcommand. It's message string OR keywords for search", true)
 		},
-		Func: func(c *gcli.Command, _ []string) int {
+		Func: func(c *gcli.Command, _ []string) error {
 			subCmd := c.Arg("subcmd").String()
 			param := c.Arg("param").String()
 			switch subCmd {
 			case "render":
-				renderEmoji(param)
+				return renderEmoji(param)
 			case "search":
-				searchEmoji(param)
+				return searchEmoji(param)
 			default:
 				return c.Errorf("invalid sub-command name for %s, only allow: render, search", c.Name)
 			}
-
-			return 0
 		},
 		Examples: `An render example
   {$fullCmd} render ":car: a message text, contains emoji :smile:"

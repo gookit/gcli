@@ -2,10 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	cli "github.com/gookit/gcli"
-	"github.com/gookit/gcli/utils"
 	"github.com/gookit/color"
-	"log"
+	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/helper"
 	"strings"
 )
 
@@ -22,8 +21,8 @@ type GitInfoData struct {
 }
 
 // GitCommand
-func GitCommand() *cli.Command {
-	cmd := cli.Command{
+func GitCommand() *gcli.Command {
+	cmd := gcli.Command{
 		Name:    "git",
 		Aliases: []string{"git-info"},
 		UseFor:  "collect project info by git info",
@@ -40,14 +39,13 @@ func GitCommand() *cli.Command {
 
 // arg test:
 // 	go build console/cliapp.go && ./cliapp git --id 12 -c val ag0 ag1
-func gitExecute(cmd *cli.Command, args []string) int {
+func gitExecute(cmd *gcli.Command, args []string) error {
 	info := GitInfoData{}
 
 	// latest commit id by: git log --pretty=%H -n1 HEAD
-	cid, err := utils.ExecCommand("git log --pretty=%H -n1 HEAD")
+	cid, err := helper.ExecCommand("git log --pretty=%H -n1 HEAD")
 	if err != nil {
-		log.Fatal(err)
-		return -2
+		return err
 	}
 
 	cid = strings.TrimSpace(cid)
@@ -55,10 +53,9 @@ func gitExecute(cmd *cli.Command, args []string) int {
 	info.Version = cid
 
 	// latest commit date by: git log -n1 --pretty=%ci HEAD
-	cDate, err := utils.ExecCommand("git log -n1 --pretty=%ci HEAD")
+	cDate, err := helper.ExecCommand("git log -n1 --pretty=%ci HEAD")
 	if err != nil {
-		log.Fatal(err)
-		return -2
+		return err
 	}
 
 	cDate = strings.TrimSpace(cDate)
@@ -66,13 +63,12 @@ func gitExecute(cmd *cli.Command, args []string) int {
 	fmt.Printf("commit date: %s\n", cDate)
 
 	// get tag: git describe --tags --exact-match HEAD
-	tag, err := utils.ExecCommand("git describe --tags --exact-match HEAD")
+	tag, err := helper.ShellExec("git describe --tags --exact-match HEAD")
 	if err != nil {
 		// get branch: git branch -a | grep "*"
-		br, err := utils.ExecCommand(`git branch -a | grep "*"`)
+		br, err := helper.ShellExec(`git branch -a | grep "*"`)
 		if err != nil {
-			log.Fatal(err)
-			return -2
+			return err
 		}
 		br = strings.TrimSpace(strings.Trim(br, "*"))
 		info.Tag = br
@@ -84,6 +80,5 @@ func gitExecute(cmd *cli.Command, args []string) int {
 	}
 
 	color.Println("\n<suc>Ok, project info collect completed!</>")
-
-	return 0
+	return nil
 }

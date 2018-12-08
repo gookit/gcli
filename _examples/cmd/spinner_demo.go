@@ -35,7 +35,7 @@ roundTrip spinner:
 	}
 }
 
-func (sd *spinnerDemo) Run(c *gcli.Command, _ []string) int {
+func (sd *spinnerDemo) Run(c *gcli.Command, _ []string) error {
 	name := c.Arg("name").String()
 
 	switch name {
@@ -46,7 +46,7 @@ func (sd *spinnerDemo) Run(c *gcli.Command, _ []string) int {
 	default:
 		return c.Errorf("the spinner type name only allow: loading,roundTrip. input is: %s", name)
 	}
-	return 0
+	return nil
 }
 
 func (sd *spinnerDemo) runRoundTripSpinner() {

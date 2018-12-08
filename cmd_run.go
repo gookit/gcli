@@ -4,11 +4,139 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/utils"
+	"github.com/gookit/gcli/helper"
 	"github.com/gookit/goutil/strUtil"
+	"log"
+	"os"
 	"reflect"
 	"strings"
 )
+
+/*************************************************************
+ * command run
+ *************************************************************/
+
+// Execute do execute the command
+func (c *Command) Execute(args []string) (err error) {
+	// collect named args
+	if err := c.collectNamedArgs(args); err != nil {
+		return err
+	}
+
+	c.fireEvent(EvtBefore, args)
+
+	// call command handler func
+	if c.Func == nil {
+		Logf(VerbWarn, "[Command.Execute] the command '%s' no handler func to running.", c.Name)
+	} else {
+		// err := c.Func.Run(c, args)
+		err = c.Func(c, args)
+	}
+
+	if err != nil {
+		c.app.AddError(err)
+		c.fireEvent(EvtError, err)
+	} else {
+		c.fireEvent(EvtAfter, nil)
+	}
+
+	return
+}
+
+func (c *Command) collectNamedArgs(inArgs []string) error {
+	var num int
+	inNum := len(inArgs)
+
+	for i, arg := range c.args {
+		num = i + 1      // num is equal index + 1
+		if num > inNum { // no enough arg
+			if arg.Required {
+				return fmt.Errorf("must set value for the argument: %s (position %d)", arg.ShowName, arg.index)
+			}
+			break
+		}
+
+		if arg.IsArray {
+			arg.Value = inArgs[i:]
+			inNum = num // must reset inNum
+		} else {
+			arg.Value = inArgs[i]
+		}
+	}
+
+	if !c.alone && c.app.Strict && inNum > num {
+		return fmt.Errorf("enter too many arguments: %v", inArgs[num:])
+	}
+
+	return nil
+}
+
+func (c *Command) fireEvent(event string, data interface{}) {
+	Logf(VerbDebug, "command '%s' trigger the event: %s", c.Name, event)
+
+	if handler, ok := c.Hooks[event]; ok {
+		handler(c, data)
+	}
+}
+
+func (c *Command) defaultErrHandler(_ *Command, data interface{}) {
+	if data != nil {
+		color.Error.Tips(data.(error).Error())
+		// fmt.Println(color.Red.Render("ERROR:"), err.Error())
+	}
+}
+
+// Copy a new command for current
+func (c *Command) Copy() *Command {
+	nc := *c
+	// reset some fields
+	nc.Func = nil
+	nc.Hooks = nil
+	// nc.Flags = flag.FlagSet{}
+
+	return &nc
+}
+
+// On add hook handler for a hook event
+func (c *Command) On(name string, handler func(c *Command, data interface{})) {
+	c.Hooks[name] = handler
+}
+
+/*************************************************************
+ * alone running
+ *************************************************************/
+
+// Run the current command
+func (c *Command) Run(inArgs []string) {
+	if c.app == nil {
+		// don't display date on print log
+		log.SetFlags(0)
+
+		// mark is alone
+		c.alone = true
+
+		// init the command
+		c.initialize()
+
+		// check input args
+		if len(inArgs) == 0 {
+			inArgs = os.Args[1:]
+		}
+
+		// parse args and opts
+		if err := c.Flags.Parse(inArgs); err != nil {
+			exitWithErr(err.Error())
+		}
+
+		inArgs = c.Flags.Args()
+	}
+
+	_ = c.Execute(inArgs)
+}
+
+/*************************************************************
+ * display cmd help
+ *************************************************************/
 
 // help template for a command
 var commandHelp = `{{.UseFor}}
@@ -39,7 +167,7 @@ func (c *Command) ShowHelp(quit ...bool) {
 	// render and output help info
 	// RenderTplStr(os.Stdout, commandHelp, map[string]interface{}{
 	// render but not output
-	s := utils.RenderText(commandHelp, map[string]interface{}{
+	s := helper.RenderText(commandHelp, map[string]interface{}{
 		"Cmd": c,
 		// parse options to string
 		"Options": color.String(c.ParseDefaults()),

@@ -59,17 +59,17 @@ func main() {
     app := cliapp.NewApp()
     app.Version = "1.0.3"
     app.Description = "this is my cli application"
-    // app.SetVerbose(cliapp.VerbDebug)
+    // app.SetVerbose(gcli.VerbDebug)
 
     app.Add(cmd.ExampleCommand())
-    app.Add(&cliapp.Command{
+    app.Add(&gcli.Command{
         Name: "demo",
         // allow color tag and {$cmd} will be replace to 'demo'
         UseFor: "this is a description <info>message</> for command", 
         Aliases: []string{"dm"},
-        Func: func (cmd *cliapp.Command, args []string) int {
-            cliapp.Stdout("hello, in the demo command\n")
-            return 0
+        Func: func (cmd *cliapp.Command, args []string) error {
+            gcli.Println("hello, in the demo command")
+            return nil
         },
     })
 
@@ -173,14 +173,14 @@ OK, auto-complete file generate successful
 ### 简单使用
 
 ```go
-app.Add(&cliapp.Command{
+app.Add(&gcli.Command{
     Name: "demo",
     // allow color tag and {$cmd} will be replace to 'demo'
     UseFor: "this is a description <info>message</> for command", 
     Aliases: []string{"dm"},
-    Func: func (cmd *gcli.Command, args []string) int {
-        gcli.Stdout("hello, in the demo command\n")
-        return 0
+    Func: func (cmd *gcli.Command, args []string) error {
+        gcli.Print("hello, in the demo command\n")
+        return nil
     },
 })
 ```
@@ -241,7 +241,7 @@ func ExampleCommand() *gcli.Command {
 // command running
 // example run:
 // 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
-func exampleExecute(c *gcli.Command, args []string) int {
+func exampleExecute(c *gcli.Command, args []string) error {
 	fmt.Print("hello, in example command\n")
 
 	magentaln := color.Magenta.Println
@@ -260,7 +260,7 @@ func exampleExecute(c *gcli.Command, args []string) int {
 		fmt.Printf("named arg '%s': %+v\n", arg.Name, *arg)
 	}
 
-	return 0
+	return nil
 }
 ```
 

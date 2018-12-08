@@ -53,17 +53,16 @@ func FileWatcher(handler func(event fsnotify.Event)) *gcli.Command {
 
 // test run:
 // go run ./_examples/cliapp.go watch -e .git -e .idea -d ./_examples
-func watch(c *gcli.Command, _ []string) int {
+func watch(c *gcli.Command, _ []string) (err error) {
 	color.Info.Println("Work directory: ", c.WorkDir())
 
 	if opts.Dir == "" && len(opts.Files) == 0 {
 		return c.Errorf("watched directory or files cannot be empty")
 	}
 
-	var err error
 	watcher, err = fsnotify.NewWatcher()
 	if err != nil {
-		return c.WithError(err)
+		return err
 	}
 	defer watcher.Close()
 
@@ -90,7 +89,7 @@ func watch(c *gcli.Command, _ []string) int {
 	if len(opts.Files) > 0 {
 		if err = addWatchFiles(opts.Files); err != nil {
 			// <-done
-			return c.WithError(err)
+			return err
 		}
 	}
 
@@ -98,12 +97,12 @@ func watch(c *gcli.Command, _ []string) int {
 		fmt.Println("- add watch dir: ", color.FgGreen.Render(opts.Dir))
 
 		if err = addWatchDir(opts.Dir); err != nil {
-			return c.WithError(err)
+			return err
 		}
 	}
 
 	<-done
-	return 0
+	return
 }
 
 func addWatchFiles(files []string) error {

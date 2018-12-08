@@ -25,14 +25,14 @@ func main() {
 	cmd.BoolOpt(&opts.list, "list", "", false, "Lists all available fonts.")
 	cmd.BoolOpt(&opts.sample, "sample", "", false, "Prints a sample with that font.")
 
-	cmd.Func = func(_ *gcli.Command, args []string) int {
+	cmd.Func = func(_ *gcli.Command, args []string) error {
 		gcli.Print("hello, in the alone command\n")
 
 		// fmt.Printf("%+v\n", cmd.Flags)
 		fmt.Printf("opts %+v\n", opts)
 		fmt.Printf("args is %v\n", args)
 
-		return 0
+		return nil
 	}
 
 	// Alone Running

@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gookit/gcli"
 	"github.com/gookit/color"
+	"github.com/gookit/gcli"
 )
 
 // The string flag list, implemented flag.Value interface
@@ -61,7 +61,7 @@ func ExampleCommand() *gcli.Command {
 // command running
 // example run:
 // 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
-func exampleExecute(c *gcli.Command, args []string) int {
+func exampleExecute(c *gcli.Command, args []string) error {
 	fmt.Print("hello, in example command\n")
 
 	magentaln := color.Magenta.Println
@@ -80,5 +80,5 @@ func exampleExecute(c *gcli.Command, args []string) int {
 		fmt.Printf("named arg '%s': %+v\n", arg.Name, *arg)
 	}
 
-	return 0
+	return nil
 }

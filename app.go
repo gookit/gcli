@@ -1,9 +1,11 @@
-// Package gcli is a simple to use command line application, written using golang
+// Package gcli is a simple to use command line application and tool library.
+//
+// Contains: cli app, flags parse, interact, progress, data show tools.
 //
 // Source code and other details for the project are available at GitHub:
 // 		https://github.com/gookit/gcli
 //
-// usage please ref examples and README
+// Usage please refer examples and README
 package gcli
 
 import (
@@ -180,7 +182,7 @@ func NewApp(fn ...func(a *App)) *App {
 // 		a.Hooks[gcli.EvtInit] = func () {}
 // 	})
 func New(fn ...func(a *App)) *App {
-	defApp = &App{
+	app := &App{
 		Name:  "My CLI App",
 		Logo:  Logo{Style: "info"},
 		Hooks: make(map[string]appHookFunc, 0),
@@ -191,12 +193,12 @@ func New(fn ...func(a *App)) *App {
 	}
 
 	if len(fn) > 0 {
-		fn[0](defApp)
+		fn[0](app)
 	}
 
 	// init
-	defApp.Initialize()
-	return defApp
+	app.Initialize()
+	return app
 }
 
 // Config the application.

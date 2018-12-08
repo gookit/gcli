@@ -56,7 +56,7 @@ func GenEmojiMapCommand() *gcli.Command {
 	}
 }
 
-func (g *genEmojiMap) run(c *gcli.Command, _ []string) int {
+func (g *genEmojiMap) run(c *gcli.Command, _ []string) error {
 
 	return 0
 }

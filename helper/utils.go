@@ -1,4 +1,4 @@
-package utils
+package helper
 
 import (
 	"bytes"
@@ -14,10 +14,10 @@ func ExecCommand(cmdStr string, dirAndShell ...string) (string, error) {
 }
 
 // ShellExec exec a CLI command by shell and return output.
-// usage:
-// 	utils.ShellExec("ls -al")
-// 	utils.ShellExec("ls -al", "/usr/lib")
-// 	utils.ShellExec("ls -al", "/usr/lib", "/bin/zsh")
+// Usage:
+// 	ShellExec("ls -al")
+// 	ShellExec("ls -al", "/usr/lib")
+// 	ShellExec("ls -al", "/usr/lib", "/bin/zsh")
 func ShellExec(cmdStr string, dirAndShell ...string) (string, error) {
 	var workDir string
 	shell := "/bin/sh"

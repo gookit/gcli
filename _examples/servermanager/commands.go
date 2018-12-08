@@ -1,11 +1,11 @@
 package main
 
 import (
+	"fmt"
+	"github.com/gookit/color"
 	"github.com/gookit/gcli"
 	"io/ioutil"
 	"os/exec"
-	"github.com/gookit/color"
-	"fmt"
 )
 
 type Config struct {
@@ -63,20 +63,20 @@ func ServerStop() *gcli.Command {
 		UseFor: "stop the running server by PID file",
 	}
 
-	cmd.Func = func(_ *gcli.Command, _ []string) int {
+	cmd.Func = func(_ *gcli.Command, _ []string) error {
 		return stopServer()
 	}
 
 	return cmd
 }
 
-func stopServer() int {
+func stopServer() error {
 	bs, _ := ioutil.ReadFile(config.PidFile)
 	command := exec.Command("kill", string(bs))
 	command.Start()
 
 	color.Success.Println("server stopped")
-	return 0
+	return nil
 }
 
 func ServerRestart() *gcli.Command {
@@ -85,12 +85,12 @@ func ServerRestart() *gcli.Command {
 		UseFor: "restart the running server by PID file",
 	}
 
-	cmd.Func = func(c *gcli.Command, _ []string) int {
+	cmd.Func = func(c *gcli.Command, _ []string) error {
 		// c.App().SubRun("stop", []string{"-c", confFile})
 		stopServer()
 		startServer()
 
-		return 0
+		return nil
 	}
 
 	return cmd

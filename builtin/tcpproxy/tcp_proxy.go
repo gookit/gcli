@@ -52,6 +52,6 @@ func TCPProxyCommand() *gcli.Command {
 	return cmd
 }
 
-func runServer(c *gcli.Command, _ []string) int {
-	return 0
+func runServer(c *gcli.Command, _ []string) error {
+	return nil
 }
