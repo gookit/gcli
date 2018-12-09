@@ -48,7 +48,7 @@ package main
 import (
     "runtime"
     "github.com/gookit/gcli"
-    "github.com/gookit/gcli/demo/cmd"
+    "github.com/gookit/gcli/_examples/cmd"
 )
 
 // for test run: go build ./_examples/cliapp.go && ./cliapp
