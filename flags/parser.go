@@ -109,8 +109,7 @@ func (p *ArgsParser) Parse(args []string) {
 }
 
 func (p *ArgsParser) parseOne(current string) {
-	var val string
-	val = "true"
+	val := "true"
 	noVal := true // mark current option is no value assigned
 	isLong := false
 	opt := current[1:]

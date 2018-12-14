@@ -46,10 +46,13 @@ func (r *Options) String() string {
 type Option struct {
 	Name  string
 	Short string
-	// Type value type. allow: int, string, bool, ints, strings, bools
+	// Type value type. allow: int, string, bool, ints, strings, bools, custom
 	Type string
-	// Value of the option. allow: bool, string, array
+	// Value of the option. allow: bool, string, slice(ints, strings)
 	Value interface{}
+
+	// refer flag.Value interface
+	Setter func(string) error
 
 	Required bool
 	DefValue interface{}
