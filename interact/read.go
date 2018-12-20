@@ -4,8 +4,8 @@ import (
 	"bufio"
 	"fmt"
 	"github.com/gookit/color"
-	"github.com/gookit/goutil/cliUtil"
-	"github.com/gookit/goutil/envUtil"
+	"github.com/gookit/goutil/cliutil"
+	"github.com/gookit/goutil/envutil"
 	"golang.org/x/crypto/ssh/terminal"
 	"io/ioutil"
 	"os"
@@ -119,10 +119,10 @@ func GetHiddenInput(message string, trimmed bool) string {
 	var hasResult bool
 
 	// like *nix, git-bash ...
-	if envUtil.HasShellEnv("sh") {
+	if envutil.HasShellEnv("sh") {
 		// COMMAND: sh -c 'read -p "Enter Password:" -s user_input && echo $user_input'
 		cmd := fmt.Sprintf(`'read -p "%s" -s user_input && echo $user_input'`, message)
-		input, err = cliUtil.ShellExec(cmd)
+		input, err = cliutil.ShellExec(cmd)
 		if err != nil {
 			fmt.Println("error:", err)
 			return ""
@@ -130,7 +130,7 @@ func GetHiddenInput(message string, trimmed bool) string {
 
 		println() // new line
 		hasResult = true
-	} else if envUtil.IsWin() { // at windows cmd.exe
+	} else if envutil.IsWin() { // at windows cmd.exe
 		// create a temp VB script file
 		vbFile, err := ioutil.TempFile("", "cliapp")
 		if err != nil {
@@ -148,7 +148,7 @@ func GetHiddenInput(message string, trimmed bool) string {
 
 		// exec VB script
 		// COMMAND: cscript //nologo vbFile.Name()
-		input, err = cliUtil.ExecCmd("cscript", []string{"//nologo", vbFile.Name()})
+		input, err = cliutil.ExecCmd("cscript", []string{"//nologo", vbFile.Name()})
 		if err != nil {
 			return ""
 		}

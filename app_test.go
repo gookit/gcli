@@ -9,9 +9,9 @@ import (
 func TestApp(t *testing.T) {
 	is := assert.New(t)
 
-	gcli.NewApp(func(a *gcli.App) {
+	gcli.NewDefaultApp(func(a *gcli.App) {
 		a.Name = "test-name"
 	})
 
-	is.Equal("test-name", gcli.Instance().Name)
+	is.Equal("test-name", gcli.DefaultApp.Name)
 }

@@ -10,7 +10,7 @@ package gcli
 
 import (
 	"fmt"
-	"github.com/gookit/goutil/envUtil"
+	"github.com/gookit/goutil/envutil"
 	"os"
 	"runtime"
 	"strings"
@@ -48,7 +48,7 @@ func init() {
 	CLI.workDir = workDir
 
 	// binName will contains work dir path on windows
-	if envUtil.IsWin() {
+	if envutil.IsWin() {
 		CLI.binName = strings.Replace(CLI.binName, workDir+"\\", "", 1)
 	}
 }

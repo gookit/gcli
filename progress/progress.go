@@ -33,7 +33,7 @@ type ProgressFace interface {
 
 // Progress definition
 // Refer:
-// 	https://github.com/inhere/php-console/blob/master/src/Utils/ProgressBar.php
+// 	https://github.com/inhere/php-console/blob/master/src/utils/ProgressBar.php
 type Progress struct {
 	// Format string the bar format
 	Format string

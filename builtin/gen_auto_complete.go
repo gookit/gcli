@@ -6,7 +6,7 @@ import (
 	"github.com/gookit/gcli"
 	"github.com/gookit/gcli/helper"
 	"github.com/gookit/gcli/interact"
-	"github.com/gookit/goutil/cliUtil"
+	"github.com/gookit/goutil/cliutil"
 	"io/ioutil"
 	"strings"
 )
@@ -39,7 +39,7 @@ func GenAutoCompleteScript() *gcli.Command {
 		UseFor: "generate auto complete scripts for current application",
 	}
 
-	shell := cliUtil.GetCurShell(true)
+	shell := cliutil.CurrentShell(true)
 	if shell == "" {
 		shell = "bash"
 	}
