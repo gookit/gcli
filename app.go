@@ -73,6 +73,8 @@ type App struct {
 	aliases map[string]string
 	// all commands for the app
 	commands map[string]*Command
+	// all commands by module
+	moduleCommands map[string]map[string]*Command
 	// current command name
 	commandName string
 	// default command name
@@ -93,9 +95,10 @@ func NewApp(fn ...func(a *App)) *App {
 		Logo:  Logo{Style: "info"},
 		Hooks: make(map[string]appHookFunc, 0),
 		// set a default version
-		Version:  "1.0.0",
-		CmdLine:  CLI,
-		commands: make(map[string]*Command),
+		Version:        "1.0.0",
+		CmdLine:        CLI,
+		commands:       make(map[string]*Command),
+		moduleCommands: make(map[string]map[string]*Command),
 	}
 
 	if len(fn) > 0 {
@@ -186,8 +189,25 @@ func (app *App) AddCommand(c *Command) *Command {
 		return nil
 	}
 
+	i := strings.Index(c.Name, ":")
+	if i == 0 {
+		exitWithErr("The added command module can not be empty.")
+	}
+
+	if i > -1 {
+		c.Module = c.Name[:i]
+	} else {
+		c.Module = " "
+	}
+
 	app.names[c.Name] = len(c.Name)
 	app.commands[c.Name] = c
+
+	if _, ok := app.moduleCommands[c.Module]; !ok {
+		app.moduleCommands[c.Module] = make(map[string]*Command)
+	}
+	app.moduleCommands[c.Module][c.Name] = c
+
 	// add aliases for the command
 	app.AddAliases(c.Name, c.Aliases)
 	Logf(VerbDebug, "[App.AddCommand] add a new CLI command: %s", c.Name)
