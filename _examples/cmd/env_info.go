@@ -1,10 +1,11 @@
 package cmd
 
 import (
-	"github.com/gookit/gcli"
-	"github.com/gookit/gcli/show"
 	"os"
 	"runtime"
+
+	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/show"
 )
 
 // options for the command
@@ -19,7 +20,7 @@ var eiOpts = struct {
 // EnvInfoCommand
 func EnvInfoCommand() *gcli.Command {
 	cmd := gcli.Command{
-		Name:    "env",
+		Name:    "module:env",
 		Aliases: []string{"env-info", "ei"},
 		UseFor:  "collect project info by git info",
 
