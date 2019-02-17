@@ -173,6 +173,15 @@ func (c *Command) NotAlone() bool {
 	return !c.alone
 }
 
+// ID get command ID name.
+func (c *Command) ID() string {
+	if c.Module != "" {
+		return fmt.Sprintf("%s:%s", c.Module, c.Name)
+	}
+
+	return c.Name
+}
+
 /*************************************************************
  * helper methods
  *************************************************************/

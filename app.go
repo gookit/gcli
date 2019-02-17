@@ -205,7 +205,7 @@ func (app *App) AddCommand(c *Command) *Command {
 	if i > -1 {
 		c.Module = c.Name[:i]
 	} else {
-		c.Module = " "
+		c.Module = ""
 	}
 
 	nameLen := len(c.Name)
