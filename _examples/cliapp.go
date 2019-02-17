@@ -20,10 +20,11 @@ func main() {
 	app := gcli.NewApp(func(app *gcli.App) {
 		app.Version = "1.0.6"
 		app.Description = "this is my cli application"
-		app.Hooks[gcli.EvtInit] = func(a *gcli.App, data interface{}) {
+		app.On(gcli.EvtInit, func(data ...interface{}) {
 			// do something...
 			// fmt.Println("init app")
-		}
+		})
+
 		// app.SetVerbose(gcli.VerbDebug)
 		// app.DefaultCommand("example")
 		app.Logo.Text = `   ________    _______

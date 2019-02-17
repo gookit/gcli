@@ -42,6 +42,7 @@ func LaunchEditorWithFilename(editor, filename string) (content []byte, err erro
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
+
 	defer os.Remove(filename)
 	err = cmd.Run()
 

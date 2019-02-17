@@ -24,7 +24,7 @@ func (c *Command) Execute(args []string) (err error) {
 		return err
 	}
 
-	c.fireEvent(EvtBefore, args)
+	c.Fire(EvtBefore, args)
 
 	// call command handler func
 	if c.Func == nil {
@@ -36,9 +36,9 @@ func (c *Command) Execute(args []string) (err error) {
 
 	if err != nil {
 		c.app.AddError(err)
-		c.fireEvent(EvtError, err)
+		c.Fire(EvtError, err)
 	} else {
-		c.fireEvent(EvtAfter, nil)
+		c.Fire(EvtAfter, nil)
 	}
 
 	return
@@ -49,7 +49,7 @@ func (c *Command) collectNamedArgs(inArgs []string) error {
 	inNum := len(inArgs)
 
 	for i, arg := range c.args {
-		num = i + 1 // num is equal index + 1
+		num = i + 1      // num is equal index + 1
 		if num > inNum { // no enough arg
 			if arg.Required {
 				return fmt.Errorf("must set value for the argument: %s (position %d)", arg.ShowName, arg.index)
@@ -68,23 +68,21 @@ func (c *Command) collectNamedArgs(inArgs []string) error {
 	if !c.alone && c.app.Strict && inNum > num {
 		return fmt.Errorf("enter too many arguments: %v", inArgs[num:])
 	}
-
 	return nil
 }
 
-func (c *Command) fireEvent(event string, data interface{}) {
-	Logf(VerbDebug, "command '%s' trigger the event: %s", c.Name, event)
+// Fire event handler by name
+func (c *Command) Fire(event string, data interface{}) {
+	Logf(VerbDebug, "[Cmd.Fire] command '%s' trigger the event: %s", c.Name, event)
 
-	if handler, ok := c.Hooks[event]; ok {
-		handler(c, data)
-	}
+	c.SimpleHooks.Fire(event, c, data)
 }
 
-func (c *Command) defaultErrHandler(_ *Command, data interface{}) {
-	if data != nil {
-		color.Error.Tips(data.(error).Error())
-		// fmt.Println(color.Red.Render("ERROR:"), err.Error())
-	}
+// On add hook handler for a hook event
+func (c *Command) On(name string, handler HookFunc) {
+	Logf(VerbDebug, "[Cmd.On] command '%s' add hook: %s", c.Name, name)
+
+	c.SimpleHooks.On(name, handler)
 }
 
 // Copy a new command for current
@@ -92,15 +90,10 @@ func (c *Command) Copy() *Command {
 	nc := *c
 	// reset some fields
 	nc.Func = nil
-	nc.Hooks = nil
+	nc.SimpleHooks.ClearHooks()
 	// nc.Flags = flag.FlagSet{}
 
 	return &nc
-}
-
-// On add hook handler for a hook event
-func (c *Command) On(name string, handler func(c *Command, data interface{})) {
-	c.Hooks[name] = handler
 }
 
 /*************************************************************

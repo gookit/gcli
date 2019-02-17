@@ -111,7 +111,7 @@ func ReadPassword(message ...string) string {
 }
 
 // GetHiddenInput interactively prompts for input without echoing to the terminal.
-// usage:
+// Usage:
 // 	// askPassword
 // 	pwd := GetHiddenInput("Enter Password:")
 func GetHiddenInput(message string, trimmed bool) string {

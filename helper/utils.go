@@ -41,16 +41,13 @@ func ShellExec(cmdStr string, dirAndShell ...string) (string, error) {
 	return string(bs), err
 }
 
-// GetScreenSize for current console terminal
+// GetScreenSize for current console terminal. TODO ...
 func GetScreenSize() (w int, h int) {
 	return
 }
 
 // RenderText render text template with data
 func RenderText(input string, data interface{}, fns template.FuncMap, isFile ...bool) string {
-	// use buffer receive rendered content
-	var buf bytes.Buffer
-
 	t := template.New("cli")
 	t.Funcs(template.FuncMap{
 		// don't escape content
@@ -79,6 +76,8 @@ func RenderText(input string, data interface{}, fns template.FuncMap, isFile ...
 		template.Must(t.Parse(input))
 	}
 
+	// use buffer receive rendered content
+	var buf bytes.Buffer
 	if err := t.Execute(&buf, data); err != nil {
 		panic(err)
 	}

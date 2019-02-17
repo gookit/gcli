@@ -117,7 +117,7 @@ func printDownloadPercent(done chan int64, path string, total int64) {
 
 	for {
 		select {
-		case <-done:      // end
+		case <-done: // end
 			fmt.Println() // output newline
 			return
 		default:

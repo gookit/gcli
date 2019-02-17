@@ -44,11 +44,53 @@ func Logf(level uint, format string, v ...interface{}) {
 }
 
 /*************************************************************
- * simple events
+ * simple events manage
  *************************************************************/
 
 // SimpleHooks struct
 type SimpleHooks struct {
+	// Hooks can setting some hooks func on running.
+	hooks map[string]HookFunc
+}
+
+// On register event hook by name
+func (sh *SimpleHooks) On(name string, handler HookFunc) {
+	if handler != nil {
+		// init map
+		if sh.hooks == nil {
+			sh.hooks = make(map[string]HookFunc)
+		}
+
+		sh.hooks[name] = handler
+	}
+}
+
+// Add register on not exists hook.
+func (sh *SimpleHooks) Add(name string, handler HookFunc) {
+	if _, ok := sh.hooks[name]; !ok {
+		sh.On(name, handler)
+	}
+}
+
+// Fire event by name, allow with event data
+func (sh *SimpleHooks) Fire(event string, data ...interface{}) {
+	if handler, ok := sh.hooks[event]; ok {
+		handler(data...)
+	}
+}
+
+// ClearHooks clear hooks data
+func (sh *SimpleHooks) ClearHooks() {
+	sh.hooks = nil
+}
+
+func defaultErrHandler(data ...interface{}) {
+	if len(data) == 2 && data[1] != nil {
+		if err, ok := data[1].(error); ok {
+			color.Error.Tips(err.Error())
+			// fmt.Println(color.Red.Render("ERROR:"), err.Error())
+		}
+	}
 }
 
 /*************************************************************
@@ -56,7 +98,7 @@ type SimpleHooks struct {
  *************************************************************/
 
 // HelpVarFormat allow var replace on render help info.
-// default support:
+// Default support:
 // 	"{$binName}" "{$cmd}" "{$fullCmd}" "{$workDir}"
 const HelpVarFormat = "{$%s}"
 

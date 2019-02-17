@@ -35,19 +35,25 @@ const (
  * CLI application
  *************************************************************/
 
+// HookFunc definition.
+// func arguments:
+//  in app, like: func(app *App, data interface{})
+//  in cmd, like: func(cmd *Command, data interface{})
+// type HookFunc func(obj interface{}, data interface{})
+type HookFunc func(obj ...interface{})
+
 // Logo app logo, ASCII logo
 type Logo struct {
 	Text  string // ASCII logo string
 	Style string // eg "info"
 }
 
-type appHookFunc func(app *App, data interface{})
-
 // App the cli app definition
 type App struct {
 	// internal use
 	*CmdLine
 	HelpVars
+	SimpleHooks // allow hooks: "init", "before", "after", "error"
 
 	// Name app name
 	Name string
@@ -57,9 +63,6 @@ type App struct {
 	Description string
 	// Logo ASCII logo setting
 	Logo Logo
-	// Hooks can setting some hooks func on running.
-	// allow hooks: "init", "before", "after", "error"
-	Hooks map[string]appHookFunc
 	// Strict use strict mode. short opt must be begin '-', long opt must be begin '--'
 	Strict bool
 	// vars you can add some vars map for render help info
@@ -93,9 +96,8 @@ type App struct {
 // 	})
 func NewApp(fn ...func(a *App)) *App {
 	app := &App{
-		Name:  "My CLI App",
-		Logo:  Logo{Style: "info"},
-		Hooks: make(map[string]appHookFunc, 0),
+		Name: "My CLI App",
+		Logo: Logo{Style: "info"},
 		// set a default version
 		Version:        "1.0.0",
 		CmdLine:        CLI,
@@ -130,6 +132,9 @@ func (app *App) Initialize() {
 
 	// parse GlobalOpts
 	// parseGlobalOpts()
+
+	// add default error handler.
+	app.SimpleHooks.Add(EvtError, defaultErrHandler)
 
 	app.fireEvent(EvtInit, nil)
 }
@@ -229,17 +234,17 @@ func (app *App) AddCommand(c *Command) *Command {
 	return c
 }
 
-func (app *App) fireEvent(event string, data interface{}) {
-	Logf(VerbDebug, "trigger the application event: %s", event)
+// On add hook handler for a hook event
+func (app *App) On(name string, handler HookFunc) {
+	Logf(VerbDebug, "[App.On] add application hook: %s", name)
 
-	if handler, ok := app.Hooks[event]; ok {
-		handler(app, data)
-	}
+	app.SimpleHooks.On(name, handler)
 }
 
-// On add hook handler for a hook event
-func (app *App) On(name string, handler func(a *App, data interface{})) {
-	app.Hooks[name] = handler
+func (app *App) fireEvent(event string, data interface{}) {
+	Logf(VerbDebug, "[App.Fire] trigger the application event: %s", event)
+
+	app.SimpleHooks.Fire(event, app, data)
 }
 
 // AddError to the application

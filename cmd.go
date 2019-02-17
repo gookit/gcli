@@ -21,14 +21,12 @@ func (f CmdFunc) Run(c *Command, args []string) error {
 	return f(c, args)
 }
 
-// HookFunc definition
-type HookFunc func(c *Command, data interface{})
-
 // Command a CLI command structure
 type Command struct {
 	// is internal use
 	*CmdLine
 	HelpVars
+	SimpleHooks // allow hooks: "init", "before", "after", "error"
 
 	// Name is the command name.
 	Name string
@@ -151,16 +149,10 @@ func (c *Command) initialize() *Command {
 		"fullCmd": c.binName + " " + c.Name,
 	})
 
-	if c.Hooks == nil {
-		c.Hooks = make(map[string]HookFunc, 1)
-	}
-
-	c.fireEvent(EvtInit, nil)
+	c.Fire(EvtInit, nil)
 
 	// add default error handler.
-	if _, ok := c.Hooks[EvtError]; !ok {
-		c.Hooks[EvtError] = c.defaultErrHandler
-	}
+	c.SimpleHooks.Add(EvtError, defaultErrHandler)
 
 	// init for Flags
 	c.Flags.Init(c.Name, flag.ContinueOnError)
