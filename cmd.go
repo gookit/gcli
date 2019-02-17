@@ -3,8 +3,9 @@ package gcli
 import (
 	"flag"
 	"fmt"
-	"github.com/gookit/goutil/strutil"
 	"strings"
+
+	"github.com/gookit/goutil/strutil"
 )
 
 // Runner interface
@@ -31,6 +32,8 @@ type Command struct {
 
 	// Name is the command name.
 	Name string
+	// Module is the name for grouped commands
+	Module string
 	// UseFor is the command description message.
 	UseFor string
 	// Func is the command handler func. Func Runner

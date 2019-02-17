@@ -3,11 +3,12 @@ package gcli
 import (
 	"flag"
 	"fmt"
+	"log"
+	"strings"
+
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/helper"
 	"github.com/gookit/goutil/strutil"
-	"log"
-	"strings"
 )
 
 // parseGlobalOpts parse global options
@@ -222,8 +223,10 @@ var commandsHelp = `{{.Description}} (Version: <info>{{.Version}}</>)
   <info>-h, --help</>        Display the help information
   <info>-V, --version</>     Display app version information
 
-<comment>Available Commands:</>{{range .Cs}}{{if .Runnable}}
+<comment>Available Commands:</>{{range $module, $cs := .Cs}}
+<comment>{{$module}}</>{{range $cs}}
   <info>{{.Name | printf "%-12s"}}</> {{.UseFor}}{{if .Aliases}} (alias: <cyan>{{ join .Aliases ","}}</>){{end}}{{end}}{{end}}
+	
   <info>help</>         Display help information
 
 Use "<cyan>{$binName} {command} -h</>" for more information about a command
@@ -249,7 +252,7 @@ func (app *App) showCommandsHelp() {
 	commandsHelp = color.ReplaceTag(commandsHelp)
 	// render help text template
 	s := helper.RenderText(commandsHelp, map[string]interface{}{
-		"Cs": app.commands,
+		"Cs": app.moduleCommands,
 		// app version
 		"Version": app.Version,
 		// always upper first char
