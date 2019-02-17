@@ -2,13 +2,14 @@ package builtin
 
 import (
 	"fmt"
+	"io/ioutil"
+	"strings"
+
 	"github.com/gookit/color"
 	"github.com/gookit/gcli"
 	"github.com/gookit/gcli/helper"
 	"github.com/gookit/gcli/interact"
 	"github.com/gookit/goutil/cliutil"
-	"io/ioutil"
-	"strings"
 )
 
 // current supported shell

@@ -18,9 +18,9 @@ type StepsRun struct {
 	current int
 	// Steps step name and handler define.
 	// {
-	//	// step 1
+	// 	// step 1
 	// 	func(ctx context.Context) { do something.}
-	//	// step 2
+	// 	// step 2
 	// 	func(ctx context.Context) { do something.}
 	// }
 	Steps []StepHandler

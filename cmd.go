@@ -87,7 +87,7 @@ type Command struct {
 // NewCommand create a new command instance.
 // Usage:
 // 	cmd := NewCommand("my-cmd", "description", func(c *Command) { ... })
-//	app.Add(cmd) // OR cmd.AttachTo(app)
+// 	app.Add(cmd) // OR cmd.AttachTo(app)
 func NewCommand(name, useFor string, config func(c *Command)) *Command {
 	return &Command{
 		Name:   name,

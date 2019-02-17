@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"strings"
+
 	"github.com/gookit/color"
 	"github.com/gookit/gcli"
 	"github.com/gookit/gcli/helper"
-	"strings"
 )
 
 var gitOpts = struct {

@@ -5,12 +5,13 @@ package reverseproxy
 // https://github.com/ilanyu/ReverseProxy
 import (
 	"fmt"
-	"github.com/gookit/gcli"
 	"log"
 	"math/rand"
 	"net/http"
 	"net/http/httputil"
 	"net/url"
+
+	"github.com/gookit/gcli"
 )
 
 type reverseProxy struct {

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/gookit/color"
 	"github.com/gookit/gcli"
 	"github.com/gookit/gcli/show/emoji"

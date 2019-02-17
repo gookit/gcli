@@ -2,10 +2,11 @@ package cmd
 
 import (
 	"fmt"
+	"os/exec"
+
 	"github.com/gookit/color"
 	"github.com/gookit/gcli"
 	"github.com/gookit/gcli/interact"
-	"os/exec"
 )
 
 // InteractDemoCommand create

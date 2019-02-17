@@ -53,7 +53,7 @@ func Search(kw string, limits ...int) (ret map[string]string) {
 // Render a string, parse emoji name, returns rendered string.
 // Usage:
 // 	msg := Render("a :smile: message")
-//	fmt.Println(msg)
+// 	fmt.Println(msg)
 func Render(str string) string {
 	// not contains emoji name.
 	if strings.IndexByte(str, ':') == -1 {
@@ -88,10 +88,10 @@ func FromUnicode(s string) string {
 // ToUnicode unicode string to emoji string
 // Usage:
 // 	unicode := ToUnicode("💖")
-//	fmt.Print(unicode) // "1f496"
-//	// with prefix
+// 	fmt.Print(unicode) // "1f496"
+// 	// with prefix
 // 	unicode := ToUnicode("💖", "\U000") // "\U0001f496"
-//	fmt.Print(unicode) // "💖"
+// 	fmt.Print(unicode) // "💖"
 func ToUnicode(emoji string, prefix ...string) string {
 	code := strconv.FormatInt(int64(emoji[0]), 16)
 

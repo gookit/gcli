@@ -2,9 +2,10 @@ package flags
 
 import (
 	"fmt"
-	"github.com/stretchr/testify/assert"
 	"strings"
 	"testing"
+
+	"github.com/stretchr/testify/assert"
 )
 
 func TestArgsParser_Parse(t *testing.T) {

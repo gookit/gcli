@@ -1,8 +1,9 @@
 package flags
 
 import (
-	"github.com/gookit/filter"
 	"strconv"
+
+	"github.com/gookit/filter"
 )
 
 // ValueGetter struct

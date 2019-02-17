@@ -2,10 +2,11 @@ package show
 
 import (
 	"bytes"
+	"os"
+
 	"github.com/gookit/color"
 	"github.com/gookit/filter"
 	"github.com/gookit/goutil/strutil"
-	"os"
 )
 
 // ListOption definition

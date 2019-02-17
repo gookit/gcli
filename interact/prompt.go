@@ -16,7 +16,7 @@ type result struct {
 // Prompt query and read user answer.
 //
 // Usage:
-//	answer,err := Prompt(context.TODO(), "your name?", "")
+// 	answer,err := Prompt(context.TODO(), "your name?", "")
 // from package golang.org/x/tools/cmd/getgo
 func Prompt(ctx context.Context, query, defaultAnswer string) (string, error) {
 	fmt.Printf("%s [%s]: ", query, defaultAnswer)

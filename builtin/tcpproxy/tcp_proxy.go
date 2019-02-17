@@ -1,8 +1,9 @@
 package tcpproxy
 
 import (
-	"github.com/gookit/gcli"
 	"sync"
+
+	"github.com/gookit/gcli"
 )
 
 // TCPProxy definition.

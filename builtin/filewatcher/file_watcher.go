@@ -2,12 +2,13 @@ package filewatcher
 
 import (
 	"fmt"
-	"github.com/fsnotify/fsnotify"
-	"github.com/gookit/color"
-	"github.com/gookit/gcli"
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/fsnotify/fsnotify"
+	"github.com/gookit/color"
+	"github.com/gookit/gcli"
 )
 
 var watcher *fsnotify.Watcher

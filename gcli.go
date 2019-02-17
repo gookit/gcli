@@ -10,10 +10,11 @@ package gcli
 
 import (
 	"fmt"
-	"github.com/gookit/goutil/envutil"
 	"os"
 	"runtime"
 	"strings"
+
+	"github.com/gookit/goutil/envutil"
 )
 
 var (

@@ -2,8 +2,9 @@ package gcli
 
 import (
 	"fmt"
-	"github.com/gookit/color"
 	"strings"
+
+	"github.com/gookit/color"
 )
 
 /*************************************************************
