@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"strings"
+	"text/template"
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/helper"
@@ -224,10 +225,10 @@ var commandsHelp = `{{.Description}} (Version: <info>{{.Version}}</>)
   <info>-V, --version</>     Display app version information
 
 <comment>Available Commands:</>{{range $module, $cs := .Cs}}
-<comment>{{$module}}</>{{range $cs}}
-  <info>{{.Name | printf "%-12s"}}</> {{.UseFor}}{{if .Aliases}} (alias: <cyan>{{ join .Aliases ","}}</>){{end}}{{end}}{{end}}
-	
-  <info>help</>         Display help information
+<comment>{{ $module }}</>{{ range $cs }}
+  <info>{{.Name | paddingName }}</> {{.UseFor}}{{if .Aliases}} (alias: <cyan>{{ join .Aliases ","}}</>){{end}}{{end}}{{end}}
+
+  <info>{{ paddingName "help" }}</> Display help information
 
 Use "<cyan>{$binName} {command} -h</>" for more information about a command
 `
@@ -257,7 +258,11 @@ func (app *App) showCommandsHelp() {
 		"Version": app.Version,
 		// always upper first char
 		"Description": strutil.UpperFirst(app.Description),
-	}, false)
+	}, template.FuncMap{
+		"paddingName": func(n string) string {
+			return strutil.PadRight(n, " ", app.nameMaxLength)
+		},
+	})
 
 	// parse help vars and render color tags
 	fmt.Print(color.String(app.ReplaceVars(s)))

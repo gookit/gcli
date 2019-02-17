@@ -101,7 +101,7 @@ func doGen(c *gcli.Command, _ []string) (err error) {
 		return c.Errorf("--shell option only allow: zsh,bash")
 	}
 
-	str := helper.RenderText(shellTpls[genOpts.shell], &data)
+	str := helper.RenderText(shellTpls[genOpts.shell], &data, nil)
 
 	color.Info.Println("Now, will write content to file ", genOpts.output)
 	color.Normal.Print("Continue?")

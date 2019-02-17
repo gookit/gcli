@@ -174,7 +174,7 @@ func (c *Command) ShowHelp(quit ...bool) {
 		"Options": color.String(c.ParseDefaults()),
 		// always upper first char
 		"UseFor": color.String(c.UseFor),
-	}, false)
+	}, nil)
 
 	// parse help vars
 	fmt.Print(color.String(c.ReplaceVars(s)))

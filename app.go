@@ -77,6 +77,8 @@ type App struct {
 	moduleCommands map[string]map[string]*Command
 	// current command name
 	commandName string
+	// the max length for added command names. default set 12.
+	nameMaxLength int
 	// default command name
 	defaultCommand string
 }
@@ -99,6 +101,7 @@ func NewApp(fn ...func(a *App)) *App {
 		CmdLine:        CLI,
 		commands:       make(map[string]*Command),
 		moduleCommands: make(map[string]map[string]*Command),
+		nameMaxLength:  12,
 	}
 
 	if len(fn) > 0 {
@@ -186,7 +189,7 @@ func (app *App) AddCommand(c *Command) *Command {
 
 	if c.IsDisabled() {
 		Logf(VerbDebug, "command %s has been disabled, skip add", c.Name)
-		return nil
+		return c
 	}
 
 	i := strings.Index(c.Name, ":")
@@ -200,8 +203,16 @@ func (app *App) AddCommand(c *Command) *Command {
 		c.Module = " "
 	}
 
-	app.names[c.Name] = len(c.Name)
+	nameLen := len(c.Name)
+
+	// add command to app
+	app.names[c.Name] = nameLen
 	app.commands[c.Name] = c
+
+	// record command name max length
+	if nameLen > app.nameMaxLength {
+		app.nameMaxLength = nameLen
+	}
 
 	if _, ok := app.moduleCommands[c.Module]; !ok {
 		app.moduleCommands[c.Module] = make(map[string]*Command)

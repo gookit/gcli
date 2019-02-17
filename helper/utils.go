@@ -47,7 +47,7 @@ func GetScreenSize() (w int, h int) {
 }
 
 // RenderText render text template with data
-func RenderText(input string, data interface{}, isFile ...bool) string {
+func RenderText(input string, data interface{}, fns template.FuncMap, isFile ...bool) string {
 	// use buffer receive rendered content
 	var buf bytes.Buffer
 
@@ -67,6 +67,11 @@ func RenderText(input string, data interface{}, isFile ...bool) string {
 		// upper first char
 		"ucFirst": strutil.UpperFirst,
 	})
+
+	// custom add template functions
+	if len(fns) > 0 {
+		t.Funcs(fns)
+	}
 
 	if len(isFile) > 0 && isFile[0] {
 		template.Must(t.ParseFiles(input))
