@@ -30,7 +30,7 @@
 
 ## GoDoc
 
-- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v2)
+- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/gcli.v2)
 - [godoc for github](https://godoc.org/github.com/gookit/gcli)
 
 ## 快速开始
@@ -56,7 +56,7 @@ import (
 func main() {
     runtime.GOMAXPROCS(runtime.NumCPU())
 
-    app := cliapp.NewApp()
+    app := gcli.NewApp()
     app.Version = "1.0.3"
     app.Description = "this is my cli application"
     // app.SetVerbose(gcli.VerbDebug)
@@ -67,7 +67,7 @@ func main() {
         // allow color tag and {$cmd} will be replace to 'demo'
         UseFor: "this is a description <info>message</> for command", 
         Aliases: []string{"dm"},
-        Func: func (cmd *cliapp.Command, args []string) error {
+        Func: func (cmd *gcli.Command, args []string) error {
             gcli.Println("hello, in the demo command")
             return nil
         },
