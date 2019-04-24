@@ -118,6 +118,11 @@ func (c *CmdLine) OsName() string {
 	return c.osName
 }
 
+// OsArgs is equals to `os.Args`
+func (c *CmdLine) OsArgs() []string {
+	return os.Args
+}
+
 // BinName get bin script name
 func (c *CmdLine) BinName() string {
 	return c.binName

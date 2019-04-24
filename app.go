@@ -66,7 +66,7 @@ type App struct {
 	// Strict use strict mode. short opt must be begin '-', long opt must be begin '--'
 	Strict bool
 	// vars you can add some vars map for render help info
-	vars map[string]string
+	// vars map[string]string
 	// command names. key is name, value is name string length
 	// eg. {"test": 4, "example": 7}
 	names map[string]int
@@ -84,6 +84,8 @@ type App struct {
 	nameMaxLength int
 	// default command name
 	defaultCommand string
+	// clean os.args, not contains bin-name and command-name
+	cleanArgs []string
 }
 
 // NewApp create new app instance.
@@ -260,4 +262,9 @@ func (app *App) Names() map[string]int {
 // Commands get all commands
 func (app *App) Commands() map[string]*Command {
 	return app.commands
+}
+
+// CleanArgs get clean args
+func (app *App) CleanArgs() []string {
+	return app.cleanArgs
 }

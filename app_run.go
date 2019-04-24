@@ -108,6 +108,7 @@ func (app *App) Run() {
 		args = strictFormatArgs(args)
 	}
 
+	app.cleanArgs = args
 	// fmt.Println(cmd.argsStr, len(cmd.argsStr), strings.LastIndex(cmd.argsStr, " -h"))
 	app.fireEvent(EvtBefore, cmd.Copy())
 
@@ -224,8 +225,8 @@ var commandsHelp = `{{.Description}} (Version: <info>{{.Version}}</>)
   <info>-h, --help</>        Display the help information
   <info>-V, --version</>     Display app version information
 
-<comment>Available Commands:</>{{range $module, $cs := .Cs}}
-<comment>{{ $module }}</>{{ range $cs }}
+<comment>Available Commands:</>{{range $module, $cs := .Cs}}{{if $module}}
+<comment>{{ $module }}</>{{end}}{{ range $cs }}
   <info>{{.Name | paddingName }}</> {{.UseFor}}{{if .Aliases}} (alias: <cyan>{{ join .Aliases ","}}</>){{end}}{{end}}{{end}}
 
   <info>{{ paddingName "help" }}</> Display help information
