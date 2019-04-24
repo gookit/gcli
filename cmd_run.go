@@ -66,7 +66,7 @@ func (c *Command) collectNamedArgs(inArgs []string) error {
 	}
 
 	if !c.alone && c.app.Strict && inNum > num {
-		return fmt.Errorf("enter too many arguments: %v", inArgs[num:])
+		return fmt.Errorf("entered too many arguments: %v", inArgs[num:])
 	}
 	return nil
 }

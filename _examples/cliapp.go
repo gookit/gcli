@@ -35,6 +35,8 @@ func main() {
                      /_/   /_/`
 	})
 
+	// app.Strict = true
+
 	app.Add(cmd.ExampleCommand())
 	app.Add(cmd.DaemonRunCommand())
 	app.Add(cmd.EnvInfoCommand())

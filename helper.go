@@ -40,7 +40,7 @@ func Logf(level uint, format string, v ...interface{}) {
 	}
 
 	name = level2color[level].Render(name)
-	fmt.Printf("cliapp: [%s] %s\n", name, fmt.Sprintf(format, v...))
+	fmt.Printf("GCLI: [%s] %s\n", name, fmt.Sprintf(format, v...))
 }
 
 /*************************************************************
