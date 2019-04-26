@@ -35,12 +35,15 @@ func (c *Command) Execute(args []string) (err error) {
 	}
 
 	if err != nil {
-		c.app.AddError(err)
+		// if run in application, report error to app.
+		if !c.alone {
+			c.app.AddError(err)
+		}
+
 		c.Fire(EvtError, err)
 	} else {
 		c.Fire(EvtAfter, nil)
 	}
-
 	return
 }
 
@@ -49,7 +52,7 @@ func (c *Command) collectNamedArgs(inArgs []string) error {
 	inNum := len(inArgs)
 
 	for i, arg := range c.args {
-		num = i + 1      // num is equal index + 1
+		num = i + 1 // num is equal index + 1
 		if num > inNum { // no enough arg
 			if arg.Required {
 				return fmt.Errorf("must set value for the argument: %s (position %d)", arg.ShowName, arg.index)
@@ -100,14 +103,18 @@ func (c *Command) Copy() *Command {
  * alone running
  *************************************************************/
 
+// MustRun the current command
+func (c *Command) MustRun(inArgs []string) {
+	if err := c.Run(inArgs); err != nil {
+		panic(err)
+	}
+}
+
 // Run the current command
-func (c *Command) Run(inArgs []string) {
+func (c *Command) Run(inArgs []string) error {
 	if c.app == nil {
 		// don't display date on print log
 		log.SetFlags(0)
-
-		// mark is alone
-		c.alone = true
 
 		// init the command
 		c.initialize()
@@ -125,7 +132,7 @@ func (c *Command) Run(inArgs []string) {
 		inArgs = c.Flags.Args()
 	}
 
-	_ = c.Execute(inArgs)
+	return c.Execute(inArgs)
 }
 
 /*************************************************************

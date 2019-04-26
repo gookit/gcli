@@ -21,11 +21,12 @@ func (ns *Names) Set(value string) error {
 
 // options for the command
 var exampleOpts = struct {
-	id    int
-	c     string
-	dir   string
-	opt   string
-	names Names
+	id      int
+	c       string
+	dir     string
+	opt     string
+	showErr bool
+	names   Names
 }{}
 
 // ExampleCommand command definition
@@ -42,6 +43,7 @@ func ExampleCommand() *gcli.Command {
 
 	// bind options
 	cmd.IntOpt(&exampleOpts.id, "id", "", 2, "the id option")
+	cmd.BoolOpt(&exampleOpts.showErr, "err", "e", false, "display error example")
 	cmd.StrOpt(&exampleOpts.c, "config", "c", "value", "the config option")
 	// notice `DIRECTORY` will replace to option value type
 	cmd.StrOpt(&exampleOpts.dir, "dir", "d", "", "the `DIRECTORY` option")
@@ -64,6 +66,10 @@ func ExampleCommand() *gcli.Command {
 // 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
 func exampleExecute(c *gcli.Command, args []string) error {
 	fmt.Print("hello, in example command\n")
+
+	if exampleOpts.showErr {
+		return c.Errorf("OO, An error has occurred!!")
+	}
 
 	magentaln := color.Magenta.Println
 

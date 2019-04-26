@@ -66,7 +66,7 @@ type App struct {
 	// Strict use strict mode.
 	// If True:
 	// 	- short opt must be begin '-', long opt must be begin '--'
-	//	- will check invalid arguments, like to many arguments
+	// 	- will check invalid arguments, like to many arguments
 	Strict bool
 	// vars you can add some vars map for render help info
 	// vars map[string]string

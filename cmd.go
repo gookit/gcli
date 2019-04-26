@@ -151,8 +151,13 @@ func (c *Command) initialize() *Command {
 
 	c.Fire(EvtInit, nil)
 
-	// add default error handler.
-	c.SimpleHooks.Add(EvtError, defaultErrHandler)
+	// if not set application instance
+	if c.app == nil {
+		// mark is alone
+		c.alone = true
+		// add default error handler.
+		c.SimpleHooks.Add(EvtError, defaultErrHandler)
+	}
 
 	// init for Flags
 	c.Flags.Init(c.Name, flag.ContinueOnError)

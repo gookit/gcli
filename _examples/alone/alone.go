@@ -37,6 +37,6 @@ func main() {
 	}
 
 	// Alone Running
-	cmd.Run(nil)
+	cmd.MustRun(nil)
 	// cmd.Run(os.Args[1:])
 }
