@@ -2,7 +2,6 @@ package show
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -19,7 +18,7 @@ const (
 	ERR = 2
 )
 
-var errInvalidType = errors.New("invalid input data type")
+//var errInvalidType = errors.New("invalid input data type")
 
 // FormatterFace interface
 type FormatterFace interface {
@@ -61,6 +60,8 @@ func (b *Base) Print() {
 
 	if b.formatted != "" {
 		color.Fprint(b.output, b.formatted)
+		// clear data
+		b.formatted = ""
 	}
 }
 
@@ -71,7 +72,9 @@ func (b *Base) Println() {
 	}
 
 	if b.formatted != "" {
-		color.Fprintln(b.output, b.formatted)
+		_,_ = color.Fprintln(b.output, b.formatted)
+		// clear data
+		b.formatted = ""
 	}
 }
 
@@ -144,7 +147,7 @@ func NewItems(data interface{}) *Items {
 			keyWidth = item.maxLen(keyWidth)
 		}
 	default:
-		panic("invalid data type, only allow: array, map, slice, struct")
+		panic("GCLI: invalid data type, only allow: array, map, slice, struct")
 	}
 
 	// settings

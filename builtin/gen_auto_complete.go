@@ -2,6 +2,7 @@ package builtin
 
 import (
 	"fmt"
+	"github.com/gookit/gcli/show"
 	"io/ioutil"
 	"strings"
 
@@ -18,11 +19,13 @@ const (
 	BashShell = "bash"
 )
 
-//
+// generate options
 var genOpts = &struct {
 	shell   string
 	binName string
 	output  string
+	// some info
+	_selfName  string
 }{}
 
 var shellTpls = map[string]string{
@@ -39,6 +42,8 @@ func GenAutoCompleteScript() *gcli.Command {
 		// des
 		UseFor: "generate auto complete scripts for current application",
 	}
+
+	genOpts._selfName = "gen:ac"
 
 	shell := cliutil.CurrentShell(true)
 	if shell == "" {
@@ -86,17 +91,24 @@ func doGen(c *gcli.Command, _ []string) (err error) {
 		}
 	}
 
-	color.Info.Tips("\n  %+v\n", genOpts)
+	// color.Info.Tips("\n  %+v\n", genOpts)
 	data := map[string]interface{}{
 		"Shell":    genOpts.shell,
 		"BinName":  genOpts.binName,
 		"FileName": genOpts.output,
 	}
 
+	show.AList("Information", data, nil)
+
+	if interact.Unconfirmed("Please confirm the above information", true) {
+		color.Info.Print("\nBye :)\n")
+		return
+	}
+
 	if genOpts.shell == BashShell {
-		data = buildForBashShell(data)
+		data = buildForBashShell(c.App(), data)
 	} else if genOpts.shell == ZshShell {
-		data = buildForZshShell(data)
+		data = buildForZshShell(c.App(), data)
 	} else {
 		return c.Errorf("--shell option only allow: zsh,bash")
 	}
@@ -159,15 +171,15 @@ _complete_for_{{.BinName}} () {
 complete -F _complete_for_{{.BinName}} {{.BinName}} {{.BinName}}.exe
 `
 
-func buildForBashShell(data map[string]interface{}) map[string]interface{} {
+func buildForBashShell(app *gcli.App, data map[string]interface{}) map[string]interface{} {
 	var cNames []string
 
 	// {cmd name: opts}
 	nameOpts := make(map[string]string)
 
-	for n, c := range gcli.AllCommands() {
+	for n, c := range app.Commands() {
 		// skip self
-		if n == "genac" || n == "gen-ac" {
+		if n == genOpts._selfName {
 			continue
 		}
 
@@ -251,7 +263,7 @@ compdef _complete_for_{{.BinName}} {{.BinName}}
 compdef _complete_for_{{.BinName}} {{.BinName}}.exe
 `
 
-func buildForZshShell(data map[string]interface{}) map[string]interface{} {
+func buildForZshShell(app *gcli.App, data map[string]interface{}) map[string]interface{} {
 	type opInfos []string
 
 	// {cmd name: cmd des}. in zsh eg: 'build[compile packages and dependencies]'
@@ -262,9 +274,9 @@ func buildForZshShell(data map[string]interface{}) map[string]interface{} {
 	// {-h,--help}'[Show usage message]' // multi name
 	nameOpts := make(map[string]opInfos)
 
-	for n, c := range gcli.AllCommands() {
+	for n, c := range app.Commands() {
 		// skip self
-		if n == "genac" || n == "gen-ac" {
+		if n == genOpts._selfName {
 			continue
 		}
 		nameDes[c.Name] = fmtDes(c.UseFor) + "(alias " + c.AliasesString() + ")"
