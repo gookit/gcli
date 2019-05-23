@@ -1,4 +1,4 @@
-module github.com/gookit/gcli
+module github.com/gookit/gcli/v2
 
 require (
 	github.com/fsnotify/fsnotify v1.4.7
