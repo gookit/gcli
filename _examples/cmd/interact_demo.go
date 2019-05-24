@@ -5,8 +5,8 @@ import (
 	"os/exec"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli"
-	"github.com/gookit/gcli/interact"
+	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v2/interact"
 )
 
 // InteractDemoCommand create

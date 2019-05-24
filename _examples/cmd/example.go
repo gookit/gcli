@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/v2"
 )
 
 // The string flag list, implemented flag.Value interface

@@ -5,8 +5,8 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli"
-	"github.com/gookit/gcli/helper"
+	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v2/helper"
 )
 
 var gitOpts = struct {

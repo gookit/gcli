@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/v2"
 )
 
 var bgrOpts = struct {

@@ -3,8 +3,8 @@ package cmd
 import (
 	"time"
 
-	"github.com/gookit/gcli"
-	"github.com/gookit/gcli/progress"
+	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v2/progress"
 )
 
 type progressDemo struct {

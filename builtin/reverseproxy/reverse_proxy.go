@@ -11,7 +11,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/v2"
 )
 
 type reverseProxy struct {

@@ -4,8 +4,8 @@ import (
 	"fmt"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli"
-	"github.com/gookit/gcli/show/emoji"
+	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v2/show/emoji"
 )
 
 func EmojiDemoCmd() *gcli.Command {

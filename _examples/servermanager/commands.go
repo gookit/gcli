@@ -6,7 +6,7 @@ import (
 	"os/exec"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/v2"
 )
 
 type Config struct {

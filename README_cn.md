@@ -41,6 +41,8 @@
 import "gopkg.in/gookit/gcli.v2" // 推荐
 // or
 import "github.com/gookit/gcli"
+// for go mod
+import "github.com/gookit/gcli/v2"
 ```
 
 ```go 
@@ -48,8 +50,8 @@ package main
 
 import (
     "runtime"
-    "github.com/gookit/gcli"
-    "github.com/gookit/gcli/_examples/cmd"
+    "github.com/gookit/gcli/v2"
+    "github.com/gookit/gcli/v2/_examples/cmd"
 )
 
 // 测试运行: go run ./_examples/cliapp.go && ./cliapp
@@ -129,7 +131,7 @@ you can see:
 ### 生成命令补全脚本
 
 ```go
-import  "github.com/gookit/gcli/builtin"
+import  "github.com/gookit/gcli/v2/builtin"
 
     // ...
     // 添加内置提供的生成命令
@@ -195,7 +197,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/gookit/color"
-	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/v2"
 )
 
 // options for the command
@@ -305,7 +307,7 @@ Data handling ... ... 50% (25/50)
 package main
 
 import "time"
-import "github.com/gookit/gcli/progress"
+import "github.com/gookit/gcli/v2/progress"
 
 func main()  {
 	speed := 100
@@ -351,7 +353,7 @@ console interactive methods
 package main
 
 import "fmt"
-import "github.com/gookit/gcli/interact"
+import "github.com/gookit/gcli/v2/interact"
 
 func main() {
 	username, _ := interact.ReadLine("Your name?")

@@ -40,6 +40,8 @@ A simple to use command line application, written using golang.
 import "gopkg.in/gookit/gcli.v2" // is recommended
 // or
 import "github.com/gookit/gcli"
+// for go mod
+import "github.com/gookit/gcli/v2"
 ```
 
 ```go 
@@ -47,8 +49,8 @@ package main
 
 import (
     "runtime"
-    "github.com/gookit/gcli"
-    "github.com/gookit/gcli/_examples/cmd"
+    "github.com/gookit/gcli/v2"
+    "github.com/gookit/gcli/v2/_examples/cmd"
 )
 
 // for test run: go build ./_examples/cliapp.go && ./cliapp
@@ -130,7 +132,7 @@ you can see:
 ### Generate auto completion scripts
 
 ```go
-import  "github.com/gookit/gcli/builtin"
+import  "github.com/gookit/gcli/v2/builtin"
 
     // ...
     // add gen command(gen successful you can remove it)
@@ -203,7 +205,7 @@ package cmd
 import (
 	"fmt"
 	"github.com/gookit/color"
-	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/v2"
 )
 
 // options for the command
@@ -310,7 +312,7 @@ Examples:
 package main
 
 import "time"
-import "github.com/gookit/gcli/progress"
+import "github.com/gookit/gcli/v2/progress"
 
 func main()  {
 	speed := 100
@@ -356,7 +358,7 @@ Examples:
 package main
 
 import "fmt"
-import "github.com/gookit/gcli/interact"
+import "github.com/gookit/gcli/v2/interact"
 
 func main() {
 	username, _ := interact.ReadLine("Your name?")

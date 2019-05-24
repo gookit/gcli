@@ -2,14 +2,14 @@ package builtin
 
 import (
 	"fmt"
-	"github.com/gookit/gcli/show"
+	"github.com/gookit/gcli/v2/show"
 	"io/ioutil"
 	"strings"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli"
-	"github.com/gookit/gcli/helper"
-	"github.com/gookit/gcli/interact"
+	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v2/helper"
+	"github.com/gookit/gcli/v2/interact"
 	"github.com/gookit/goutil/cliutil"
 )
 

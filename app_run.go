@@ -8,7 +8,7 @@ import (
 	"text/template"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/helper"
+	"github.com/gookit/gcli/v2/helper"
 	"github.com/gookit/goutil/strutil"
 )
 
