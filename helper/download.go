@@ -73,6 +73,7 @@ func Download(url, saveDir string, rename ...string) error {
 	if err != nil {
 		panic(err)
 	}
+	//noinspection GoUnhandledErrorResult
 	defer headResp.Body.Close()
 
 	// get remote file size from header.
@@ -89,6 +90,7 @@ func Download(url, saveDir string, rename ...string) error {
 	if err != nil {
 		panic(err)
 	}
+	//noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
@@ -117,8 +119,8 @@ func printDownloadPercent(done chan int64, path string, total int64) {
 
 	for {
 		select {
-		case <-done:      // end
-			fmt.Println() // output newline
+		case <-done: // end, output newline
+			fmt.Println()
 			return
 		default:
 			file, err := os.Open(path)
@@ -171,6 +173,7 @@ func SimpleDownload(url, saveAs string) (err error) {
 	if err != nil {
 		log.Fatal(err)
 	}
+	//noinspection GoUnhandledErrorResult
 	defer resp.Body.Close()
 
 	if resp.StatusCode != 200 {
