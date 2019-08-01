@@ -135,7 +135,7 @@ func BarWidget(width int, cs BarChars) WidgetFunc {
 
 		bar := string(repeatRune(cs.Completed, int(completeLen)))
 
-		if diff := int(width) - int(completeLen); diff > 0 {
+		if diff := width - int(completeLen); diff > 0 {
 			bar += string(cs.Processing) + string(repeatRune(cs.Remaining, diff-1))
 		}
 

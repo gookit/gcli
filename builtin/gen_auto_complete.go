@@ -25,7 +25,7 @@ var genOpts = &struct {
 	binName string
 	output  string
 	// some info
-	_selfName  string
+	_selfName string
 }{}
 
 var shellTpls = map[string]string{

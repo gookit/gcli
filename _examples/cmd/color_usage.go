@@ -59,7 +59,7 @@ func colorUsage(_ *gcli.Command, _ []string) error {
 	i := 0
 	fmt.Print("\n- All Available color Tags: \n\n")
 
-	for tag, _ := range color.GetColorTags() {
+	for tag := range color.GetColorTags() {
 		i++
 		color.Tag(tag).Print(tag)
 

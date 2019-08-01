@@ -1,4 +1,4 @@
-# progress display
+# Progress Display
 
 - progress bar
 - text progress bar
@@ -6,4 +6,4 @@
 - counter 
 - dynamic Text
 
-## spinner
+## Spinner Bar
