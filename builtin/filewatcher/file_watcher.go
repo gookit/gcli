@@ -65,6 +65,7 @@ func watch(c *gcli.Command, _ []string) (err error) {
 	if err != nil {
 		return err
 	}
+	//noinspection GoUnhandledErrorResult
 	defer watcher.Close()
 
 	done := make(chan bool)

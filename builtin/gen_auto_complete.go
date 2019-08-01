@@ -2,7 +2,6 @@ package builtin
 
 import (
 	"fmt"
-	"github.com/gookit/gcli/v2/show"
 	"io/ioutil"
 	"strings"
 
@@ -10,6 +9,7 @@ import (
 	"github.com/gookit/gcli/v2"
 	"github.com/gookit/gcli/v2/helper"
 	"github.com/gookit/gcli/v2/interact"
+	"github.com/gookit/gcli/v2/show"
 	"github.com/gookit/goutil/cliutil"
 )
 

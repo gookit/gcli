@@ -18,7 +18,7 @@ const (
 	ERR = 2
 )
 
-//var errInvalidType = errors.New("invalid input data type")
+// var errInvalidType = errors.New("invalid input data type")
 
 // FormatterFace interface
 type FormatterFace interface {
