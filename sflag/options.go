@@ -1,4 +1,4 @@
-package flags
+package sflag
 
 // Options the values for parsed arguments and options
 type Options struct {
@@ -36,7 +36,7 @@ func (r *Options) String() string {
 }
 
 // Option is config info for a option
-// usage:
+// Usage:
 // cmd.AddOpt(Option{
 // 	Name: "name"
 // 	Short: "n"

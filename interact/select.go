@@ -32,7 +32,7 @@ type Select struct {
 }
 
 // NewSelect instance.
-// usage:
+// Usage:
 // 	s := NewSelect("Your city?", []string{"chengdu", "beijing"})
 // 	val := s.Run().String() // "1"
 func NewSelect(title string, options interface{}) *Select {

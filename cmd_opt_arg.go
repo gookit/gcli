@@ -109,7 +109,7 @@ func (c *Command) BoolOpt(p *bool, name string, short string, defValue bool, des
 }
 
 // VarOpt binding a custom var option
-// usage:
+// Usage:
 // 		cmd.VarOpt(&opts.Strings, "tables", "t", "description ...")
 func (c *Command) VarOpt(p flag.Value, name string, short string, description string) *Command {
 	c.Flags.Var(p, name, description)
@@ -287,7 +287,7 @@ func (a *Argument) HasValue() bool {
 //  - Only one array parameter is allowed
 // 	- The (array) argument of multiple values ​​can only be defined at the end
 //
-// usage:
+// Usage:
 // 	cmd.AddArg("name", "description")
 // 	cmd.AddArg("name", "description", true) // required
 // 	cmd.AddArg("names", "description", true, true) // required and is array
@@ -345,7 +345,7 @@ func (c *Command) Args() []*Argument {
 }
 
 // Arg get arg by defined name.
-// usage:
+// Usage:
 // 	intVal := c.Arg("name").Int()
 // 	strVal := c.Arg("name").String()
 // 	arrVal := c.Arg("names").Array()
@@ -354,7 +354,6 @@ func (c *Command) Arg(name string) *Argument {
 	if !ok {
 		return emptyArg
 	}
-
 	return c.args[i]
 }
 
@@ -363,7 +362,6 @@ func (c *Command) ArgByIndex(i int) *Argument {
 	if i < len(c.args) {
 		return c.args[i]
 	}
-
 	return emptyArg
 }
 

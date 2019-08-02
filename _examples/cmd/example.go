@@ -75,7 +75,7 @@ func exampleExecute(c *gcli.Command, args []string) error {
 
 	magentaln("All options:")
 	fmt.Printf("%+v\n", exampleOpts)
-	magentaln("Raw args:")
+	magentaln("Remain args:")
 	fmt.Printf("%v\n", args)
 
 	magentaln("Get arg by name:")

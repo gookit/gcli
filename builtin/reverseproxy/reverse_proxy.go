@@ -81,7 +81,7 @@ func (rp *reverseProxy) Run(cmd *gcli.Command, args []string) error {
  *************************************************************/
 
 // ReverseProxy create a global reverse proxy.
-// usage:
+// Usage:
 // 	rp := ReverseProxy(&url.URL{
 // 		Scheme: "http",
 // 		Host:   "localhost:9091",

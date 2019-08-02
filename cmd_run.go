@@ -17,8 +17,8 @@ import (
  * command run
  *************************************************************/
 
-// Execute do execute the command
-func (c *Command) Execute(args []string) (err error) {
+// do execute the command
+func (c *Command) execute(args []string) (err error) {
 	// collect named args
 	if err := c.collectNamedArgs(args); err != nil {
 		return err
@@ -104,27 +104,35 @@ func (c *Command) Copy() *Command {
  * alone running
  *************************************************************/
 
-// MustRun the current command
+// MustRun Alone the current command, will panic on error
 func (c *Command) MustRun(inArgs []string) {
 	if err := c.Run(inArgs); err != nil {
 		panic(err)
 	}
 }
 
-// Run the current command
+// Run Alone the current command
 func (c *Command) Run(inArgs []string) error {
-	if c.app == nil {
-		// don't display date on print log
-		log.SetFlags(0)
+	// - Running in application.
+	if c.app != nil {
+		return c.execute(inArgs)
+	}
 
-		// init the command
-		c.initialize()
+	// - Alone running command
 
-		// check input args
-		if len(inArgs) == 0 {
-			inArgs = os.Args[1:]
-		}
+	// don't display date on print log
+	log.SetFlags(0)
 
+	// init the command
+	c.initialize()
+
+	// check input args
+	if len(inArgs) == 0 {
+		inArgs = os.Args[1:]
+	}
+
+	// if CustomFlags=true, will not run Flags.Parse()
+	if !c.CustomFlags {
 		// parse args and opts
 		if err := c.Flags.Parse(inArgs); err != nil {
 			exitWithErr(err.Error())
@@ -133,7 +141,7 @@ func (c *Command) Run(inArgs []string) error {
 		inArgs = c.Flags.Args()
 	}
 
-	return c.Execute(inArgs)
+	return c.execute(inArgs)
 }
 
 /*************************************************************
@@ -245,6 +253,7 @@ func (c *Command) ParseDefaults() string {
 
 // isZeroValue guesses whether the string represents the zero
 // value for a flag. It is not accurate but in practice works OK.
+//
 // NOTICE: the func is copied from package 'flag', func 'isZeroValue'
 func isZeroValue(fg *flag.Flag, value string) bool {
 	// Build a zero value of the flag's Value type, and see if the

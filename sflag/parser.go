@@ -1,4 +1,5 @@
-package flags
+// Package sflag is an simple cli flag parse tool
+package sflag
 
 import (
 	"fmt"

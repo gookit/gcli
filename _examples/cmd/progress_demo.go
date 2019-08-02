@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gookit/gcli/v2"
@@ -12,21 +13,26 @@ type progressDemo struct {
 	overwrite bool
 }
 
-func ProgressDemoCmd() *gcli.Command {
-	pd := &progressDemo{}
+var pd = &progressDemo{}
 
+func ProgressDemoCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "prog",
 		UseFor:  "there are some progress bar run demos",
 		Aliases: []string{"prg:demo", "progress"},
 		Func:    pd.Run,
 		Config: func(c *gcli.Command) {
-			c.IntOpt(&pd.maxSteps, "max-step", "", 110, "setting the max step value")
+			c.IntOpt(&pd.maxSteps, "max-step", "", 0, "setting the max step value")
 			c.BoolOpt(&pd.overwrite, "overwrite", "o", true, "setting overwrite progress bar line")
 			c.AddArg("name",
 				"progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
 				true,
 			)
+
+			c.On("after", func(obj ...interface{}) {
+				fmt.Println("after1", pd.maxSteps)
+				fmt.Printf("%+v\n", c)
+			})
 		},
 		Examples: `Text progress bar:
   {$fullCmd} txt
@@ -36,10 +42,10 @@ Image progress bar:
 }
 
 // Run command
-func (d *progressDemo) Run(c *gcli.Command, _ []string) error {
+func (pd *progressDemo) Run(c *gcli.Command, _ []string) error {
 	name := c.Arg("name").String()
-	max := d.maxSteps
-
+	max := pd.maxSteps
+	fmt.Println(max)
 	switch name {
 	case "bar":
 		imgProgressBar(max)
@@ -47,7 +53,7 @@ func (d *progressDemo) Run(c *gcli.Command, _ []string) error {
 		dynamicTextBar(max)
 	case "txt", "text":
 		txtProgressBar(max)
-	case "load", "loading", "spinner":
+	case "spr", "load", "loading", "spinner":
 		runLoadingBar(max)
 	case "rt", "roundTrip":
 		runRoundTripBar(max)

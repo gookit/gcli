@@ -141,7 +141,7 @@ var bashCompleteScriptTpl = `#!/usr/bin/env {{.Shell}}
 #       VERSION:  1.0.0
 #   DESCRIPTION:  zsh shell complete for cli app: {{.BinName}}
 # ------------------------------------------------------------------------------
-# usage: source {{.FileName}}
+# Usage: source {{.FileName}}
 # run 'complete' to see registered complete function.
 
 
@@ -229,7 +229,7 @@ var zshCompleteScriptTpl = `#compdef {{.BinName}}
 #       VERSION:  1.0.0
 #   DESCRIPTION:  zsh shell complete for cli app: {{.BinName}}
 # ------------------------------------------------------------------------------
-# usage: source {{.FileName}}
+# Usage: source {{.FileName}}
 
 _complete_for_{{.BinName}} () {
     typeset -a commands

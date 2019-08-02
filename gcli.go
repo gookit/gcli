@@ -18,8 +18,8 @@ import (
 )
 
 var (
-	// DefaultApp store default application instance
-	DefaultApp *App
+	// stdApp store default application instance
+	stdApp *App
 	// global options
 	gOpts = &GlobalOpts{}
 	// command auto completion mode.
@@ -54,15 +54,20 @@ func init() {
 	}
 }
 
-// NewDefaultApp create the default cli app.
-func NewDefaultApp(fn ...func(a *App)) *App {
-	DefaultApp = NewApp(fn...)
-	return DefaultApp
+// InitStdApp create the default cli app.
+func InitStdApp(fn ...func(a *App)) *App {
+	stdApp = NewApp(fn...)
+	return stdApp
+}
+
+// StdApp get the default std app
+func StdApp() *App {
+	return stdApp
 }
 
 // AllCommands returns all commands in the default app
 func AllCommands() map[string]*Command {
-	return DefaultApp.Commands()
+	return stdApp.Commands()
 }
 
 // Exit program

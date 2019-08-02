@@ -1,4 +1,4 @@
-package flags
+package sflag
 
 import "github.com/gookit/gcli/v2"
 

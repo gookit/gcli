@@ -88,13 +88,12 @@ func (app *App) Run() {
 	rawName, args := app.prepareRun()
 	name := app.RealCommandName(rawName)
 	Logf(VerbCrazy, "[App.Run] begin run console application, process ID: %d", app.pid)
-	Logf(VerbDebug, "[App.Run] input command is: %s, real command: %s, args: %v", rawName, name, args)
+	Logf(VerbDebug, "[App.Run] input command is: '%s', real command: '%s', args: %v", rawName, name, args)
 
 	if !app.IsCommand(name) {
 		color.Error.Prompt("unknown input command '%s'", name)
 
-		ns := app.findSimilarCmd(name)
-		if len(ns) > 0 {
+		if ns := app.findSimilarCmd(name); len(ns) > 0 {
 			fmt.Println("\nMaybe you mean:\n  ", color.Green.Render(strings.Join(ns, ", ")))
 		}
 
@@ -114,7 +113,7 @@ func (app *App) Run() {
 
 	// parse args, don't contains command name.
 	if !cmd.CustomFlags {
-		if CLI.hasHelpKeywords() { // contains keywords "-h" OR "--help"
+		if CLI.hasHelpKeywords() { // contains keywords "-h" OR "--help" on end
 			cmd.ShowHelp(true)
 		}
 
@@ -125,13 +124,11 @@ func (app *App) Run() {
 		args = cmd.Flags.Args()
 	}
 
+	var exitCode int
 	Logf(VerbDebug, "[App.Run] args for the command '%s': %v", name, args)
 
 	// do execute command
-	err := cmd.Execute(args)
-	exitCode := 0
-
-	if err != nil {
+	if err := cmd.execute(args); err != nil {
 		exitCode = ERR
 		app.fireEvent(EvtError, err)
 	} else {
@@ -161,7 +158,7 @@ func (app *App) Exec(name string, args []string) (err error) {
 	}
 
 	// do execute command
-	return cmd.Execute(args)
+	return cmd.execute(args)
 }
 
 // IsCommand name check

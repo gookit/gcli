@@ -23,10 +23,11 @@ func (f CmdFunc) Run(c *Command, args []string) error {
 
 // Command a CLI command structure
 type Command struct {
-	// is internal use
+	// CmdLine is internal use
 	*CmdLine
 	HelpVars
-	SimpleHooks // allow hooks: "init", "before", "after", "error"
+	// SimpleHooks can allow setting some hooks func on running.
+	SimpleHooks // allowed hooks: "init", "before", "after", "error"
 
 	// Name is the command name.
 	Name string
@@ -38,9 +39,6 @@ type Command struct {
 	Func CmdFunc
 	// Config func, will call on `initialize`. you can config options and other works
 	Config func(c *Command)
-	// Hooks can setting some hooks func on running.
-	// allow hooks: "init", "before", "after", "error"
-	Hooks map[string]HookFunc
 	// Aliases is the command name's alias names
 	Aliases []string
 	// Flags(command options) is a set of flags specific to this command.

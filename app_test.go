@@ -7,12 +7,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestApp(t *testing.T) {
+func TestInitStdApp(t *testing.T) {
 	is := assert.New(t)
 
-	gcli.NewDefaultApp(func(a *gcli.App) {
+	gcli.InitStdApp(func(a *gcli.App) {
 		a.Name = "test-name"
 	})
 
-	is.Equal("test-name", gcli.DefaultApp.Name)
+	is.Equal("test-name", gcli.StdApp().Name)
 }

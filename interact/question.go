@@ -22,7 +22,7 @@ type Question struct {
 }
 
 // NewQuestion instance.
-// usage:
+// Usage:
 // 	q := NewQuestion("Please input your name?")
 // 	val := q.Run().String()
 func NewQuestion(q string, defVal ...string) *Question {

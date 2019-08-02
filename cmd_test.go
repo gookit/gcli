@@ -1,6 +1,7 @@
 package gcli_test
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/gookit/gcli/v2"
@@ -34,6 +35,7 @@ func TestCommand_Errorf(t *testing.T) {
 
 	c := gcli.NewCommand("test", "desc test", nil)
 	c.SetFunc(func(c *gcli.Command, args []string) error {
+		ris.Equal([]string{"hi"}, args)
 		return c.Errorf("error message")
 	})
 
@@ -42,6 +44,7 @@ func TestCommand_Errorf(t *testing.T) {
 	err := c.Run(simpleArgs)
 	ris.Error(err)
 	ris.Equal("error message", err.Error())
+	ris.Equal([]string{"hi"}, c.RawArgs())
 
 	ris.Panics(func() {
 		c.MustRun(simpleArgs)
@@ -64,4 +67,48 @@ func TestCommand_Run(t *testing.T) {
 	ris.NoError(err)
 
 	ris.Equal("alias1", c.AliasesString(""))
+}
+
+func TestCommand_IntOpt(t *testing.T) {
+	ris := assert.New(t)
+
+	var int0 int
+	// var str0 string
+	co := struct {
+		maxSteps  int
+		overwrite bool
+	}{}
+
+	c := gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
+		ris.Equal("test", c.Name)
+		c.IntOpt(&int0, "int0", "", 0, "desc")
+		c.IntOpt(&co.maxSteps, "max-step", "", 0, "setting the max step value")
+	})
+	c.SetFunc(func(c *gcli.Command, args []string) error {
+		ris.Equal("[txt --int0 10 --max-step=100]", fmt.Sprint(args))
+		return nil
+	})
+
+	// Notice: if args at before opts, will parse fail
+	err := c.Run([]string{"txt", "--int0", "10", "--max-step=100"})
+	ris.NoError(err)
+	ris.Equal(0, int0)
+	ris.Equal(0, co.maxSteps)
+	ris.Equal("[txt --int0 10 --max-step=100]", fmt.Sprint(c.RawArgs()))
+
+	c = gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
+		ris.Equal("test", c.Name)
+		c.IntOpt(&int0, "int0", "", 0, "desc")
+		c.IntOpt(&co.maxSteps, "max-step", "", 0, "setting the max step value")
+	})
+	c.SetFunc(func(c *gcli.Command, args []string) error {
+		ris.Equal("[txt]", fmt.Sprint(args))
+		return nil
+	})
+
+	err = c.Run([]string{"--int0", "10", "--max-step=100", "txt"})
+	ris.NoError(err)
+	ris.Equal(10, int0)
+	ris.Equal(100, co.maxSteps)
+	ris.Equal("[txt]", fmt.Sprint(c.RawArgs()))
 }

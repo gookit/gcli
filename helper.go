@@ -184,7 +184,7 @@ func strictFormatArgs(args []string) []string {
 		return args
 	}
 
-	var fmtdArgs []string
+	var fmtArgs []string
 	for _, arg := range args {
 		l := len(arg)
 		if strings.Index(arg, "--") == 0 {
@@ -195,15 +195,15 @@ func strictFormatArgs(args []string) []string {
 			if l > 2 {
 				bools := strings.Split(strings.Trim(arg, "-"), "")
 				for _, s := range bools {
-					fmtdArgs = append(fmtdArgs, "-"+s)
+					fmtArgs = append(fmtArgs, "-"+s)
 				}
 
 				continue
 			}
 		}
 
-		fmtdArgs = append(fmtdArgs, arg)
+		fmtArgs = append(fmtArgs, arg)
 	}
 
-	return fmtdArgs
+	return fmtArgs
 }
