@@ -93,38 +93,16 @@ func TestCommand_ParseFlag(t *testing.T) {
 	ris.Equal("abc", str0)
 	ris.Equal([]string{"txt"}, c.RawArgs())
 	ris.Equal("txt", c.RawArg(0))
-}
 
-func TestCommand_IntOpt(t *testing.T) {
-	ris := assert.New(t)
-
-	var int0 int
 	// var str0 string
 	co := struct {
 		maxSteps  int
 		overwrite bool
 	}{}
 
-	c := gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
-		ris.Equal("test", c.Name)
-		c.IntOpt(&int0, "int0", "", 0, "desc")
-		c.IntOpt(&co.maxSteps, "max-step", "", 0, "setting the max step value")
-	})
-	c.SetFunc(func(c *gcli.Command, args []string) error {
-		ris.Equal("[txt --int0 10 --max-step=100]", fmt.Sprint(args))
-		return nil
-	})
-
-	// Notice: if args at before opts, will parse fail
-	err := c.Run([]string{"txt", "--int0", "10", "--max-step=100"})
-	ris.NoError(err)
-	ris.Equal(0, int0)
-	ris.Equal(0, co.maxSteps)
-	ris.Equal("[txt --int0 10 --max-step=100]", fmt.Sprint(c.RawArgs()))
-
 	c = gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
 		ris.Equal("test", c.Name)
-		c.IntOpt(&int0, "int0", "", 0, "desc")
+		c.IntOpt(&int0, "int", "", 0, "desc")
 		c.IntOpt(&co.maxSteps, "max-step", "", 0, "setting the max step value")
 	})
 	c.SetFunc(func(c *gcli.Command, args []string) error {
@@ -132,7 +110,7 @@ func TestCommand_IntOpt(t *testing.T) {
 		return nil
 	})
 
-	err = c.Run([]string{"--int0", "10", "--max-step=100", "txt"})
+	err = c.Run([]string{"--int", "10", "--max-step=100", "txt"})
 	ris.NoError(err)
 	ris.Equal(10, int0)
 	ris.Equal(100, co.maxSteps)
