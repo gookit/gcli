@@ -9,11 +9,6 @@ import (
 	"github.com/gookit/goutil/strutil"
 )
 
-// ExecCommand alias of the ShellExec
-func ExecCommand(cmdStr string, dirAndShell ...string) (string, error) {
-	return ShellExec(cmdStr, dirAndShell...)
-}
-
 // ShellExec exec a CLI command by shell and return output.
 // Usage:
 // 	ShellExec("ls -al")

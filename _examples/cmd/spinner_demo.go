@@ -51,7 +51,7 @@ func (sd *spinnerDemo) Run(c *gcli.Command, _ []string) error {
 }
 
 func (sd *spinnerDemo) runRoundTripSpinner() {
-	s := progress.RoundTripSpinner(
+	s := progress.RoundTripLoading(
 		progress.GetCharTheme(sd.themeNum),
 		time.Duration(sd.speed)*time.Millisecond,
 	)

@@ -6,7 +6,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2"
-	"github.com/gookit/gcli/v2/helper"
+	"github.com/gookit/goutil/sysutil"
 )
 
 var gitOpts = struct {
@@ -44,7 +44,7 @@ func gitExecute(cmd *gcli.Command, args []string) error {
 	info := GitInfoData{}
 
 	// latest commit id by: git log --pretty=%H -n1 HEAD
-	cid, err := helper.ExecCommand("git log --pretty=%H -n1 HEAD")
+	cid, err := sysutil.ShellExec("git log --pretty=%H -n1 HEAD")
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func gitExecute(cmd *gcli.Command, args []string) error {
 	info.Version = cid
 
 	// latest commit date by: git log -n1 --pretty=%ci HEAD
-	cDate, err := helper.ExecCommand("git log -n1 --pretty=%ci HEAD")
+	cDate, err := sysutil.ShellExec("git log -n1 --pretty=%ci HEAD")
 	if err != nil {
 		return err
 	}
@@ -64,10 +64,10 @@ func gitExecute(cmd *gcli.Command, args []string) error {
 	fmt.Printf("commit date: %s\n", cDate)
 
 	// get tag: git describe --tags --exact-match HEAD
-	tag, err := helper.ShellExec("git describe --tags --exact-match HEAD")
+	tag, err := sysutil.ShellExec("git describe --tags --exact-match HEAD")
 	if err != nil {
 		// get branch: git branch -a | grep "*"
-		br, err := helper.ShellExec(`git branch -a | grep "*"`)
+		br, err := sysutil.ShellExec(`git branch -a | grep "*"`)
 		if err != nil {
 			return err
 		}
