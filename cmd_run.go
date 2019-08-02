@@ -1,6 +1,7 @@
 package gcli
 
 import (
+	"errors"
 	"flag"
 	"fmt"
 	"log"
@@ -16,6 +17,35 @@ import (
 /*************************************************************
  * command run
  *************************************************************/
+
+// do parse option flags, remaining is cmd args
+func (c *Command) parseFlags(args []string, checkHelpWords bool) []string {
+	// if CustomFlags=true, will not run Flags.Parse()
+	if c.CustomFlags {
+		return args
+	}
+
+	// strict format options
+	if gOpts.strictMode && len(args) > 0 {
+		args = strictFormatArgs(args)
+	}
+
+	// contains keywords "-h" OR "--help" on end
+	if checkHelpWords && CLI.hasHelpKeywords() {
+		c.ShowHelp(true)
+	}
+
+	args = moveArgumentsToEnd(args)
+
+	Logf(VerbDebug, "[Cmd.parseFlags] flags on after format: %v", args)
+
+	// parse options, don't contains command name.
+	if err := c.Flags.Parse(args); err != nil {
+		exitWithErr("Flags parse error: %s", err.Error())
+	}
+
+	return c.Flags.Args()
+}
 
 // do execute the command
 func (c *Command) execute(args []string) (err error) {
@@ -69,7 +99,7 @@ func (c *Command) collectNamedArgs(inArgs []string) error {
 		}
 	}
 
-	if !c.alone && c.app.Strict && inNum > num {
+	if !c.alone && gOpts.strictMode && inNum > num {
 		return fmt.Errorf("entered too many arguments: %v", inArgs[num:])
 	}
 	return nil
@@ -104,6 +134,8 @@ func (c *Command) Copy() *Command {
  * alone running
  *************************************************************/
 
+var errCallRun = errors.New("this method can only be called in standalone mode")
+
 // MustRun Alone the current command, will panic on error
 func (c *Command) MustRun(inArgs []string) {
 	if err := c.Run(inArgs); err != nil {
@@ -115,7 +147,7 @@ func (c *Command) MustRun(inArgs []string) {
 func (c *Command) Run(inArgs []string) error {
 	// - Running in application.
 	if c.app != nil {
-		return c.execute(inArgs)
+		return errCallRun
 	}
 
 	// - Alone running command
@@ -132,14 +164,7 @@ func (c *Command) Run(inArgs []string) error {
 	}
 
 	// if CustomFlags=true, will not run Flags.Parse()
-	if !c.CustomFlags {
-		// parse args and opts
-		if err := c.Flags.Parse(inArgs); err != nil {
-			exitWithErr(err.Error())
-		}
-
-		inArgs = c.Flags.Args()
-	}
+	inArgs = c.parseFlags(inArgs, true)
 
 	return c.execute(inArgs)
 }

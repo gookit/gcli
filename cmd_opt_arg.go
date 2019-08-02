@@ -365,12 +365,12 @@ func (c *Command) ArgByIndex(i int) *Argument {
 	return emptyArg
 }
 
-// RawArgs get Flags args
+// RawArgs get all raw arguments
 func (c *Command) RawArgs() []string {
 	return c.Flags.Args()
 }
 
-// RawArg get Flags arg value
+// RawArg get an argument value by index
 func (c *Command) RawArg(i int) string {
 	return c.Flags.Arg(i)
 }

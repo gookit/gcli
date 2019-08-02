@@ -63,11 +63,6 @@ type App struct {
 	Description string
 	// Logo ASCII logo setting
 	Logo Logo
-	// Strict use strict mode.
-	// If True:
-	// 	- short opt must be begin '-', long opt must be begin '--'
-	// 	- will check invalid arguments, like to many arguments
-	Strict bool
 	// vars you can add some vars map for render help info
 	// vars map[string]string
 	// command names. key is name, value is name string length
@@ -92,10 +87,10 @@ type App struct {
 }
 
 // NewApp create new app instance.
-// eg:
-// 	New()
-// 	// Or with a func.
-// 	New(func(a *App) {
+// Usage:
+// 	NewApp()
+// 	// Or with a config func
+// 	NewApp(func(a *App) {
 // 		// do something before init ....
 // 		a.Hooks[gcli.EvtInit] = func () {}
 // 	})
@@ -104,8 +99,9 @@ func NewApp(fn ...func(a *App)) *App {
 		Name: "My CLI App",
 		Logo: Logo{Style: "info"},
 		// set a default version
-		Version:        "1.0.0",
-		CmdLine:        CLI,
+		Version: "1.0.0",
+		CmdLine: CLI,
+		// commands
 		commands:       make(map[string]*Command),
 		moduleCommands: make(map[string]map[string]*Command),
 		nameMaxLength:  12,
@@ -115,7 +111,7 @@ func NewApp(fn ...func(a *App)) *App {
 		fn[0](app)
 	}
 
-	// init
+	// init app
 	app.Initialize()
 	return app
 }
@@ -147,7 +143,6 @@ func (app *App) Initialize() {
 // SetLogo text and color style
 func (app *App) SetLogo(logo string, style ...string) {
 	app.Logo.Text = logo
-
 	if len(style) > 0 {
 		app.Logo.Style = style[0]
 	}

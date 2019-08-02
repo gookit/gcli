@@ -21,7 +21,9 @@ var (
 	// stdApp store default application instance
 	stdApp *App
 	// global options
-	gOpts = &GlobalOpts{}
+	gOpts = &GlobalOpts{
+		strictMode: true,
+	}
 	// command auto completion mode.
 	// eg "./cli --cmd-completion [COMMAND --OPT ARG]"
 	inCompletion bool
@@ -41,6 +43,12 @@ type GlobalOpts struct {
 	verbose  uint // message report level
 	showVer  bool
 	showHelp bool
+	// StrictMode use strict mode for parse flags
+	// If True(default):
+	// 	- short opt must be begin "-", long opt must be begin "--"
+	//	- will convert like "-ab" to "-a -b"
+	// 	- will check invalid arguments, like to many arguments
+	strictMode bool
 }
 
 // init
@@ -65,11 +73,6 @@ func StdApp() *App {
 	return stdApp
 }
 
-// AllCommands returns all commands in the default app
-func AllCommands() map[string]*Command {
-	return stdApp.Commands()
-}
-
 // Exit program
 func Exit(code int) {
 	os.Exit(code)
@@ -78,6 +81,11 @@ func Exit(code int) {
 // Verbose returns verbose level
 func Verbose() uint {
 	return gOpts.verbose
+}
+
+// SetStrictMode for parse flags
+func SetStrictMode(strict bool) {
+	gOpts.strictMode = strict
 }
 
 // SetDebugMode level

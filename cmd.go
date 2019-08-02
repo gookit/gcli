@@ -35,26 +35,27 @@ type Command struct {
 	Module string
 	// UseFor is the command description message.
 	UseFor string
+	// Aliases is the command name's alias names
+	Aliases []string
 	// Func is the command handler func. Func Runner
 	Func CmdFunc
 	// Config func, will call on `initialize`. you can config options and other works
 	Config func(c *Command)
-	// Aliases is the command name's alias names
-	Aliases []string
 	// Flags(command options) is a set of flags specific to this command.
 	Flags flag.FlagSet
 	// CustomFlags indicates that the command will do its own flag parsing.
 	CustomFlags bool
-	// Help is the long help message text
-	Help string
 	// Examples some usage example display
 	Examples string
+	// Help is the long help message text
+	Help string
 
-	// Args definition for the command.
+	// arguments definition for the command.
 	// eg. {
 	// 	{"arg0", "this is first argument", false, false},
 	// 	{"arg1", "this is second argument", false, false},
 	// }
+	// if you want get raw args, can use: c.RawArgs()
 	args []*Argument
 	// record min length for args
 	// argsMinLen int

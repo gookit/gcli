@@ -173,31 +173,38 @@ func exitWithErr(format string, v ...interface{}) {
 	Exit(ERR)
 }
 
-func exitWithMsg(format string, v ...interface{}) {
-	fmt.Printf(format, v...)
-	Exit(0)
-}
+// func exitWithMsg(format string, v ...interface{}) {
+// 	fmt.Printf(format, v...)
+// 	Exit(0)
+// }
 
 // strictFormatArgs '-ab' will split to '-a -b', '--o' -> '-o'
-func strictFormatArgs(args []string) []string {
+func strictFormatArgs(args []string) (fmtArgs []string) {
 	if len(args) == 0 {
 		return args
 	}
 
-	var fmtArgs []string
 	for _, arg := range args {
-		l := len(arg)
+
+		// eg: --a ---name
 		if strings.Index(arg, "--") == 0 {
-			if l == 3 {
-				arg = "-" + string(arg[2])
+			farg := strings.TrimLeft(arg, "-")
+			if rl := len(farg); rl == 1 { // fix: "--a" -> "-a"
+				arg = "-" + farg
+			} else if rl > 1 { // fix: "---name" -> "--name"
+				arg = "--" + farg
 			}
-		} else if strings.Index(arg, "-") == 0 {
-			if l > 2 {
-				bools := strings.Split(strings.Trim(arg, "-"), "")
-				for _, s := range bools {
+			// TODO No change remain OR remove like "--" "---"
+
+		} else if strings.IndexByte(arg, '-') == 0 {
+			ln := len(arg)
+			// fix: "-abc" -> "-a -b -c"
+			if ln > 2 {
+				chars := strings.Split(strings.Trim(arg, "-"), "")
+
+				for _, s := range chars {
 					fmtArgs = append(fmtArgs, "-"+s)
 				}
-
 				continue
 			}
 		}
@@ -206,4 +213,29 @@ func strictFormatArgs(args []string) []string {
 	}
 
 	return fmtArgs
+}
+
+// flags parser is flag#FlagSet.Parse(), so:
+// - if args like: "arg0 arg1 --opt", will parse fail
+// - if args convert to: "--opt arg0 arg1", can correctly parse
+func moveArgumentsToEnd(args []string) []string {
+	if len(args) < 2 {
+		return args
+	}
+
+	var argEnd int
+	for i, arg := range args {
+		// strop on the first option
+		if strings.IndexByte(arg, '-') == 0 {
+			argEnd = i
+			break
+		}
+	}
+
+	// the first is an option
+	if argEnd == -1 {
+		return args
+	}
+
+	return append(args[argEnd:], args[0:argEnd]...)
 }

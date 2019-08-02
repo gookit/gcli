@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"fmt"
 	"time"
 
 	"github.com/gookit/gcli/v2"
@@ -28,11 +27,6 @@ func ProgressDemoCmd() *gcli.Command {
 				"progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
 				true,
 			)
-
-			c.On("after", func(obj ...interface{}) {
-				fmt.Println("after1", pd.maxSteps)
-				fmt.Printf("%+v\n", c)
-			})
 		},
 		Examples: `Text progress bar:
   {$fullCmd} txt
@@ -45,7 +39,7 @@ Image progress bar:
 func (pd *progressDemo) Run(c *gcli.Command, _ []string) error {
 	name := c.Arg("name").String()
 	max := pd.maxSteps
-	fmt.Println(max)
+
 	switch name {
 	case "bar":
 		imgProgressBar(max)

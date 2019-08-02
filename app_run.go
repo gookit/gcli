@@ -46,13 +46,14 @@ func (app *App) parseGlobalOpts() []string {
 		color.Enable = false
 	}
 
+	Logf(VerbDebug, "[App.parseGlobalOpts] console debug is enabled, level is %d", gOpts.verbose)
+
 	return flag.Args()
 }
 
 // prepare to running, parse args, get command name and command args
 func (app *App) prepareRun() (string, []string) {
 	args := app.parseGlobalOpts()
-
 	if inCompletion {
 		app.showCompletion(args)
 	}
@@ -86,13 +87,13 @@ func (app *App) prepareRun() (string, []string) {
 // Run running application
 func (app *App) Run() {
 	rawName, args := app.prepareRun()
+
 	name := app.RealCommandName(rawName)
 	Logf(VerbCrazy, "[App.Run] begin run console application, process ID: %d", app.pid)
-	Logf(VerbDebug, "[App.Run] input command is: '%s', real command: '%s', args: %v", rawName, name, args)
+	Logf(VerbDebug, "[App.Run] input command is: '%s', real command: '%s', flags: %v", rawName, name, args)
 
 	if !app.IsCommand(name) {
 		color.Error.Prompt("unknown input command '%s'", name)
-
 		if ns := app.findSimilarCmd(name); len(ns) > 0 {
 			fmt.Println("\nMaybe you mean:\n  ", color.Green.Render(strings.Join(ns, ", ")))
 		}
@@ -101,42 +102,31 @@ func (app *App) Run() {
 		Exit(ERR)
 	}
 
+	code := OK
 	cmd := app.commands[name]
-	app.commandName = name
-	if app.Strict {
-		args = strictFormatArgs(args)
-	}
 
 	app.cleanArgs = args
+	app.commandName = name
 	// fmt.Println(cmd.argsStr, len(cmd.argsStr), strings.LastIndex(cmd.argsStr, " -h"))
 	app.fireEvent(EvtBefore, cmd.Copy())
 
-	// parse args, don't contains command name.
-	if !cmd.CustomFlags {
-		if CLI.hasHelpKeywords() { // contains keywords "-h" OR "--help" on end
-			cmd.ShowHelp(true)
-		}
+	Logf(VerbDebug, "[App.Run] command raw flags: %v", args)
 
-		if err := cmd.Flags.Parse(args); err != nil {
-			exitWithErr("Flags parse error: %s", err.Error())
-		}
+	// parse options, don't contains command name.
+	args = cmd.parseFlags(args, true)
 
-		args = cmd.Flags.Args()
-	}
-
-	var exitCode int
-	Logf(VerbDebug, "[App.Run] args for the command '%s': %v", name, args)
+	Logf(VerbDebug, "[App.Run] args on parse end: %v", args)
 
 	// do execute command
 	if err := cmd.execute(args); err != nil {
-		exitCode = ERR
+		code = ERR
 		app.fireEvent(EvtError, err)
 	} else {
 		app.fireEvent(EvtAfter, nil)
 	}
 
-	Logf(VerbDebug, "[App.Run] command %s run complete, exit with code: %d", name, exitCode)
-	Exit(exitCode)
+	Logf(VerbDebug, "[App.Run] command '%s' run complete, exit with code: %d", name, code)
+	Exit(code)
 }
 
 // Exec running other command in current command
@@ -147,15 +137,7 @@ func (app *App) Exec(name string, args []string) (err error) {
 	}
 
 	cmd := app.commands[name]
-	if !cmd.CustomFlags {
-		// parse args, don't contains command name.
-		if err = cmd.Flags.Parse(args); err != nil {
-			color.Error.Prompt("Flags parse error: %s", err.Error())
-			return
-		}
-
-		args = cmd.Flags.Args()
-	}
+	args = cmd.parseFlags(args, false)
 
 	// do execute command
 	return cmd.execute(args)

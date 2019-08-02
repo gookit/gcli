@@ -69,6 +69,32 @@ func TestCommand_Run(t *testing.T) {
 	ris.Equal("alias1", c.AliasesString(""))
 }
 
+func TestCommand_ParseFlag(t *testing.T) {
+	ris := assert.New(t)
+
+	var int0 int
+	var str0 string
+
+	c := gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
+		c.IntOpt(&int0, "int", "", 0, "int desc")
+		c.StrOpt(&str0, "str", "", "", "str desc")
+		ris.Equal("test", c.Name)
+		ris.Equal("int desc", c.OptDes("int"))
+	})
+	c.SetFunc(func(c *gcli.Command, args []string) error {
+		ris.Equal("test", c.Name)
+		ris.Equal([]string{"txt"}, args)
+		return nil
+	})
+
+	err := c.Run([]string{"txt", "--int", "10", "--str=abc"})
+	ris.NoError(err)
+	ris.Equal(10, int0)
+	ris.Equal("abc", str0)
+	ris.Equal([]string{"txt"}, c.RawArgs())
+	ris.Equal("txt", c.RawArg(0))
+}
+
 func TestCommand_IntOpt(t *testing.T) {
 	ris := assert.New(t)
 
