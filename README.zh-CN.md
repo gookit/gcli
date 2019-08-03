@@ -7,7 +7,7 @@
 
 一个Golang下的简单易用的命令行应用，工具库。包含运行命令，颜色风格，数据展示，进度显示，交互方法等
 
-**[EN Readme](README.md)**
+> **[EN Readme](README.md)**
 
 ## 截图展示
 
