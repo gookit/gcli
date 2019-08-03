@@ -285,6 +285,8 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 
 ## Progress display
  
+![prog-demo](_examples/images/progress/prog-demo.png)
+
 - `progress.Bar` progress bar
 
 ```text

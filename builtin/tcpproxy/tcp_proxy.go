@@ -24,7 +24,7 @@ func (p *TCPProxy) Handle() {
 
 }
 
-var tp = TCPProxy{}
+// var tp = TCPProxy{}
 
 // TCPProxyCommand command definition
 func TCPProxyCommand() *gcli.Command {
@@ -44,11 +44,11 @@ func TCPProxyCommand() *gcli.Command {
 `,
 	}
 
-	cmd.StrOpt(&tp.Dir, "dir", "d", "", "the want watched directory")
-	cmd.StrOpt(&opts.Ext, "ext", "", ".go", "the watched file extensions, multi split by '|'")
-	cmd.VarOpt(&opts.Files, "files", "f", "the want watched file paths")
-	cmd.StrOpt(&opts.Config, "config", "c", "", "load options from a json config")
-	cmd.VarOpt(&opts.Exclude, "exclude", "e", "the ignored directory or files")
+	// cmd.StrOpt(&tp.Dir, "dir", "d", "", "the want watched directory")
+	// cmd.StrOpt(&opts.Ext, "ext", "", ".go", "the watched file extensions, multi split by '|'")
+	// cmd.VarOpt(&opts.Files, "files", "f", "the want watched file paths")
+	// cmd.StrOpt(&opts.Config, "config", "c", "", "load options from a json config")
+	// cmd.VarOpt(&opts.Exclude, "exclude", "e", "the ignored directory or files")
 
 	return cmd
 }
