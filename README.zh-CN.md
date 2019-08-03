@@ -1,5 +1,7 @@
 # GCli
 
+[![Build Status](https://travis-ci.org/gookit/gcli.svg?branch=master)](https://travis-ci.org/gookit/gcli)
+[![Codacy Badge](https://api.codacy.com/project/badge/Grade/60c587f0491748fcabc1b3fe08d98074)](https://app.codacy.com/app/inhere/gcli?utm_source=github.com&utm_medium=referral&utm_content=gookit/gcli&utm_campaign=Badge_Grade_Dashboard)
 [![GoDoc](https://godoc.org/github.com/gookit/gcli?status.svg)](https://godoc.org/github.com/gookit/gcli)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gcli)](https://goreportcard.com/report/github.com/gookit/gcli)
 
@@ -281,9 +283,7 @@ go build ./_examples/cliapp.go && ./cliapp example -h
  
 - `progress.Bar` 通用的进度条
 
-```text
-25/50 [==============>-------------]  50%
-```
+![prog-demo](_examples/images/progress/prog-bar.jpg)
 
 - `progress.Txt` 文本进度条
 
@@ -292,12 +292,17 @@ Data handling ... ... 50% (25/50)
 ```
 
 - `progress.LoadBar` 加载中
+
+![prog-demo](_examples/images/progress/prog-spinner.jpg)
+
 - `progress.Counter` 计数
 - `progress.RoundTrip` 来回滚动的进度条 
 
 ```text
 [===     ] -> [    === ] -> [ ===    ]
 ```
+
+![prog-demo](_examples/images/progress/prog-rt.jpg)
 
 - `progress.DynamicText` 动态消息，执行进度到不同的百分比显示不同的消息
 
@@ -326,7 +331,7 @@ func main()  {
 
 > 更多示例和使用请看 [progress_demo.go](_examples/cmd/progress_demo.go)
 
-run demos:
+运行示例:
 
 ```bash
 go run ./_examples/cliapp.go prog txt
@@ -334,9 +339,11 @@ go run ./_examples/cliapp.go prog bar
 go run ./_examples/cliapp.go prog roundTrip
 ```
 
+![prog-other](_examples/images/progress/prog-other.jpg)
+
 ## 交互方法
    
-console interactive methods
+控制台交互方法，包含读取输入，进行确认，单选，多选，询问问题等等
 
 - `interact.ReadInput`
 - `interact.ReadLine`
@@ -371,6 +378,8 @@ func main() {
 > 更多示例和使用请看 [interact_demo.go](_examples/cmd/interact_demo.go)
 
 ## 使用颜色输出
+
+> **颜色输出使用 [gookit/color](https://github.com/gookit/color)**
 
 ### 颜色输出展示
 

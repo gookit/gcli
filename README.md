@@ -1,5 +1,6 @@
 # GCli 
 
+[![Build Status](https://travis-ci.org/gookit/gcli.svg?branch=master)](https://travis-ci.org/gookit/gcli)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/60c587f0491748fcabc1b3fe08d98074)](https://app.codacy.com/app/inhere/gcli?utm_source=github.com&utm_medium=referral&utm_content=gookit/gcli&utm_campaign=Badge_Grade_Dashboard)
 [![GoDoc](https://godoc.org/github.com/gookit/gcli?status.svg)](https://godoc.org/github.com/gookit/gcli)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gcli)](https://goreportcard.com/report/github.com/gookit/gcli)
@@ -285,13 +286,9 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 
 ## Progress display
  
-![prog-demo](_examples/images/progress/prog-demo.png)
-
 - `progress.Bar` progress bar
 
-```text
-25/50 [==============>-------------]  50%
-```
+![prog-demo](_examples/images/progress/prog-bar.jpg)
 
 - `progress.Txt` text progress bar
 
@@ -300,12 +297,17 @@ Data handling ... ... 50% (25/50)
 ```
 
 - `progress.LoadBar` pending/loading progress bar
+
+![prog-demo](_examples/images/progress/prog-spinner.jpg)
+
 - `progress.Counter` counter 
 - `progress.RoundTrip` round trip progress bar
 
 ```text
 [===     ] -> [    === ] -> [ ===    ]
 ```
+
+![prog-demo](_examples/images/progress/prog-rt.jpg)
 
 - `progress.DynamicText` dynamic text message
 
@@ -341,6 +343,8 @@ go run ./_examples/cliapp.go prog txt
 go run ./_examples/cliapp.go prog bar
 go run ./_examples/cliapp.go prog roundTrip
 ```
+
+![prog-other](_examples/images/progress/prog-other.jpg)
 
 ## Interactive methods
    

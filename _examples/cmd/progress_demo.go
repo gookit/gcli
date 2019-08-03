@@ -21,7 +21,7 @@ func ProgressDemoCmd() *gcli.Command {
 		Aliases: []string{"prg:demo", "progress"},
 		Func:    pd.Run,
 		Config: func(c *gcli.Command) {
-			c.IntOpt(&pd.maxSteps, "max-step", "", 0, "setting the max step value")
+			c.IntOpt(&pd.maxSteps, "max-step", "", 100, "setting the max step value")
 			c.BoolOpt(&pd.overwrite, "overwrite", "o", true, "setting overwrite progress bar line")
 			c.AddArg("name",
 				"progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
