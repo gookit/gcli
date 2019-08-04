@@ -14,5 +14,9 @@ func TestInitStdApp(t *testing.T) {
 		a.Name = "test-name"
 	})
 
-	is.Equal("test-name", gcli.StdApp().Name)
+	std := gcli.StdApp()
+
+	is.Equal("test-name", std.Name)
+
+	is.Empty(std.Commands())
 }
