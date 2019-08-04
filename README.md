@@ -4,6 +4,7 @@
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/60c587f0491748fcabc1b3fe08d98074)](https://app.codacy.com/app/inhere/gcli?utm_source=github.com&utm_medium=referral&utm_content=gookit/gcli&utm_campaign=Badge_Grade_Dashboard)
 [![GoDoc](https://godoc.org/github.com/gookit/gcli?status.svg)](https://godoc.org/github.com/gookit/gcli)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gcli)](https://goreportcard.com/report/github.com/gookit/gcli)
+[![Coverage Status](https://coveralls.io/repos/github/gookit/gcli/badge.svg?branch=master)](https://coveralls.io/github/gookit/gcli?branch=master)
 
 A simple to use command line application, written using golang.
 
