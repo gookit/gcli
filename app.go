@@ -163,8 +163,8 @@ func Verbose() uint {
 
 // NewApp create new app instance. alias of the New()
 // eg:
-// 	cliapp.New()
-// 	cliapp.New(func(a *App) {
+// 	gcli.New()
+// 	gcli.New(func(a *App) {
 // 		// do something before init ....
 // 		a.Hooks[cliapp.EvtInit] = func () {}
 // 	})
@@ -174,8 +174,8 @@ func NewApp(fn ...func(a *App)) *App {
 
 // New create new app instance.
 // eg:
-// 	cliapp.NewApp()
-// 	cliapp.NewApp(func(a *App) {
+// 	gcli.NewApp()
+// 	gcli.NewApp(func(a *App) {
 // 		// do something before init ....
 // 		a.Hooks[cliapp.EvtInit] = func () {}
 // 	})

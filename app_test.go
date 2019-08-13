@@ -9,7 +9,7 @@ import (
 func TestApp(t *testing.T) {
 	is := assert.New(t)
 
-	cliapp.New(func(a *cliapp.App) {
+	gcli.New(func(a *gcli.App) {
 		a.Name = "test-name"
 	})
 

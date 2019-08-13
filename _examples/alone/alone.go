@@ -14,7 +14,7 @@ var opts = struct {
 
 // test run: go build ./demo/alone.go && ./alone -h
 func main() {
-	cmd := cliapp.Command{
+	cmd := gcli.Command{
 		Name:    "test",
 		Aliases: []string{"ts"},
 		UseFor:  "this is a description <info>message</> for {$cmd}", // // {$cmd} will be replace to 'test'
@@ -31,7 +31,7 @@ func main() {
 	// cmd.Run(os.Args[1:])
 }
 
-func run(cmd *cliapp.Command, args []string) int {
+func run(cmd *gcli.Command, args []string) int {
 	cliapp.Print("hello, in the alone command\n")
 
 	// fmt.Printf("%+v\n", cmd.Flags)

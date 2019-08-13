@@ -31,8 +31,8 @@ var dnsServers = []string{
 }
 
 // ReverseProxyCommand create command
-func ReverseProxyCommand() *cliapp.Command {
-	c := &cliapp.Command{
+func ReverseProxyCommand() *gcli.Command {
+	c := &gcli.Command{
 		Name:   "proxy",
 		Func:   rp.Run,
 		UseFor: "start a reverse proxy http server",
@@ -57,7 +57,7 @@ func ReverseProxyCommand() *cliapp.Command {
 	return c
 }
 
-func (rp *reverseProxy) Run(cmd *cliapp.Command, args []string) int {
+func (rp *reverseProxy) Run(cmd *gcli.Command, args []string) int {
 	if rp.remote == "" {
 		return cmd.Errorf("must be setting the remote server by -r, --remote ")
 	}

@@ -31,15 +31,15 @@ A simple to use command line application, written using golang.
 
 ## GoDoc
 
-- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v1)
-- [godoc for github](https://godoc.org/github.com/gookit/cliapp)
+- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/gcli.v1)
+- [godoc for github](https://godoc.org/github.com/gookit/gcli)
 
 ## Quick start
 
 ```bash
-import "gopkg.in/gookit/cliapp.v1" // is recommended
+import "gopkg.in/gookit/gcli.v1" // is recommended
 // or
-import "github.com/gookit/cliapp"
+import "github.com/gookit/gcli"
 ```
 
 ```go 
@@ -55,18 +55,18 @@ import (
 func main() {
     runtime.GOMAXPROCS(runtime.NumCPU())
 
-    app := cliapp.NewApp()
+    app := gcli.NewApp()
     app.Version = "1.0.3"
     app.Description = "this is my cli application"
-    // app.SetVerbose(cliapp.VerbDebug)
+    // app.SetVerbose(gcli.VerbDebug)
 
     app.Add(cmd.ExampleCommand())
-    app.Add(&cliapp.Command{
+    app.Add(&gcli.Command{
         Name: "demo",
         // allow color tag and {$cmd} will be replace to 'demo'
         UseFor: "this is a description <info>message</> for {$cmd}", 
         Aliases: []string{"dm"},
-        Func: func (cmd *cliapp.Command, args []string) int {
+        Func: func (cmd *gcli.Command, args []string) int {
             cliapp.Stdout("hello, in the demo command\n")
             return 0
         },
@@ -176,12 +176,12 @@ Preview:
 ### Simple use
 
 ```go
-app.Add(&cliapp.Command{
+app.Add(&gcli.Command{
     Name: "demo",
     // allow color tag and {$cmd} will be replace to 'demo'
     UseFor: "this is a description <info>message</> for command", 
     Aliases: []string{"dm"},
-    Func: func (cmd *cliapp.Command, args []string) int {
+    Func: func (cmd *gcli.Command, args []string) int {
         cliapp.Stdout("hello, in the demo command\n")
         return 0
     },
@@ -211,8 +211,8 @@ var exampleOpts = struct {
 }{}
 
 // ExampleCommand command definition
-func ExampleCommand() *cliapp.Command {
-	cmd := &cliapp.Command{
+func ExampleCommand() *gcli.Command {
+	cmd := &gcli.Command{
 		Name:        "example",
 		UseFor: "this is a description message",
 		Aliases:     []string{"exp", "ex"},
@@ -244,7 +244,7 @@ func ExampleCommand() *cliapp.Command {
 // command running
 // example run:
 // 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
-func exampleExecute(c *cliapp.Command, args []string) int {
+func exampleExecute(c *gcli.Command, args []string) int {
 	fmt.Print("hello, in example command\n")
 	
 	magentaln := color.Magenta.Println

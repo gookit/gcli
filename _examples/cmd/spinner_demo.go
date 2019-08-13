@@ -11,15 +11,15 @@ type spinnerDemo struct {
 	themeNum int
 }
 
-func SpinnerDemoCmd() *cliapp.Command {
+func SpinnerDemoCmd() *gcli.Command {
 	sd := &spinnerDemo{}
 
-	return &cliapp.Command{
+	return &gcli.Command{
 		Name:    "spinner",
 		UseFor:  "there are some CLI spinner bar run demos",
 		Aliases: []string{"spr", "spr:demo"},
 		Func:    sd.Run,
-		Config: func(c *cliapp.Command) {
+		Config: func(c *gcli.Command) {
 			c.IntOpt(&sd.speed, "speed", "s", 100, "setting the spinner running speed")
 			c.IntOpt(&sd.themeNum, "theme-num", "t", 0, "setting the theme numbering. allow: 0 - 16")
 
@@ -35,7 +35,7 @@ roundTrip spinner:
 	}
 }
 
-func (sd *spinnerDemo) Run(c *cliapp.Command, _ []string) int {
+func (sd *spinnerDemo) Run(c *gcli.Command, _ []string) int {
 	name := c.Arg("name").String()
 
 	switch name {

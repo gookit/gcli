@@ -9,8 +9,8 @@ import (
 )
 
 // InteractDemoCommand create
-func InteractDemoCommand() *cliapp.Command {
-	c := &cliapp.Command{
+func InteractDemoCommand() *gcli.Command {
+	c := &gcli.Command{
 		Name:    "interact",
 		Func:    interactDemo,
 		Aliases: []string{"itt"},
@@ -31,7 +31,7 @@ multiSelect		select multi from given options
 	return c
 }
 
-var funcMap = map[string]func(c *cliapp.Command){
+var funcMap = map[string]func(c *gcli.Command){
 	"select":   demoSelect,
 	"confirm":  demoConfirm,
 	"password": demoPassword,
@@ -42,7 +42,7 @@ var funcMap = map[string]func(c *cliapp.Command){
 	"answerIsYes": demoAnswerIsYes,
 }
 
-func interactDemo(c *cliapp.Command, _ []string) int {
+func interactDemo(c *gcli.Command, _ []string) int {
 	name := c.Arg("name").String()
 	if handler, ok := funcMap[name]; ok {
 		handler(c)
@@ -53,7 +53,7 @@ func interactDemo(c *cliapp.Command, _ []string) int {
 	return 0
 }
 
-func demoSelect(_ *cliapp.Command) {
+func demoSelect(_ *gcli.Command) {
 	color.Green.Println("run Select demo")
 
 	// s := interact.NewSelect("Your city", []string{"chengdu", "beijing", "shanghai"})
@@ -83,7 +83,7 @@ func demoSelect(_ *cliapp.Command) {
 	color.Comment.Println("your select is: ", ans2)
 }
 
-func demoMultiSelect(_ *cliapp.Command) {
+func demoMultiSelect(_ *gcli.Command) {
 	color.Green.Println("run MultiSelect demo")
 
 	ans := interact.MultiSelect(
@@ -101,12 +101,12 @@ func demoMultiSelect(_ *cliapp.Command) {
 	color.Comment.Println("your select is: ", ans2)
 }
 
-func demoConfirm(_ *cliapp.Command) {
+func demoConfirm(_ *gcli.Command) {
 	color.Green.Println("run Confirm demo")
 
 }
 
-func demoPassword(_ *cliapp.Command) {
+func demoPassword(_ *gcli.Command) {
 	color.Green.Println("run ReadPassword demo")
 	// hiddenInputTest()
 	// return
@@ -132,6 +132,6 @@ func hiddenInputTest()  {
 	fmt.Println(string(bs), err)
 }
 
-func demoAnswerIsYes(_ *cliapp.Command) {
+func demoAnswerIsYes(_ *gcli.Command) {
 
 }

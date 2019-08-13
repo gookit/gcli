@@ -9,7 +9,7 @@ type Arguments struct {
 	// 	{"arg0", "this is first argument", false, false},
 	// 	{"arg1", "this is second argument", false, false},
 	// }
-	args []*cliapp.Argument
+	args []*gcli.Argument
 	// record min length for args
 	// argsMinLen int
 	// record argument names and defined positional relationships

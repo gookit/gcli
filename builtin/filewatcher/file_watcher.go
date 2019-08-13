@@ -3,7 +3,7 @@ package filewatcher
 import (
 	"fmt"
 	"github.com/fsnotify/fsnotify"
-	"github.com/gookit/cliapp"
+	"github.com/gookit/gcli"
 	"github.com/gookit/color"
 	"os"
 	"path/filepath"
@@ -14,17 +14,17 @@ var watcher *fsnotify.Watcher
 var opts = struct {
 	Dir   string
 	Ext   string
-	Files cliapp.Strings
+	Files gcli.Strings
 
 	Config  string
-	Exclude cliapp.Strings
+	Exclude gcli.Strings
 
 	handler func(event fsnotify.Event)
 }{}
 
 // FileWatcher command definition
-func FileWatcher(handler func(event fsnotify.Event)) *cliapp.Command {
-	cmd := &cliapp.Command{
+func FileWatcher(handler func(event fsnotify.Event)) *gcli.Command {
+	cmd := &gcli.Command{
 		Name: "watch",
 		Func: watch,
 
@@ -53,7 +53,7 @@ func FileWatcher(handler func(event fsnotify.Event)) *cliapp.Command {
 
 // test run:
 // go run ./_examples/cliapp.go watch -e .git -e .idea -d ./_examples
-func watch(c *cliapp.Command, _ []string) int {
+func watch(c *gcli.Command, _ []string) int {
 	color.Info.Println("Work directory: ", c.WorkDir())
 
 	if opts.Dir == "" && len(opts.Files) == 0 {
@@ -72,17 +72,17 @@ func watch(c *cliapp.Command, _ []string) int {
 		for {
 			select {
 			case event := <-watcher.Events:
-				c.Logf(cliapp.VerbInfo, "event: %s", event)
+				c.Logf(gcli.VerbInfo, "event: %s", event)
 
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					c.Logf(cliapp.VerbDebug, "modified file: %s", event.Name)
+					c.Logf(gcli.VerbDebug, "modified file: %s", event.Name)
 				}
 
 				if opts.handler != nil {
 					opts.handler(event)
 				}
 			case err := <-watcher.Errors:
-				c.Logf(cliapp.VerbError, "error: %s", err.Error())
+				c.Logf(gcli.VerbError, "error: %s", err.Error())
 			}
 		}
 	}()
@@ -108,7 +108,7 @@ func watch(c *cliapp.Command, _ []string) int {
 
 func addWatchFiles(files []string) error {
 	for _, path := range files {
-		cliapp.Logf(cliapp.VerbDebug, "add watch file: %s", path)
+		gcli.Logf(gcli.VerbDebug, "add watch file: %s", path)
 		err := watcher.Add(path)
 		if err != nil {
 			return err
@@ -141,7 +141,7 @@ func addWatchDir(dir string) error {
 
 		if info.IsDir() {
 			err = watcher.Add(path)
-			cliapp.Logf(cliapp.VerbDebug, "add watch dir: %s", path)
+			gcli.Logf(gcli.VerbDebug, "add watch dir: %s", path)
 			return err // continue OR err
 		}
 
@@ -152,11 +152,11 @@ func addWatchDir(dir string) error {
 			if strings.Contains(allowExt, "|"+ext+"|") {
 				// add file watch
 				err = watcher.Add(path)
-				cliapp.Logf(cliapp.VerbDebug, "add watch file: %s", path)
+				gcli.Logf(gcli.VerbDebug, "add watch file: %s", path)
 			}
 		} else { // add any file
 			err = watcher.Add(path)
-			cliapp.Logf(cliapp.VerbDebug, "add watch file: %s", path)
+			gcli.Logf(gcli.VerbDebug, "add watch file: %s", path)
 		}
 
 		return err

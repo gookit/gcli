@@ -10,7 +10,7 @@ import (
 )
 
 type genEmojiMap struct {
-	c *cliapp.Command
+	c *gcli.Command
 	// muan - https://raw.githubusercontent.com/muan/emoji/gh-pages/javascripts/emojilib/emojis.json
 	// gemoji - https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json
 	// unicode - https://unicode.org/Public/emoji/11.0/emoji-test.txt
@@ -28,10 +28,10 @@ type Gemoji struct {
 }
 
 // GenEmojiMapCommand create
-func GenEmojiMapCommand() *cliapp.Command {
+func GenEmojiMapCommand() *gcli.Command {
 	gem := &genEmojiMap{}
 
-	return &cliapp.Command{
+	return &gcli.Command{
 		Name:    "gen:emojis",
 		Aliases: []string{"gen:emoji", "gen:emj"},
 		// handler func
@@ -39,7 +39,7 @@ func GenEmojiMapCommand() *cliapp.Command {
 		// des
 		UseFor: "fetch emoji codes form data source url, then generate a go file.",
 		// config options
-		Config: func(c *cliapp.Command) {
+		Config: func(c *gcli.Command) {
 			gem.c = c
 			c.StrOpt(
 				&gem.source, "source", "s", "gemoji",
@@ -56,7 +56,7 @@ func GenEmojiMapCommand() *cliapp.Command {
 	}
 }
 
-func (g *genEmojiMap) run(c *cliapp.Command, _ []string) int {
+func (g *genEmojiMap) run(c *gcli.Command, _ []string) int {
 
 	return 0
 }

@@ -17,14 +17,14 @@ import (
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 
-	app := cliapp.NewApp(func(app *cliapp.App) {
+	app := gcli.NewApp(func(app *gcli.App) {
 		app.Version = "1.0.6"
 		app.Description = "this is my cli application"
-		app.Hooks[cliapp.EvtInit] = func(a *cliapp.App, data interface{}) {
+		app.Hooks[cliapp.EvtInit] = func(a *gcli.App, data interface{}) {
 			// do something...
 			// fmt.Println("init app")
 		}
-		// app.SetVerbose(cliapp.VerbDebug)
+		// app.SetVerbose(gcli.VerbDebug)
 		// app.DefaultCommand("example")
 		app.Logo.Text = `   ________    _______
   / ____/ /   /  _/   |  ____  ____
@@ -44,11 +44,11 @@ func main() {
 	// app.Add(filewatcher.FileWatcher(nil))
 	// app.Add(reverseproxy.ReverseProxyCommand())
 
-	app.Add(&cliapp.Command{
+	app.Add(&gcli.Command{
 		Name:    "test",
 		Aliases: []string{"ts"},
 		UseFor:  "this is a description <info>message</> for command {$cmd}",
-		Func: func(cmd *cliapp.Command, args []string) int {
+		Func: func(cmd *gcli.Command, args []string) int {
 			cliapp.Print("hello, in the test command\n")
 			return 0
 		},
@@ -56,14 +56,14 @@ func main() {
 
 	app.Add(builtin.GenAutoCompleteScript())
 	// create by func
-	app.NewCommand("test1", "description1", func(c *cliapp.Command) {
+	app.NewCommand("test1", "description1", func(c *gcli.Command) {
 		// some config for the command
-	}).SetFunc(func(c *cliapp.Command, args []string) int {
+	}).SetFunc(func(c *gcli.Command, args []string) int {
 		color.Green.Println("hello, command is: ", c.Name)
 		return 0
 	}).AttachTo(app)
 
-	// fmt.Printf("%+v\n", cliapp.CommandNames())
+	// fmt.Printf("%+v\n", gcli.CommandNames())
 
 	// running
 	app.Run()
