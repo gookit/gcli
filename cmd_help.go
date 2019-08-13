@@ -3,7 +3,7 @@ package cliapp
 import (
 	"flag"
 	"fmt"
-	"github.com/gookit/cliapp/utils"
+	"github.com/gookit/gcli/utils"
 	"github.com/gookit/color"
 	"github.com/gookit/goutil/strUtil"
 	"reflect"

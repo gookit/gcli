@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/gookit/cliapp"
+	"github.com/gookit/gcli"
 	"io/ioutil"
 	"os/exec"
 	"github.com/gookit/color"

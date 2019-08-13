@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	cli "github.com/gookit/cliapp"
-	"github.com/gookit/cliapp/utils"
+	cli "github.com/gookit/gcli"
+	"github.com/gookit/gcli/utils"
 	"github.com/gookit/color"
 	"log"
 	"strings"

@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"github.com/gookit/cliapp"
+	"github.com/gookit/gcli"
 )
 
 var opts = struct {
@@ -32,7 +32,7 @@ func main() {
 }
 
 func run(cmd *gcli.Command, args []string) int {
-	cliapp.Print("hello, in the alone command\n")
+	gcli.Print("hello, in the alone command\n")
 
 	// fmt.Printf("%+v\n", cmd.Flags)
 	fmt.Printf("opts %+v\n", opts)

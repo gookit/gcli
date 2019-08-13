@@ -1,7 +1,7 @@
 # cliapp 
 
-[![GoDoc](https://godoc.org/github.com/gookit/cliapp?status.svg)](https://godoc.org/github.com/gookit/cliapp)
-[![Go Report Card](https://goreportcard.com/badge/github.com/gookit/cliapp)](https://goreportcard.com/report/github.com/gookit/cliapp)
+[![GoDoc](https://godoc.org/github.com/gookit/gcli?status.svg)](https://godoc.org/github.com/gookit/gcli)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gcli)](https://goreportcard.com/report/github.com/gookit/gcli)
 
 A simple to use command line application, written using golang.
 
@@ -47,8 +47,8 @@ package main
 
 import (
     "runtime"
-    "github.com/gookit/cliapp"
-    "github.com/gookit/cliapp/demo/cmd"
+    "github.com/gookit/gcli"
+    "github.com/gookit/gcli/demo/cmd"
 )
 
 // for test run: go build ./demo/cliapp.go && ./cliapp
@@ -67,7 +67,7 @@ func main() {
         UseFor: "this is a description <info>message</> for {$cmd}", 
         Aliases: []string{"dm"},
         Func: func (cmd *gcli.Command, args []string) int {
-            cliapp.Stdout("hello, in the demo command\n")
+            gcli.Stdout("hello, in the demo command\n")
             return 0
         },
     })
@@ -130,7 +130,7 @@ you can see:
 ### Generate auto completion scripts
 
 ```go
-import  "github.com/gookit/cliapp/builtin"
+import  "github.com/gookit/gcli/builtin"
 
     // ...
     // add gen command(gen successful you can remove it)
@@ -182,7 +182,7 @@ app.Add(&gcli.Command{
     UseFor: "this is a description <info>message</> for command", 
     Aliases: []string{"dm"},
     Func: func (cmd *gcli.Command, args []string) int {
-        cliapp.Stdout("hello, in the demo command\n")
+        gcli.Stdout("hello, in the demo command\n")
         return 0
     },
 })
@@ -196,7 +196,7 @@ app.Add(&gcli.Command{
 package cmd
 
 import (
-	"github.com/gookit/cliapp"
+	"github.com/gookit/gcli"
 	"github.com/gookit/color"
 	"fmt"
 )
@@ -207,7 +207,7 @@ var exampleOpts = struct {
 	c   string
 	dir string
 	opt string
-	names cliapp.Strings
+	names gcli.Strings
 }{}
 
 // ExampleCommand command definition
@@ -305,7 +305,7 @@ Examples:
 package main
 
 import "time"
-import "github.com/gookit/cliapp/progress"
+import "github.com/gookit/gcli/progress"
 
 func main()  {
 	speed := 100
@@ -351,7 +351,7 @@ Examples:
 package main
 
 import "fmt"
-import "github.com/gookit/cliapp/interact"
+import "github.com/gookit/gcli/interact"
 
 func main() {
 	username, _ := interact.ReadLine("Your name?")

@@ -1,7 +1,7 @@
 # cliapp
 
-[![GoDoc](https://godoc.org/github.com/gookit/cliapp?status.svg)](https://godoc.org/github.com/gookit/cliapp)
-[![Go Report Card](https://goreportcard.com/badge/github.com/gookit/cliapp)](https://goreportcard.com/report/github.com/gookit/cliapp)
+[![GoDoc](https://godoc.org/github.com/gookit/gcli?status.svg)](https://godoc.org/github.com/gookit/gcli)
+[![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gcli)](https://goreportcard.com/report/github.com/gookit/gcli)
 
 一个golang下的简单易用的命令行应用，工具库。包含运行命令，颜色风格，数据展示，进度显示，交互方法等
 
@@ -30,17 +30,17 @@
 
 ## GoDoc
 
-- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/cliapp.v1)
-- [godoc for github](https://godoc.org/github.com/gookit/cliapp)
+- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/gcli.v1)
+- [godoc for github](https://godoc.org/github.com/gookit/gcli)
 
 ## 快速开始
 
 如下，引入当前包就可以快速的编写cli应用了
 
 ```bash
-import "gopkg.in/gookit/cliapp.v1" // 推荐
+import "gopkg.in/gookit/gcli.v1" // 推荐
 // or
-import "github.com/gookit/cliapp"
+import "github.com/gookit/gcli"
 ```
 
 ```go 
@@ -48,8 +48,8 @@ package main
 
 import (
     "runtime"
-    "github.com/gookit/cliapp"
-    "github.com/gookit/cliapp/_examples/cmd"
+    "github.com/gookit/gcli"
+    "github.com/gookit/gcli/_examples/cmd"
 )
 
 // for test run: go run ./_examples/cliapp.go && ./cliapp
@@ -68,7 +68,7 @@ func main() {
         UseFor: "this is a description <info>message</> for command", 
         Aliases: []string{"dm"},
         Func: func (cmd *gcli.Command, args []string) int {
-            cliapp.Stdout("hello, in the demo command\n")
+            gcli.Stdout("hello, in the demo command\n")
             return 0
         },
     })
@@ -129,7 +129,7 @@ you can see:
 ### 生成命令补全脚本
 
 ```go
-import  "github.com/gookit/cliapp/builtin"
+import  "github.com/gookit/gcli/builtin"
 
     // ...
     // 添加内置提供的生成命令
@@ -179,7 +179,7 @@ app.Add(&gcli.Command{
     UseFor: "this is a description <info>message</> for command", 
     Aliases: []string{"dm"},
     Func: func (cmd *gcli.Command, args []string) int {
-        cliapp.Stdout("hello, in the demo command\n")
+        gcli.Stdout("hello, in the demo command\n")
         return 0
     },
 })
@@ -193,7 +193,7 @@ app.Add(&gcli.Command{
 package cmd
 
 import (
-	"github.com/gookit/cliapp"
+	"github.com/gookit/gcli"
 	"github.com/gookit/color"
 	"fmt"
 )
@@ -204,7 +204,7 @@ var exampleOpts = struct {
 	c   string
 	dir string
 	opt string
-	names cliapp.Strings
+	names gcli.Strings
 }{}
 
 // ExampleCommand command definition
@@ -305,7 +305,7 @@ Data handling ... ... 50% (25/50)
 package main
 
 import "time"
-import "github.com/gookit/cliapp/progress"
+import "github.com/gookit/gcli/progress"
 
 func main()  {
 	speed := 100
@@ -351,7 +351,7 @@ console interactive methods
 package main
 
 import "fmt"
-import "github.com/gookit/cliapp/interact"
+import "github.com/gookit/gcli/interact"
 
 func main() {
 	username, _ := interact.ReadLine("Your name?")

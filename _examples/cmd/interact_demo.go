@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"github.com/gookit/cliapp"
-	"github.com/gookit/cliapp/interact"
+	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/interact"
 	"github.com/gookit/color"
 	"fmt"
 	"os/exec"

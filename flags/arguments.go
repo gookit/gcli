@@ -1,6 +1,6 @@
 package flags
 
-import "github.com/gookit/cliapp"
+import "github.com/gookit/gcli"
 
 // Arguments definition
 type Arguments struct {

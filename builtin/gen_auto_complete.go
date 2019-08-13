@@ -2,9 +2,9 @@ package builtin
 
 import (
 	"fmt"
-	"github.com/gookit/cliapp"
-	"github.com/gookit/cliapp/interact"
-	"github.com/gookit/cliapp/utils"
+	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/interact"
+	"github.com/gookit/gcli/utils"
 	"github.com/gookit/color"
 	"github.com/gookit/goutil/cliUtil"
 	"io/ioutil"
@@ -98,7 +98,7 @@ func doGen(c *gcli.Command, _ []string) int {
 		data = buildForZshShell(data)
 	} else {
 		color.Error.Tips("--shell option only allow: zsh,bash")
-		return cliapp.ERR
+		return gcli.ERR
 	}
 
 	str := utils.RenderTemplate(shellTpls[genOpts.shell], &data)

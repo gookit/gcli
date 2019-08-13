@@ -2,7 +2,7 @@ package builtin
 
 import (
 	"fmt"
-	"github.com/gookit/cliapp"
+	"github.com/gookit/gcli"
 	"io"
 	"net/http"
 	"os"
@@ -90,7 +90,7 @@ func (g *genEmojiMap) Download(remoteFile string, saveAs string) error {
 const templateString = `
 package {{.PkgName}}
 // NOTE: THIS FILE WAS PRODUCED BY THE
-// EMOJI COD EMAP CODE GENERATION TOOL (https://github.com/gookit/cliapp)
+// EMOJI COD EMAP CODE GENERATION TOOL (https://github.com/gookit/gcli)
 // DO NOT EDIT
 // Mapping from character to concrete escape code.
 var emojiMap = map[string]string{

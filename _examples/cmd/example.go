@@ -2,7 +2,7 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gookit/cliapp"
+	"github.com/gookit/gcli"
 	"github.com/gookit/color"
 )
 

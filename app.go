@@ -1,7 +1,7 @@
 // Package cliapp is a simple to use command line application, written using golang
 //
 // Source code and other details for the project are available at GitHub:
-// 		https://github.com/gookit/cliapp
+// 		https://github.com/gookit/gcli
 //
 // usage please ref examples and README
 package cliapp
@@ -166,7 +166,7 @@ func Verbose() uint {
 // 	gcli.New()
 // 	gcli.New(func(a *App) {
 // 		// do something before init ....
-// 		a.Hooks[cliapp.EvtInit] = func () {}
+// 		a.Hooks[gcli.EvtInit] = func () {}
 // 	})
 func NewApp(fn ...func(a *App)) *App {
 	return New(fn...)
@@ -177,7 +177,7 @@ func NewApp(fn ...func(a *App)) *App {
 // 	gcli.NewApp()
 // 	gcli.NewApp(func(a *App) {
 // 		// do something before init ....
-// 		a.Hooks[cliapp.EvtInit] = func () {}
+// 		a.Hooks[gcli.EvtInit] = func () {}
 // 	})
 func New(fn ...func(a *App)) *App {
 	defApp = &App{

@@ -1,6 +1,6 @@
 package main
 
-import "github.com/gookit/cliapp"
+import "github.com/gookit/gcli"
 
 func main()  {
 	app := gcli.NewApp()

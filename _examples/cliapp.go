@@ -1,13 +1,13 @@
 package main
 
 import (
-	"github.com/gookit/cliapp"
-	"github.com/gookit/cliapp/_examples/cmd"
-	"github.com/gookit/cliapp/builtin"
+	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/_examples/cmd"
+	"github.com/gookit/gcli/builtin"
 	"github.com/gookit/color"
 
-	// "github.com/gookit/cliapp/builtin/filewatcher"
-	// "github.com/gookit/cliapp/builtin/reverseproxy"
+	// "github.com/gookit/gcli/builtin/filewatcher"
+	// "github.com/gookit/gcli/builtin/reverseproxy"
 	"runtime"
 )
 
@@ -20,7 +20,7 @@ func main() {
 	app := gcli.NewApp(func(app *gcli.App) {
 		app.Version = "1.0.6"
 		app.Description = "this is my cli application"
-		app.Hooks[cliapp.EvtInit] = func(a *gcli.App, data interface{}) {
+		app.Hooks[gcli.EvtInit] = func(a *gcli.App, data interface{}) {
 			// do something...
 			// fmt.Println("init app")
 		}
@@ -49,7 +49,7 @@ func main() {
 		Aliases: []string{"ts"},
 		UseFor:  "this is a description <info>message</> for command {$cmd}",
 		Func: func(cmd *gcli.Command, args []string) int {
-			cliapp.Print("hello, in the test command\n")
+			gcli.Print("hello, in the test command\n")
 			return 0
 		},
 	})

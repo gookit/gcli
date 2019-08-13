@@ -5,7 +5,7 @@ package reverseproxy
 // https://github.com/ilanyu/ReverseProxy
 import (
 	"fmt"
-	"github.com/gookit/cliapp"
+	"github.com/gookit/gcli"
 	"log"
 	"math/rand"
 	"net/http"

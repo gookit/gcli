@@ -2,7 +2,7 @@ package cliapp
 
 import (
 	"fmt"
-	"github.com/gookit/cliapp/utils"
+	"github.com/gookit/gcli/utils"
 	"github.com/gookit/color"
 	"github.com/gookit/goutil/strUtil"
 	"strings"
