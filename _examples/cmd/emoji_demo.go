@@ -3,15 +3,15 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/gookit/color"
 	"github.com/gookit/gcli"
 	"github.com/gookit/gcli/show/emoji"
-	"github.com/gookit/color"
 )
 
 func EmojiDemoCmd() *gcli.Command {
 	return &gcli.Command{
-		Name: "emoji",
-		UseFor: "this is a emoji usage example command",
+		Name:    "emoji",
+		UseFor:  "this is a emoji usage example command",
 		Aliases: []string{"emoj"},
 		Config: func(c *gcli.Command) {
 			c.AddArg("subcmd", "The name of the subcommand you want to run. allow: render, search", true)

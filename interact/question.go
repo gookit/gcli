@@ -2,8 +2,9 @@ package interact
 
 import (
 	"fmt"
-	"github.com/gookit/color"
 	"strings"
+
+	"github.com/gookit/color"
 )
 
 // Question definition

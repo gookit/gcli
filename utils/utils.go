@@ -2,10 +2,11 @@ package utils
 
 import (
 	"bytes"
-	"github.com/gookit/goutil/strutil"
 	"os/exec"
 	"strings"
 	"text/template"
+
+	"github.com/gookit/goutil/strutil"
 )
 
 // ExecCommand alias of the ShellExec

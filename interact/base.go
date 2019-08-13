@@ -3,10 +3,11 @@ package interact
 
 import (
 	"fmt"
-	"github.com/gookit/color"
 	"os"
 	"strconv"
 	"strings"
+
+	"github.com/gookit/color"
 )
 
 const (

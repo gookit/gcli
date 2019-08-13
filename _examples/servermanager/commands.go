@@ -1,11 +1,12 @@
 package main
 
 import (
-	"github.com/gookit/gcli"
+	"fmt"
 	"io/ioutil"
 	"os/exec"
+
 	"github.com/gookit/color"
-	"fmt"
+	"github.com/gookit/gcli"
 )
 
 type Config struct {

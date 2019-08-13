@@ -2,10 +2,11 @@ package gcli
 
 import (
 	"fmt"
-	"github.com/gookit/gcli/utils"
-	"github.com/gookit/color"
-	"github.com/gookit/goutil/strutil"
 	"strings"
+
+	"github.com/gookit/color"
+	"github.com/gookit/gcli/utils"
+	"github.com/gookit/goutil/strutil"
 )
 
 // help template for all commands

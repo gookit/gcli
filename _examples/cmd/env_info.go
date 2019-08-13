@@ -1,9 +1,10 @@
 package cmd
 
 import (
-	cli "github.com/gookit/gcli"
 	"os"
 	"runtime"
+
+	cli "github.com/gookit/gcli"
 	"github.com/gookit/gcli/show"
 )
 

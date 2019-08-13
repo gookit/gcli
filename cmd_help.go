@@ -3,11 +3,12 @@ package gcli
 import (
 	"flag"
 	"fmt"
-	"github.com/gookit/gcli/utils"
-	"github.com/gookit/color"
-	"github.com/gookit/goutil/strutil"
 	"reflect"
 	"strings"
+
+	"github.com/gookit/color"
+	"github.com/gookit/gcli/utils"
+	"github.com/gookit/goutil/strutil"
 )
 
 // help template for a command

@@ -3,9 +3,10 @@ package interact
 import (
 	"bytes"
 	"fmt"
-	"github.com/gookit/color"
 	"sort"
 	"strings"
+
+	"github.com/gookit/color"
 )
 
 // Select definition

@@ -2,8 +2,6 @@ package utils
 
 import (
 	"fmt"
-	"github.com/gookit/gcli/progress"
-	"github.com/gookit/goutil/format"
 	"io"
 	"log"
 	"net/http"
@@ -12,6 +10,9 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/gookit/gcli/progress"
+	"github.com/gookit/goutil/format"
 )
 
 // Downloader struct definition.
@@ -116,7 +117,7 @@ func printDownloadPercent(done chan int64, path string, total int64) {
 
 	for {
 		select {
-		case <-done: // end
+		case <-done:      // end
 			fmt.Println() // output newline
 			return
 		default:

@@ -1,13 +1,14 @@
 package cmd
 
 import (
+	"time"
+
 	"github.com/gookit/gcli"
 	"github.com/gookit/gcli/progress"
-	"time"
 )
 
 type progressDemo struct {
-	maxSteps int
+	maxSteps  int
 	overwrite bool
 }
 
@@ -75,7 +76,7 @@ func txtProgressBar(maxStep int) {
 	txt.Finish()
 }
 
-func dynamicTextBar(maxStep int)  {
+func dynamicTextBar(maxStep int) {
 	messages := map[int]string{
 		// key is percent, range is 0 - 100.
 		20:  " Prepare ...",

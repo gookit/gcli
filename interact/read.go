@@ -3,14 +3,15 @@ package interact
 import (
 	"bufio"
 	"fmt"
-	"github.com/gookit/color"
-	"github.com/gookit/goutil/cliutil"
-	"github.com/gookit/goutil/envutil"
-	"golang.org/x/crypto/ssh/terminal"
 	"io/ioutil"
 	"os"
 	"strings"
 	"syscall"
+
+	"github.com/gookit/color"
+	"github.com/gookit/goutil/cliutil"
+	"github.com/gookit/goutil/envutil"
+	"golang.org/x/crypto/ssh/terminal"
 )
 
 // ReadInput read user input form Stdin

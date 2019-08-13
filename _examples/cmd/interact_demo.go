@@ -1,11 +1,12 @@
 package cmd
 
 import (
-	"github.com/gookit/gcli"
-	"github.com/gookit/gcli/interact"
-	"github.com/gookit/color"
 	"fmt"
 	"os/exec"
+
+	"github.com/gookit/color"
+	"github.com/gookit/gcli"
+	"github.com/gookit/gcli/interact"
 )
 
 // InteractDemoCommand create
@@ -36,9 +37,9 @@ var funcMap = map[string]func(c *gcli.Command){
 	"confirm":  demoConfirm,
 	"password": demoPassword,
 
-	"ms":   demoMultiSelect,
+	"ms": demoMultiSelect,
 
-	"multiSelect":   demoMultiSelect,
+	"multiSelect": demoMultiSelect,
 	"answerIsYes": demoAnswerIsYes,
 }
 
@@ -117,7 +118,7 @@ func demoPassword(_ *gcli.Command) {
 	color.Comment.Println("you input password is: ", pwd)
 }
 
-func hiddenInputTest()  {
+func hiddenInputTest() {
 	// COMMAND: sh -c 'read -p "Enter Password:" -s user_input && echo $user_input'
 	// str := fmt.Sprintf(`'read -p "%s" -s user_input && echo $user_input'`, "Enter Password:")
 	// cmd := exec.CommandContext()

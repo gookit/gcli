@@ -1,10 +1,10 @@
 package main
 
 import (
+	"github.com/gookit/color"
 	"github.com/gookit/gcli"
 	"github.com/gookit/gcli/_examples/cmd"
 	"github.com/gookit/gcli/builtin"
-	"github.com/gookit/color"
 
 	// "github.com/gookit/gcli/builtin/filewatcher"
 	// "github.com/gookit/gcli/builtin/reverseproxy"

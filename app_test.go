@@ -1,9 +1,10 @@
 package gcli_test
 
 import (
+	"testing"
+
 	"github.com/gookit/gcli"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestApp(t *testing.T) {

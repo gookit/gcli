@@ -2,10 +2,11 @@ package progress
 
 import (
 	"fmt"
-	"github.com/gookit/color"
 	"strings"
 	"sync"
 	"time"
+
+	"github.com/gookit/color"
 )
 
 // BuilderFunc build char string

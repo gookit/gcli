@@ -4,11 +4,12 @@ import (
 	"encoding/json"
 	"errors"
 	"fmt"
-	"github.com/gookit/color"
 	"io"
 	"os"
 	"reflect"
 	"unicode/utf8"
+
+	"github.com/gookit/color"
 )
 
 const (

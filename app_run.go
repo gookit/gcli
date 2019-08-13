@@ -3,12 +3,13 @@ package gcli
 import (
 	"flag"
 	"fmt"
-	"github.com/gookit/color"
-	"github.com/gookit/goutil/envutil"
 	"log"
 	"os"
 	"runtime"
 	"strings"
+
+	"github.com/gookit/color"
+	"github.com/gookit/goutil/envutil"
 )
 
 var (

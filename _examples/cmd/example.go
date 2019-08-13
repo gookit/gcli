@@ -2,8 +2,9 @@ package cmd
 
 import (
 	"fmt"
-	"github.com/gookit/gcli"
+
 	"github.com/gookit/color"
+	"github.com/gookit/gcli"
 )
 
 // The string flag list, implemented flag.Value interface

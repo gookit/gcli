@@ -3,11 +3,12 @@ package gcli
 import (
 	"flag"
 	"fmt"
-	"github.com/gookit/color"
-	"github.com/gookit/goutil/strutil"
 	"log"
 	"os"
 	"strings"
+
+	"github.com/gookit/color"
+	"github.com/gookit/goutil/strutil"
 )
 
 // Runner interface
@@ -211,7 +212,7 @@ func (c *Command) collectNamedArgs(inArgs []string) error {
 	inNum := len(inArgs)
 
 	for i, arg := range c.args {
-		num = i + 1      // num is equal index + 1
+		num = i + 1 // num is equal index + 1
 		if num > inNum { // no enough arg
 			if arg.Required {
 				return fmt.Errorf("must set value for the argument: %s (position %d)", arg.ShowName, arg.index)

@@ -2,10 +2,11 @@ package progress
 
 import (
 	"fmt"
-	"github.com/gookit/color"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/gookit/color"
 )
 
 // internal format for Progress

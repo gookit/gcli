@@ -4,9 +4,10 @@ package show
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/gookit/color"
 	"io"
 	"text/tabwriter"
+
+	"github.com/gookit/color"
 )
 
 // Error tips message print

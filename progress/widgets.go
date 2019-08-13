@@ -2,11 +2,12 @@ package progress
 
 import (
 	"fmt"
-	"github.com/gookit/goutil/format"
 	"runtime"
 	"sort"
 	"strings"
 	"time"
+
+	"github.com/gookit/goutil/format"
 )
 
 var builtinWidgets = map[string]WidgetFunc{
