@@ -1,10 +1,10 @@
-// Package cliapp is a simple to use command line application, written using golang
+// Package gcli is a simple to use command line application, written using golang
 //
 // Source code and other details for the project are available at GitHub:
 // 		https://github.com/gookit/gcli
 //
 // usage please ref examples and README
-package cliapp
+package gcli
 
 import (
 	"fmt"

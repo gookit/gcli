@@ -1,4 +1,4 @@
-package cliapp_test
+package gcli_test
 
 import (
 	"github.com/gookit/gcli"
