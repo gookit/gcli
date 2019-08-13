@@ -4,7 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"github.com/gookit/color"
-	"github.com/gookit/goutil/strUtil"
+	"github.com/gookit/goutil/strutil"
 	"log"
 	"os"
 	"strings"
@@ -131,7 +131,7 @@ func (c *Command) initialize() *Command {
 
 	// format description
 	if len(c.UseFor) > 0 {
-		c.UseFor = strUtil.UpperFirst(c.UseFor)
+		c.UseFor = strutil.UpperFirst(c.UseFor)
 
 		// contains help var "{$cmd}". replace on here is for 'app help'
 		if strings.Contains(c.UseFor, "{$cmd}") {

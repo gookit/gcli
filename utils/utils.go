@@ -2,7 +2,7 @@ package utils
 
 import (
 	"bytes"
-	"github.com/gookit/goutil/strUtil"
+	"github.com/gookit/goutil/strutil"
 	"os/exec"
 	"strings"
 	"text/template"
@@ -67,9 +67,9 @@ func RenderTemplate(input string, data interface{}, isFile ...bool) string {
 			return strings.Join(ss, sep)
 		},
 		// lower first char
-		"lcFirst": strUtil.LowerFirst,
+		"lcFirst": strutil.LowerFirst,
 		// upper first char
-		"ucFirst": strUtil.UpperFirst,
+		"ucFirst": strutil.UpperFirst,
 	})
 
 	if isFilename {
