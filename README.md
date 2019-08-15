@@ -422,7 +422,7 @@ if ans != "" {
 	color.Comment.Println("your select is: ", ans)
 ```
 
-![interact-select](_examples/images/interact/select.jpg)
+![interact-select](_examples/images/interact/m-select.jpg)
 
 ### Confirm Message
 
@@ -441,10 +441,10 @@ if ans != "" {
 ```go
 	pwd := interact.ReadPassword()
 
-	color.Comment.Println("you input password is: ", pwd)
+	color.Comment.Println("your input password is: ", pwd)
 ```
 
-![interact-confirm](_examples/images/interact/passwd.jpg)
+![interact-passwd](_examples/images/interact/passwd.jpg)
 
 ## CLI Color
 

@@ -139,7 +139,7 @@ func demoPassword(_ *gcli.Command) {
 	// color.Comment.Println("you input password is: ", pwd)
 
 	pwd := interact.ReadPassword()
-	color.Comment.Println("you input password is: ", pwd)
+	color.Comment.Println("Your input password is: ", pwd)
 }
 
 func hiddenInputTest() {
@@ -163,5 +163,5 @@ func demoAnswerIsYes(_ *gcli.Command) {
 
 func demoQuestion(_ *gcli.Command) {
 	ans := interact.Ask("Your name? ", "", nil, 3)
-	color.Comment.Println("You answer is: ", ans)
+	color.Comment.Println("Your answer is: ", ans)
 }

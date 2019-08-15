@@ -385,6 +385,68 @@ func main() {
 }
 ```
 
+### Read Input
+
+```go
+ans, _ := interact.ReadLine("Your name? ")
+
+if ans != "" {
+    color.Println("Your input: ", ans)
+} else {
+    color.Cyan.Println("No input!")
+}
+```
+
+![interact-read](_examples/images/interact/read.jpg)
+
+### Select/Choice
+
+```go
+	ans := interact.SelectOne(
+		"Your city name(use array)?",
+		[]string{"chengdu", "beijing", "shanghai"},
+		"",
+	)
+	color.Comment.Println("your select is: ", ans)
+```
+
+![interact-select](_examples/images/interact/select.jpg)
+
+### Multi Select/Checkbox
+
+```go
+	ans := interact.MultiSelect(
+		"Your city name(use array)?",
+		[]string{"chengdu", "beijing", "shanghai"},
+		nil,
+	)
+	color.Comment.Println("your select is: ", ans)
+```
+
+![interact-select](_examples/images/interact/m-select.jpg)
+
+### Confirm Message
+
+```go
+	if interact.Confirm("Ensure continue") {
+		fmt.Println(emoji.Render(":smile: Confirmed"))
+	} else {
+		color.Warn.Println("Unconfirmed")
+	}
+```
+
+![interact-confirm](_examples/images/interact/confirm.jpg)
+
+### Read Password
+
+```go
+	pwd := interact.ReadPassword()
+
+	color.Comment.Println("your input password is: ", pwd)
+```
+
+![interact-passwd](_examples/images/interact/passwd.jpg)
+
 > 更多示例和使用请看 [interact_demo.go](_examples/cmd/interact_demo.go)
 
 ## 使用颜色输出
