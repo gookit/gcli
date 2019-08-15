@@ -12,11 +12,11 @@
 
 ## 截图展示
 
-![app-help](_examples/images/app-help.jpg)
+![app-cmd-list](_examples/images/cmd-list.png)
 
 ## 功能特色
 
-- 使用简单方便，轻量级，无额外依赖
+- 使用简单方便，轻量级，功能丰富
 - 支持添加多个命令，并且支持给命令添加别名
 - 输入的命令错误时，将会提示相似命令（包含别名提示）
 - 快速方便的添加选项绑定 `--long`，支持添加短选项 `-s`
@@ -94,14 +94,15 @@ func main() {
 
 ### 打印版本信息
 
-打印我们在创建cli应用时设置的版本信息
+打印我们在创建cli应用时设置的版本信息。如果你还设置了字符LOGO，也会显示出来。
 
 ```bash
-% ./cliapp --version
-This is my cli application
-
-Version: 1.0.3                                                           
+% ./cliapp --version      
+# or use -V                                                 
+% ./cliapp -V                                                     
 ```
+
+![app-version](_examples/images/app-version.jpg)
 
 ### 应用帮助信息
 
@@ -115,21 +116,29 @@ Version: 1.0.3
 ./cliapp --help # can also
 ```
 
+![cmd-list](_examples/images/cmd-list.png)
+
 ### 运行一个命令
 
 ```bash
 % ./cliapp example -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
 ```
 
-you can see:
+可以观察到选项和参数的搜集结果:
 
-![run_example_cmd](_examples/images/run_example_cmd.jpg)
+![run-example](_examples/images/run-example.jpg)
 
 ### 显示一个命令的帮助
 
 > by `./cliapp {command} -h` or `./cliapp {command} --help` or `./cliapp help {command}`
 
 ![cmd-help](_examples/images/cmd-help.jpg)
+
+### 相似命令提示
+
+输入了错误的命令，但是有名称相似的会提示出来。
+
+![cmd-tips](_examples/images/err-cmd-tips.jpg)
 
 ### 生成命令补全脚本
 
@@ -384,7 +393,7 @@ func main() {
 
 ### 颜色输出展示
 
-![colored-demo](_examples/images/color-demo.jpg)
+![colored-demo](_examples/images/color/color-demo.jpg)
 
 ### 如何使用
 

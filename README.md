@@ -12,7 +12,7 @@ A simple to use command line application, written using golang.
 
 ## Screenshots
 
-![app-help](_examples/images/app-help.jpg)
+![app-cmd-list](_examples/images/cmd-list.png)
 
 ## Features
 
@@ -94,11 +94,12 @@ func main() {
 ### Display version
 
 ```bash
-% ./cliapp --version
-this is my cli application
-
-Version: 1.0.3                                                           
+% ./cliapp --version      
+# or use -V                                                 
+% ./cliapp -V                                                     
 ```
+
+![app-version](_examples/images/app-version.jpg)
 
 ### Display app help
 
@@ -112,7 +113,9 @@ Examples:
 ./cliapp --help # can also
 ```
 
-### Run a command
+![cmd-list](_examples/images/cmd-list.png)
+
+### Run A Command
 
 ```bash
 % ./cliapp example -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
@@ -120,19 +123,19 @@ Examples:
 
 you can see:
 
-![run_example_cmd](_examples/images/run_example_cmd.jpg)
+![run-example](_examples/images/run-example.jpg)
 
-### Display command help
+### Display Command Help
 
 > by `./cliapp example -h` or `./cliapp example --help`
 
 ![cmd-help](_examples/images/cmd-help.jpg)
 
-### Display command tips
+### Error Command Tips
 
 ![command tips](_examples/images/err-cmd-tips.jpg)
 
-### Generate auto completion scripts
+### Generate Auto Completion Scripts
 
 ```go
 import  "github.com/gookit/gcli/v2/builtin"
@@ -385,7 +388,7 @@ func main() {
 
 ### Color output display
 
-![colored-demo](_examples/images/color-demo.jpg)
+![colored-demo](_examples/images/color/color-demo.jpg)
 
 ### Usage
 

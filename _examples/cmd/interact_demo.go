@@ -19,12 +19,13 @@ func InteractDemoCommand() *gcli.Command {
 		Examples: `{$fullCmd} confirm
   {$fullCmd} select
 `,
-		Help: `Supported interactive methods:
-answerIsYes 	check user answer is Yes
-confirm 		confirm message
-select			select one from given options
-password		read user hidden input
-multiSelect		select multi from given options
+		Help: `
+Supported interactive methods:
+  answerIsYes    check user answer is Yes
+  confirm        confirm message
+  select         select one from given options
+  password       read user hidden input
+  multiSelect    select multi from given options
 `,
 	}
 
@@ -55,7 +56,8 @@ func interactDemo(c *gcli.Command, _ []string) error {
 }
 
 func demoSelect(_ *gcli.Command) {
-	color.Green.Println("run Select demo")
+	color.Green.Println("Run Select Demo")
+	fmt.Println("----------------------------------------------------------")
 
 	// s := interact.NewSelect("Your city", []string{"chengdu", "beijing", "shanghai"})
 	// s.DefOpt = "2"
@@ -68,6 +70,7 @@ func demoSelect(_ *gcli.Command) {
 		"",
 	)
 	color.Comment.Println("your select is: ", ans)
+	fmt.Println("----------------------------------------------------------")
 
 	ans1 := interact.Choice(
 		"Your age(use int array)?",
@@ -75,6 +78,8 @@ func demoSelect(_ *gcli.Command) {
 		"",
 	)
 	color.Comment.Println("your select is: ", ans1)
+
+	fmt.Println("----------------------------------------------------------")
 
 	ans2 := interact.SingleSelect(
 		"Your city name(use map)?",

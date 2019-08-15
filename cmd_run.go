@@ -191,13 +191,23 @@ var commandHelp = `{{.UseFor}}
   <info>{{$a.Name | printf "%-12s"}}</>{{$a.Description | ucFirst}}{{if $a.Required}}<red>*</>{{end}}{{end}}
 {{end}} {{if .Cmd.Examples}}
 <comment>Examples:</>
-{{.Cmd.Examples}}{{end}}
-{{if .Cmd.Help}}<comment>Help:</>
+{{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}
+<comment>Help:</>
 {{.Cmd.Help}}{{end}}`
 
 // ShowHelp show command help info
 func (c *Command) ShowHelp(quit ...bool) {
 	commandHelp = color.ReplaceTag(commandHelp)
+
+	// clear space and empty new line
+	if c.Examples != "" {
+		c.Examples = strings.Join([]string{"  ", strings.TrimSpace(c.Examples), "\n"}, "")
+	}
+
+	// clear space and empty new line
+	if c.Help != "" {
+		c.Help = strings.Join([]string{strings.TrimSpace(c.Help), "\n"}, "")
+	}
 
 	// render and output help info
 	// RenderTplStr(os.Stdout, commandHelp, map[string]interface{}{

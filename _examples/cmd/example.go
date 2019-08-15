@@ -35,10 +35,12 @@ func ExampleCommand() *gcli.Command {
 		Func:    exampleExecute,
 		Name:    "module:example",
 		Aliases: []string{"exp", "ex"},
-		UseFor:  "this is a description message",
+		UseFor:  "this is command description message",
 		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
-		Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1
-  <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
+		Examples: `
+  {$binName} {$cmd} --id 12 -c val ag0 ag1
+  <cyan>{$fullCmd} --names tom --names john -n c</> 	test use special option
+`,
 	}
 
 	// bind options
@@ -65,7 +67,7 @@ func ExampleCommand() *gcli.Command {
 // example run:
 // 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
 func exampleExecute(c *gcli.Command, args []string) error {
-	fmt.Print("hello, in example command\n")
+	color.Cyan.Println("hello, in example command")
 
 	if exampleOpts.showErr {
 		return c.Errorf("OO, An error has occurred!!")
@@ -75,6 +77,7 @@ func exampleExecute(c *gcli.Command, args []string) error {
 
 	magentaln("All options:")
 	fmt.Printf("%+v\n", exampleOpts)
+// dump.V(exampleOpts)
 	magentaln("Remain args:")
 	fmt.Printf("%v\n", args)
 
@@ -84,7 +87,7 @@ func exampleExecute(c *gcli.Command, args []string) error {
 
 	magentaln("All named args:")
 	for _, arg := range c.Args() {
-		fmt.Printf("named arg '%s': %+v\n", arg.Name, *arg)
+		fmt.Printf("named arg '%s': %+v\n", arg.Name, arg.Value)
 	}
 
 	return nil
