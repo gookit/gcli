@@ -396,7 +396,7 @@ if ans != "" {
 }
 ```
 
-![read-input](_examples/images/interact/read.jpg)
+![interact-read](_examples/images/interact/read.jpg)
 
 ### Select/Choice
 
@@ -409,8 +409,42 @@ if ans != "" {
 	color.Comment.Println("your select is: ", ans)
 ```
 
-![read-input](_examples/images/interact/read.jpg)
+![interact-select](_examples/images/interact/select.jpg)
 
+### Multi Select/Checkbox
+
+```go
+	ans := interact.MultiSelect(
+		"Your city name(use array)?",
+		[]string{"chengdu", "beijing", "shanghai"},
+		nil,
+	)
+	color.Comment.Println("your select is: ", ans)
+```
+
+![interact-select](_examples/images/interact/select.jpg)
+
+### Confirm Message
+
+```go
+	if interact.Confirm("Ensure continue") {
+		fmt.Println(emoji.Render(":smile: Confirmed"))
+	} else {
+		color.Warn.Println("Unconfirmed")
+	}
+```
+
+![interact-confirm](_examples/images/interact/confirm.jpg)
+
+### Read Password
+
+```go
+	pwd := interact.ReadPassword()
+
+	color.Comment.Println("you input password is: ", pwd)
+```
+
+![interact-confirm](_examples/images/interact/passwd.jpg)
 
 ## CLI Color
 

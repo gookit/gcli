@@ -160,3 +160,8 @@ func hiddenInputTest() {
 func demoAnswerIsYes(_ *gcli.Command) {
 
 }
+
+func demoQuestion(_ *gcli.Command) {
+	ans := interact.Ask("Your name? ", "", nil, 3)
+	color.Comment.Println("You answer is: ", ans)
+}
