@@ -384,6 +384,34 @@ func main() {
 }
 ```
 
+### Read Input
+
+```go
+ans, _ := interact.ReadLine("Your name? ")
+
+if ans != "" {
+    color.Println("Your input: ", ans)
+} else {
+    color.Cyan.Println("No input!")
+}
+```
+
+![read-input](_examples/images/interact/read.jpg)
+
+### Select/Choice
+
+```go
+	ans := interact.SelectOne(
+		"Your city name(use array)?",
+		[]string{"chengdu", "beijing", "shanghai"},
+		"",
+	)
+	color.Comment.Println("your select is: ", ans)
+```
+
+![read-input](_examples/images/interact/read.jpg)
+
+
 ## CLI Color
 
 ### Color output display

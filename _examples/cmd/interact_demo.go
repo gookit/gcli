@@ -7,6 +7,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2"
 	"github.com/gookit/gcli/v2/interact"
+	"github.com/gookit/gcli/v2/show/emoji"
 )
 
 // InteractDemoCommand create
@@ -21,6 +22,7 @@ func InteractDemoCommand() *gcli.Command {
 `,
 		Help: `
 Supported interactive methods:
+  read           read user input text
   answerIsYes    check user answer is Yes
   confirm        confirm message
   select         select one from given options
@@ -34,6 +36,7 @@ Supported interactive methods:
 }
 
 var funcMap = map[string]func(c *gcli.Command){
+	"read":   demoReadInput,
 	"select":   demoSelect,
 	"confirm":  demoConfirm,
 	"password": demoPassword,
@@ -42,6 +45,16 @@ var funcMap = map[string]func(c *gcli.Command){
 
 	"multiSelect": demoMultiSelect,
 	"answerIsYes": demoAnswerIsYes,
+}
+
+func demoReadInput(c *gcli.Command)  {
+	ans, _ := interact.ReadLine("Your name?")
+
+	if ans != "" {
+		color.Println("Your input: ", ans)
+	} else {
+		color.Cyan.Println("No input!")
+	}
 }
 
 func interactDemo(c *gcli.Command, _ []string) error {
@@ -56,7 +69,7 @@ func interactDemo(c *gcli.Command, _ []string) error {
 }
 
 func demoSelect(_ *gcli.Command) {
-	color.Green.Println("Run Select Demo")
+	color.Green.Println("This's An Select Demo")
 	fmt.Println("----------------------------------------------------------")
 
 	// s := interact.NewSelect("Your city", []string{"chengdu", "beijing", "shanghai"})
@@ -64,7 +77,7 @@ func demoSelect(_ *gcli.Command) {
 	// val := s.Run()
 	// color.Comment.Println("your select is: ", val.String())
 
-	ans := interact.SingleSelect(
+	ans := interact.SelectOne(
 		"Your city name(use array)?",
 		[]string{"chengdu", "beijing", "shanghai"},
 		"",
@@ -90,7 +103,7 @@ func demoSelect(_ *gcli.Command) {
 }
 
 func demoMultiSelect(_ *gcli.Command) {
-	color.Green.Println("run MultiSelect demo")
+	color.Green.Println("This's An MultiSelect Demo")
 
 	ans := interact.MultiSelect(
 		"Your city name(use array)?",
@@ -98,6 +111,7 @@ func demoMultiSelect(_ *gcli.Command) {
 		nil,
 	)
 	color.Comment.Println("your select is: ", ans)
+	fmt.Println("----------------------------------------------------------")
 
 	ans2 := interact.Checkbox(
 		"Your city name(use map)?",
@@ -108,12 +122,17 @@ func demoMultiSelect(_ *gcli.Command) {
 }
 
 func demoConfirm(_ *gcli.Command) {
-	color.Green.Println("run Confirm demo")
+	color.Green.Println("This's An Confirm Demo")
 
+	if interact.Confirm("Ensure continue") {
+		fmt.Println(emoji.Render(":smile: Confirmed"))
+	} else {
+		color.Warn.Println("Unconfirmed")
+	}
 }
 
 func demoPassword(_ *gcli.Command) {
-	color.Green.Println("run ReadPassword demo")
+	color.Green.Println("This's An ReadPassword Demo")
 	// hiddenInputTest()
 	// return
 	// pwd := interact.GetHiddenInput("Enter Password:", true)

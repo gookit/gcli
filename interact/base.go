@@ -24,6 +24,7 @@ type RunFace interface {
 
 // Value data store
 type Value struct {
+	// key interface{} // string, []string
 	val interface{}
 }
 

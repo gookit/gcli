@@ -49,12 +49,17 @@ func Query(question, defVal string, fn func(ans string) error, maxTimes ...int) 
 	return Ask(question, defVal, fn, maxTimes...)
 }
 
-// Choice is alias of method SingleSelect()
+// Choice is alias of method SelectOne()
 func Choice(title string, options interface{}, defOpt string, allowQuit ...bool) string {
-	return SingleSelect(title, options, defOpt, allowQuit...)
+	return SelectOne(title, options, defOpt, allowQuit...)
 }
 
-// SingleSelect select one of the options, returns selected option value
+// SingleSelect is alias of method SelectOne()
+func SingleSelect(title string, options interface{}, defOpt string, allowQuit ...bool) string {
+	return SelectOne(title, options, defOpt, allowQuit...)
+}
+
+// SelectOne select one of the options, returns selected option value
 // map options:
 // 	{
 //    // option value => option name
@@ -67,7 +72,7 @@ func Choice(title string, options interface{}, defOpt string, allowQuit ...bool)
 //    'chengdu',
 //    'beijing'
 // 	}
-func SingleSelect(title string, options interface{}, defOpt string, allowQuit ...bool) string {
+func SelectOne(title string, options interface{}, defOpt string, allowQuit ...bool) string {
 	s := &Select{Title: title, Options: options, DefOpt: defOpt}
 
 	if len(allowQuit) > 0 {

@@ -32,7 +32,7 @@ func ReadInput(question string) (string, error) {
 // ReadLine read one line from user input.
 // Usage:
 // 	in := ReadLine("")
-// 	ans := ReadLine("your name?")
+// 	ans, _ := ReadLine("your name?")
 func ReadLine(question string) (string, error) {
 	if len(question) > 0 {
 		color.Print(question)
@@ -101,7 +101,7 @@ func ReadPassword(message ...string) string {
 		print("Enter Password: ")
 	}
 
-	bs, err := terminal.ReadPassword(int(syscall.Stdin))
+	bs, err := terminal.ReadPassword(syscall.Stdin)
 	if err != nil {
 		return ""
 	}

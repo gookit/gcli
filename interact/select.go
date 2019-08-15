@@ -158,7 +158,7 @@ DoSelect:
 
 	// check input
 	if _, has := s.valMap[ans]; !has {
-		color.Error.Println("Unknown option value: ", ans)
+		color.Error.Println("Unknown option key: ", ans)
 		goto DoSelect // retry ...
 	}
 
@@ -200,7 +200,7 @@ DoSelect:
 	// check input
 	for _, v := range values {
 		if _, has := s.valMap[v]; !has {
-			color.Error.Println("Unknown option value: ", v)
+			color.Error.Println("Unknown option key: ", v)
 			goto DoSelect // retry ...
 		}
 
@@ -225,5 +225,4 @@ func (s *Select) Run() *Value {
 	}
 
 	return s.selectOne()
-
 }
