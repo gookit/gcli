@@ -386,7 +386,7 @@ func main() {
 }
 ```
 
-### Read Input
+### 读取输入
 
 ```go
 ans, _ := interact.ReadLine("Your name? ")
@@ -400,7 +400,7 @@ if ans != "" {
 
 ![interact-read](_examples/images/interact/read.jpg)
 
-### Select/Choice
+### 单选
 
 ```go
 	ans := interact.SelectOne(
@@ -413,7 +413,7 @@ if ans != "" {
 
 ![interact-select](_examples/images/interact/select.jpg)
 
-### Multi Select/Checkbox
+### 多选
 
 ```go
 	ans := interact.MultiSelect(
@@ -426,7 +426,7 @@ if ans != "" {
 
 ![interact-select](_examples/images/interact/m-select.jpg)
 
-### Confirm Message
+### 确认消息
 
 ```go
 	if interact.Confirm("Ensure continue") {
@@ -438,7 +438,7 @@ if ans != "" {
 
 ![interact-confirm](_examples/images/interact/confirm.jpg)
 
-### Read Password
+### 读取密码输入
 
 ```go
 	pwd := interact.ReadPassword()

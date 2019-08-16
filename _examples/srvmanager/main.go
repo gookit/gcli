@@ -8,6 +8,5 @@ func main() {
 	app.Description = "manage the http server start,stop,restart"
 
 	app.Add(ServerStart(), ServerStop(), ServerRestart())
-
 	app.Run()
 }
