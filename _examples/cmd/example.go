@@ -77,7 +77,7 @@ func exampleExecute(c *gcli.Command, args []string) error {
 
 	magentaln("All options:")
 	fmt.Printf("%+v\n", exampleOpts)
-// dump.V(exampleOpts)
+	// dump.V(exampleOpts)
 	magentaln("Remain args:")
 	fmt.Printf("%v\n", args)
 

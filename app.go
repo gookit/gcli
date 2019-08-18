@@ -187,7 +187,7 @@ func (app *App) Add(c *Command, more ...*Command) {
 
 // AddCommand add a new command
 func (app *App) AddCommand(c *Command) *Command {
-	c.Name = strings.TrimSpace(c.Name)
+	c.Name = strings.Trim(strings.TrimSpace(c.Name), ": ")
 	if c.Name == "" {
 		exitWithErr("The added command name can not be empty.")
 	}
@@ -197,15 +197,9 @@ func (app *App) AddCommand(c *Command) *Command {
 		return c
 	}
 
-	i := strings.Index(c.Name, ":")
-	if i == 0 {
-		exitWithErr("The added command module can not be empty.")
-	}
-
-	if i > -1 {
-		c.Module = c.Name[:i]
-	} else {
-		c.Module = ""
+	// check and find module name
+	if i := strings.IndexByte(c.Name, ':'); i > 0 {
+		c.module = c.Name[:i]
 	}
 
 	nameLen := len(c.Name)
@@ -219,10 +213,10 @@ func (app *App) AddCommand(c *Command) *Command {
 		app.nameMaxLength = nameLen
 	}
 
-	if _, ok := app.moduleCommands[c.Module]; !ok {
-		app.moduleCommands[c.Module] = make(map[string]*Command)
+	if _, ok := app.moduleCommands[c.module]; !ok {
+		app.moduleCommands[c.module] = make(map[string]*Command)
 	}
-	app.moduleCommands[c.Module][c.Name] = c
+	app.moduleCommands[c.module][c.Name] = c
 
 	// add aliases for the command
 	app.AddAliases(c.Name, c.Aliases)

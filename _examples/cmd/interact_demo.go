@@ -36,7 +36,7 @@ Supported interactive methods:
 }
 
 var funcMap = map[string]func(c *gcli.Command){
-	"read":   demoReadInput,
+	"read":     demoReadInput,
 	"select":   demoSelect,
 	"confirm":  demoConfirm,
 	"password": demoPassword,
@@ -47,7 +47,7 @@ var funcMap = map[string]func(c *gcli.Command){
 	"answerIsYes": demoAnswerIsYes,
 }
 
-func demoReadInput(c *gcli.Command)  {
+func demoReadInput(c *gcli.Command) {
 	ans, _ := interact.ReadLine("Your name?")
 
 	if ans != "" {

@@ -13,7 +13,7 @@ import (
 
 var level2name = map[uint]string{
 	VerbError: "ERROR",
-	VerbWarn:  "WARNING",
+	VerbWarn:  "WARN",
 	VerbInfo:  "INFO",
 	VerbDebug: "DEBUG",
 	VerbCrazy: "CRAZY",

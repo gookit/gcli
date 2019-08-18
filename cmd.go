@@ -31,8 +31,8 @@ type Command struct {
 
 	// Name is the command name.
 	Name string
-	// Module is the name for grouped commands
-	Module string
+	// module is the name for grouped commands
+	module string
 	// UseFor is the command description message.
 	UseFor string
 	// Aliases is the command name's alias names
@@ -177,10 +177,15 @@ func (c *Command) NotAlone() bool {
 	return !c.alone
 }
 
+// Module name of the grouped command
+func (c *Command) Module() string {
+	return c.module
+}
+
 // ID get command ID name.
 func (c *Command) ID() string {
-	if c.Module != "" {
-		return fmt.Sprintf("%s:%s", c.Module, c.Name)
+	if c.module != "" {
+		return fmt.Sprintf("%s:%s", c.module, c.Name)
 	}
 
 	return c.Name

@@ -11,23 +11,29 @@ import (
 var simpleArgs = []string{"hi"}
 
 func TestNewCommand(t *testing.T) {
-	ris := assert.New(t)
+	is := assert.New(t)
 
 	c := gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
 		c.Aliases = []string{"alias1", "alias2"}
 	})
 
-	ris.NotEmpty(c)
-	ris.Nil(c.App())
+	is.NotEmpty(c)
+	is.Nil(c.App())
 
 	err := c.Run(simpleArgs)
-	ris.NoError(err)
-	ris.True(c.IsAlone())
-	ris.False(c.NotAlone())
+	is.NoError(err)
+	is.True(c.IsAlone())
+	is.False(c.NotAlone())
 
-	// ris.Equal("", c.ArgLine())
-	ris.Equal("alias1,alias2", c.AliasesString())
-	ris.Equal("alias1alias2", c.AliasesString(""))
+	is.False(c.IsDisabled())
+	c.Disable()
+	is.True(c.IsDisabled())
+
+	c.Logf(gcli.VerbInfo, "command log")
+
+	// is.Equal("", c.ArgLine())
+	is.Equal("alias1,alias2", c.AliasesString())
+	is.Equal("alias1alias2", c.AliasesString(""))
 }
 
 func TestCommand_Errorf(t *testing.T) {

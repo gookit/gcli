@@ -31,7 +31,7 @@ var (
 // eg: cliapp serve:start
 func ServerStart() *gcli.Command {
 	c := &gcli.Command{
-		Name: "start",
+		Name:   "start",
 		UseFor: "start server",
 		Func: func(c *gcli.Command, args []string) error {
 			return startServer(c.BinName())

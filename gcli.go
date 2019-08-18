@@ -83,11 +83,6 @@ func Verbose() uint {
 	return gOpts.verbose
 }
 
-// SetStrictMode for parse flags
-func SetStrictMode(strict bool) {
-	gOpts.strictMode = strict
-}
-
 // SetDebugMode level
 func SetDebugMode() {
 	gOpts.verbose = VerbDebug
@@ -101,6 +96,16 @@ func SetQuietMode() {
 // SetVerbose level
 func SetVerbose(verbose uint) {
 	gOpts.verbose = verbose
+}
+
+// StrictMode get is strict mode
+func StrictMode() bool {
+	return gOpts.strictMode
+}
+
+// SetStrictMode for parse flags
+func SetStrictMode(strict bool) {
+	gOpts.strictMode = strict
 }
 
 /*************************************************************
