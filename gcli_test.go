@@ -45,7 +45,14 @@ func TestCmdLine(t *testing.T) {
 	is.True(gcli.CLI.PID() > 0)
 	is.Equal(runtime.GOOS, gcli.CLI.OsName())
 	is.NotEmpty(gcli.CLI.BinName())
-	is.NotEmpty(gcli.CLI.OsArgs())
 	is.NotEmpty(gcli.CLI.WorkDir())
-	is.NotEmpty(gcli.CLI.ArgLine())
+
+	args := gcli.CLI.OsArgs()
+	is.NotEmpty(args)
+
+	if len(args) > 1 {
+		is.NotEmpty(gcli.CLI.ArgLine())
+	} else {
+		is.Empty(gcli.CLI.ArgLine())
+	}
 }
