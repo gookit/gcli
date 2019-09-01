@@ -215,14 +215,14 @@ Use "<cyan>{$binName} {command} -h</>" for more information about a command
 
 // display app version info
 func (app *App) showVersionInfo() {
-	fmt.Printf(
-		"%s\n\nVersion: %s\n",
+	color.Printf(
+		"%s\n\nVersion: <cyan>%s</>\n",
 		strutil.UpperFirst(app.Description),
-		color.ApplyTag("cyan", app.Version),
+		app.Version,
 	)
 
 	if app.Logo.Text != "" {
-		fmt.Printf("%s\n", color.ApplyTag(app.Logo.Style, app.Logo.Text))
+		color.Printf("%s\n", color.WrapTag(app.Logo.Text, app.Logo.Style))
 	}
 
 	Exit(OK)
@@ -230,7 +230,7 @@ func (app *App) showVersionInfo() {
 
 // display app commands help
 func (app *App) showCommandsHelp() {
-	commandsHelp = color.ReplaceTag(commandsHelp)
+	// commandsHelp = color.ReplaceTag(commandsHelp)
 	// render help text template
 	s := helper.RenderText(commandsHelp, map[string]interface{}{
 		"Cs": app.moduleCommands,
@@ -245,7 +245,7 @@ func (app *App) showCommandsHelp() {
 	})
 
 	// parse help vars and render color tags
-	fmt.Print(color.String(app.ReplaceVars(s)))
+	color.Print(app.ReplaceVars(s))
 	Exit(OK)
 }
 
@@ -259,7 +259,7 @@ func (app *App) showCommandHelp(list []string, quit bool) {
 	name := app.RealCommandName(list[0])
 	if name == HelpCommand || name == "-h" {
 		fmt.Printf("Display help message for application or command.\n\n")
-		fmt.Printf("Usage: %s help COMMAND\n", app.binName)
+		color.Printf("Usage: %s help COMMAND\n", app.binName)
 		Exit(0)
 	}
 
@@ -275,7 +275,7 @@ func (app *App) showCommandHelp(list []string, quit bool) {
 
 // show bash/zsh completion
 func (app *App) showCompletion(args []string) {
-
+	// TODO ...
 }
 
 // findSimilarCmd find similar cmd by input string

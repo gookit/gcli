@@ -72,7 +72,7 @@ func (b *Base) Println() {
 	}
 
 	if b.formatted != "" {
-		_, _ = color.Fprintln(b.output, b.formatted)
+		color.Fprintln(b.output, b.formatted)
 		// clear data
 		b.formatted = ""
 	}

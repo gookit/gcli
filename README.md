@@ -544,7 +544,7 @@ color.Success.Println("Success message")
 
 #### Use like html tag
 
-> **not** support on windows `cmd.exe`
+> **support** working on windows `cmd.exe` `powerShell` 
 
 ```go
 // use style tag

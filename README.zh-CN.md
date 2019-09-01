@@ -565,7 +565,7 @@ color.Success.Println("Success message")
 
 #### 使用颜色html标签
 
-> **不** 支持在windows `cmd.exe` 使用，但不影响使用，会自动去除颜色标签
+> **支持** 在windows `cmd.exe` `powerShell` 使用颜色标签
 
 使用颜色标签可以非常方便简单的构建自己需要的任何格式
 

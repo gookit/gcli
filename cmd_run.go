@@ -197,8 +197,7 @@ var commandHelp = `{{.UseFor}}
 
 // ShowHelp show command help info
 func (c *Command) ShowHelp(quit ...bool) {
-	commandHelp = color.ReplaceTag(commandHelp)
-
+	// commandHelp = color.ReplaceTag(commandHelp)
 	// clear space and empty new line
 	if c.Examples != "" {
 		c.Examples = strings.Join([]string{"  ", strings.TrimSpace(c.Examples), "\n"}, "")
@@ -215,14 +214,13 @@ func (c *Command) ShowHelp(quit ...bool) {
 	s := helper.RenderText(commandHelp, map[string]interface{}{
 		"Cmd": c,
 		// parse options to string
-		"Options": color.String(c.ParseDefaults()),
+		"Options": c.ParseDefaults(),
 		// always upper first char
-		"UseFor": color.String(c.UseFor),
+		"UseFor": c.UseFor,
 	}, nil)
 
-	// parse help vars
-	fmt.Print(color.String(c.ReplaceVars(s)))
-
+	// parse help vars then print help
+	color.Print(c.ReplaceVars(s))
 	if len(quit) > 0 && quit[0] {
 		Exit(OK)
 	}

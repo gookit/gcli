@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/gookit/gcli/v2/progress"
-	"github.com/gookit/goutil/format"
+	"github.com/gookit/goutil/fmtutil"
 )
 
 // Downloader struct definition.
@@ -67,6 +67,7 @@ func Download(url, saveDir string, rename ...string) error {
 		fmt.Println(saveAs)
 		panic(err)
 	}
+	//noinspection GoUnhandledErrorResult
 	defer outFile.Close()
 
 	headResp, err := http.Head(url)
@@ -112,7 +113,7 @@ func Download(url, saveDir string, rename ...string) error {
 func printDownloadPercent(done chan int64, path string, total int64) {
 	fmtSize := "unknown"
 	if total > 0 {
-		fmtSize = format.DataSize(uint64(total))
+		fmtSize = fmtutil.DataSize(uint64(total))
 	}
 
 	fmt.Printf("Download total size: %s\n", fmtSize)
@@ -140,7 +141,7 @@ func printDownloadPercent(done chan int64, path string, total int64) {
 
 			// move to begin of the line and clear line text.
 			fmt.Print("\x0D\x1B[2K")
-			fmt.Printf("Downloaded %s", format.DataSize(uint64(size)))
+			fmt.Printf("Downloaded %s", fmtutil.DataSize(uint64(size)))
 
 			if total > 0 {
 				percent := float64(size) / float64(total) * 100
@@ -158,6 +159,7 @@ func SimpleDownload(url, saveAs string) (err error) {
 	if err != nil {
 		return err
 	}
+	//noinspection GoUnhandledErrorResult
 	defer newFile.Close()
 
 	s := progress.LoadingSpinner(
