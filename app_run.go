@@ -18,7 +18,7 @@ func (app *App) parseGlobalOpts() []string {
 	log.SetFlags(0)
 
 	// bind help func
-	flag.Usage = app.showCommandsHelp
+	flag.Usage = app.showApplicationHelp
 
 	// binding global options
 	flag.UintVar(&gOpts.verbose, "verbose", gOpts.verbose, "")
@@ -35,7 +35,7 @@ func (app *App) parseGlobalOpts() []string {
 
 	// check global options
 	if gOpts.showHelp {
-		app.showCommandsHelp()
+		app.showApplicationHelp()
 	}
 
 	if gOpts.showVer {
@@ -63,18 +63,18 @@ func (app *App) prepareRun() (string, []string) {
 		// will try run defaultCommand
 		defCmd := app.defaultCommand
 		if len(defCmd) == 0 {
-			app.showCommandsHelp()
+			app.showApplicationHelp()
 		}
 
 		if !app.IsCommand(defCmd) {
 			Logf(VerbError, "The default command '%s' is not exists", defCmd)
-			app.showCommandsHelp()
+			app.showApplicationHelp()
 		}
 
 		args = []string{defCmd}
 	} else if args[0] == "help" { // is help command
 		if len(args) == 1 { // like 'help'
-			app.showCommandsHelp()
+			app.showApplicationHelp()
 		}
 
 		// like 'help COMMAND'
@@ -126,7 +126,10 @@ func (app *App) Run() {
 	}
 
 	Logf(VerbDebug, "[App.Run] command '%s' run complete, exit with code: %d", name, code)
-	Exit(code)
+
+	if app.ExitOnEnd {
+		Exit(code)
+	}
 }
 
 // Exec running other command in current command
@@ -228,8 +231,8 @@ func (app *App) showVersionInfo() {
 	Exit(OK)
 }
 
-// display app commands help
-func (app *App) showCommandsHelp() {
+// display app help and list all commands
+func (app *App) showApplicationHelp() {
 	// commandsHelp = color.ReplaceTag(commandsHelp)
 	// render help text template
 	s := helper.RenderText(commandsHelp, map[string]interface{}{

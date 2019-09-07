@@ -1,6 +1,7 @@
 package gcli
 
 import (
+	"os"
 	"strings"
 )
 
@@ -20,6 +21,7 @@ const (
 	EvtBefore = "before"
 	EvtAfter  = "after"
 	EvtError  = "error"
+	EvtStop   = "stop"
 )
 
 const (
@@ -63,6 +65,8 @@ type App struct {
 	Description string
 	// Logo ASCII logo setting
 	Logo Logo
+	// ExitOnEnd call os.Exit on running end
+	ExitOnEnd bool
 	// vars you can add some vars map for render help info
 	// vars map[string]string
 	// command names. key is name, value is name string length
@@ -84,6 +88,8 @@ type App struct {
 	defaultCommand string
 	// clean os.args, not contains bin-name and command-name
 	cleanArgs []string
+	rawFlagArgs []string
+	stopped bool
 }
 
 // NewApp create new app instance.
@@ -101,6 +107,8 @@ func NewApp(fn ...func(a *App)) *App {
 		// set a default version
 		Version: "1.0.0",
 		CmdLine: CLI,
+		// config
+		ExitOnEnd: true,
 		// commands
 		commands:       make(map[string]*Command),
 		moduleCommands: make(map[string]map[string]*Command),
@@ -239,6 +247,11 @@ func (app *App) fireEvent(event string, data interface{}) {
 	Logf(VerbDebug, "[App.Fire] trigger the application event: %s", event)
 
 	app.SimpleHooks.Fire(event, app, data)
+}
+
+// stop application and exit
+func stop(code int) {
+	os.Exit(code)
 }
 
 // AddError to the application

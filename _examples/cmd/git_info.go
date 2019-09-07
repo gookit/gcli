@@ -40,7 +40,7 @@ func GitCommand() *gcli.Command {
 
 // arg test:
 // 	go build console/cliapp.go && ./cliapp git --id 12 -c val ag0 ag1
-func gitExecute(cmd *gcli.Command, args []string) error {
+func gitExecute(_ *gcli.Command, _ []string) error {
 	info := GitInfoData{}
 
 	// latest commit id by: git log --pretty=%H -n1 HEAD
