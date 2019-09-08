@@ -125,8 +125,8 @@ func TestArgument(t *testing.T) {
 	is.Equal(34, arg.Int(34))
 
 	is.Equal("ab,cd", arg.String())
-	is.Equal([]string{"ab","cd"}, arg.StringSplit())
-	is.Equal([]string{"ab","cd"}, arg.StringSplit(","))
+	is.Equal([]string{"ab", "cd"}, arg.StringSplit())
+	is.Equal([]string{"ab", "cd"}, arg.StringSplit(","))
 
 	// int value
 	arg.Value = 23

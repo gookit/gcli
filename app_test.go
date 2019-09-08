@@ -92,7 +92,7 @@ func TestApp_Run(t *testing.T) {
 
 	cmdRet := ""
 	app.Add(&gcli.Command{
-		Name: "test",
+		Name:   "test",
 		UseFor: "desc for test command",
 		Func: func(c *gcli.Command, args []string) error {
 			cmdRet = c.Name

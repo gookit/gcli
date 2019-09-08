@@ -89,7 +89,7 @@ type App struct {
 	// default command name
 	defaultCommand string
 	// raw input command name
-	rawName string
+	rawName     string
 	rawFlagArgs []string
 	// clean os.args, not contains bin-name and command-name
 	cleanArgs []string

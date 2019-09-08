@@ -145,7 +145,7 @@ func (app *App) Run() (code int) {
 	return code
 }
 
-func (app *App) doRun(name string, args []string) (code int){
+func (app *App) doRun(name string, args []string) (code int) {
 	var err error
 	cmd := app.commands[name]
 

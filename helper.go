@@ -168,8 +168,8 @@ func Printf(format string, args ...interface{}) {
 	color.Printf(format, args...)
 }
 
-func panicf(format string, v ...interface{})  {
-	panic(fmt.Sprintf("GCLI: " + format, v...))
+func panicf(format string, v ...interface{}) {
+	panic(fmt.Sprintf("GCLI: "+format, v...))
 }
 
 // func exitWithMsg(format string, v ...interface{}) {
