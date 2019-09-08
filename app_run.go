@@ -19,7 +19,9 @@ func (app *App) parseGlobalOpts() (ok bool) {
 	gFlag := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
 
 	// bind help func
-	gFlag.Usage = app.showApplicationHelp
+	// gFlag.Usage = app.showApplicationHelp
+	// do nothing
+	gFlag.Usage = func() {}
 
 	// binding global options
 	gFlag.UintVar(&gOpts.verbose, "verbose", gOpts.verbose, "")
@@ -36,7 +38,7 @@ func (app *App) parseGlobalOpts() (ok bool) {
 	// parse global options
 	err := gFlag.Parse(app.Args[1:])
 	if err != nil {
-		color.Error.Tips("parse global options error: %s", err.Error())
+		color.Error.Tips(err.Error())
 		return
 	}
 
@@ -272,7 +274,7 @@ func (app *App) showVersionInfo() {
 
 // display unknown input command and similar commands tips
 func (app *App) showCommandTips(name string) {
-	color.Error.Prompt(`unknown input command "%s"`, name)
+	color.Error.Tips(`unknown input command "<mga>%s</>"`, name)
 	if ns := app.findSimilarCmd(name); len(ns) > 0 {
 		color.Printf("\nMaybe you mean:\n  <green>%s</>\n", strings.Join(ns, ", "))
 	}
