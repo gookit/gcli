@@ -10,6 +10,7 @@ package gcli
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"runtime"
 	"strings"
@@ -24,9 +25,6 @@ var (
 	gOpts = &GlobalOpts{
 		strictMode: true,
 	}
-	// command auto completion mode.
-	// eg "./cli --cmd-completion [COMMAND --OPT ARG]"
-	inCompletion bool
 	// CLI create a default instance
 	CLI = &CmdLine{
 		pid: os.Getpid(),
@@ -49,10 +47,16 @@ type GlobalOpts struct {
 	//	- will convert like "-ab" to "-a -b"
 	// 	- will check invalid arguments, like to many arguments
 	strictMode bool
+	// command auto completion mode.
+	// eg "./cli --cmd-completion [COMMAND --OPT ARG]"
+	inCompletion bool
 }
 
 // init
 func init() {
+	// don't display date on print log
+	log.SetFlags(0)
+
 	workDir, _ := os.Getwd()
 	CLI.workDir = workDir
 

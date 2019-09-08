@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"strconv"
+	"strings"
 )
 
 /*************************************************************
@@ -141,7 +142,7 @@ func (c *Command) addShortcut(name string, short string) (string, bool) {
 	// ensure it is one char
 	short = string(short[0])
 	if n, ok := c.shortcuts[short]; ok {
-		exitWithErr("The shortcut name '%s' has been used by option '%s'", short, n)
+		panicf("The shortcut name '%s' has been used by option '%s'", short, n)
 	}
 
 	c.optNames[name] = short
@@ -203,9 +204,121 @@ func (c *Command) OptNames() map[string]string {
  * command arguments
  *************************************************************/
 
+// AddArg binding a named argument for the command.
+// Notice:
+// 	- Required argument cannot be defined after optional argument
+//  - Only one array parameter is allowed
+// 	- The (array) argument of multiple values ​​can only be defined at the end
+//
+// Usage:
+// 	cmd.AddArg("name", "description")
+// 	cmd.AddArg("name", "description", true) // required
+// 	cmd.AddArg("names", "description", true, true) // required and is array
+func (c *Command) AddArg(name, description string, requiredAndIsArray ...bool) *Argument {
+	if c.argsIndexes == nil {
+		c.argsIndexes = make(map[string]int)
+	}
+
+	if _, has := c.argsIndexes[name]; has {
+		panicf("the argument name '%s' already exists", name)
+	}
+
+	if c.hasArrayArg {
+		panicf("have defined an array argument, you can not add argument '%s'", name)
+	}
+
+	var isArray, required bool
+	length := len(requiredAndIsArray)
+	if length > 0 {
+		required = requiredAndIsArray[0]
+
+		if length > 1 {
+			isArray = requiredAndIsArray[1]
+		}
+	}
+
+	if required && c.hasOptionalArg {
+		panicf("required argument '%s' cannot be defined after optional argument", name)
+	}
+
+	// add argument index record
+	argIndex := len(c.args)
+	c.argsIndexes[name] = argIndex
+
+	// add argument
+	newArg := &Argument{
+		Name: name, ShowName: name, Description: description, Required: required, IsArray: isArray, index: argIndex,
+	}
+
+	c.args = append(c.args, newArg)
+	if !required {
+		c.hasOptionalArg = true
+	}
+
+	if isArray {
+		c.hasArrayArg = true
+	}
+
+	return newArg
+}
+
+func (c *Command) AddArgument(arg *Argument) *Argument {
+	if c.argsIndexes == nil {
+		c.argsIndexes = make(map[string]int)
+	}
+
+	if _, has := c.argsIndexes[name]; has {
+		panicf("the argument name '%s' already exists", name)
+	}
+
+	if c.hasArrayArg {
+		panicf("have defined an array argument, you can not add argument '%s'", name)
+	}
+
+	c.args = append(c.args, arg)
+
+	return arg
+}
+
+// Args get all defined argument
+func (c *Command) Args() []*Argument {
+	return c.args
+}
+
+// Arg get arg by defined name.
+// Usage:
+// 	intVal := c.Arg("name").Int()
+// 	strVal := c.Arg("name").String()
+// 	arrVal := c.Arg("names").Array()
+func (c *Command) Arg(name string) *Argument {
+	i, ok := c.argsIndexes[name]
+	if !ok {
+		return emptyArg
+	}
+	return c.args[i]
+}
+
+// ArgByIndex get named arg by index
+func (c *Command) ArgByIndex(i int) *Argument {
+	if i < len(c.args) {
+		return c.args[i]
+	}
+	return emptyArg
+}
+
+// RawArgs get all raw arguments
+func (c *Command) RawArgs() []string {
+	return c.Flags.Args()
+}
+
+// RawArg get an argument value by index
+func (c *Command) RawArg(i int) string {
+	return c.Flags.Arg(i)
+}
+
 // Argument a command argument definition
 type Argument struct {
-	// Name argument name
+	// Name argument name. it's required
 	Name string
 	// ShowName is a name for display help. default is equals to Name.
 	ShowName string
@@ -222,6 +335,13 @@ type Argument struct {
 }
 
 var emptyArg = &Argument{}
+
+func (a *Argument) goodArgument() {
+	a.Name = strings.TrimSpace(a.Name)
+	if a.Name == "" {
+		panicf("the command argument name cannot be empty")
+	}
+}
 
 // Int argument value to int
 func (a *Argument) Int(defVal ...int) int {
@@ -279,98 +399,4 @@ func (a *Argument) Strings() (ss []string) {
 // HasValue value is empty
 func (a *Argument) HasValue() bool {
 	return a.Value != nil
-}
-
-// AddArg binding a named argument for the command.
-// Notice:
-// 	- Required argument cannot be defined after optional argument
-//  - Only one array parameter is allowed
-// 	- The (array) argument of multiple values ​​can only be defined at the end
-//
-// Usage:
-// 	cmd.AddArg("name", "description")
-// 	cmd.AddArg("name", "description", true) // required
-// 	cmd.AddArg("names", "description", true, true) // required and is array
-func (c *Command) AddArg(name, description string, requiredAndIsArray ...bool) *Argument {
-	if c.argsIndexes == nil {
-		c.argsIndexes = make(map[string]int)
-	}
-
-	if _, has := c.argsIndexes[name]; has {
-		exitWithErr("the argument name '%s' already exists", name)
-	}
-
-	if c.hasArrayArg {
-		exitWithErr("have defined an array argument, you can not add argument '%s'", name)
-	}
-
-	var isArray, required bool
-	length := len(requiredAndIsArray)
-	if length > 0 {
-		required = requiredAndIsArray[0]
-
-		if length > 1 {
-			isArray = requiredAndIsArray[1]
-		}
-	}
-
-	if required && c.hasOptionalArg {
-		exitWithErr("required argument '%s' cannot be defined after optional argument", name)
-	}
-
-	// add argument index record
-	argIndex := len(c.args)
-	c.argsIndexes[name] = argIndex
-
-	// add argument
-	newArg := &Argument{
-		Name: name, ShowName: name, Description: description, Required: required, IsArray: isArray, index: argIndex,
-	}
-	c.args = append(c.args, newArg)
-
-	if !required {
-		c.hasOptionalArg = true
-	}
-
-	if isArray {
-		c.hasArrayArg = true
-	}
-
-	return newArg
-}
-
-// Args get all defined argument
-func (c *Command) Args() []*Argument {
-	return c.args
-}
-
-// Arg get arg by defined name.
-// Usage:
-// 	intVal := c.Arg("name").Int()
-// 	strVal := c.Arg("name").String()
-// 	arrVal := c.Arg("names").Array()
-func (c *Command) Arg(name string) *Argument {
-	i, ok := c.argsIndexes[name]
-	if !ok {
-		return emptyArg
-	}
-	return c.args[i]
-}
-
-// ArgByIndex get named arg by index
-func (c *Command) ArgByIndex(i int) *Argument {
-	if i < len(c.args) {
-		return c.args[i]
-	}
-	return emptyArg
-}
-
-// RawArgs get all raw arguments
-func (c *Command) RawArgs() []string {
-	return c.Flags.Args()
-}
-
-// RawArg get an argument value by index
-func (c *Command) RawArg(i int) string {
-	return c.Flags.Arg(i)
 }

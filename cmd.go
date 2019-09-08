@@ -161,7 +161,7 @@ func (c *Command) initialize() *Command {
 	// init for Flags
 	c.Flags.Init(c.Name, flag.ContinueOnError)
 	c.Flags.Usage = func() { // call on exists "-h" "--help"
-		c.ShowHelp(true)
+		c.ShowHelp(false)
 	}
 
 	return c

@@ -4,7 +4,6 @@ import (
 	"errors"
 	"flag"
 	"fmt"
-	"log"
 	"os"
 	"reflect"
 	"strings"
@@ -19,32 +18,23 @@ import (
  *************************************************************/
 
 // do parse option flags, remaining is cmd args
-func (c *Command) parseFlags(args []string, checkHelpWords bool) []string {
-	// if CustomFlags=true, will not run Flags.Parse()
-	if c.CustomFlags {
-		return args
-	}
-
+func (c *Command) parseFlags(args []string) (error, []string) {
 	// strict format options
 	if gOpts.strictMode && len(args) > 0 {
 		args = strictFormatArgs(args)
 	}
 
-	// contains keywords "-h" OR "--help" on end
-	if checkHelpWords && CLI.hasHelpKeywords() {
-		c.ShowHelp(true)
-	}
-
+	// fix and compatible
 	args = moveArgumentsToEnd(args)
 
 	Logf(VerbDebug, "[Cmd.parseFlags] flags on after format: %v", args)
 
 	// parse options, don't contains command name.
 	if err := c.Flags.Parse(args); err != nil {
-		exitWithErr("Flags parse error: %s", err.Error())
+		return err, []string{}
 	}
 
-	return c.Flags.Args()
+	return nil, c.Flags.Args()
 }
 
 // do execute the command
@@ -139,21 +129,18 @@ var errCallRun = errors.New("this method can only be called in standalone mode")
 // MustRun Alone the current command, will panic on error
 func (c *Command) MustRun(inArgs []string) {
 	if err := c.Run(inArgs); err != nil {
-		panic(err)
+		panicf("Run command error: ", err.Error())
 	}
 }
 
 // Run Alone the current command
-func (c *Command) Run(inArgs []string) error {
+func (c *Command) Run(inArgs []string) (err error) {
 	// - Running in application.
 	if c.app != nil {
 		return errCallRun
 	}
 
 	// - Alone running command
-
-	// don't display date on print log
-	log.SetFlags(0)
 
 	// init the command
 	c.initialize()
@@ -163,8 +150,20 @@ func (c *Command) Run(inArgs []string) error {
 		inArgs = os.Args[1:]
 	}
 
-	// if CustomFlags=true, will not run Flags.Parse()
-	inArgs = c.parseFlags(inArgs, true)
+	// if Command.CustomFlags=true, will not run Flags.Parse()
+	if !c.CustomFlags {
+		// contains keywords "-h" OR "--help" on end
+		if CLI.hasHelpKeywords() {
+			c.ShowHelp()
+			return
+		}
+
+		// if CustomFlags=true, will not run Flags.Parse()
+		err, inArgs = c.parseFlags(inArgs)
+		if err != nil {
+			return
+		}
+	}
 
 	return c.execute(inArgs)
 }

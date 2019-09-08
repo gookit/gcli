@@ -168,9 +168,8 @@ func Printf(format string, args ...interface{}) {
 	color.Printf(format, args...)
 }
 
-func exitWithErr(format string, v ...interface{}) {
-	color.Error.Tips(format, v...)
-	Exit(ERR)
+func panicf(format string, v ...interface{})  {
+	panic(fmt.Sprintf(format, v...))
 }
 
 // func exitWithMsg(format string, v ...interface{}) {

@@ -12,8 +12,11 @@ import (
 )
 
 // run:
-// go run ./_examples/cliapp.go
-// go build ./_examples/cliapp.go && ./cliapp
+// 	go run ./_examples/cliapp.go
+// 	go build ./_examples/cliapp.go && ./cliapp
+//
+// run on windows(cmd, powerShell):
+// 	go build ./_examples/cliapp.go; ./cliapp
 func main() {
 	runtime.GOMAXPROCS(runtime.NumCPU())
 

@@ -3,7 +3,6 @@ package gcli
 import (
 	"flag"
 	"fmt"
-	"log"
 	"strings"
 	"text/template"
 
@@ -13,10 +12,7 @@ import (
 )
 
 // parseGlobalOpts parse global options
-func (app *App) parseGlobalOpts() []string {
-	// don't display date on print log
-	log.SetFlags(0)
-
+func (app *App) parseGlobalOpts() (ok bool) {
 	// bind help func
 	flag.Usage = app.showApplicationHelp
 
@@ -28,7 +24,7 @@ func (app *App) parseGlobalOpts() []string {
 	flag.BoolVar(&gOpts.showVer, "version", false, "")
 	flag.BoolVar(&gOpts.noColor, "no-color", gOpts.noColor, "")
 	// this is a internal command
-	flag.BoolVar(&inCompletion, "cmd-completion", false, "")
+	flag.BoolVar(&gOpts.inCompletion, "cmd-completion", false, "")
 
 	// parse global options
 	flag.Parse()
@@ -36,84 +32,126 @@ func (app *App) parseGlobalOpts() []string {
 	// check global options
 	if gOpts.showHelp {
 		app.showApplicationHelp()
+		return
 	}
 
 	if gOpts.showVer {
 		app.showVersionInfo()
+		return
 	}
 
 	if gOpts.noColor {
 		color.Enable = false
 	}
 
+	app.rawFlagArgs = flag.Args()
 	Logf(VerbDebug, "[App.parseGlobalOpts] console debug is enabled, level is %d", gOpts.verbose)
 
-	return flag.Args()
+	return true
 }
 
 // prepare to running, parse args, get command name and command args
-func (app *App) prepareRun() (string, []string) {
-	args := app.parseGlobalOpts()
-	if inCompletion {
-		app.showCompletion(args)
+func (app *App) prepareRun() (code int) {
+	if !app.parseGlobalOpts() {
+		return
 	}
 
+	args := app.rawFlagArgs
 	// if no input command
 	if len(args) == 0 {
 		// will try run defaultCommand
 		defCmd := app.defaultCommand
 		if len(defCmd) == 0 {
 			app.showApplicationHelp()
+			return
 		}
 
 		if !app.IsCommand(defCmd) {
 			Logf(VerbError, "The default command '%s' is not exists", defCmd)
 			app.showApplicationHelp()
+			return
 		}
 
 		args = []string{defCmd}
 	} else if args[0] == "help" { // is help command
 		if len(args) == 1 { // like 'help'
 			app.showApplicationHelp()
+			return
 		}
 
 		// like 'help COMMAND'
-		app.showCommandHelp(args[1:], true)
+		return app.showCommandHelp(args[1:])
 	}
 
-	return args[0], args[1:]
+	// show auto-completion for bash/zsh
+	if gOpts.inCompletion {
+		app.showAutoCompletion(args)
+		return
+	}
+
+	app.rawName = args[0]
+	app.cleanArgs = args[1:]
+	return GOON
 }
 
 // Run running application
-func (app *App) Run() {
-	rawName, args := app.prepareRun()
-
-	name := app.RealCommandName(rawName)
-	Logf(VerbCrazy, "[App.Run] begin run console application, process ID: %d", app.pid)
-	Logf(VerbDebug, "[App.Run] input command is: '%s', real command: '%s', flags: %v", rawName, name, args)
-
-	if !app.IsCommand(name) {
-		color.Error.Prompt("unknown input command '%s'", name)
-		if ns := app.findSimilarCmd(name); len(ns) > 0 {
-			fmt.Println("\nMaybe you mean:\n  ", color.Green.Render(strings.Join(ns, ", ")))
+func (app *App) Run() (code int) {
+	if code = app.prepareRun(); code != GOON {
+		if app.ExitOnEnd {
+			Exit(code)
 		}
 
-		fmt.Printf("\nUse \"%s\" to see available commands\n", color.Cyan.Render(app.binName+" -h"))
-		Exit(ERR)
+		return code
 	}
 
-	code := OK
+	Logf(VerbCrazy, "[App.Run] begin run console application, process ID: %d", app.pid)
+
+	args := app.cleanArgs
+	name := app.RealCommandName(app.rawName)
+
+	Logf(VerbDebug, "[App.Run] input command: '%s', real command: '%s', flags: %v", app.rawName, name, args)
+
+	// display unknown input command and similar commands tips
+	if !app.IsCommand(name) {
+		app.showCommandTips(name)
+		return
+	}
+
+	// do run input command
+	code = app.doRun(name, args)
+
+	Logf(VerbDebug, "[App.Run] command '%s' run complete, exit with code: %d", name, code)
+
+	if app.ExitOnEnd {
+		Exit(code)
+	}
+	return code
+}
+
+func (app *App) doRun(name string, args []string) (code int){
+	var err error
 	cmd := app.commands[name]
 
-	app.cleanArgs = args
 	app.commandName = name
-	// fmt.Println(cmd.argsStr, len(cmd.argsStr), strings.LastIndex(cmd.argsStr, " -h"))
 	app.fireEvent(EvtBefore, cmd.Copy())
 
 	Logf(VerbDebug, "[App.Run] command raw flags: %v", args)
 
-	// parse options, don't contains command name.
-	args = cmd.parseFlags(args, true)
+	// if Command.CustomFlags=true, will not run Flags.Parse()
+	if !cmd.CustomFlags {
+		// contains keywords "-h" OR "--help" on end
+		if CLI.hasHelpKeywords() {
+			cmd.ShowHelp()
+			return
+		}
+
+		// parse options, don't contains command name.
+		err, args = cmd.parseFlags(args)
+		if err != nil {
+			color.Error.Tips("Flags parse error: %s", err.Error())
+			return ERR
+		}
+	}
 
 	Logf(VerbDebug, "[App.Run] args on parse end: %v", args)
 
@@ -124,23 +162,25 @@ func (app *App) Run() {
 	} else {
 		app.fireEvent(EvtAfter, nil)
 	}
-
-	Logf(VerbDebug, "[App.Run] command '%s' run complete, exit with code: %d", name, code)
-
-	if app.ExitOnEnd {
-		Exit(code)
-	}
+	return
 }
 
 // Exec running other command in current command
 func (app *App) Exec(name string, args []string) (err error) {
 	if !app.IsCommand(name) {
-		color.Error.Prompt("unknown command name '%s'", name)
-		return
+		return fmt.Errorf("exec unknown command name '%s'", name)
 	}
 
 	cmd := app.commands[name]
-	args = cmd.parseFlags(args, false)
+
+	// if Command.CustomFlags=true, will not run Flags.Parse()
+	if !cmd.CustomFlags {
+		// parse command flags
+		err, args = cmd.parseFlags(args)
+		if err != nil {
+			return
+		}
+	}
 
 	// do execute command
 	return cmd.execute(args)
@@ -165,22 +205,6 @@ func (app *App) CommandNames() []string {
 	}
 
 	return ss
-}
-
-// AddAliases add alias names for a command
-func (app *App) AddAliases(command string, names []string) {
-	if app.aliases == nil {
-		app.aliases = make(map[string]string)
-	}
-
-	// add alias
-	for _, alias := range names {
-		if cmd, has := app.aliases[alias]; has {
-			exitWithErr("The alias '%s' has been used by command '%s'", alias, cmd)
-		}
-
-		app.aliases[alias] = command
-	}
 }
 
 // RealCommandName get real command name by alias
@@ -213,7 +237,7 @@ var commandsHelp = `{{.Description}} (Version: <info>{{.Version}}</>)
 
   <info>{{ paddingName "help" }}</> Display help information
 
-Use "<cyan>{$binName} {command} -h</>" for more information about a command
+Use "<cyan>{$binName} {COMMAND} -h</>" for more information about a command
 `
 
 // display app version info
@@ -227,8 +251,16 @@ func (app *App) showVersionInfo() {
 	if app.Logo.Text != "" {
 		color.Printf("%s\n", color.WrapTag(app.Logo.Text, app.Logo.Style))
 	}
+}
 
-	Exit(OK)
+// display unknown input command and similar commands tips
+func (app *App) showCommandTips(name string) {
+	color.Error.Prompt(`unknown input command "%s"`, name)
+	if ns := app.findSimilarCmd(name); len(ns) > 0 {
+		color.Printf("\nMaybe you mean:\n  <green>%s</>\n", strings.Join(ns, ", "))
+	}
+
+	color.Printf("\nUse <cyan>%s --help</> to see available commands\n", app.binName)
 }
 
 // display app help and list all commands
@@ -249,35 +281,37 @@ func (app *App) showApplicationHelp() {
 
 	// parse help vars and render color tags
 	color.Print(app.ReplaceVars(s))
-	Exit(OK)
 }
 
 // showCommandHelp display help for an command
-func (app *App) showCommandHelp(list []string, quit bool) {
+func (app *App) showCommandHelp(list []string) (code int) {
+	binName := app.binName
 	if len(list) != 1 {
-		exitWithErr("Too many arguments given.\n\nUsage: %s help COMMAND", app.binName)
+		color.Error.Tips("Too many arguments given.\n\nUsage: %s help {COMMAND}", binName)
+		return ERR
 	}
 
 	// get real name
 	name := app.RealCommandName(list[0])
 	if name == HelpCommand || name == "-h" {
 		fmt.Printf("Display help message for application or command.\n\n")
-		color.Printf("Usage: %s help COMMAND\n", app.binName)
-		Exit(0)
+		color.Printf("Usage:\n <cyan>%s {COMMAND} --help</> OR <cyan>%s help {COMMAND}</>\n", binName, binName)
+		return
 	}
 
 	cmd, exist := app.commands[name]
 	if !exist {
-		color.Error.Prompt("Unknown command name %#q. Run '%s -h'", name, app.binName)
-		Exit(ERR)
+		color.Error.Prompt("Unknown command name %#q. Run '%s -h'", name, binName)
+		return ERR
 	}
 
 	// show help for the command.
-	cmd.ShowHelp(quit)
+	cmd.ShowHelp()
+	return
 }
 
 // show bash/zsh completion
-func (app *App) showCompletion(args []string) {
+func (app *App) showAutoCompletion(args []string) {
 	// TODO ...
 }
 

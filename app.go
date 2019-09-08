@@ -1,7 +1,6 @@
 package gcli
 
 import (
-	"os"
 	"strings"
 )
 
@@ -21,7 +20,7 @@ const (
 	EvtBefore = "before"
 	EvtAfter  = "after"
 	EvtError  = "error"
-	EvtStop   = "stop"
+	// EvtStop   = "stop"
 )
 
 const (
@@ -29,6 +28,8 @@ const (
 	OK = 0
 	// ERR error exit code
 	ERR = 2
+	// GOON prepare run successful, goon run command
+	GOON = -1
 	// HelpCommand name
 	HelpCommand = "help"
 )
@@ -80,15 +81,17 @@ type App struct {
 	commands map[string]*Command
 	// all commands by module
 	moduleCommands map[string]map[string]*Command
-	// current command name
-	commandName string
 	// the max length for added command names. default set 12.
 	nameMaxLength int
 	// default command name
 	defaultCommand string
+	// raw input command name
+	rawName string
+	rawFlagArgs []string
 	// clean os.args, not contains bin-name and command-name
 	cleanArgs []string
-	rawFlagArgs []string
+	// current command name
+	commandName string
 	stopped bool
 }
 
@@ -197,7 +200,7 @@ func (app *App) Add(c *Command, more ...*Command) {
 func (app *App) AddCommand(c *Command) *Command {
 	c.Name = strings.Trim(strings.TrimSpace(c.Name), ": ")
 	if c.Name == "" {
-		exitWithErr("The added command name can not be empty.")
+		panicf("The added command name can not be empty.")
 	}
 
 	if c.IsDisabled() {
@@ -236,6 +239,22 @@ func (app *App) AddCommand(c *Command) *Command {
 	return c
 }
 
+// AddAliases add alias names for a command
+func (app *App) AddAliases(command string, names []string) {
+	if app.aliases == nil {
+		app.aliases = make(map[string]string)
+	}
+
+	// add alias
+	for _, alias := range names {
+		if cmd, has := app.aliases[alias]; has {
+			panicf("The alias '%s' has been used by command '%s'", alias, cmd)
+		}
+
+		app.aliases[alias] = command
+	}
+}
+
 // On add hook handler for a hook event
 func (app *App) On(name string, handler HookFunc) {
 	Logf(VerbDebug, "[App.On] add application hook: %s", name)
@@ -250,9 +269,9 @@ func (app *App) fireEvent(event string, data interface{}) {
 }
 
 // stop application and exit
-func stop(code int) {
-	os.Exit(code)
-}
+// func stop(code int) {
+// 	os.Exit(code)
+// }
 
 // AddError to the application
 func (app *App) AddError(err error) {
