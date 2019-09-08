@@ -129,7 +129,7 @@ var errCallRun = errors.New("this method can only be called in standalone mode")
 // MustRun Alone the current command, will panic on error
 func (c *Command) MustRun(inArgs []string) {
 	if err := c.Run(inArgs); err != nil {
-		panicf("Run command error: ", err.Error())
+		panicf("Run command error: %s", err.Error())
 	}
 }
 

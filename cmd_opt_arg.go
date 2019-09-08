@@ -3,6 +3,7 @@ package gcli
 import (
 	"flag"
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 )
@@ -204,7 +205,7 @@ func (c *Command) OptNames() map[string]string {
  * command arguments
  *************************************************************/
 
-// AddArg binding a named argument for the command.
+// AddArg binding an named argument for the command.
 // Notice:
 // 	- Required argument cannot be defined after optional argument
 //  - Only one array parameter is allowed
@@ -215,67 +216,53 @@ func (c *Command) OptNames() map[string]string {
 // 	cmd.AddArg("name", "description", true) // required
 // 	cmd.AddArg("names", "description", true, true) // required and is array
 func (c *Command) AddArg(name, description string, requiredAndIsArray ...bool) *Argument {
-	if c.argsIndexes == nil {
-		c.argsIndexes = make(map[string]int)
-	}
+	// create new argument
+	newArg := NewArgument(name, description, requiredAndIsArray...)
 
-	if _, has := c.argsIndexes[name]; has {
-		panicf("the argument name '%s' already exists", name)
-	}
-
-	if c.hasArrayArg {
-		panicf("have defined an array argument, you can not add argument '%s'", name)
-	}
-
-	var isArray, required bool
-	length := len(requiredAndIsArray)
-	if length > 0 {
-		required = requiredAndIsArray[0]
-
-		if length > 1 {
-			isArray = requiredAndIsArray[1]
-		}
-	}
-
-	if required && c.hasOptionalArg {
-		panicf("required argument '%s' cannot be defined after optional argument", name)
-	}
-
-	// add argument index record
-	argIndex := len(c.args)
-	c.argsIndexes[name] = argIndex
-
-	// add argument
-	newArg := &Argument{
-		Name: name, ShowName: name, Description: description, Required: required, IsArray: isArray, index: argIndex,
-	}
-
-	c.args = append(c.args, newArg)
-	if !required {
-		c.hasOptionalArg = true
-	}
-
-	if isArray {
-		c.hasArrayArg = true
-	}
-
-	return newArg
+	return c.AddArgument(newArg)
 }
 
+// AddArgument binding an named argument for the command.
+//
+// Notice:
+// 	- Required argument cannot be defined after optional argument
+//  - Only one array parameter is allowed
+// 	- The (array) argument of multiple values ​​can only be defined at the end
+//
 func (c *Command) AddArgument(arg *Argument) *Argument {
 	if c.argsIndexes == nil {
 		c.argsIndexes = make(map[string]int)
 	}
 
+	// validate argument
+	arg.goodArgument()
+
+	name := arg.Name
 	if _, has := c.argsIndexes[name]; has {
-		panicf("the argument name '%s' already exists", name)
+		panicf("the argument name '%s' already exists in command '%s'", name, c.Name)
 	}
 
 	if c.hasArrayArg {
 		panicf("have defined an array argument, you can not add argument '%s'", name)
 	}
 
+	if arg.Required && c.hasOptionalArg {
+		panicf("required argument '%s' cannot be defined after optional argument", name)
+	}
+
+	// add argument index record
+	arg.index = len(c.args)
+	c.argsIndexes[name] = arg.index
+
+	// add argument
 	c.args = append(c.args, arg)
+	if !arg.Required {
+		c.hasOptionalArg = true
+	}
+
+	if arg.IsArray {
+		c.hasArrayArg = true
+	}
 
 	return arg
 }
@@ -316,6 +303,10 @@ func (c *Command) RawArg(i int) string {
 	return c.Flags.Arg(i)
 }
 
+/*************************************************************
+ * Argument definition
+ *************************************************************/
+
 // Argument a command argument definition
 type Argument struct {
 	// Name argument name. it's required
@@ -324,22 +315,50 @@ type Argument struct {
 	ShowName string
 	// Description argument description message
 	Description string
-	// IsArray if is array, can allow accept multi values, and must in last.
-	IsArray bool
 	// Required arg is required
 	Required bool
+	// IsArray if is array, can allow accept multi values, and must in last.
+	IsArray bool
 	// value store parsed argument data. (type: string, []string)
 	Value interface{}
+	// Handler custom argument value parse handler
+	Handler func(value interface{}) interface{}
 	// the argument position index in all arguments(cmd.args[index])
 	index int
 }
 
-var emptyArg = &Argument{}
+var (
+	emptyArg    = &Argument{}
+	goodArgName = regexp.MustCompile(`^[\w-]+$`)
+)
+
+// NewArgument quick create an new command argument
+func NewArgument(name, description string, requiredAndIsArray ...bool) *Argument {
+	var isArray, required bool
+
+	length := len(requiredAndIsArray)
+	if length > 0 {
+		required = requiredAndIsArray[0]
+
+		if length > 1 {
+			isArray = requiredAndIsArray[1]
+		}
+	}
+
+	// create new argument
+	return &Argument{
+		Name: name, ShowName: name, Description: description, Required: required, IsArray: isArray,
+	}
+}
 
 func (a *Argument) goodArgument() {
 	a.Name = strings.TrimSpace(a.Name)
 	if a.Name == "" {
 		panicf("the command argument name cannot be empty")
+	}
+
+	if !goodArgName.MatchString(a.Name) {
+		panicf("the command argument name is invalid, only allow: a-Z 0-9 _ -")
 	}
 }
 
@@ -354,13 +373,16 @@ func (a *Argument) Int(defVal ...int) int {
 		return def
 	}
 
+	if intVal, ok := a.Value.(int); ok {
+		return intVal
+	}
+
 	if str, ok := a.Value.(string); ok {
 		val, err := strconv.Atoi(str)
-		if err != nil {
+		if err == nil {
 			return val
 		}
 	}
-
 	return def
 }
 
@@ -378,8 +400,22 @@ func (a *Argument) String(defVal ...string) string {
 	if str, ok := a.Value.(string); ok {
 		return str
 	}
-
 	return def
+}
+
+// StringSplit quick split a string argument to string slice
+func (a *Argument) StringSplit(sep ...string) (ss []string) {
+	str := a.String()
+	if str == "" {
+		return
+	}
+
+	char := ","
+	if len(sep) > 0 {
+		char = sep[0]
+	}
+
+	return strings.Split(str, char)
 }
 
 // Array alias of the Strings()
@@ -396,7 +432,22 @@ func (a *Argument) Strings() (ss []string) {
 	return
 }
 
+// GetValue get value by custom handler func
+func (a *Argument) GetValue() interface{} {
+	val := a.Value
+	if a.Handler != nil {
+		return a.Handler(val)
+	}
+
+	return val
+}
+
 // HasValue value is empty
 func (a *Argument) HasValue() bool {
 	return a.Value != nil
+}
+
+// Index get argument index in the command
+func (a *Argument) Index() int {
+	return a.index
 }
