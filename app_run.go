@@ -313,14 +313,14 @@ func (app *App) showCommandHelp(list []string) (code int) {
 	// get real name
 	name := app.RealCommandName(list[0])
 	if name == HelpCommand || name == "-h" {
-		fmt.Printf("Display help message for application or command.\n\n")
+		color.Println("Display help message for application or command.\n")
 		color.Printf("Usage:\n <cyan>%s {COMMAND} --help</> OR <cyan>%s help {COMMAND}</>\n", binName, binName)
 		return
 	}
 
 	cmd, exist := app.commands[name]
 	if !exist {
-		color.Error.Prompt("Unknown command name %#q. Run '%s -h'", name, binName)
+		color.Error.Prompt("Unknown command name '%s'. Run '<cyan>%s -h</>' see all commands", name, binName)
 		return ERR
 	}
 

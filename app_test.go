@@ -100,15 +100,6 @@ func TestApp_Run(t *testing.T) {
 		},
 	})
 
-	// show command help
-	app.Args = []string{"./myapp", "help", "test"}
-	code = app.Run()
-	str = buf.String()
-	buf.Reset()
-	is.Equal(0, code)
-	is.Contains(str, "Name: test")
-	is.Contains(str, "Desc for test command")
-
 	// run an command
 	app.Args = []string{"./myapp", "test"}
 	code = app.Run()
@@ -119,4 +110,54 @@ func TestApp_Run(t *testing.T) {
 	// app.AddError(fmt.Errorf("test error"))
 
 	gcli.SetVerbose(gcli.VerbQuiet)
+}
+
+func TestApp_showCommandHelp(t *testing.T) {
+	is := assert.New(t)
+
+	// disable color code, re-set output for test
+	buf := new(bytes.Buffer)
+	color.Disable()
+	color.SetOutput(buf)
+
+	app := gcli.NewApp(func(a *gcli.App) {
+		a.ExitOnEnd = false
+	})
+
+	app.AddCommand(gcli.NewCommand("test", "desc for test command", func(c *gcli.Command) {
+		//
+	}))
+
+	// show command help
+	app.Args = []string{"./myapp", "help", "test"}
+	code := app.Run()
+	str := buf.String()
+	buf.Reset()
+	is.Equal(0, code)
+	is.Contains(str, "Name: test")
+	is.Contains(str, "Desc for test command")
+
+	// show command help: arg error
+	app.Args = []string{"./myapp", "help", "test", "more"}
+	code = app.Run()
+	str = buf.String()
+	buf.Reset()
+	is.Equal(gcli.ERR, code)
+	is.Contains(str, "ERROR: Too many arguments given.")
+
+	// show command help for 'help'
+	app.Args = []string{"./myapp", "help", "help"}
+	code = app.Run()
+	str = buf.String()
+	buf.Reset()
+	is.Equal(gcli.OK, code)
+	is.Contains(str, "Display help message for application or command.")
+
+	// show command help: unknown command
+	app.Args = []string{"./myapp", "help", "not-exist"}
+	code = app.Run()
+	str = buf.String()
+	buf.Reset()
+	is.Equal(gcli.ERR, code)
+	is.Contains(str, "Unknown command name 'not-exist'")
 }
