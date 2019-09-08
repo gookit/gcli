@@ -65,8 +65,8 @@ func (sh *SimpleHooks) On(name string, handler HookFunc) {
 	}
 }
 
-// Add register on not exists hook.
-func (sh *SimpleHooks) Add(name string, handler HookFunc) {
+// AddOn register on not exists hook.
+func (sh *SimpleHooks) AddOn(name string, handler HookFunc) {
 	if _, ok := sh.hooks[name]; !ok {
 		sh.On(name, handler)
 	}
@@ -169,7 +169,7 @@ func Printf(format string, args ...interface{}) {
 }
 
 func panicf(format string, v ...interface{})  {
-	panic(fmt.Sprintf(format, v...))
+	panic(fmt.Sprintf("GCLI: " + format, v...))
 }
 
 // func exitWithMsg(format string, v ...interface{}) {
@@ -184,7 +184,6 @@ func strictFormatArgs(args []string) (fmtArgs []string) {
 	}
 
 	for _, arg := range args {
-
 		// eg: --a ---name
 		if strings.Index(arg, "--") == 0 {
 			farg := strings.TrimLeft(arg, "-")
@@ -194,6 +193,7 @@ func strictFormatArgs(args []string) (fmtArgs []string) {
 				arg = "--" + farg
 			}
 			// TODO No change remain OR remove like "--" "---"
+			// maybe ...
 
 		} else if strings.IndexByte(arg, '-') == 0 {
 			ln := len(arg)

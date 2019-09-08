@@ -243,7 +243,7 @@ func (c *Command) AddArgument(arg *Argument) *Argument {
 	}
 
 	if c.hasArrayArg {
-		panicf("have defined an array argument, you can not add argument '%s'", name)
+		panicf("have defined an array argument, you cannot add argument '%s'", name)
 	}
 
 	if arg.Required && c.hasOptionalArg {
@@ -358,7 +358,7 @@ func (a *Argument) goodArgument() {
 	}
 
 	if !goodArgName.MatchString(a.Name) {
-		panicf("the command argument name is invalid, only allow: a-Z 0-9 _ -")
+		panicf("the command argument name '%s' is invalid, only allow: a-Z 0-9 _ -", a.Name)
 	}
 }
 
@@ -440,6 +440,11 @@ func (a *Argument) GetValue() interface{} {
 	}
 
 	return val
+}
+
+// IsEmpty argument is empty
+func (a *Argument) IsEmpty() bool {
+	return a.Name == ""
 }
 
 // HasValue value is empty

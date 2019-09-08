@@ -1,8 +1,10 @@
 package gcli_test
 
 import (
+	"bytes"
 	"testing"
 
+	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2"
 	"github.com/stretchr/testify/assert"
 )
@@ -60,4 +62,61 @@ func TestApp_Add(t *testing.T) {
 	app.AddCommand(c)
 
 	is.Equal("mdl", c.Module())
+}
+
+func TestApp_Run(t *testing.T) {
+	is := assert.New(t)
+
+	gcli.SetVerbose(gcli.VerbCrazy)
+	app := gcli.NewApp(func(a *gcli.App) {
+		a.ExitOnEnd = false
+		a.Version = "1.3.9"
+	})
+
+	// disable color code, re-set output for test
+	buf := new(bytes.Buffer)
+	color.Disable()
+	color.SetOutput(buf)
+
+	// run
+	app.Args = []string{"./myapp"}
+	code := app.Run()
+	str := buf.String()
+	buf.Reset()
+
+	is.Equal(0, code)
+	is.Contains(str, "1.3.9")
+	is.Contains(str, "Version: 1.3.9")
+	is.Contains(str, "This is my CLI application")
+	is.Contains(str, "Display help information")
+
+	cmdRet := ""
+	app.Add(&gcli.Command{
+		Name: "test",
+		UseFor: "desc for test command",
+		Func: func(c *gcli.Command, args []string) error {
+			cmdRet = c.Name
+			return nil
+		},
+	})
+
+	// show command help
+	app.Args = []string{"./myapp", "help", "test"}
+	code = app.Run()
+	str = buf.String()
+	buf.Reset()
+	is.Equal(0, code)
+	is.Contains(str, "Name: test")
+	is.Contains(str, "Desc for test command")
+
+	// run an command
+	app.Args = []string{"./myapp", "test"}
+	code = app.Run()
+	is.Equal(0, code)
+	is.Equal("test", cmdRet)
+
+	// other
+	// app.AddError(fmt.Errorf("test error"))
+
+	gcli.SetVerbose(gcli.VerbQuiet)
 }

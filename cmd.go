@@ -155,7 +155,7 @@ func (c *Command) initialize() *Command {
 		// mark is alone
 		c.alone = true
 		// add default error handler.
-		c.SimpleHooks.Add(EvtError, defaultErrHandler)
+		c.SimpleHooks.AddOn(EvtError, defaultErrHandler)
 	}
 
 	// init for Flags

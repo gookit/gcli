@@ -1,6 +1,7 @@
 package gcli
 
 import (
+	"os"
 	"strings"
 )
 
@@ -66,6 +67,8 @@ type App struct {
 	Description string
 	// Logo ASCII logo setting
 	Logo Logo
+	// Args default is equals to os.args
+	Args []string
 	// ExitOnEnd call os.Exit on running end
 	ExitOnEnd bool
 	// vars you can add some vars map for render help info
@@ -82,7 +85,7 @@ type App struct {
 	// all commands by module
 	moduleCommands map[string]map[string]*Command
 	// the max length for added command names. default set 12.
-	nameMaxLength int
+	nameMaxLen int
 	// default command name
 	defaultCommand string
 	// raw input command name
@@ -92,7 +95,8 @@ type App struct {
 	cleanArgs []string
 	// current command name
 	commandName string
-	stopped bool
+	// Whether it has been initialized
+	initialized bool
 }
 
 // NewApp create new app instance.
@@ -105,7 +109,8 @@ type App struct {
 // 	})
 func NewApp(fn ...func(a *App)) *App {
 	app := &App{
-		Name: "My CLI App",
+		Args: os.Args,
+		Name: "GCLI App",
 		Logo: Logo{Style: "info"},
 		// set a default version
 		Version: "1.0.0",
@@ -115,15 +120,15 @@ func NewApp(fn ...func(a *App)) *App {
 		// commands
 		commands:       make(map[string]*Command),
 		moduleCommands: make(map[string]map[string]*Command),
-		nameMaxLength:  12,
+		// some default values
+		nameMaxLen:  12,
+		Description: "This is my CLI application",
 	}
 
 	if len(fn) > 0 {
 		fn[0](app)
 	}
 
-	// init app
-	app.Initialize()
 	return app
 }
 
@@ -135,8 +140,8 @@ func (app *App) Config(fn func(a *App)) {
 	}
 }
 
-// Initialize application
-func (app *App) Initialize() {
+// initialize application
+func (app *App) initialize() {
 	app.names = make(map[string]int)
 
 	// init some help tpl vars
@@ -146,9 +151,10 @@ func (app *App) Initialize() {
 	// parseGlobalOpts()
 
 	// add default error handler.
-	app.SimpleHooks.Add(EvtError, defaultErrHandler)
+	app.SimpleHooks.AddOn(EvtError, defaultErrHandler)
 
 	app.fireEvent(EvtInit, nil)
+	app.initialized = true
 }
 
 // SetLogo text and color style
@@ -200,12 +206,17 @@ func (app *App) Add(c *Command, more ...*Command) {
 func (app *App) AddCommand(c *Command) *Command {
 	c.Name = strings.Trim(strings.TrimSpace(c.Name), ": ")
 	if c.Name == "" {
-		panicf("The added command name can not be empty.")
+		panicf("the added command name can not be empty.")
 	}
 
 	if c.IsDisabled() {
 		Logf(VerbDebug, "command %s has been disabled, skip add", c.Name)
 		return c
+	}
+
+	// initialize application
+	if !app.initialized {
+		app.initialize()
 	}
 
 	// check and find module name
@@ -220,8 +231,8 @@ func (app *App) AddCommand(c *Command) *Command {
 	app.commands[c.Name] = c
 
 	// record command name max length
-	if nameLen > app.nameMaxLength {
-		app.nameMaxLength = nameLen
+	if nameLen > app.nameMaxLen {
+		app.nameMaxLen = nameLen
 	}
 
 	if _, ok := app.moduleCommands[c.module]; !ok {

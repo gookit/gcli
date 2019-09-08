@@ -3,6 +3,7 @@ package gcli
 import (
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"strings"
 	"text/template"
 
@@ -13,21 +14,31 @@ import (
 
 // parseGlobalOpts parse global options
 func (app *App) parseGlobalOpts() (ok bool) {
+	Logf(VerbDebug, "[App.parseGFlags] will begin parse global options")
+	// global options flag
+	gFlag := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
+
 	// bind help func
-	flag.Usage = app.showApplicationHelp
+	gFlag.Usage = app.showApplicationHelp
 
 	// binding global options
-	flag.UintVar(&gOpts.verbose, "verbose", gOpts.verbose, "")
-	flag.BoolVar(&gOpts.showHelp, "h", false, "")
-	flag.BoolVar(&gOpts.showHelp, "help", false, "")
-	flag.BoolVar(&gOpts.showVer, "V", false, "")
-	flag.BoolVar(&gOpts.showVer, "version", false, "")
-	flag.BoolVar(&gOpts.noColor, "no-color", gOpts.noColor, "")
+	gFlag.UintVar(&gOpts.verbose, "verbose", gOpts.verbose, "")
+	gFlag.BoolVar(&gOpts.showHelp, "h", false, "")
+	gFlag.BoolVar(&gOpts.showHelp, "help", false, "")
+	gFlag.BoolVar(&gOpts.showVer, "V", false, "")
+	gFlag.BoolVar(&gOpts.showVer, "version", false, "")
+	gFlag.BoolVar(&gOpts.noColor, "no-color", gOpts.noColor, "")
 	// this is a internal command
-	flag.BoolVar(&gOpts.inCompletion, "cmd-completion", false, "")
+	gFlag.BoolVar(&gOpts.inCompletion, "cmd-completion", false, "")
 
+	// disable output internal error message on parse flags
+	gFlag.SetOutput(ioutil.Discard)
 	// parse global options
-	flag.Parse()
+	err := gFlag.Parse(app.Args[1:])
+	if err != nil {
+		color.Error.Tips("parse global options error: %s", err.Error())
+		return
+	}
 
 	// check global options
 	if gOpts.showHelp {
@@ -44,8 +55,8 @@ func (app *App) parseGlobalOpts() (ok bool) {
 		color.Enable = false
 	}
 
-	app.rawFlagArgs = flag.Args()
-	Logf(VerbDebug, "[App.parseGlobalOpts] console debug is enabled, level is %d", gOpts.verbose)
+	app.rawFlagArgs = gFlag.Args()
+	Logf(VerbDebug, "[App.parseGFlags] console debug is enabled, level is %d", gOpts.verbose)
 
 	return true
 }
@@ -96,11 +107,17 @@ func (app *App) prepareRun() (code int) {
 
 // Run running application
 func (app *App) Run() (code int) {
+	Logf(VerbDebug, "[App.Run] will begin run cli application")
+
+	// ensure application initialized
+	if !app.initialized {
+		app.initialize()
+	}
+
 	if code = app.prepareRun(); code != GOON {
 		if app.ExitOnEnd {
 			Exit(code)
 		}
-
 		return code
 	}
 
@@ -275,7 +292,7 @@ func (app *App) showApplicationHelp() {
 		"Description": strutil.UpperFirst(app.Description),
 	}, template.FuncMap{
 		"paddingName": func(n string) string {
-			return strutil.PadRight(n, " ", app.nameMaxLength)
+			return strutil.PadRight(n, " ", app.nameMaxLen)
 		},
 	})
 

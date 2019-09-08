@@ -4,6 +4,7 @@ import (
 	"errors"
 	"flag"
 	"fmt"
+	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
@@ -29,12 +30,20 @@ func (c *Command) parseFlags(args []string) (error, []string) {
 
 	Logf(VerbDebug, "[Cmd.parseFlags] flags on after format: %v", args)
 
+	// disable output internal error message on parse flags
+	c.Flags.SetOutput(ioutil.Discard)
+
 	// parse options, don't contains command name.
 	if err := c.Flags.Parse(args); err != nil {
 		return err, []string{}
 	}
 
 	return nil, c.Flags.Args()
+}
+
+// prepare: before execute the command
+func (c *Command) prepare(args []string) (status int, err error) {
+	return
 }
 
 // do execute the command

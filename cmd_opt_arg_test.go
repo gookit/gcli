@@ -24,12 +24,84 @@ func TestInts(t *testing.T) {
 	is.Equal("[1 3]", ints.String())
 }
 
+func TestStrings(t *testing.T) {
+	is := assert.New(t)
+	ss := gcli.Strings{}
+
+	err := ss.Set("1")
+	is.NoError(err)
+	err = ss.Set("3")
+	is.NoError(err)
+	err = ss.Set("abc")
+	is.NoError(err)
+	is.Equal("[1 3 abc]", ss.String())
+}
+
+func TestBooleans(t *testing.T) {
+	is := assert.New(t)
+	val := gcli.Booleans{}
+
+	err := val.Set("false")
+	is.NoError(err)
+	is.False(val[0])
+	is.Equal("[false]", val.String())
+
+	err = val.Set("True")
+	is.NoError(err)
+	is.Equal("[false true]", val.String())
+
+	err = val.Set("abc")
+	is.Error(err)
+}
+
+func TestCommand_AddArg(t *testing.T) {
+	is := assert.New(t)
+	c := gcli.NewCommand("test", "test desc", nil)
+
+	arg := c.AddArg("arg0", "arg desc", true)
+	is.Equal(0, arg.Index())
+
+	ret := c.ArgByIndex(0)
+	is.Equal(ret, arg)
+
+	arg = c.AddArg("arg1", "arg1 desc")
+	is.Equal(1, arg.Index())
+
+	ret = c.Arg("arg1")
+	is.Equal(ret, arg)
+
+	ret = c.Arg("not-exist")
+	is.True(ret.IsEmpty())
+	is.False(ret.HasValue())
+
+	is.Len(c.Args(), 2)
+
+	is.PanicsWithValue("GCLI: the command argument name cannot be empty", func() {
+		c.AddArg("", "desc")
+	})
+	is.PanicsWithValue("GCLI: the command argument name ':)&dfd' is invalid, only allow: a-Z 0-9 _ -", func() {
+		c.AddArg(":)&dfd", "desc")
+	})
+	is.PanicsWithValue("GCLI: the argument name 'arg1' already exists in command 'test'", func() {
+		c.AddArg("arg1", "desc")
+	})
+	is.PanicsWithValue("GCLI: required argument 'arg2' cannot be defined after optional argument", func() {
+		c.AddArg("arg2", "arg2 desc", true)
+	})
+
+	c.AddArg("arg3", "arg3 desc", false, true)
+	is.PanicsWithValue("GCLI: have defined an array argument, you cannot add argument 'argN'", func() {
+		c.AddArg("argN", "desc", true)
+	})
+}
+
 func TestArgument(t *testing.T) {
 	is := assert.New(t)
 	arg := gcli.NewArgument("arg0", "arg desc")
 
 	is.False(arg.IsArray)
 	is.False(arg.Required)
+	is.False(arg.IsEmpty())
 	is.False(arg.HasValue())
 
 	is.Equal("arg0", arg.Name)
