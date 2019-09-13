@@ -48,7 +48,7 @@ func (c *Command) prepare(args []string) (status int, err error) {
 
 // do execute the command
 func (c *Command) execute(args []string) (err error) {
-	// collect named args
+	// collect and binding named args
 	if err := c.collectNamedArgs(args); err != nil {
 		return err
 	}
@@ -76,14 +76,14 @@ func (c *Command) execute(args []string) (err error) {
 	return
 }
 
-func (c *Command) collectNamedArgs(inArgs []string) error {
+func (c *Command) collectNamedArgs(inArgs []string) (err error) {
 	var num int
 	inNum := len(inArgs)
 
 	for i, arg := range c.args {
 		// num is equals to "index + 1"
 		num = i + 1
-		if num > inNum { // no enough arg
+		if num > inNum { // not enough args
 			if arg.Required {
 				return fmt.Errorf("must set value for the argument: %s (position %d)", arg.ShowName, arg.index)
 			}
@@ -91,17 +91,22 @@ func (c *Command) collectNamedArgs(inArgs []string) error {
 		}
 
 		if arg.IsArray {
-			arg.Value = inArgs[i:]
+			err = arg.bindValue(inArgs[i:])
 			inNum = num // must reset inNum
 		} else {
-			arg.Value = inArgs[i]
+			err = arg.bindValue(inArgs[i])
+		}
+
+		// has error on binding arg value
+		if err != nil {
+			return
 		}
 	}
 
 	if !c.alone && gOpts.strictMode && inNum > num {
 		return fmt.Errorf("entered too many arguments: %v", inArgs[num:])
 	}
-	return nil
+	return
 }
 
 // Fire event handler by name

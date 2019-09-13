@@ -43,7 +43,7 @@ func main() {
 	app.Add(cmd.ExampleCommand())
 	app.Add(cmd.DaemonRunCommand())
 	app.Add(cmd.EnvInfoCommand())
-	app.Add(cmd.GitCommand())
+	app.Add(cmd.GitCommand(), cmd.GitPullMulti)
 	app.Add(cmd.ColorCommand(), cmd.EmojiDemoCmd())
 	app.Add(cmd.ShowDemoCommand(), cmd.ProgressDemoCmd(), cmd.SpinnerDemoCmd(), cmd.InteractDemoCommand())
 	app.Add(builtin.GenEmojiMapCommand())

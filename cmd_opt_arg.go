@@ -67,7 +67,7 @@ func (s *Booleans) Set(value string) error {
  *************************************************************/
 
 // IntOpt binding a int option
-func (c *Command) IntOpt(p *int, name string, short string, defValue int, description string) *Command {
+func (c *Command) IntOpt(p *int, name, short string, defValue int, description string) *Command {
 	c.Flags.IntVar(p, name, defValue, description)
 
 	if s, ok := c.addShortcut(name, short); ok {
@@ -78,7 +78,7 @@ func (c *Command) IntOpt(p *int, name string, short string, defValue int, descri
 }
 
 // UintOpt binding a uint option
-func (c *Command) UintOpt(p *uint, name string, short string, defValue uint, description string) *Command {
+func (c *Command) UintOpt(p *uint, name, short string, defValue uint, description string) *Command {
 	c.Flags.UintVar(p, name, defValue, description)
 
 	if s, ok := c.addShortcut(name, short); ok {
@@ -89,7 +89,7 @@ func (c *Command) UintOpt(p *uint, name string, short string, defValue uint, des
 }
 
 // StrOpt binding a string option
-func (c *Command) StrOpt(p *string, name string, short string, defValue string, description string) *Command {
+func (c *Command) StrOpt(p *string, name, short string, defValue, description string) *Command {
 	c.Flags.StringVar(p, name, defValue, description)
 
 	if s, ok := c.addShortcut(name, short); ok {
@@ -100,7 +100,7 @@ func (c *Command) StrOpt(p *string, name string, short string, defValue string, 
 }
 
 // BoolOpt binding a bool option
-func (c *Command) BoolOpt(p *bool, name string, short string, defValue bool, description string) *Command {
+func (c *Command) BoolOpt(p *bool, name, short string, defValue bool, description string) *Command {
 	c.Flags.BoolVar(p, name, defValue, description)
 
 	if s, ok := c.addShortcut(name, short); ok {
@@ -124,18 +124,19 @@ func (c *Command) VarOpt(p flag.Value, name string, short string, description st
 }
 
 // addShortcut add a shortcut name for a option name
-func (c *Command) addShortcut(name string, short string) (string, bool) {
+func (c *Command) addShortcut(name, short string) (string, bool) {
+	// record all option names
 	if c.optNames == nil {
 		c.optNames = map[string]string{}
 	}
+	c.optNames[name] = ""
 
 	// empty string
 	if len(short) == 0 {
-		c.optNames[name] = "" // record all option names
 		return "", false
 	}
 
-	// first add
+	// first add short
 	if c.shortcuts == nil {
 		c.shortcuts = map[string]string{}
 	}
@@ -146,9 +147,7 @@ func (c *Command) addShortcut(name string, short string) (string, bool) {
 		panicf("The shortcut name '%s' has been used by option '%s'", short, n)
 	}
 
-	c.optNames[name] = short
 	c.shortcuts[short] = name
-
 	return short, true
 }
 
@@ -322,7 +321,9 @@ type Argument struct {
 	// value store parsed argument data. (type: string, []string)
 	Value interface{}
 	// Handler custom argument value parse handler
-	Handler func(value interface{}) interface{}
+	Handler func(val interface{}) interface{}
+	// Validator you can add an validator, will call it on binding argument value
+	Validator func(val interface{}) (interface{}, error)
 	// the argument position index in all arguments(cmd.args[index])
 	index int
 }
@@ -442,9 +443,10 @@ func (a *Argument) GetValue() interface{} {
 	return val
 }
 
-// IsEmpty argument is empty
-func (a *Argument) IsEmpty() bool {
-	return a.Name == ""
+// WithValue set an value of the argument
+func (a *Argument) WithValue(val interface{}) *Argument {
+	a.Value = val
+	return a
 }
 
 // HasValue value is empty
@@ -452,7 +454,23 @@ func (a *Argument) HasValue() bool {
 	return a.Value != nil
 }
 
+// IsEmpty argument is empty
+func (a *Argument) IsEmpty() bool {
+	return a.Name == ""
+}
+
 // Index get argument index in the command
 func (a *Argument) Index() int {
 	return a.index
+}
+
+// bind an value of the argument
+func (a *Argument) bindValue(val interface{}) (err error) {
+	// has validator
+	if a.Validator != nil {
+		val, err = a.Validator(val)
+	}
+
+	a.Value = val
+	return
 }

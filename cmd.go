@@ -75,7 +75,7 @@ type Command struct {
 	alone bool
 	// mark is disabled. if true will skip register to cli-app.
 	disabled bool
-	// option names {name:short}
+	// all option names of the command
 	optNames map[string]string
 	// shortcuts for command options(Flags) {short:name} eg. {"n": "name", "o": "opt"}
 	shortcuts map[string]string

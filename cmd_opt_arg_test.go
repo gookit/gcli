@@ -134,7 +134,7 @@ func TestArgument(t *testing.T) {
 	is.Equal("", arg.String())
 
 	// string int value
-	arg.Value = "23"
+	arg.WithValue("23")
 	is.Equal(23, arg.Int())
 	is.Equal("23", arg.String())
 

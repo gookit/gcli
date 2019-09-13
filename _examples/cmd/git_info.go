@@ -24,9 +24,9 @@ type GitInfoData struct {
 // GitCommand
 func GitCommand() *gcli.Command {
 	cmd := gcli.Command{
-		Name:    "git",
+		Name:    "git:info",
 		Aliases: []string{"git-info"},
-		UseFor:  "collect project info by git info",
+		UseFor:  "collect project latest commit info by git log command",
 
 		Func: gitExecute,
 	}
@@ -44,7 +44,7 @@ func gitExecute(_ *gcli.Command, _ []string) error {
 	info := GitInfoData{}
 
 	// latest commit id by: git log --pretty=%H -n1 HEAD
-	cid, err := sysutil.ShellExec("git log --pretty=%H -n1 HEAD")
+	cid, err := sysutil.QuickExec("git log --pretty=%H -n1 HEAD")
 	if err != nil {
 		return err
 	}
@@ -54,7 +54,7 @@ func gitExecute(_ *gcli.Command, _ []string) error {
 	info.Version = cid
 
 	// latest commit date by: git log -n1 --pretty=%ci HEAD
-	cDate, err := sysutil.ShellExec("git log -n1 --pretty=%ci HEAD")
+	cDate, err := sysutil.QuickExec("git log -n1 --pretty=%ci HEAD")
 	if err != nil {
 		return err
 	}
@@ -64,10 +64,10 @@ func gitExecute(_ *gcli.Command, _ []string) error {
 	fmt.Printf("commit date: %s\n", cDate)
 
 	// get tag: git describe --tags --exact-match HEAD
-	tag, err := sysutil.ShellExec("git describe --tags --exact-match HEAD")
+	tag, err := sysutil.QuickExec("git describe --tags --exact-match HEAD")
 	if err != nil {
 		// get branch: git branch -a | grep "*"
-		br, err := sysutil.ShellExec(`git branch -a | grep "*"`)
+		br, err := sysutil.ShellExec(`git branch -a | grep "*"`, "sh")
 		if err != nil {
 			return err
 		}
