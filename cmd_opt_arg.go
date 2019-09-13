@@ -363,6 +363,25 @@ func (a *Argument) goodArgument() {
 	}
 }
 
+// Config the argument
+func (a *Argument) Config(fn func(arg *Argument)) {
+	if fn != nil {
+		fn(a)
+	}
+}
+
+// WithValidator set an value validator of the argument
+func (a *Argument) WithValidator(fn func(interface{}) (interface{}, error)) *Argument {
+	a.Validator = fn
+	return a
+}
+
+// WithValue set an value of the argument
+func (a *Argument) WithValue(val interface{}) *Argument {
+	a.Value = val
+	return a
+}
+
 // Int argument value to int
 func (a *Argument) Int(defVal ...int) int {
 	def := 0
@@ -441,12 +460,6 @@ func (a *Argument) GetValue() interface{} {
 	}
 
 	return val
-}
-
-// WithValue set an value of the argument
-func (a *Argument) WithValue(val interface{}) *Argument {
-	a.Value = val
-	return a
 }
 
 // HasValue value is empty
