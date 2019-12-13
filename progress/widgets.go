@@ -196,7 +196,7 @@ func roundTripTextBuilder(char rune, charNum, boxWidth int) func() string {
 			} else {
 				position--
 			}
-		} else { // -> right
+		} else {                              // -> right
 			if position+charNum >= boxWidth { // begin <-
 				direction = true
 			} else {

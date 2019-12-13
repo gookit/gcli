@@ -7,7 +7,7 @@ package show
  0 │   992 │ chrome          │ Sleeping │ 6.988768
  2 │ 13973 │ qemu-system-x86 │ Sleeping │ 4.996551
 ━━━┷━━━━━━━┷━━━━━━━━━━━━━━━━━┷━━━━━━━━━━┷━━━━━━━━━━
- */
+*/
 
 // Table a cli Table show
 type Table struct {
