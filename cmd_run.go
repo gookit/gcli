@@ -213,7 +213,7 @@ func (c *Command) ShowHelp(quit ...bool) {
 	// commandHelp = color.ReplaceTag(commandHelp)
 	// clear space and empty new line
 	if c.Examples != "" {
-		c.Examples = strings.Join([]string{"  ", strings.TrimSpace(c.Examples), "\n"}, "")
+		c.Examples = strings.Trim(c.Examples, "\n") + "\n"
 	}
 
 	// clear space and empty new line

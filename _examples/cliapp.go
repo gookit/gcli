@@ -11,7 +11,7 @@ import (
 	"runtime"
 )
 
-// run:
+// local run:
 // 	go run ./_examples/cliapp.go
 // 	go build ./_examples/cliapp.go && ./cliapp
 //
