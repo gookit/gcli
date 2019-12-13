@@ -19,7 +19,7 @@ import (
  *************************************************************/
 
 // do parse option flags, remaining is cmd args
-func (c *Command) parseFlags(args []string) (error, []string) {
+func (c *Command) parseFlags(args []string) (ss []string, err error) {
 	// strict format options
 	if gOpts.strictMode && len(args) > 0 {
 		args = strictFormatArgs(args)
@@ -34,15 +34,15 @@ func (c *Command) parseFlags(args []string) (error, []string) {
 	c.Flags.SetOutput(ioutil.Discard)
 
 	// parse options, don't contains command name.
-	if err := c.Flags.Parse(args); err != nil {
-		return err, []string{}
+	if err = c.Flags.Parse(args); err != nil {
+		return
 	}
 
-	return nil, c.Flags.Args()
+	return c.Flags.Args(), nil
 }
 
 // prepare: before execute the command
-func (c *Command) prepare(args []string) (status int, err error) {
+func (c *Command) prepare(_ []string) (status int, err error) {
 	return
 }
 
@@ -173,7 +173,7 @@ func (c *Command) Run(inArgs []string) (err error) {
 		}
 
 		// if CustomFlags=true, will not run Flags.Parse()
-		err, inArgs = c.parseFlags(inArgs)
+		inArgs, err = c.parseFlags(inArgs)
 		if err != nil {
 			return
 		}

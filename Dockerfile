@@ -5,7 +5,7 @@
 ################################################################################
 ###  builder image
 ################################################################################
-FROM golang:1.10-alpine as Builder
+FROM golang:1.13-alpine as Builder
 
 # Recompile the standard library without CGO
 #RUN CGO_ENABLED=0 go install -a std
@@ -26,7 +26,7 @@ RUN go version && cd $APP_DIR && go build -ldflags '-w -s' -o /tmp/app-server
 ################################################################################
 ###  target image
 ################################################################################
-FROM alpine:3.7
+FROM alpine:3.10
 LABEL maintainer="inhere <in.798@qq.com>" version="1.0"
 
 ##

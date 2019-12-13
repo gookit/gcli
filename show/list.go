@@ -5,7 +5,6 @@ import (
 	"os"
 
 	"github.com/gookit/color"
-	"github.com/gookit/filter"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -89,7 +88,7 @@ func (l *List) Format() string {
 	}
 
 	if l.title != "" { // has title
-		title := filter.UpperWord(l.title)
+		title := strutil.UpperWord(l.title)
 		l.buffer.WriteString(color.WrapTag(title, l.Opts.TitleStyle) + "\n")
 	}
 

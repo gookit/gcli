@@ -3,7 +3,7 @@ package sflag
 import (
 	"strconv"
 
-	"github.com/gookit/filter"
+	"github.com/gookit/goutil/arrutil"
 )
 
 // ValueGetter struct
@@ -55,7 +55,7 @@ func (v *ValueGetter) String(defVal ...string) string {
 
 // Ints value to int slice
 func (v *ValueGetter) Ints() (ints []int) {
-	ints, _ = filter.StringsToInts(v.Strings())
+	ints, _ = arrutil.StringsToInts(v.Strings())
 	return
 }
 

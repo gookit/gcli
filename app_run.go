@@ -165,7 +165,7 @@ func (app *App) doRun(name string, args []string) (code int) {
 		}
 
 		// parse options, don't contains command name.
-		err, args = cmd.parseFlags(args)
+		args, err = cmd.parseFlags(args)
 		if err != nil {
 			color.Error.Tips("Flags parse error: %s", err.Error())
 			return ERR
@@ -195,7 +195,7 @@ func (app *App) Exec(name string, args []string) (err error) {
 	// if Command.CustomFlags=true, will not run Flags.Parse()
 	if !cmd.CustomFlags {
 		// parse command flags
-		err, args = cmd.parseFlags(args)
+		args, err = cmd.parseFlags(args)
 		if err != nil {
 			return
 		}
