@@ -285,9 +285,9 @@ func (c *Command) ParseDefaults() string {
 		if !isZeroValue(fg, fg.DefValue) {
 			if _, ok := fg.Value.(*stringValue); ok {
 				// put quotes on the value
-				s += fmt.Sprintf(" (default <cyan>%q</>)", fg.DefValue)
+				s += fmt.Sprintf(" (default <magentaB>%q</>)", fg.DefValue)
 			} else {
-				s += fmt.Sprintf(" (default <cyan>%v</>)", fg.DefValue)
+				s += fmt.Sprintf(" (default <magentaB>%v</>)", fg.DefValue)
 			}
 		}
 

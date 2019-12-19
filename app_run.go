@@ -330,7 +330,7 @@ func (app *App) showCommandHelp(list []string) (code int) {
 }
 
 // show bash/zsh completion
-func (app *App) showAutoCompletion(args []string) {
+func (app *App) showAutoCompletion(_ []string) {
 	// TODO ...
 }
 
