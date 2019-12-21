@@ -101,7 +101,7 @@ func ReadPassword(message ...string) string {
 		print("Enter Password: ")
 	}
 
-	bs, err := terminal.ReadPassword(int(syscall.Stdin))
+	bs, err := terminal.ReadPassword(syscall.Stdin)
 	if err != nil {
 		return ""
 	}

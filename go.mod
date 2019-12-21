@@ -6,7 +6,8 @@ require (
 	github.com/fsnotify/fsnotify v1.4.7
 	github.com/gookit/color v1.2.0
 	github.com/gookit/filter v1.0.10
-	github.com/gookit/goutil v0.2.3
+	github.com/gookit/goutil v0.2.4
+	github.com/json-iterator/go v1.1.9 // indirect
 	github.com/stretchr/testify v1.4.0
 	golang.org/x/crypto v0.0.0-20190701094942-4def268fd1a4
 )

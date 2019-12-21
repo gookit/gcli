@@ -3,6 +3,7 @@ package cmd
 import (
 	"time"
 
+	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2"
 	"github.com/gookit/gcli/v2/progress"
 )
@@ -40,6 +41,7 @@ func (pd *progressDemo) Run(c *gcli.Command, _ []string) error {
 	name := c.Arg("name").String()
 	max := pd.maxSteps
 
+	color.Info.Println("Progress Demo:")
 	switch name {
 	case "bar":
 		imgProgressBar(max)
@@ -98,10 +100,10 @@ func dynamicTextBar(maxStep int) {
 func imgProgressBar(maxStep int) {
 	cs := progress.RandomBarStyle()
 
-	p := progress.CustomBar(60, cs)
+	p := progress.CustomBar(40, cs)
 	p.MaxSteps = uint(maxStep)
 	p.Format = progress.FullBarFormat
-	// p.Overwrite = false
+	// p.Overwrite = true
 
 	// p.AddMessage("message", " handling ...")
 

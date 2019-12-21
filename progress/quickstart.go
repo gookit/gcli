@@ -64,7 +64,7 @@ func DynamicText(messages map[int]string, maxSteps ...int) *Progress {
 
 // internal format for ProgressBar
 const (
-	DefBarWidth   = 60
+	DefBarWidth   = 40
 	DefBarFormat  = "{@bar} {@percent:4s}%({@current}/{@max}){@message}"
 	FullBarFormat = "{@bar} {@percent:4s}%({@current}/{@max}) {@elapsed:7s}/{@estimated:-7s} {@memory:6s}"
 )
@@ -77,8 +77,10 @@ type BarChars struct {
 // BarStyles some built in BarChars style collection
 var BarStyles = []BarChars{
 	{'=', '>', ' '},
+	{'=', '>', '-'},
 	{'#', '>', ' '},
-	{'-', '>', '-'},
+	{'#', '>', '-'},
+	{'*', '>', '-'},
 	{'▉', '▉', '░'},
 	{'■', '■', ' '},
 	{'■', '■', '▢'},
@@ -101,12 +103,14 @@ func Tape(maxSteps ...int) *Progress {
 
 // CustomBar create a custom progress bar.
 func CustomBar(width int, cs BarChars, maxSteps ...int) *Progress {
-	return New(maxSteps...).Config(func(p *Progress) {
-		p.Format = DefBarFormat
-	}).AddWidget("bar", BarWidget(width, cs))
+	return New(maxSteps...).
+		Config(func(p *Progress) {
+			p.Format = DefBarFormat
+		}).
+		AddWidget("bar", BarWidget(width, cs))
 }
 
-// RandomBarStyle get
+// RandomBarStyle get random bar style
 func RandomBarStyle() BarChars {
 	rand.Seed(time.Now().UnixNano())
 	return BarStyles[rand.Intn(len(BarStyles)-1)]

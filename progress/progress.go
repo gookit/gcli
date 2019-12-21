@@ -1,3 +1,5 @@
+// Package progress provide terminal progress bar display.
+// Such as: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` ...
 package progress
 
 import (
@@ -23,8 +25,8 @@ var widgetMatch = regexp.MustCompile(`{@([\w]+)(?::([\w-]+))?}`)
 // WidgetFunc handler func for progress widget
 type WidgetFunc func(p *Progress) string
 
-// ProgressFace interface
-type ProgressFace interface {
+// Progresser progress interface
+type Progresser interface {
 	Start(maxSteps ...int)
 	Advance(steps ...uint)
 	AdvanceTo(step uint)
@@ -38,6 +40,8 @@ type ProgressFace interface {
 type Progress struct {
 	// Format string the bar format
 	Format string
+	// Newline render progress on newline
+	Newline bool
 	// MaxSteps maximal steps.
 	MaxSteps uint
 	// StepWidth the width for display "{@current}". default is 2
@@ -111,7 +115,6 @@ func (p *Progress) WithMaxSteps(maxSteps ...int) *Progress {
 	if len(maxSteps) > 0 {
 		p.MaxSteps = uint(maxSteps[0])
 	}
-
 	return p
 }
 
@@ -147,7 +150,6 @@ func (p *Progress) AddWidget(name string, handler WidgetFunc) *Progress {
 	if _, ok := p.Widgets[name]; !ok {
 		p.Widgets[name] = handler
 	}
-
 	return p
 }
 
@@ -189,6 +191,7 @@ func (p *Progress) init(maxSteps ...int) {
 	p.step = 0
 	p.percent = 0.0
 	p.started = true
+	p.firstRun = true
 	p.startedAt = time.Now()
 
 	if p.RedrawFreq == 0 {
@@ -298,11 +301,13 @@ func (p *Progress) Destroy() {
 // render progress bar to terminal
 func (p *Progress) render(text string) {
 	if p.Overwrite {
-		if p.firstRun { // first run. create new line
+		// first run. create new line
+		if p.firstRun && p.Newline {
 			fmt.Println()
 			p.firstRun = false
-			// return
-		} else { // delete prev rendered line.
+
+			// delete prev rendered line.
+		} else {
 			// \x0D - Move the cursor to the beginning of the line
 			// \x1B[2K - Erase(Delete) the line
 			fmt.Print("\x0D\x1B[2K")
@@ -343,7 +348,8 @@ func (p *Progress) buildLine() string {
 			return s
 		}
 
-		if fmtArg != "" { // like {@percent:3s} "7%" -> "  7%"
+		// like {@percent:3s} "7%" -> "  7%"
+		if fmtArg != "" {
 			text = fmt.Sprintf("%"+fmtArg, text)
 		}
 		// fmt.Println("info:", arg, name, ", text:", text)

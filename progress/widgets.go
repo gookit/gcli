@@ -45,7 +45,7 @@ var builtinWidgets = map[string]WidgetFunc{
 
 		return fmtutil.HowLongAgo(int64(estimated))
 	},
-	"memory": func(p *Progress) string {
+	"memory": func(p *Progress) string { // Memory consumption
 		mem := new(runtime.MemStats)
 		runtime.ReadMemStats(mem)
 		return fmtutil.DataSize(mem.Sys)
@@ -196,7 +196,7 @@ func roundTripTextBuilder(char rune, charNum, boxWidth int) func() string {
 			} else {
 				position--
 			}
-		} else {                              // -> right
+		} else { // -> right
 			if position+charNum >= boxWidth { // begin <-
 				direction = true
 			} else {
