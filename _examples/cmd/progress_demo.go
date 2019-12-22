@@ -1,6 +1,7 @@
 package cmd
 
 import (
+	"fmt"
 	"time"
 
 	"github.com/gookit/color"
@@ -11,12 +12,14 @@ import (
 type progressDemo struct {
 	maxSteps  int
 	overwrite bool
+
+	handlers map[string]func(int)
 }
 
 var pd = &progressDemo{}
 
 func ProgressDemoCmd() *gcli.Command {
-	return &gcli.Command{
+	c := &gcli.Command{
 		Name:    "prog",
 		UseFor:  "there are some progress bar run demos",
 		Aliases: []string{"prg:demo", "progress"},
@@ -34,6 +37,8 @@ func ProgressDemoCmd() *gcli.Command {
 Image progress bar:
   {$fullCmd} bar`,
 	}
+
+	return c
 }
 
 // Run command
@@ -44,7 +49,9 @@ func (pd *progressDemo) Run(c *gcli.Command, _ []string) error {
 	color.Info.Println("Progress Demo:")
 	switch name {
 	case "bar":
-		imgProgressBar(max)
+		showProgressBar(max)
+	case "bars", "all-bar":
+		showAllProgressBar(max)
 	case "dt", "dtxt", "dynamicText":
 		dynamicTextBar(max)
 	case "txt", "text":
@@ -57,6 +64,52 @@ func (pd *progressDemo) Run(c *gcli.Command, _ []string) error {
 		return c.Errorf("the progress bar type name only allow: bar,txt,dtxt,loading,roundTrip. input is: %s", name)
 	}
 	return nil
+}
+
+func showProgressBar(maxStep int) {
+	cs := progress.RandomBarStyle()
+
+	p := progress.CustomBar(40, cs)
+	p.MaxSteps = uint(maxStep)
+	p.Format = progress.FullBarFormat
+	// p.Overwrite = true
+
+	// p.AddMessage("message", " handling ...")
+
+	// running
+	runProgressBar(p, maxStep, 100)
+	p.Finish()
+}
+
+func showAllProgressBar(maxStep int) {
+	ln := len(progress.BarStyles)
+	ch := make(chan bool, ln)
+
+	for i, style := range progress.BarStyles {
+		go func(i int, style progress.BarChars) {
+			p := progress.CustomBar(40, style)
+
+			// p.Newline = true
+			p.MaxSteps = uint(maxStep)
+			// p.Format = progress.FullBarFormat
+			p.Format = progress.BarFormat
+			p.AddMessage("message", fmt.Sprintf("Bar %d", i+1))
+
+			// run
+			runProgressBar(p, maxStep, 100)
+
+			// end
+			p.Finish()
+			ch <- true
+		}(i, style) // NOTICE: must use arguments
+	}
+
+	// waiting
+	for range progress.BarStyles {
+		<-ch
+	}
+
+	fmt.Println("- Done with progress, number ", ln)
 }
 
 func runRoundTripBar(max int) {
@@ -91,21 +144,6 @@ func dynamicTextBar(maxStep int) {
 	// maxStep = 10
 	p := progress.DynamicText(messages, maxStep)
 	// p.Overwrite = false
-
-	// running
-	runProgressBar(p, maxStep, 100)
-	p.Finish()
-}
-
-func imgProgressBar(maxStep int) {
-	cs := progress.RandomBarStyle()
-
-	p := progress.CustomBar(40, cs)
-	p.MaxSteps = uint(maxStep)
-	p.Format = progress.FullBarFormat
-	// p.Overwrite = true
-
-	// p.AddMessage("message", " handling ...")
 
 	// running
 	runProgressBar(p, maxStep, 100)

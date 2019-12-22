@@ -117,7 +117,7 @@ func RoundTripWidget(char rune, charNum, boxWidth int) WidgetFunc {
 // Output like `[==============>-------------]`
 func BarWidget(width int, cs BarChars) WidgetFunc {
 	if width < 1 {
-		width = DefBarWidth
+		width = BarWidth
 	}
 
 	if cs.Completed == 0 {

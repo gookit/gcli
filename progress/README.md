@@ -12,6 +12,50 @@ Package progress provide terminal progress bar display. Such as: `Txt`, `Bar`, `
 
 please see https://godoc.org/github.com/gookit/gcli/progress
 
+## Install
+
+```bash
+go get -u github.com/gookit/gcli/v2
+```
+
+## Usage
+
+Examples:
+
+```go
+package main
+
+import (
+	"time"
+
+	"github.com/gookit/gcli/v2/progress"
+)
+
+func main()  {
+	speed := 100
+	maxSteps := 110
+	p := progress.Bar(maxSteps)
+	p.Start()
+
+	for i := 0; i < maxSteps; i++ {
+		time.Sleep(time.Duration(speed) * time.Millisecond)
+		p.Advance()
+	}
+
+	p.Finish()
+}
+```
+
+> More demos please see [progress_demo.go](../_examples/cmd/progress_demo.go)
+
+run demos:
+
+```bash
+go run ./_examples/cliapp.go prog txt
+go run ./_examples/cliapp.go prog bar
+go run ./_examples/cliapp.go prog roundTrip
+```
+
 ## Progress Bar
 
 ### Internal Widgets
@@ -46,12 +90,15 @@ FullBarFormat = "{@bar} {@percent:4s}%({@current}/{@max}) {@elapsed:7s}/{@estima
 Examples:
 
 ```go
+package main
+import "github.com/gookit/gcli/v2/progress"
+
 // CustomBar create a custom progress bar
-func mian {
+func main() {
     maxSteps := 100
 	// use special bar style: [==============>-------------]
 	// barStyle := progress.BarStyles[0]
-	// get random bar style
+	// use random bar style
 	barStyle := progress.RandomBarStyle()
 
 	p: = progress.New(maxSteps).
@@ -71,9 +118,7 @@ func mian {
 }
 ```
 
-## Spinner Bar
-
-## Functions
+### Progress Functions
 
 Quick create progress bar:
 
@@ -93,6 +138,10 @@ func SpinnerBar(chars []rune, maxSteps ...int) *Progress
 func Tape(maxSteps ...int) *Progress
 func Txt(maxSteps ...int) *Progress
 ```
+
+## Spinner Bar
+
+### Spinner Functions
 
 Quick create progress spinner:
 

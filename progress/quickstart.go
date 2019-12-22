@@ -29,6 +29,14 @@ const (
 	CharRightArrow1 rune = '▶'
 )
 
+// internal format for text progress
+const (
+	MinFormat  = "{@message}{@current}"
+	TxtFormat  = "{@message}{@percent:4s}%({@current}/{@max})"
+	DefFormat  = "{@message}{@percent:4s}%({@current}/{@max})"
+	FullFormat = "{@percent:4s}%({@current}/{@max}) {@elapsed:7s}/{@estimated:-7s} {@memory:6s}"
+)
+
 // Txt progress bar create.
 func Txt(maxSteps ...int) *Progress {
 	return New(maxSteps...).Config(func(p *Progress) {
@@ -64,8 +72,12 @@ func DynamicText(messages map[int]string, maxSteps ...int) *Progress {
 
 // internal format for ProgressBar
 const (
-	DefBarWidth   = 40
-	DefBarFormat  = "{@bar} {@percent:4s}%({@current}/{@max}){@message}"
+	// BarWidth default bar width
+	BarWidth  = 40
+	BarFormat = "{@bar} {@percent:4s}%({@current}/{@max}){@message}"
+
+	// MdlBarFormat more format
+	MdlBarFormat  = "{@bar} {@percent:4s}%({@current}/{@max}) {@elapsed:7s}/{@estimated:-7s}"
 	FullBarFormat = "{@bar} {@percent:4s}%({@current}/{@max}) {@elapsed:7s}/{@estimated:-7s} {@memory:6s}"
 )
 
@@ -93,7 +105,7 @@ var BarStyles = []BarChars{
 // 		3 [■■■>------------------------]
 // 	25/50 [==============>-------------]  50%
 func Bar(maxSteps ...int) *Progress {
-	return CustomBar(DefBarWidth, BarStyles[0], maxSteps...)
+	return CustomBar(BarWidth, BarStyles[0], maxSteps...)
 }
 
 // Tape create new tape progress bar. is alias of Bar()
@@ -105,7 +117,7 @@ func Tape(maxSteps ...int) *Progress {
 func CustomBar(width int, cs BarChars, maxSteps ...int) *Progress {
 	return New(maxSteps...).
 		Config(func(p *Progress) {
-			p.Format = DefBarFormat
+			p.Format = BarFormat
 		}).
 		AddWidget("bar", BarWidget(width, cs))
 }

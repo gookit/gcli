@@ -11,14 +11,6 @@ import (
 	"github.com/gookit/color"
 )
 
-// internal format for Progress
-const (
-	MinFormat  = "{@message}{@current}"
-	TxtFormat  = "{@message}{@percent:4s}%({@current}/{@max})"
-	DefFormat  = "{@message}{@percent:4s}%({@current}/{@max})"
-	FullFormat = "{@percent:4s}%({@current}/{@max}) {@elapsed:7s}/{@estimated:-7s} {@memory:6s}"
-)
-
 // use for match like "{@bar}" "{@percent:3s}"
 var widgetMatch = regexp.MustCompile(`{@([\w]+)(?::([\w-]+))?}`)
 
@@ -101,12 +93,40 @@ func NewWithConfig(fn func(p *Progress), maxSteps ...int) *Progress {
 }
 
 /*************************************************************
- * config
+ * Some quick config methods
+ *************************************************************/
+
+// RenderFormat set rendered format option
+func RenderFormat(f string) func(p *Progress) {
+	return func(p *Progress) {
+		p.Format = f
+	}
+}
+
+// MaxSteps setting max steps
+func MaxSteps(maxStep int) func(p *Progress) {
+	return func(p *Progress) {
+		p.MaxSteps = uint(maxStep)
+	}
+}
+
+/*************************************************************
+ * Config progress
  *************************************************************/
 
 // Config the progress instance
 func (p *Progress) Config(fn func(p *Progress)) *Progress {
 	fn(p)
+	return p
+}
+
+// WithOptions add more option at once for the progress instance
+func (p *Progress) WithOptions(fns ...func(p *Progress)) *Progress {
+	if len(fns) > 0 {
+		for _, fn := range fns {
+			fn(p)
+		}
+	}
 	return p
 }
 

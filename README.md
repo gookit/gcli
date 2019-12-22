@@ -211,6 +211,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2"
 )
@@ -290,6 +291,9 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 ![cmd-help](_examples/images/cmd-help.jpg)
 
 ## Progress display
+
+Package progress provide terminal progress bar display.
+Such as: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` ...
  
 - `progress.Bar` progress bar
 
@@ -321,8 +325,11 @@ Examples:
 ```go
 package main
 
-import "time"
-import "github.com/gookit/gcli/v2/progress"
+import (
+	"time"
+
+	"github.com/gookit/gcli/v2/progress"
+)
 
 func main()  {
 	speed := 100
