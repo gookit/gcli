@@ -175,6 +175,10 @@ func (c *Command) Run(inArgs []string) (err error) {
 		// if CustomFlags=true, will not run Flags.Parse()
 		inArgs, err = c.parseFlags(inArgs)
 		if err != nil {
+			// ignore flag.ErrHelp error
+			if err == flag.ErrHelp {
+				err = nil
+			}
 			return
 		}
 	}

@@ -251,7 +251,7 @@ var commandsHelp = `{{.Description}} (Version: <info>{{.Version}}</>)
   <info>-V, --version</>     Display app version information
 
 <comment>Available Commands:</>{{range $module, $cs := .Cs}}{{if $module}}
-<comment>{{ $module }}</>{{end}}{{ range $cs }}
+<comment> {{ $module }}</>{{end}}{{ range $cs }}
   <info>{{.Name | paddingName }}</> {{.UseFor}}{{if .Aliases}} (alias: <cyan>{{ join .Aliases ","}}</>){{end}}{{end}}{{end}}
 
   <info>{{ paddingName "help" }}</> Display help information

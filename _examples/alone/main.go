@@ -14,6 +14,7 @@ var opts = struct {
 }{}
 
 // test run: go build ./_examples/alone && ./alone -h
+// test run: go rum ./_examples/alone
 func main() {
 	cmd := gcli.Command{
 		Name:    "test",
