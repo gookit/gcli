@@ -143,7 +143,7 @@ var errCallRun = errors.New("this method can only be called in standalone mode")
 // MustRun Alone the current command, will panic on error
 func (c *Command) MustRun(inArgs []string) {
 	if err := c.Run(inArgs); err != nil {
-		panicf("Run command error: %s", err.Error())
+		color.Error.Println("Run command error: %s", err.Error())
 	}
 }
 
@@ -199,14 +199,14 @@ var commandHelp = `{{.UseFor}}
 <comment>Global Options:</>
       <info>--verbose</>     Set error reporting level(quiet 0 - 4 debug)
       <info>--no-color</>    Disable color when outputting message
-  <info>-h, --help</>        Display this help information{{if .Options}}
-
+  <info>-h, --help</>        Display this help information
+{{if .Options}}
 <comment>Options:</>
-{{.Options}}{{end}}{{if .Cmd.Args}}
-
+{{.Options}}{{end}}
+{{if .Cmd.Args}}
 <comment>Arguments:</>{{range $a := .Cmd.Args}}
   <info>{{$a.Name | printf "%-12s"}}</>{{$a.Description | ucFirst}}{{if $a.Required}}<red>*</>{{end}}{{end}}
-{{end}} {{if .Cmd.Examples}}
+{{end}}{{if .Cmd.Examples}}
 <comment>Examples:</>
 {{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}
 <comment>Help:</>
@@ -238,6 +238,7 @@ func (c *Command) ShowHelp(quit ...bool) {
 
 	// parse help vars then print help
 	color.Print(c.ReplaceVars(s))
+	// fmt.Printf("%#v\n", s)
 	if len(quit) > 0 && quit[0] {
 		Exit(OK)
 	}

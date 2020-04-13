@@ -73,6 +73,15 @@ func TestCommand_Run(t *testing.T) {
 	ris.NoError(err)
 
 	ris.Equal("alias1", c.AliasesString(""))
+
+	err = c.Run([]string{"-h"})
+	ris.NoError(err)
+	ris.Equal("alias1", c.AliasesString(""))
+
+	g := gcli.NewApp()
+	g.AddCommand(c)
+	err = c.Run(simpleArgs)
+	ris.Error(err)
 }
 
 func TestCommand_ParseFlag(t *testing.T) {
