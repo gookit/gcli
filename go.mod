@@ -1,6 +1,6 @@
 module github.com/gookit/gcli/v2
 
-go 1.11
+go 1.12
 
 require (
 	github.com/fsnotify/fsnotify v1.4.7
