@@ -1,6 +1,12 @@
-//+build !windows
+// +build !windows
 
 package interact
+
+import (
+	"syscall"
+
+	"golang.org/x/crypto/ssh/terminal"
+)
 
 // ReadPassword from terminal
 func ReadPassword(question ...string) string {
