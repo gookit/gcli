@@ -82,7 +82,7 @@ func demoSelect(_ *gcli.Command) {
 		[]string{"chengdu", "beijing", "shanghai"},
 		"",
 	)
-	color.Comment.Println("your select is: ", ans)
+	color.Comment.Println("your select is:", ans)
 	fmt.Println("----------------------------------------------------------")
 
 	ans1 := interact.Choice(
@@ -90,7 +90,7 @@ func demoSelect(_ *gcli.Command) {
 		[]int{23, 34, 45},
 		"",
 	)
-	color.Comment.Println("your select is: ", ans1)
+	color.Comment.Println("your select is:", ans1)
 
 	fmt.Println("----------------------------------------------------------")
 
@@ -99,7 +99,7 @@ func demoSelect(_ *gcli.Command) {
 		map[string]string{"a": "chengdu", "b": "beijing", "c": "shanghai"},
 		"a",
 	)
-	color.Comment.Println("your select is: ", ans2)
+	color.Comment.Println("your select is:", ans2)
 }
 
 func demoMultiSelect(_ *gcli.Command) {
@@ -118,7 +118,7 @@ func demoMultiSelect(_ *gcli.Command) {
 		map[string]string{"a": "chengdu", "b": "beijing", "c": "shanghai"},
 		[]string{"a"},
 	)
-	color.Comment.Println("your select is: ", ans2)
+	color.Comment.Println("your select is:", ans2)
 }
 
 func demoConfirm(_ *gcli.Command) {
@@ -139,7 +139,7 @@ func demoPassword(_ *gcli.Command) {
 	// color.Comment.Println("you input password is: ", pwd)
 
 	pwd := interact.ReadPassword()
-	color.Comment.Println("Your input password is: ", pwd)
+	color.Comment.Println("Your input password is:", pwd)
 }
 
 func hiddenInputTest() {
@@ -163,5 +163,5 @@ func demoAnswerIsYes(_ *gcli.Command) {
 
 func demoQuestion(_ *gcli.Command) {
 	ans := interact.Ask("Your name? ", "", nil, 3)
-	color.Comment.Println("Your answer is: ", ans)
+	color.Comment.Println("Your answer is:", ans)
 }

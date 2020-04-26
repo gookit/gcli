@@ -3,11 +3,9 @@ package helper
 import (
 	"bytes"
 	"strings"
-	"syscall"
 	"text/template"
 
 	"github.com/gookit/goutil/strutil"
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 // exec: `stty -a 2>&1`
@@ -24,23 +22,6 @@ var (
 	// macSttyMsgMatch = regexp.MustCompile(macSttyMsgPattern)
 	// linuxSttyMsgMatch = regexp.MustCompile(linuxSttyMsgPattern)
 )
-
-// GetTerminalSize for current console terminal.
-func GetTerminalSize(refresh ...bool) (w int, h int) {
-	if terminalWidth > 0 && len(refresh) > 0 && !refresh[0] {
-		return terminalWidth, terminalHeight
-	}
-
-	var err error
-	w, h, err = terminal.GetSize(syscall.Stdin)
-	if err != nil {
-		return
-	}
-
-	// cache result
-	terminalWidth, terminalHeight = w, h
-	return
-}
 
 // RenderText render text template with data
 func RenderText(input string, data interface{}, fns template.FuncMap, isFile ...bool) string {

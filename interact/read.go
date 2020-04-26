@@ -6,12 +6,10 @@ import (
 	"io/ioutil"
 	"os"
 	"strings"
-	"syscall"
 
 	"github.com/gookit/color"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/envutil"
-	"golang.org/x/crypto/ssh/terminal"
 )
 
 // ReadInput read user input form Stdin
@@ -91,23 +89,6 @@ func AnswerIsYes(defVal ...bool) bool {
 
 	fmt.Print("Please try again")
 	return AnswerIsYes()
-}
-
-// ReadPassword from terminal
-func ReadPassword(message ...string) string {
-	if len(message) > 0 {
-		print(message[0])
-	} else {
-		print("Enter Password: ")
-	}
-
-	bs, err := terminal.ReadPassword(syscall.Stdin)
-	if err != nil {
-		return ""
-	}
-
-	println() // new line
-	return string(bs)
 }
 
 // GetHiddenInput interactively prompts for input without echoing to the terminal.

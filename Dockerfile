@@ -5,7 +5,7 @@
 ################################################################################
 ###  builder image
 ################################################################################
-FROM golang:1.13-alpine as Builder
+FROM golang:1.14-alpine as Builder
 
 # Recompile the standard library without CGO
 #RUN CGO_ENABLED=0 go install -a std
