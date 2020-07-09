@@ -24,7 +24,7 @@ type Question struct {
 // NewQuestion instance.
 // Usage:
 // 	q := NewQuestion("Please input your name?")
-// 	val := q.Run().String()
+// 	ans := q.Run().String()
 func NewQuestion(q string, defVal ...string) *Question {
 	if len(defVal) > 0 {
 		return &Question{Q: q, DefVal: defVal[0]}

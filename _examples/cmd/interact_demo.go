@@ -72,25 +72,20 @@ func demoSelect(_ *gcli.Command) {
 	color.Green.Println("This's An Select Demo")
 	fmt.Println("----------------------------------------------------------")
 
-	// s := interact.NewSelect("Your city", []string{"chengdu", "beijing", "shanghai"})
-	// s.DefOpt = "2"
-	// val := s.Run()
-	// color.Comment.Println("your select is: ", val.String())
-
 	ans := interact.SelectOne(
-		"Your city name(use array)?",
+		"Your city name(use string slice/array)?",
 		[]string{"chengdu", "beijing", "shanghai"},
 		"",
 	)
-	color.Comment.Println("your select is:", ans)
+	color.Info.Println("your select is:", ans)
 	fmt.Println("----------------------------------------------------------")
 
 	ans1 := interact.Choice(
-		"Your age(use int array)?",
+		"Your age(use int slice/array)?",
 		[]int{23, 34, 45},
 		"",
 	)
-	color.Comment.Println("your select is:", ans1)
+	color.Info.Println("your select is:", ans1)
 
 	fmt.Println("----------------------------------------------------------")
 
@@ -99,7 +94,13 @@ func demoSelect(_ *gcli.Command) {
 		map[string]string{"a": "chengdu", "b": "beijing", "c": "shanghai"},
 		"a",
 	)
-	color.Comment.Println("your select is:", ans2)
+	color.Info.Println("your select is:", ans2)
+
+	s := interact.NewSelect("Your city", []string{"chengdu", "beijing", "shanghai"})
+	s.DefOpt = "2"
+	r := s.Run()
+	color.Info.Println("your select key:", r.K.String())
+	color.Info.Println("your select val:", r.String())
 }
 
 func demoMultiSelect(_ *gcli.Command) {

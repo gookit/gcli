@@ -24,8 +24,7 @@ type RunFace interface {
 
 // Value data store
 type Value struct {
-	// key interface{} // string, []string
-	val interface{}
+	val interface{} // the value(s) of the key(s)
 }
 
 // Set val
@@ -76,6 +75,45 @@ func (v Value) Strings() (ss []string) {
 // IsEmpty value
 func (v Value) IsEmpty() bool {
 	return v.val == nil
+}
+
+/*************************************************************
+ * value for select
+ *************************************************************/
+
+// SelectResult data store
+type SelectResult struct {
+	Value // V the select value(s)
+	K Value // K the select key(s)
+}
+
+// create SelectResult create
+func newSelectResult(key, val interface{}) *SelectResult {
+	return &SelectResult{
+		K: Value{val: key},
+		Value: Value{val: val},
+	}
+}
+
+// KeyString get
+func (sv *SelectResult) KeyString() string {
+	return sv.K.String()
+}
+
+// KeyStrings get
+func (sv *SelectResult) KeyStrings() []string {
+	return sv.K.Strings()
+}
+
+// Key value get
+func (sv *SelectResult) Key() interface{} {
+	return sv.K.Val()
+}
+
+// WithKey value
+func (sv *SelectResult) WithKey(key interface{}) *SelectResult {
+	sv.K.Set(key)
+	return sv
 }
 
 /*************************************************************
