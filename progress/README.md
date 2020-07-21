@@ -152,3 +152,8 @@ func RoundTripSpinner(char rune, speed time.Duration, charNumAndBoxWidth ...int)
 func Spinner(speed time.Duration) *SpinnerFactory
 ```
 
+## Related
+
+- https://github.com/vbauerster/mpb
+- https://github.com/schollz/progressbar
+- https://github.com/gosuri/uiprogress

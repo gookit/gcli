@@ -1,6 +1,8 @@
 package main
 
 import (
+	"flag"
+
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2"
 	"github.com/gookit/gcli/v2/_examples/cmd"
@@ -36,6 +38,11 @@ func main() {
 \____/_____/___/_/  |_/ .___/ .___/
                      /_/   /_/`
 	})
+
+	var customGOpt string
+	app.GOptsBinder = func(flags *flag.FlagSet) {
+		flags.StringVar(&customGOpt, "custom", "", "")
+	}
 
 	// app.Strict = true
 

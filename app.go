@@ -1,41 +1,12 @@
 package gcli
 
 import (
+	"flag"
 	"os"
 	"strings"
 )
 
-// constants for error level 0 - 4
-const (
-	VerbQuiet uint = iota // don't report anything
-	VerbError             // reporting on error
-	VerbWarn
-	VerbInfo
-	VerbDebug
-	VerbCrazy
-)
-
-// constants for hooks event, there are default allowed event names
-const (
-	EvtInit   = "init"
-	EvtBefore = "before"
-	EvtAfter  = "after"
-	EvtError  = "error"
-	// EvtStop   = "stop"
-)
-
-const (
-	// OK success exit code
-	OK = 0
-	// ERR error exit code
-	ERR = 2
-	// GOON prepare run successful, goon run command
-	GOON = -1
-	// HelpCommand name
-	HelpCommand = "help"
-)
-
-// Version the gcli version
+// Version the gCli version
 var Version = "2.2.1"
 
 /*************************************************************
@@ -58,9 +29,10 @@ type Logo struct {
 // App the cli app definition
 type App struct {
 	// internal use
-	*CmdLine
-	HelpVars
-	SimpleHooks // allow hooks: "init", "before", "after", "error"
+	core
+	// *cmdLine
+	// HelpVars
+	// Hooks // allow hooks: "init", "before", "after", "error"
 
 	// Name app name
 	Name string
@@ -74,6 +46,8 @@ type App struct {
 	Args []string
 	// ExitOnEnd call os.Exit on running end
 	ExitOnEnd bool
+	// ExitFunc default is os.Exit
+	ExitFunc func(int)
 	// vars you can add some vars map for render help info
 	// vars map[string]string
 	// command names. key is name, value is name string length
@@ -100,6 +74,8 @@ type App struct {
 	commandName string
 	// Whether it has been initialized
 	initialized bool
+	// GOptsBinder can custom binding global options
+	GOptsBinder func(flags *flag.FlagSet)
 }
 
 // NewApp create new app instance.
@@ -113,15 +89,21 @@ type App struct {
 func NewApp(fn ...func(a *App)) *App {
 	app := &App{
 		Args: os.Args,
-		Name: "GCLI App",
+		Name: "GCli App",
 		Logo: Logo{Style: "info"},
 		// set a default version
 		Version: "1.0.0",
-		CmdLine: CLI,
+		// internal
+		// cmdLine: CLI,
+		core: core{
+			cmdLine: CLI,
+			globalFlags: flag.NewFlagSet("globalOpts", flag.ContinueOnError),
+		},
 		// config
 		ExitOnEnd: true,
 		// commands
-		commands:       make(map[string]*Command),
+		commands: make(map[string]*Command),
+		// group
 		moduleCommands: make(map[string]map[string]*Command),
 		// some default values
 		nameMaxLen:  12,
@@ -143,18 +125,27 @@ func (app *App) Config(fn func(a *App)) {
 	}
 }
 
+// Exit get the app GlobalFlags
+func (app *App) Exit(code int) {
+	if app.ExitFunc == nil {
+		os.Exit(code)
+	}
+
+	app.ExitFunc(code)
+}
+
 // initialize application
 func (app *App) initialize() {
 	app.names = make(map[string]int)
 
 	// init some help tpl vars
-	app.AddVars(app.helpVars())
+	app.core.AddVars(app.core.helpVars())
 
 	// parse GlobalOpts
 	// parseGlobalOpts()
 
 	// add default error handler.
-	app.SimpleHooks.AddOn(EvtError, defaultErrHandler)
+	app.core.AddOn(EvtError, defaultErrHandler)
 
 	app.fireEvent(EvtInit, nil)
 	app.initialized = true
@@ -273,13 +264,13 @@ func (app *App) AddAliases(command string, names []string) {
 func (app *App) On(name string, handler HookFunc) {
 	Logf(VerbDebug, "[App.On] add application hook: %s", name)
 
-	app.SimpleHooks.On(name, handler)
+	app.core.On(name, handler)
 }
 
 func (app *App) fireEvent(event string, data interface{}) {
 	Logf(VerbDebug, "[App.Fire] trigger the application event: %s", event)
 
-	app.SimpleHooks.Fire(event, app, data)
+	app.core.Fire(event, app, data)
 }
 
 // stop application and exit

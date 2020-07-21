@@ -3,6 +3,7 @@ package cmd
 import (
 	"fmt"
 	"io/ioutil"
+	"os"
 	"os/exec"
 	"time"
 
@@ -44,7 +45,7 @@ func handleDaemonRun(c *gcli.Command, _ []string) (err error) {
 		}
 
 		bgrOpts.deamon = false
-		gcli.Exit(0)
+		os.Exit(0)
 	}
 
 	// block process

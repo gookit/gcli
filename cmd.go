@@ -10,7 +10,8 @@ import (
 
 // Runner interface
 type Runner interface {
-	Run(cmd *Command, args []string) error
+	// Config(c *Command)
+	Run(c *Command, args []string) error
 }
 
 // CmdFunc definition
@@ -23,11 +24,11 @@ func (f CmdFunc) Run(c *Command, args []string) error {
 
 // Command a CLI command structure
 type Command struct {
-	// CmdLine is internal use
-	*CmdLine
+	// cmdLine is internal use
+	*cmdLine
 	HelpVars
-	// SimpleHooks can allow setting some hooks func on running.
-	SimpleHooks // allowed hooks: "init", "before", "after", "error"
+	// Hooks can allow setting some hooks func on running.
+	Hooks // allowed hooks: "init", "before", "after", "error"
 
 	// Name is the command name.
 	Name string
@@ -37,16 +38,16 @@ type Command struct {
 	UseFor string
 	// Aliases is the command name's alias names
 	Aliases []string
-	// Func is the command handler func. Func Runner
-	Func CmdFunc
 	// Config func, will call on `initialize`. you can config options and other works
 	Config func(c *Command)
-	// Flags(command options) is a set of flags specific to this command.
-	Flags flag.FlagSet
 	// CustomFlags indicates that the command will do its own flag parsing.
 	CustomFlags bool
+	// Flags(command options) is a set of flags specific to this command.
+	Flags flag.FlagSet
 	// Examples some usage example display
 	Examples string
+	// Func is the command handler func. Func Runner
+	Func CmdFunc
 	// Help is the long help message text
 	Help string
 
@@ -122,7 +123,7 @@ func (c *Command) Runnable() bool {
 
 // initialize command
 func (c *Command) initialize() *Command {
-	c.CmdLine = CLI
+	c.cmdLine = CLI
 
 	// format description
 	if len(c.UseFor) > 0 {
@@ -155,7 +156,7 @@ func (c *Command) initialize() *Command {
 		// mark is alone
 		c.alone = true
 		// add default error handler.
-		c.SimpleHooks.AddOn(EvtError, defaultErrHandler)
+		c.Hooks.AddOn(EvtError, defaultErrHandler)
 	}
 
 	// init for Flags

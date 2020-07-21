@@ -40,48 +40,7 @@ func Logf(level uint, format string, v ...interface{}) {
 	}
 
 	name = level2color[level].Render(name)
-	fmt.Printf("GCLI: [%s] %s\n", name, fmt.Sprintf(format, v...))
-}
-
-/*************************************************************
- * simple events manage
- *************************************************************/
-
-// SimpleHooks struct
-type SimpleHooks struct {
-	// Hooks can setting some hooks func on running.
-	hooks map[string]HookFunc
-}
-
-// On register event hook by name
-func (sh *SimpleHooks) On(name string, handler HookFunc) {
-	if handler != nil {
-		// init map
-		if sh.hooks == nil {
-			sh.hooks = make(map[string]HookFunc)
-		}
-
-		sh.hooks[name] = handler
-	}
-}
-
-// AddOn register on not exists hook.
-func (sh *SimpleHooks) AddOn(name string, handler HookFunc) {
-	if _, ok := sh.hooks[name]; !ok {
-		sh.On(name, handler)
-	}
-}
-
-// Fire event by name, allow with event data
-func (sh *SimpleHooks) Fire(event string, data ...interface{}) {
-	if handler, ok := sh.hooks[event]; ok {
-		handler(data...)
-	}
-}
-
-// ClearHooks clear hooks data
-func (sh *SimpleHooks) ClearHooks() {
-	sh.hooks = nil
+	fmt.Printf("GCli: [%s] %s\n", name, fmt.Sprintf(format, v...))
 }
 
 func defaultErrHandler(data ...interface{}) {
@@ -91,62 +50,6 @@ func defaultErrHandler(data ...interface{}) {
 			// fmt.Println(color.Red.Render("ERROR:"), err.Error())
 		}
 	}
-}
-
-/*************************************************************
- * app/cmd help vars
- *************************************************************/
-
-// HelpVarFormat allow var replace on render help info.
-// Default support:
-// 	"{$binName}" "{$cmd}" "{$fullCmd}" "{$workDir}"
-const HelpVarFormat = "{$%s}"
-
-// HelpVars struct. provide string var function for render help template.
-type HelpVars struct {
-	// Vars you can add some vars map for render help info
-	Vars map[string]string
-}
-
-// AddVar get command name
-func (hv *HelpVars) AddVar(name, value string) {
-	if hv.Vars == nil {
-		hv.Vars = make(map[string]string)
-	}
-
-	hv.Vars[name] = value
-}
-
-// AddVars add multi tpl vars
-func (hv *HelpVars) AddVars(vars map[string]string) {
-	for n, v := range vars {
-		hv.AddVar(n, v)
-	}
-}
-
-// GetVar get a help var by name
-func (hv *HelpVars) GetVar(name string) string {
-	return hv.Vars[name]
-}
-
-// GetVars get all tpl vars
-func (hv *HelpVars) GetVars() map[string]string {
-	return hv.Vars
-}
-
-// ReplaceVars replace vars in the input string.
-func (hv *HelpVars) ReplaceVars(input string) string {
-	// if not use var
-	if !strings.Contains(input, "{$") {
-		return input
-	}
-
-	var ss []string
-	for n, v := range hv.Vars {
-		ss = append(ss, fmt.Sprintf(HelpVarFormat, n), v)
-	}
-
-	return strings.NewReplacer(ss...).Replace(input)
 }
 
 /*************************************************************
@@ -169,7 +72,7 @@ func Printf(format string, args ...interface{}) {
 }
 
 func panicf(format string, v ...interface{}) {
-	panic(fmt.Sprintf("GCLI: "+format, v...))
+	panic(fmt.Sprintf("GCli: "+format, v...))
 }
 
 // func exitWithMsg(format string, v ...interface{}) {

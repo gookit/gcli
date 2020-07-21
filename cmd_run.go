@@ -113,14 +113,14 @@ func (c *Command) collectNamedArgs(inArgs []string) (err error) {
 func (c *Command) Fire(event string, data interface{}) {
 	Logf(VerbDebug, "[Cmd.Fire] command '%s' trigger the event: %s", c.Name, event)
 
-	c.SimpleHooks.Fire(event, c, data)
+	c.Hooks.Fire(event, c, data)
 }
 
 // On add hook handler for a hook event
 func (c *Command) On(name string, handler HookFunc) {
 	Logf(VerbDebug, "[Cmd.On] command '%s' add hook: %s", c.Name, name)
 
-	c.SimpleHooks.On(name, handler)
+	c.Hooks.On(name, handler)
 }
 
 // Copy a new command for current
@@ -128,7 +128,7 @@ func (c *Command) Copy() *Command {
 	nc := *c
 	// reset some fields
 	nc.Func = nil
-	nc.SimpleHooks.ClearHooks()
+	nc.Hooks.ClearHooks()
 	// nc.Flags = flag.FlagSet{}
 
 	return &nc

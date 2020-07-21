@@ -3,7 +3,7 @@ package gcli
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 	"text/template"
 
@@ -16,29 +16,37 @@ import (
 func (app *App) parseGlobalOpts() (ok bool) {
 	Logf(VerbDebug, "[App.parseGFlags] will begin parse global options")
 	// global options flag
-	gFlag := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
+	// gfs := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
+	gfs := app.core.globalFlags
 
 	// bind help func
-	// gFlag.Usage = app.showApplicationHelp
-	// do nothing
-	gFlag.Usage = func() {}
+	// gfs.Usage = app.showApplicationHelp
+	// do nothing, disable internal help render.
+	gfs.Usage = func() {}
+	// disable output internal error message on parse flags
+	// gfs.SetOutput(ioutil.Discard)
+	gfs.SetOutput(os.Stdout)
 
 	// binding global options
-	gFlag.UintVar(&gOpts.verbose, "verbose", gOpts.verbose, "")
-	gFlag.BoolVar(&gOpts.showHelp, "h", false, "")
-	gFlag.BoolVar(&gOpts.showHelp, "help", false, "")
-	gFlag.BoolVar(&gOpts.showVer, "V", false, "")
-	gFlag.BoolVar(&gOpts.showVer, "version", false, "")
-	gFlag.BoolVar(&gOpts.noColor, "no-color", gOpts.noColor, "")
+	gfs.UintVar(&gOpts.verbose, "verbose", gOpts.verbose, "Set error reporting level(quiet 0 - 4 debug)")
+	gfs.BoolVar(&gOpts.showHelp, "h", false, "Display the help information")
+	gfs.BoolVar(&gOpts.showHelp, "help", false, "Display the help information")
+	gfs.BoolVar(&gOpts.showVer, "V", false, "Display app version information")
+	gfs.BoolVar(&gOpts.showVer, "version", false, "Display app version information")
+	gfs.BoolVar(&gOpts.noColor, "no-color", gOpts.noColor, "Disable color when outputting message")
 	// this is a internal command
-	gFlag.BoolVar(&gOpts.inCompletion, "cmd-completion", false, "")
+	gfs.BoolVar(&gOpts.inCompletion, "cmd-completion", false, "")
 
-	// disable output internal error message on parse flags
-	gFlag.SetOutput(ioutil.Discard)
+	// support binding custom global options
+	if app.GOptsBinder != nil {
+		app.GOptsBinder(gfs)
+	}
+
 	// parse global options
-	err := gFlag.Parse(app.Args[1:])
+	err := gfs.Parse(app.Args[1:])
 	if err != nil {
 		color.Error.Tips(err.Error())
+		showGlobalFlagsHelp(gfs)
 		return
 	}
 
@@ -57,7 +65,7 @@ func (app *App) parseGlobalOpts() (ok bool) {
 		color.Enable = false
 	}
 
-	app.rawFlagArgs = gFlag.Args()
+	app.rawFlagArgs = gfs.Args()
 	Logf(VerbDebug, "[App.parseGFlags] console debug is enabled, level is %d", gOpts.verbose)
 
 	return true
@@ -117,13 +125,13 @@ func (app *App) Run() (code int) {
 	}
 
 	if code = app.prepareRun(); code != GOON {
-		if app.ExitOnEnd {
-			Exit(code)
-		}
-		return code
+		return app.exitIfExitOnEnd(code)
 	}
 
-	Logf(VerbCrazy, "[App.Run] begin run console application, process ID: %d", app.pid)
+	// trigger event
+	app.fireEvent(EvtAppPrepareAfter, app)
+
+	Logf(VerbCrazy, "[App.Run] begin run console application, process ID: %d", app.PID())
 
 	args := app.cleanArgs
 	name := app.RealCommandName(app.rawName)
@@ -140,9 +148,12 @@ func (app *App) Run() (code int) {
 	code = app.doRun(name, args)
 
 	Logf(VerbDebug, "[App.Run] command '%s' run complete, exit with code: %d", name, code)
+	return app.exitIfExitOnEnd(code)
+}
 
+func (app *App) exitIfExitOnEnd(code int) int {
 	if app.ExitOnEnd {
-		Exit(code)
+		app.Exit(code)
 	}
 	return code
 }
@@ -300,6 +311,13 @@ func (app *App) showApplicationHelp() {
 
 	// parse help vars and render color tags
 	color.Print(app.ReplaceVars(s))
+}
+
+func showGlobalFlagsHelp(gfs *flag.FlagSet)  {
+	gfs.PrintDefaults()
+	gfs.VisitAll(func(f *flag.Flag) {
+
+	})
 }
 
 // showCommandHelp display help for an command

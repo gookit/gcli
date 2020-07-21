@@ -5,17 +5,48 @@
 // Source code and other details for the project are available at GitHub:
 // 		https://github.com/gookit/gcli
 //
-// Usage please refer examples and README
+// Usage please refer examples and see README
 package gcli
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"runtime"
 	"strings"
 
 	"github.com/gookit/goutil/envutil"
+)
+
+// constants for error level 0 - 4
+const (
+	VerbQuiet uint = iota // don't report anything
+	VerbError             // reporting on error
+	VerbWarn
+	VerbInfo
+	VerbDebug
+	VerbCrazy
+)
+
+// constants for hooks event, there are default allowed event names
+const (
+	EvtInit   = "init"
+	EvtBefore = "before"
+	EvtAfter  = "after"
+	EvtError  = "error"
+
+	EvtAppPrepareAfter  = "app.prepare.after"
+	// EvtStop   = "stop"
+)
+
+const (
+	// OK success exit code
+	OK = 0
+	// ERR error exit code
+	ERR = 2
+	// GOON prepare run successful, goon run command
+	GOON = -1
+	// HelpCommand name
+	HelpCommand = "help"
 )
 
 var (
@@ -26,7 +57,7 @@ var (
 		strictMode: true,
 	}
 	// CLI create a default instance
-	CLI = &CmdLine{
+	CLI = &cmdLine{
 		pid: os.Getpid(),
 		// more info
 		osName:  runtime.GOOS,
@@ -34,23 +65,6 @@ var (
 		argLine: strings.Join(os.Args[1:], " "),
 	}
 )
-
-// GlobalOpts global flags
-type GlobalOpts struct {
-	noColor  bool
-	verbose  uint // message report level
-	showVer  bool
-	showHelp bool
-	// StrictMode use strict mode for parse flags
-	// If True(default):
-	// 	- short opt must be begin "-", long opt must be begin "--"
-	//	- will convert like "-ab" to "-a -b"
-	// 	- will check invalid arguments, like to many arguments
-	strictMode bool
-	// command auto completion mode.
-	// eg "./cli --cmd-completion [COMMAND --OPT ARG]"
-	inCompletion bool
-}
 
 // init
 func init() {
@@ -112,62 +126,12 @@ func SetStrictMode(strict bool) {
 	gOpts.strictMode = strict
 }
 
-/*************************************************************
- * Command Line: command data
- *************************************************************/
+// Executor definition
+type Executor interface {
 
-// CmdLine store common data for CLI
-type CmdLine struct {
-	// pid for current application
-	pid int
-	// os name.
-	osName string
-	// the CLI app work dir path. by `os.Getwd()`
-	workDir string
-	// bin script name, by `os.Args[0]`. eg "./cliapp"
-	binName string
-	// os.Args to string, but no binName.
-	argLine string
 }
 
-// PID get PID
-func (c *CmdLine) PID() int {
-	return c.pid
-}
+// Executor definition
+type RunningAble struct {
 
-// OsName is equals to `runtime.GOOS`
-func (c *CmdLine) OsName() string {
-	return c.osName
-}
-
-// OsArgs is equals to `os.Args`
-func (c *CmdLine) OsArgs() []string {
-	return os.Args
-}
-
-// BinName get bin script name
-func (c *CmdLine) BinName() string {
-	return c.binName
-}
-
-// WorkDir get work dir
-func (c *CmdLine) WorkDir() string {
-	return c.workDir
-}
-
-// ArgLine os.Args to string, but no binName.
-func (c *CmdLine) ArgLine() string {
-	return c.argLine
-}
-
-func (c *CmdLine) helpVars() map[string]string {
-	return map[string]string{
-		"pid":     fmt.Sprint(CLI.pid),
-		"workDir": CLI.workDir,
-		"binName": CLI.binName,
-	}
-}
-
-func (c *CmdLine) hasHelpKeywords() bool {
-	return strings.HasSuffix(c.argLine, " -h") || strings.HasSuffix(c.argLine, " --help")
 }
