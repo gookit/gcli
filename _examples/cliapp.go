@@ -19,8 +19,6 @@ import (
 // run on windows(cmd, powerShell):
 // 	go build ./_examples/cliapp.go; ./cliapp
 func main() {
-	// runtime.GOMAXPROCS(runtime.NumCPU())
-
 	app := gcli.NewApp(func(app *gcli.App) {
 		app.Version = "1.0.6"
 		app.Description = "this is my cli application"
@@ -41,7 +39,7 @@ func main() {
 
 	var customGOpt string
 	app.GOptsBinder = func(flags *flag.FlagSet) {
-		flags.StringVar(&customGOpt, "custom", "", "")
+		flags.StringVar(&customGOpt, "custom", "", "custom global option")
 	}
 
 	// app.Strict = true

@@ -14,7 +14,7 @@ type core struct {
 	Hooks // allowed hooks: "init", "before", "after", "error"
 	// global options flag set
 	globalFlags *flag.FlagSet
-	// GOptsBinder can custom binding global options
+	// GOptsBinder you can custom binding global options
 	GOptsBinder func(flags *flag.FlagSet)
 }
 
@@ -24,7 +24,7 @@ func (c core) GlobalFlags() *flag.FlagSet {
 }
 
 // common basic help vars
-func (c core) helpVars() map[string]string {
+func (c core) innerHelpVars() map[string]string {
 	return map[string]string{
 		"pid":     fmt.Sprint(CLI.pid),
 		"workDir": CLI.workDir,
@@ -120,6 +120,7 @@ func (c *cmdLine) ArgLine() string {
 	return c.argLine
 }
 
+// TODO remove
 func (c *cmdLine) helpVars() map[string]string {
 	return map[string]string{
 		"pid":     fmt.Sprint(CLI.pid),

@@ -3,12 +3,13 @@ package gcli
 import (
 	"flag"
 	"fmt"
-	"os"
+	"io/ioutil"
 	"strings"
 	"text/template"
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2/helper"
+	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -17,15 +18,15 @@ func (app *App) parseGlobalOpts() (ok bool) {
 	Logf(VerbDebug, "[App.parseGFlags] will begin parse global options")
 	// global options flag
 	// gfs := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
-	gfs := app.core.globalFlags
+	gfs := app.GlobalFlags()
 
 	// bind help func
 	// gfs.Usage = app.showApplicationHelp
 	// do nothing, disable internal help render.
 	gfs.Usage = func() {}
 	// disable output internal error message on parse flags
-	// gfs.SetOutput(ioutil.Discard)
-	gfs.SetOutput(os.Stdout)
+	gfs.SetOutput(ioutil.Discard)
+	// gfs.SetOutput(os.Stdout)
 
 	// binding global options
 	gfs.UintVar(&gOpts.verbose, "verbose", gOpts.verbose, "Set error reporting level(quiet 0 - 4 debug)")
@@ -46,12 +47,13 @@ func (app *App) parseGlobalOpts() (ok bool) {
 	err := gfs.Parse(app.Args[1:])
 	if err != nil {
 		color.Error.Tips(err.Error())
-		showGlobalFlagsHelp(gfs)
 		return
 	}
 
 	// check global options
 	if gOpts.showHelp {
+		showGlobalFlagsHelp(gfs)
+
 		app.showApplicationHelp()
 		return
 	}
@@ -134,7 +136,7 @@ func (app *App) Run() (code int) {
 	Logf(VerbCrazy, "[App.Run] begin run console application, process ID: %d", app.PID())
 
 	args := app.cleanArgs
-	name := app.RealCommandName(app.rawName)
+	name := app.ResolveName(app.rawName)
 
 	Logf(VerbDebug, "[App.Run] input command: '%s', real command: '%s', flags: %v", app.rawName, name, args)
 
@@ -216,12 +218,6 @@ func (app *App) Exec(name string, args []string) (err error) {
 	return cmd.execute(args)
 }
 
-// IsCommand name check
-func (app *App) IsCommand(name string) bool {
-	_, has := app.names[name]
-	return has
-}
-
 // CommandName get current command name
 func (app *App) CommandName() string {
 	return app.commandName
@@ -235,15 +231,6 @@ func (app *App) CommandNames() []string {
 	}
 
 	return ss
-}
-
-// RealCommandName get real command name by alias
-func (app *App) RealCommandName(alias string) string {
-	if name, has := app.aliases[alias]; has {
-		return name
-	}
-
-	return alias
 }
 
 /*************************************************************
@@ -314,6 +301,7 @@ func (app *App) showApplicationHelp() {
 }
 
 func showGlobalFlagsHelp(gfs *flag.FlagSet)  {
+	dump.P(gfs)
 	gfs.PrintDefaults()
 	gfs.VisitAll(func(f *flag.Flag) {
 
@@ -329,7 +317,7 @@ func (app *App) showCommandHelp(list []string) (code int) {
 	}
 
 	// get real name
-	name := app.RealCommandName(list[0])
+	name := app.ResolveName(list[0])
 	if name == HelpCommand || name == "-h" {
 		color.Println("Display help message for application or command.\n")
 		color.Printf("Usage:\n <cyan>%s {COMMAND} --help</> OR <cyan>%s help {COMMAND}</>\n", binName, binName)

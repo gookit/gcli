@@ -40,15 +40,13 @@ A simple to use command line application, written using golang.
 - [godoc for gopkg](https://godoc.org/gopkg.in/gookit/gcli.v2)
 - [godoc for github](https://godoc.org/github.com/gookit/gcli)
 
-## Quick start
+## Install
 
 ```bash
-import "gopkg.in/gookit/gcli.v2" // is recommended
-// or
-import "github.com/gookit/gcli"
-// for go mod
-import "github.com/gookit/gcli/v2"
+go get github.com/gookit/gcli/v2
 ```
+
+## Quick start
 
 ```go 
 package main
@@ -61,8 +59,6 @@ import (
 
 // for test run: go build ./_examples/cliapp.go && ./cliapp
 func main() {
-    runtime.GOMAXPROCS(runtime.NumCPU())
-
     app := gcli.NewApp()
     app.Version = "1.0.3"
     app.Description = "this is my cli application"

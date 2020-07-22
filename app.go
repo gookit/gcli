@@ -74,8 +74,6 @@ type App struct {
 	commandName string
 	// Whether it has been initialized
 	initialized bool
-	// GOptsBinder can custom binding global options
-	GOptsBinder func(flags *flag.FlagSet)
 }
 
 // NewApp create new app instance.
@@ -139,7 +137,7 @@ func (app *App) initialize() {
 	app.names = make(map[string]int)
 
 	// init some help tpl vars
-	app.core.AddVars(app.core.helpVars())
+	app.core.AddVars(app.core.innerHelpVars())
 
 	// parse GlobalOpts
 	// parseGlobalOpts()
@@ -244,21 +242,96 @@ func (app *App) AddCommand(c *Command) *Command {
 	return c
 }
 
+// ResolveName get real command name by alias
+func (app *App) ResolveName(alias string) string {
+	if name, has := app.aliases[alias]; has {
+		return name
+	}
+
+	return alias
+}
+
+// RealCommandName get real command name by alias
+// Deprecated
+func (app *App) RealCommandName(alias string) string {
+	if name, has := app.aliases[alias]; has {
+		return name
+	}
+
+	return alias
+}
+
+// IsCommand name check
+func (app *App) IsCommand(name string) bool {
+	_, has := app.names[name]
+	return has
+}
+
+// HasCommand in the application
+func (app *App) HasCommand(name string) bool {
+	return app.IsCommand(name)
+}
+
+// RemoveCommand from the application
+func (app *App) RemoveCommand(names ...string) int {
+	var num int
+	for _, name := range names {
+		if app.removeCommand(name) {
+			num++
+		}
+	}
+	return num
+}
+
+func (app *App) removeCommand(name string) bool {
+	if !app.IsCommand(name) {
+		return false
+	}
+
+	// remove all aliases
+	for alias, cName := range app.aliases {
+		if cName == name {
+			delete(app.aliases, alias)
+		}
+	}
+
+	delete(app.names, name)
+	delete(app.commands, name)
+
+	return true
+}
+
+// IsAlias name check
+func (app *App) IsAlias(str string) bool {
+	_, has := app.aliases[str]
+	return has
+}
+
 // AddAliases add alias names for a command
-func (app *App) AddAliases(command string, names []string) {
+func (app *App) AddAliases(command string, aliases []string) {
 	if app.aliases == nil {
 		app.aliases = make(map[string]string)
 	}
 
+	c, has := app.commands[command]
+	if !has {
+		panicf("The command '%s' is not exists", command)
+	}
+
 	// add alias
-	for _, alias := range names {
+	for _, alias := range aliases {
 		if cmd, has := app.aliases[alias]; has {
 			panicf("The alias '%s' has been used by command '%s'", alias, cmd)
 		}
 
 		app.aliases[alias] = command
+		// sync to Command
+		c.Aliases = append(c.Aliases, alias)
 	}
 }
+
+// On add hook handler for a hook event
+// func (app *App) BeforeInit(name string, handler HookFunc) {}
 
 // On add hook handler for a hook event
 func (app *App) On(name string, handler HookFunc) {

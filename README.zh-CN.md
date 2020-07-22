@@ -39,17 +39,15 @@
 - [godoc for gopkg](https://godoc.org/gopkg.in/gookit/gcli.v2)
 - [godoc for github](https://godoc.org/github.com/gookit/gcli)
 
+## 安装
+
+```bash
+go get github.com/gookit/gcli/v2
+```
+
 ## 快速开始
 
 如下，引入当前包就可以快速的编写cli应用了
-
-```bash
-import "gopkg.in/gookit/gcli.v2" // 推荐
-// or
-import "github.com/gookit/gcli"
-// for go mod
-import "github.com/gookit/gcli/v2"
-```
 
 ```go 
 package main
@@ -62,8 +60,6 @@ import (
 
 // 测试运行: go run ./_examples/cliapp.go && ./cliapp
 func main() {
-    runtime.GOMAXPROCS(runtime.NumCPU())
-
     app := gcli.NewApp()
     app.Version = "1.0.3"
     app.Description = "this is my cli application"

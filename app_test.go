@@ -9,6 +9,13 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+var (
+	emptyCmd = &gcli.Command{
+		Name: "empty",
+		UseFor: "an test command",
+	}
+)
+
 func TestStdApp(t *testing.T) {
 	is := assert.New(t)
 
@@ -46,6 +53,7 @@ func TestApp_Add(t *testing.T) {
 	app.AddCommand(&gcli.Command{
 		Name:   "m1:c3",
 		UseFor: "{$cmd} desc",
+		Aliases: []string{"alias1"},
 		Config: func(c *gcli.Command) {
 			is.Equal("m1:c3", c.Name)
 		},
@@ -53,15 +61,16 @@ func TestApp_Add(t *testing.T) {
 
 	is.True(app.IsCommand("c1"))
 	is.True(app.IsCommand("c2"))
-	is.True(app.IsCommand("m1:c3"))
+	is.True(app.HasCommand("m1:c3"))
 	is.Len(app.Names(), 3)
 	is.NotEmpty(app.Names())
 
-	c := gcli.NewCommand("mdl:test", "desc test2", func(c *gcli.Command) {
-	})
+	c := gcli.NewCommand("mdl:test", "desc test2")
 	app.AddCommand(c)
 
 	is.Equal("mdl", c.Module())
+	is.Equal("m1:c3", app.ResolveName("alias1"))
+	is.True(app.IsAlias("alias1"))
 }
 
 func TestApp_Run(t *testing.T) {
