@@ -1,7 +1,6 @@
 package gcli
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -13,14 +12,14 @@ type core struct {
 	HelpVars
 	Hooks // allowed hooks: "init", "before", "after", "error"
 	// global options flag set
-	globalFlags *flag.FlagSet
+	gFlags *GFlags
 	// GOptsBinder you can custom binding global options
-	GOptsBinder func(flags *flag.FlagSet)
+	GOptsBinder func(gf *GFlags)
 }
 
 // GlobalFlags get the app GlobalFlags
-func (c core) GlobalFlags() *flag.FlagSet {
-	return c.globalFlags
+func (c core) GlobalFlags() *GFlags {
+	return c.gFlags
 }
 
 // common basic help vars

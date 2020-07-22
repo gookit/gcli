@@ -95,7 +95,7 @@ func NewApp(fn ...func(a *App)) *App {
 		// cmdLine: CLI,
 		core: core{
 			cmdLine: CLI,
-			globalFlags: flag.NewFlagSet("globalOpts", flag.ContinueOnError),
+			gFlags: NewGFlags("globalOpts"),
 		},
 		// config
 		ExitOnEnd: true,
@@ -239,6 +239,16 @@ func (app *App) AddCommand(c *Command) *Command {
 	// init command
 	c.app = app
 	c.initialize()
+	return c
+}
+
+// AddCommander to the application
+func (app *App) AddCommander(cmder Commander) *Command {
+	c := cmder.Creator()
+	c.Func = cmder.Run
+
+	// binding flags
+	cmder.BindFlags(c)
 	return c
 }
 

@@ -20,20 +20,10 @@ func (app *App) parseGlobalOpts() (ok bool) {
 	// gfs := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
 	gfs := app.GlobalFlags()
 
-	// bind help func
-	// gfs.Usage = app.showApplicationHelp
-	// do nothing, disable internal help render.
-	gfs.Usage = func() {}
-	// disable output internal error message on parse flags
-	gfs.SetOutput(ioutil.Discard)
-	// gfs.SetOutput(os.Stdout)
-
 	// binding global options
 	gfs.UintVar(&gOpts.verbose, "verbose", gOpts.verbose, "Set error reporting level(quiet 0 - 4 debug)")
-	gfs.BoolVar(&gOpts.showHelp, "h", false, "Display the help information")
-	gfs.BoolVar(&gOpts.showHelp, "help", false, "Display the help information")
-	gfs.BoolVar(&gOpts.showVer, "V", false, "Display app version information")
-	gfs.BoolVar(&gOpts.showVer, "version", false, "Display app version information")
+	gfs.BoolVar(&gOpts.showHelp, "help", false, "Display the help information", "h")
+	gfs.BoolVar(&gOpts.showVer, "version", false, "Display app version information", "V")
 	gfs.BoolVar(&gOpts.noColor, "no-color", gOpts.noColor, "Disable color when outputting message")
 	// this is a internal command
 	gfs.BoolVar(&gOpts.inCompletion, "cmd-completion", false, "")

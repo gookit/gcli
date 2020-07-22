@@ -1,8 +1,6 @@
 package main
 
 import (
-	"flag"
-
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2"
 	"github.com/gookit/gcli/v2/_examples/cmd"
@@ -38,8 +36,8 @@ func main() {
 	})
 
 	var customGOpt string
-	app.GOptsBinder = func(flags *flag.FlagSet) {
-		flags.StringVar(&customGOpt, "custom", "", "custom global option")
+	app.GOptsBinder = func(gf *gcli.GFlags) {
+		gf.StrOpt(&customGOpt, &gcli.Meta{Name: "custom", UseFor: "desc message"})
 	}
 
 	// app.Strict = true
