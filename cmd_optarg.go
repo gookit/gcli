@@ -221,6 +221,11 @@ func (c *Command) AddArg(name, description string, requiredAndIsArray ...bool) *
 	return c.AddArgument(newArg)
 }
 
+// BindArg alias of the AddArgument()
+func (c *Command) BindArg(arg *Argument) *Argument {
+	return c.AddArgument(arg)
+}
+
 // AddArgument binding an named argument for the command.
 //
 // Notice:

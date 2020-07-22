@@ -8,20 +8,6 @@ import (
 	"github.com/gookit/goutil/strutil"
 )
 
-// Runner interface
-type Runner interface {
-	// Config(c *Command)
-	Run(c *Command, args []string) error
-}
-
-// CmdFunc definition
-type CmdFunc func(c *Command, args []string) error
-
-// Run implement the Runner interface
-func (f CmdFunc) Run(c *Command, args []string) error {
-	return f(c, args)
-}
-
 // Command a CLI command structure
 type Command struct {
 	// cmdLine is internal use
