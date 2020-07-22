@@ -36,6 +36,16 @@ type ArgsParser struct {
 	args []string
 }
 
+// NewArgsParser create
+func NewArgsParser(boolOpts []string, arrayOpts []string) *ArgsParser {
+	p := &ArgsParser{
+		BoolOpts:  boolOpts,
+		ArrayOpts: arrayOpts,
+	}
+
+	return p
+}
+
 // ParseArgs parse os.Args to options.
 func ParseArgs(args []string, boolOpts []string, arrayOpts []string) *ArgsParser {
 	p := &ArgsParser{

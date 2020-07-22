@@ -34,7 +34,8 @@ func TestArgsParser_Parse(t *testing.T) {
 	args = strings.Split(sample, " ")
 
 	// 加上 []string{"debug"} 解析器就能正确分别 "--debug arg0"
-	p = ParseArgs(args, []string{"debug"}, nil)
+	p = NewArgsParser([]string{"debug"}, nil)
+	p.Parse(args)
 	at.Equal("[arg0 arg1]", fmt.Sprint(p.Args()))
 	str = p.OptsString()
 	assertOptions(str)

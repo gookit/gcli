@@ -18,9 +18,9 @@ type Arguments struct {
 	// 	"arg0": 0,
 	// 	"arg1": 1,
 	// }
-	argsIndexes    map[string]int
-	hasArrayArg    bool
-	hasOptionalArg bool
+	argsIndexes  map[string]int
+	hasArrayable bool
+	hasOptional  bool
 }
 
 // Add a new argument
