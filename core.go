@@ -15,6 +15,7 @@ type core struct {
 	gFlags *GFlags
 	// GOptsBinder you can custom binding global options
 	GOptsBinder func(gf *GFlags)
+
 }
 
 // GlobalFlags get the app GlobalFlags

@@ -52,6 +52,21 @@ func defaultErrHandler(data ...interface{}) {
 	}
 }
 
+// TODO use strutil.IsAlphabet() instead
+func isAlphabet(char uint8) bool {
+	// A 65 -> Z 90
+	if char >= 'A' && char <= 'Z' {
+		return true
+	}
+
+	// a 97 -> z 122
+	if char >= 'a' && char <= 'z' {
+		return true
+	}
+
+	return false
+}
+
 /*************************************************************
  * some helper methods
  *************************************************************/

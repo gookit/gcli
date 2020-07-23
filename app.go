@@ -1,7 +1,6 @@
 package gcli
 
 import (
-	"flag"
 	"os"
 	"strings"
 )

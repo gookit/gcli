@@ -3,7 +3,6 @@ package gcli
 import (
 	"flag"
 	"fmt"
-	"io/ioutil"
 	"strings"
 	"text/template"
 
@@ -57,7 +56,7 @@ func (app *App) parseGlobalOpts() (ok bool) {
 		color.Enable = false
 	}
 
-	app.rawFlagArgs = gfs.Args()
+	app.rawFlagArgs = gfs.Fs().Args()
 	Logf(VerbDebug, "[App.parseGFlags] console debug is enabled, level is %d", gOpts.verbose)
 
 	return true
@@ -290,10 +289,10 @@ func (app *App) showApplicationHelp() {
 	color.Print(app.ReplaceVars(s))
 }
 
-func showGlobalFlagsHelp(gfs *flag.FlagSet)  {
-	dump.P(gfs)
-	gfs.PrintDefaults()
-	gfs.VisitAll(func(f *flag.Flag) {
+func showGlobalFlagsHelp(gf *GFlags)  {
+	dump.P(gf)
+	gf.Fs().PrintDefaults()
+	gf.Fs().VisitAll(func(f *flag.Flag) {
 
 	})
 }

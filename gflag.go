@@ -25,9 +25,8 @@ func NewGFlags(name string) *GFlags {
 
 	// disable output internal error message on parse flags
 	gf.fs.SetOutput(ioutil.Discard)
-	gf.fs.Usage = func() {
-		// nothing to do ... render usage on after
-	}
+	// nothing to do ... render usage on after parsed
+	gf.fs.Usage = func() {}
 
 	return gf
 }
@@ -174,6 +173,11 @@ func (gf *GFlags) checkName(name string) string {
 
 // check short names
 func (gf *GFlags) checkShortNames(name string, shorts []string) []string {
+	// init gf.shortcuts
+	if gf.shortcuts == nil {
+		gf.shortcuts = map[string]string{}
+	}
+
 	var fmtShorts []string
 	for _, short := range shorts {
 		short = strings.Trim(short, "- ")
@@ -184,8 +188,9 @@ func (gf *GFlags) checkShortNames(name string, shorts []string) []string {
 		// ensure it is one char
 		char := short[0]
 		short = string(char)
-		if char < 'a' || char > 'Z'{
-			panicf("shortcut name only allow: a-zA-Z(given: '%s')", short)
+		// A 65 -> Z 90, a 97 -> z 122
+		if !isAlphabet(char) {
+			panicf("shortcut name only allow: A-Za-z(given: '%s')", short)
 		}
 
 		if n, ok := gf.shortcuts[short]; ok {
@@ -240,6 +245,3 @@ func (m *Meta) Description() string {
 
 	return "no description"
 }
-
-
-
