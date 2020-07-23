@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
+	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -75,8 +76,8 @@ func (gf *GFlags) SetHelpOption(flagNoType, flagDescOL bool) {
 
 // --- bool option
 
-// BoolOpt binding an bool option flag
-func (gf *GFlags) BoolOpt(p *bool, info Meta) {
+// BoolVar binding an bool option flag
+func (gf *GFlags) BoolVar(p *bool, info Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().Bool()
 
@@ -84,8 +85,8 @@ func (gf *GFlags) BoolOpt(p *bool, info Meta) {
 	gf.boolOpt(p, info.Name, defValue, info.Description(), info.Shortcuts)
 }
 
-// BoolVar binding an bool option
-func (gf *GFlags) BoolVar(p *bool, name string, defValue bool, description string, shortcuts ...string) {
+// BoolOpt binding an bool option
+func (gf *GFlags) BoolOpt(p *bool, name string, defValue bool, description string, shortcuts ...string) {
 	name = gf.checkName(name)
 
 	// binding option and shortcuts
@@ -107,8 +108,8 @@ func (gf *GFlags) boolOpt(p *bool, name string, defValue bool, description strin
 
 // --- float option
 
-// Float64Opt binding an string option flag
-func (gf *GFlags) Float64Opt(p *float64, info Meta) {
+// Float64Var binding an float64 option flag
+func (gf *GFlags) Float64Var(p *float64, info Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().Float64()
 
@@ -116,8 +117,8 @@ func (gf *GFlags) Float64Opt(p *float64, info Meta) {
 	gf.float64Opt(p, info.Name, defValue, info.Description(), info.Shortcuts)
 }
 
-// BoolVar binding an bool option
-func (gf *GFlags) Float64Var(p *float64, name string, defValue float64, description string, shortcuts ...string) {
+// Float64Opt binding an float64 option
+func (gf *GFlags) Float64Opt(p *float64, name string, defValue float64, description string, shortcuts ...string) {
 	name = gf.checkName(name)
 
 	// binding option and shortcuts
@@ -139,8 +140,8 @@ func (gf *GFlags) float64Opt(p *float64, name string, defValue float64, descript
 
 // --- string option
 
-// StrOpt binding an string option flag
-func (gf *GFlags) StrOpt(p *string, info Meta) {
+// StrVar binding an string option flag
+func (gf *GFlags) StrVar(p *string, info Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().String()
 
@@ -148,8 +149,8 @@ func (gf *GFlags) StrOpt(p *string, info Meta) {
 	gf.strOpt(p, info.Name, defValue, info.Description(), info.Shortcuts)
 }
 
-// BoolVar binding an bool option
-func (gf *GFlags) StrVar(p *string, name, defValue, description string, shortcuts ...string) {
+// StrOpt binding an string option
+func (gf *GFlags) StrOpt(p *string, name, defValue, description string, shortcuts ...string) {
 	name = gf.checkName(name)
 
 	// binding option and shortcuts
@@ -171,8 +172,8 @@ func (gf *GFlags) strOpt(p *string, name, defValue, description string, shortNam
 
 // --- intX option
 
-// IntOpt binding an uint option flag
-func (gf *GFlags) IntOpt(p *int, info Meta) {
+// IntVar binding an int option flag
+func (gf *GFlags) IntVar(p *int, info Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().Int()
 
@@ -180,8 +181,8 @@ func (gf *GFlags) IntOpt(p *int, info Meta) {
 	gf.intOpt(p, info.Name, defValue, info.Description(), info.Shortcuts)
 }
 
-// IntVar binding an int option
-func (gf *GFlags) IntVar(p *int, name string, defValue int, description string, shortcuts ...string) {
+// IntOpt binding an int option
+func (gf *GFlags) IntOpt(p *int, name string, defValue int, description string, shortcuts ...string) {
 	name = gf.checkName(name)
 
 	// binding option and shortcuts
@@ -201,8 +202,8 @@ func (gf *GFlags) intOpt(p *int, name string, defValue int, description string, 
 	}
 }
 
-// Int64Opt binding an uint option flag
-func (gf *GFlags) Int64Opt(p *int64, info Meta) {
+// Int64Var binding an uint option flag
+func (gf *GFlags) Int64Var(p *int64, info Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().Int64()
 
@@ -210,8 +211,8 @@ func (gf *GFlags) Int64Opt(p *int64, info Meta) {
 	gf.int64Opt(p, info.Name, defValue, info.Description(), info.Shortcuts)
 }
 
-// Int64Var binding an int64 option
-func (gf *GFlags) Int64Var(p *int64, name string, defValue int64, description string, shortcuts ...string) {
+// Int64Opt binding an int64 option
+func (gf *GFlags) Int64Opt(p *int64, name string, defValue int64, description string, shortcuts ...string) {
 	name = gf.checkName(name)
 
 	// binding option and shortcuts
@@ -233,8 +234,8 @@ func (gf *GFlags) int64Opt(p *int64, name string, defValue int64, description st
 
 // --- uintX option
 
-// UintOpt binding an uint option flag
-func (gf *GFlags) UintOpt(p *uint, info Meta) {
+// UintVar binding an uint option flag
+func (gf *GFlags) UintVar(p *uint, info Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().Int()
 
@@ -242,8 +243,8 @@ func (gf *GFlags) UintOpt(p *uint, info Meta) {
 	gf.uintOpt(p, info.Name, uint(defValue), info.Description(), info.Shortcuts)
 }
 
-// UintVar binding an uint option
-func (gf *GFlags) UintVar(p *uint, name string, defValue uint, description string, shortcuts ...string) {
+// UintOpt binding an uint option
+func (gf *GFlags) UintOpt(p *uint, name string, defValue uint, description string, shortcuts ...string) {
 	name = gf.checkName(name)
 
 	// binding option and shortcuts
@@ -263,8 +264,8 @@ func (gf *GFlags) uintOpt(p *uint, name string, defValue uint, description strin
 	}
 }
 
-// UintOpt binding an uint option flag
-func (gf *GFlags) Uint64Opt(p *uint64, info Meta) {
+// Uint64Var binding an uint option flag
+func (gf *GFlags) Uint64Var(p *uint64, info Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().Int64()
 
@@ -272,8 +273,8 @@ func (gf *GFlags) Uint64Opt(p *uint64, info Meta) {
 	gf.uint64Opt(p, info.Name, uint64(defValue), info.Description(), info.Shortcuts)
 }
 
-// Uint64Var binding an uint64 option
-func (gf *GFlags) Uint64Var(p *uint64, name string, defValue uint64, description string, shortcuts ...string) {
+// Uint64Opt binding an uint64 option
+func (gf *GFlags) Uint64Opt(p *uint64, name string, defValue uint64, description string, shortcuts ...string) {
 	name = gf.checkName(name)
 
 	// binding option and shortcuts
@@ -522,8 +523,8 @@ type Meta struct {
 }
 
 // DValue wrap the default value
-func (m *Meta) DValue() *Value {
-	return &Value{V: m.DefValue}
+func (m *Meta) DValue() *goutil.Value {
+	return &goutil.Value{V: m.DefValue}
 }
 
 // Description of the flag

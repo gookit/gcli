@@ -11,7 +11,7 @@ import (
 
 var (
 	emptyCmd = &gcli.Command{
-		Name: "empty",
+		Name:   "empty",
 		UseFor: "an test command",
 	}
 )
@@ -51,8 +51,8 @@ func TestApp_Add(t *testing.T) {
 		is.Equal("c2", c.Name)
 	}))
 	app.AddCommand(&gcli.Command{
-		Name:   "m1:c3",
-		UseFor: "{$cmd} desc",
+		Name:    "m1:c3",
+		UseFor:  "{$cmd} desc",
 		Aliases: []string{"alias1"},
 		Config: func(c *gcli.Command) {
 			is.Equal("m1:c3", c.Name)
@@ -169,4 +169,29 @@ func TestApp_showCommandHelp(t *testing.T) {
 	buf.Reset()
 	is.Equal(gcli.ERR, code)
 	is.Contains(str, "Unknown command name 'not-exist'")
+}
+
+func TestApp_AddCommander(t *testing.T) {
+	app := gcli.NewApp()
+
+	app.AddCommander(&UserCommand{})
+
+	assert.True(t, app.HasCommand("test"))
+}
+
+// UserCommand for tests
+type UserCommand struct {
+	opt1 string
+}
+
+func (uc *UserCommand) Creator() *gcli.Command {
+	return gcli.NewCommand("test", "desc message")
+}
+
+func (uc *UserCommand) BindFlags(c *gcli.Command) {
+	c.StrOpt(&uc.opt1, "opt", "o", "", "desc")
+}
+
+func (uc *UserCommand) Run(c *gcli.Command, args []string) error {
+	return nil
 }

@@ -18,12 +18,12 @@ func (app *App) parseGlobalOpts() (ok bool) {
 	gfs := app.GlobalFlags()
 
 	// binding global options
-	gfs.UintVar(&gOpts.verbose, "verbose", gOpts.verbose, "Set error reporting level(quiet 0 - 4 debug)")
-	gfs.BoolVar(&gOpts.showHelp, "help", false, "Display the help information", "h")
-	gfs.BoolVar(&gOpts.showVer, "version", false, "Display app version information", "V")
-	gfs.BoolVar(&gOpts.noColor, "no-color", gOpts.noColor, "Disable color when outputting message")
+	gfs.UintOpt(&gOpts.verbose, "verbose", gOpts.verbose, "Set error reporting level(quiet 0 - 4 debug)")
+	gfs.BoolOpt(&gOpts.showHelp, "help", false, "Display the help information", "h")
+	gfs.BoolOpt(&gOpts.showVer, "version", false, "Display app version information", "V")
+	gfs.BoolOpt(&gOpts.noColor, "no-color", gOpts.noColor, "Disable color when outputting message")
 	// this is a internal command
-	gfs.BoolVar(&gOpts.inCompletion, "cmd-completion", false, "")
+	gfs.BoolOpt(&gOpts.inCompletion, "cmd-completion", false, "")
 
 	// support binding custom global options
 	if app.GOptsBinder != nil {
