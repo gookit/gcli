@@ -1,25 +1,45 @@
 package gcli
 
 import (
+	"bytes"
 	"flag"
+	"fmt"
 	"io"
 	"io/ioutil"
+	"os"
 	"strings"
+
+	"github.com/gookit/color"
+	"github.com/gookit/goutil/strutil"
 )
 
 // GFlags definition
 type GFlags struct {
 	fs *flag.FlagSet
+	// output for print help message
+	out io.Writer
+	// buf for build help message
+	buf *bytes.Buffer
 	// all option names of the command. {name: length}
 	names map[string]int
 	// shortcuts for command options. {short:name}
 	// eg. {"n": "name", "o": "opt"}
 	shortcuts map[string]string
+	// mapping for name to shortcut {"name": {"n", "m"}}
+	name2shorts map[string][]string
+
+	// dont display flag data type
+	flagNoType bool
+	// flag and desc at one line
+	flagDescOL bool
+	flagMaxLen int
 }
 
 // NewGFlags create an GFlags
 func NewGFlags(name string) *GFlags {
 	gf := &GFlags{
+		out: os.Stdout,
+		buf: new(bytes.Buffer),
 		fs: flag.NewFlagSet(name, flag.ContinueOnError),
 	}
 
@@ -42,11 +62,14 @@ func (gf *GFlags) FromStruct(ptr interface{}) error {
 	return nil
 }
 
-// RenderUsage for all options
-func (gf *GFlags) RenderUsage(w io.Writer) {
-}
+/***********************************************************************
+ * GFlag:
+ * - binding option var
+ ***********************************************************************/
 
-// StrOpt binding an bool option flag
+// --- bool opt
+
+// BoolOpt binding an bool option flag
 func (gf *GFlags) BoolOpt(p *bool, info *Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().Bool()
@@ -76,6 +99,8 @@ func (gf *GFlags) boolOpt(p *bool, name string, defValue bool, description strin
 	}
 }
 
+// --- string opt
+
 // StrOpt binding an string option flag
 func (gf *GFlags) StrOpt(p *string, info *Meta) {
 	info.Name = gf.checkName(info.Name)
@@ -97,6 +122,8 @@ func (gf *GFlags) strOpt(p *string, name, defValue, description string, shortNam
 		}
 	}
 }
+
+// --- uintX opt
 
 // UintOpt binding an uint option flag
 func (gf *GFlags) UintOpt(p *uint, info *Meta) {
@@ -137,6 +164,14 @@ func (gf *GFlags) Uint64Opt(p *uint64, info *Meta) {
 	gf.uint64Opt(p, info.Name, uint64(defValue), info.Description(), info.Shortcuts)
 }
 
+// Uint64Var binding an uint64 option
+func (gf *GFlags) Uint64Var(p *uint64, name string, defValue uint64, description string, shortcuts ...string) {
+	name = gf.checkName(name)
+
+	// binding option and shortcuts
+	gf.uint64Opt(p, name, defValue, description, shortcuts)
+}
+
 func (gf *GFlags) uint64Opt(p *uint64, name string, defValue uint64, description string, shortNames []string) {
 	// binding option to flag.FlagSet
 	gf.fs.Uint64Var(p, name, defValue, description)
@@ -150,7 +185,7 @@ func (gf *GFlags) uint64Opt(p *uint64, name string, defValue uint64, description
 	}
 }
 
-// check option name
+// check option name and return clean name
 func (gf *GFlags) checkName(name string) string {
 	// init gf.names
 	if gf.names == nil {
@@ -166,16 +201,26 @@ func (gf *GFlags) checkName(name string) string {
 		panicf("redefined option flag: %s", name)
 	}
 
+	nameLength := len(name)
+	if gf.flagMaxLen < nameLength {
+		gf.flagMaxLen = nameLength
+	}
+
 	// storage name
-	gf.names[name] = len(name)
+	gf.names[name] = nameLength
 	return name
 }
 
 // check short names
 func (gf *GFlags) checkShortNames(name string, shorts []string) []string {
-	// init gf.shortcuts
+	if len(shorts) == 0 {
+		return shorts
+	}
+
+	// init gf.shortcuts and gf.name2shorts
 	if gf.shortcuts == nil {
 		gf.shortcuts = map[string]string{}
+		gf.name2shorts = map[string][]string{}
 	}
 
 	var fmtShorts []string
@@ -202,7 +247,38 @@ func (gf *GFlags) checkShortNames(name string, shorts []string) []string {
 		gf.shortcuts[short] = name
 	}
 
+	gf.names[name] += len(fmtShorts)
+	gf.name2shorts[name] = fmtShorts
 	return fmtShorts
+}
+
+/***********************************************************************
+ * GFlag:
+ * - helper methods
+ ***********************************************************************/
+
+// ShortNames get all short-names of the option
+func (gf *GFlags) ShortNames(name string) (ss []string) {
+	if len(gf.name2shorts) == 0 {
+		return
+	}
+
+	return gf.name2shorts[name]
+}
+
+// IsShortOpt alias of the IsShortcut()
+func (gf *GFlags) IsShortOpt(short string) bool {
+	return gf.IsShortcut(short)
+}
+
+// IsShortcut check it is a shortcut name
+func (gf *GFlags) IsShortcut(short string) bool {
+	if len(short) != 1 {
+		return false
+	}
+
+	_, ok := gf.shortcuts[short]
+	return ok
 }
 
 // Name of the Flags
@@ -220,9 +296,96 @@ func (gf *GFlags) SetFs(fs *flag.FlagSet) {
 	gf.fs = fs
 }
 
+// RenderUsage for all options
+func (gf *GFlags) RenderUsage(w io.Writer) {
+
+}
+
+// PrintHelp for all options
+func (gf *GFlags) PrintHelpPanel() {
+	buf := new(bytes.Buffer)
+
+	gf.Fs().PrintDefaults()
+
+	gf.Fs().VisitAll(gf.formatOneFlag)
+
+	color.Fprint(gf.out, buf.String())
+}
+
+func (gf *GFlags) formatOneFlag(f *flag.Flag)  {
+	// if desc is empty(hidden flag), skip it
+	if f.Usage == "" {
+		return
+	}
+
+	var s string
+	name := f.Name
+	fLen := len(f.Name)
+
+	// - build flag name info
+	// is long option
+	if fLen > 1 {
+		// find shortcuts
+		shortcuts := gf.ShortNames(name)
+		shortLen := len(shortcuts)
+		if shortLen == 0 {
+			s = fmt.Sprintf("      <info>--%s</>", name)
+		} else {
+			s = fmt.Sprintf("  <info>%s, --%s</>", shortcuts2str(shortcuts), name)
+		}
+	} else {
+		// is short option name, skip it
+		if gf.IsShortcut(name) {
+			return
+		}
+
+		// only short option
+		s = fmt.Sprintf("  <info>-%s</>", name)
+	}
+
+	// - build flag type info
+	typeName, usage := flag.UnquoteUsage(f)
+	// option value data type: int, string, ...
+	if len(typeName) > 0 {
+		s += fmt.Sprintf(" <magenta>%s</>", typeName)
+	}
+
+	// Boolean flags of one ASCII letter are so common we
+	// treat them specially, putting their usage on the same line.
+	if len(s) <= 4 { // space, space, '-', 'x'.
+		s += "\t"
+	} else {
+		// Four spaces before the tab triggers good alignment
+		// for both 4- and 8-space tab stops.
+		s += "\n    \t"
+	}
+
+	// - build description
+	s += strings.Replace(strutil.UpperFirst(usage), "\n", "\n    \t", -1)
+
+	if !isZeroValue(f, f.DefValue) {
+		if _, ok := f.Value.(*stringValue); ok {
+			// put quotes on the value
+			s += fmt.Sprintf(" (default <magentaB>%q</>)", f.DefValue)
+		} else {
+			s += fmt.Sprintf(" (default <magentaB>%v</>)", f.DefValue)
+		}
+	}
+
+	// save to buffer
+	gf.buf.WriteString(s)
+	gf.buf.WriteByte('\n')
+}
+
+/***********************************************************************
+ * GFlag:
+ * - flag metadata
+ ***********************************************************************/
+
 // Meta for an flag(option/argument)
 type Meta struct {
 	varPtr interface{}
+	// defVal *Value
 	// name and description
 	Name, UseFor string
 	// short names

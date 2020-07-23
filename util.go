@@ -67,6 +67,16 @@ func isAlphabet(char uint8) bool {
 	return false
 }
 
+func shortcuts2str(ss []string) string {
+	newSs := make([]string, len(ss))
+	for _, s := range ss {
+		newSs = append(newSs, "-", s)
+	}
+
+	// eg: -t,-o
+	return strings.Join(newSs, ",")
+}
+
 /*************************************************************
  * some helper methods
  *************************************************************/

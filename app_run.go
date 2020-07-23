@@ -1,14 +1,12 @@
 package gcli
 
 import (
-	"flag"
 	"fmt"
 	"strings"
 	"text/template"
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2/helper"
-	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -41,7 +39,7 @@ func (app *App) parseGlobalOpts() (ok bool) {
 
 	// check global options
 	if gOpts.showHelp {
-		showGlobalFlagsHelp(gfs)
+		gfs.PrintHelpPanel()
 
 		app.showApplicationHelp()
 		return
@@ -59,15 +57,17 @@ func (app *App) parseGlobalOpts() (ok bool) {
 	app.rawFlagArgs = gfs.Fs().Args()
 	Logf(VerbDebug, "[App.parseGFlags] console debug is enabled, level is %d", gOpts.verbose)
 
+	// TODO show auto-completion for bash/zsh
+	if gOpts.inCompletion {
+		app.showAutoCompletion(app.rawFlagArgs)
+		return
+	}
+
 	return true
 }
 
 // prepare to running, parse args, get command name and command args
 func (app *App) prepareRun() (code int) {
-	if !app.parseGlobalOpts() {
-		return
-	}
-
 	args := app.rawFlagArgs
 	// if no input command
 	if len(args) == 0 {
@@ -95,12 +95,6 @@ func (app *App) prepareRun() (code int) {
 		return app.showCommandHelp(args[1:])
 	}
 
-	// show auto-completion for bash/zsh
-	if gOpts.inCompletion {
-		app.showAutoCompletion(args)
-		return
-	}
-
 	app.rawName = args[0]
 	app.cleanArgs = args[1:]
 	return GOON
@@ -113,6 +107,11 @@ func (app *App) Run() (code int) {
 	// ensure application initialized
 	if !app.initialized {
 		app.initialize()
+	}
+
+	// parse global flags
+	if !app.parseGlobalOpts() {
+		return app.exitIfExitOnEnd(code)
 	}
 
 	if code = app.prepareRun(); code != GOON {
@@ -287,14 +286,6 @@ func (app *App) showApplicationHelp() {
 
 	// parse help vars and render color tags
 	color.Print(app.ReplaceVars(s))
-}
-
-func showGlobalFlagsHelp(gf *GFlags)  {
-	dump.P(gf)
-	gf.Fs().PrintDefaults()
-	gf.Fs().VisitAll(func(f *flag.Flag) {
-
-	})
 }
 
 // showCommandHelp display help for an command
