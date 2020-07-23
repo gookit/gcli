@@ -53,9 +53,9 @@ func defaultErrHandler(data ...interface{}) {
 }
 
 func shortcuts2str(ss []string) string {
-	newSs := make([]string, len(ss))
+	var newSs []string
 	for _, s := range ss {
-		newSs = append(newSs, "-", s)
+		newSs = append(newSs, "-" + s)
 	}
 
 	// eg: "-t, -o"

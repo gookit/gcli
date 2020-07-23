@@ -430,13 +430,10 @@ func (gf *GFlags) RenderUsage(w io.Writer) {
 
 // PrintHelp for all options
 func (gf *GFlags) PrintHelpPanel() {
-	buf := new(bytes.Buffer)
-
-	gf.Fs().PrintDefaults()
-
+	// refer gf.Fs().PrintDefaults()
 	gf.Fs().VisitAll(gf.formatOneFlag)
 
-	color.Fprint(gf.out, buf.String())
+	color.Fprint(gf.out, gf.buf.String())
 }
 
 func (gf *GFlags) formatOneFlag(f *flag.Flag)  {
@@ -454,8 +451,8 @@ func (gf *GFlags) formatOneFlag(f *flag.Flag)  {
 	if fLen > 1 {
 		// find shortcuts
 		shortcuts := gf.ShortNames(name)
-		shortLen := len(shortcuts)
-		if shortLen == 0 {
+		shortsLen := len(shortcuts)
+		if shortsLen == 0 {
 			s = fmt.Sprintf("      <info>--%s</>", name)
 		} else {
 			s = fmt.Sprintf("  <info>%s, --%s</>", shortcuts2str(shortcuts), name)

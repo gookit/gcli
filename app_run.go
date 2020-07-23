@@ -7,6 +7,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2/helper"
+	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -37,8 +38,10 @@ func (app *App) parseGlobalOpts() (ok bool) {
 		return
 	}
 
+	dump.P(gOpts)
 	// check global options
 	if gOpts.showHelp {
+		// TODO ...
 		gfs.PrintHelpPanel()
 
 		app.showApplicationHelp()
