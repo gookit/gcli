@@ -11,10 +11,18 @@ func TestGFlags_StrOpt(t *testing.T) {
 	gf := gcli.NewGFlags("test")
 
 	var str string
-	gf.StrOpt(&str, &gcli.Meta{
+	gf.StrOpt(&str, gcli.Meta{
 		Name:   "test",
 		UseFor: "test desc",
 	})
+
+	err := gf.Parse([]string{})
+	assert.NoError(t, err)
+	assert.Equal(t, "", str)
+
+	err = gf.Parse([]string{"--test", "value"})
+	assert.NoError(t, err)
+	assert.Equal(t, "value", str)
 }
 
 func TestGFlags_FromStruct(t *testing.T) {
@@ -38,7 +46,7 @@ func TestGFlags_PrintHelpPanel(t *testing.T) {
 		opt3 string
 	}{}
 
-	gf.StrOpt(&testOpts.opt3, &gcli.Meta{
+	gf.StrOpt(&testOpts.opt3, gcli.Meta{
 		Name:   "test",
 		UseFor: "test desc",
 	})

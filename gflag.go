@@ -62,6 +62,12 @@ func (gf *GFlags) FromStruct(ptr interface{}) error {
 	return nil
 }
 
+// SetHelpOption for render help panel message
+func (gf *GFlags) SetHelpOption(flagNoType, flagDescOL bool) {
+	gf.flagNoType = flagNoType
+	gf.flagDescOL = flagDescOL
+}
+
 /***********************************************************************
  * GFlag:
  * - binding option var
@@ -70,7 +76,7 @@ func (gf *GFlags) FromStruct(ptr interface{}) error {
 // --- bool option
 
 // BoolOpt binding an bool option flag
-func (gf *GFlags) BoolOpt(p *bool, info *Meta) {
+func (gf *GFlags) BoolOpt(p *bool, info Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().Bool()
 
@@ -102,7 +108,7 @@ func (gf *GFlags) boolOpt(p *bool, name string, defValue bool, description strin
 // --- string option
 
 // StrOpt binding an string option flag
-func (gf *GFlags) StrOpt(p *string, info *Meta) {
+func (gf *GFlags) StrOpt(p *string, info Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().String()
 
@@ -126,7 +132,7 @@ func (gf *GFlags) strOpt(p *string, name, defValue, description string, shortNam
 // --- intX option
 
 // IntOpt binding an uint option flag
-func (gf *GFlags) IntOpt(p *int, info *Meta) {
+func (gf *GFlags) IntOpt(p *int, info Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().Int()
 
@@ -156,7 +162,7 @@ func (gf *GFlags) intOpt(p *int, name string, defValue int, description string, 
 }
 
 // Int64Opt binding an uint option flag
-func (gf *GFlags) Int64Opt(p *int64, info *Meta) {
+func (gf *GFlags) Int64Opt(p *int64, info Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().Int64()
 
@@ -188,7 +194,7 @@ func (gf *GFlags) int64Opt(p *int64, name string, defValue int64, description st
 // --- uintX option
 
 // UintOpt binding an uint option flag
-func (gf *GFlags) UintOpt(p *uint, info *Meta) {
+func (gf *GFlags) UintOpt(p *uint, info Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().Int()
 
@@ -218,7 +224,7 @@ func (gf *GFlags) uintOpt(p *uint, name string, defValue uint, description strin
 }
 
 // UintOpt binding an uint option flag
-func (gf *GFlags) Uint64Opt(p *uint64, info *Meta) {
+func (gf *GFlags) Uint64Opt(p *uint64, info Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().Int64()
 

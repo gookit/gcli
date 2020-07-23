@@ -311,8 +311,65 @@ func (c *Command) RawArg(i int) string {
  * Argument definition
  *************************************************************/
 
+// Arguments definition
+type Arguments struct {
+	// args definition for a command.
+	// eg. {
+	// 	{"arg0", "this is first argument", false, false},
+	// 	{"arg1", "this is second argument", false, false},
+	// }
+	args []*Argument
+	// record min length for args
+	// argsMinLen int
+	// record argument names and defined positional relationships
+	// {
+	// 	// name: position
+	// 	"arg0": 0,
+	// 	"arg1": 1,
+	// }
+	argsIndexes  map[string]int
+	hasArrayable bool
+	hasOptional  bool
+}
+
+// Add a new argument
+func (ags *Arguments) Add(name, description string) {
+	// todo ...
+}
+
+// Args get all defined argument
+func (ags *Arguments) Args() []*Argument {
+	return ags.args
+}
+
+// Arg get arg by defined name.
+// Usage:
+// 	intVal := c.Arg("name").Int()
+// 	strVal := c.Arg("name").String()
+// 	arrVal := c.Arg("names").Array()
+func (ags *Arguments) Arg(name string) *Argument {
+	i, ok := ags.argsIndexes[name]
+	if !ok {
+		return emptyArg
+	}
+	return ags.args[i]
+}
+
+// ArgByIndex get named arg by index
+func (ags *Arguments) ArgByIndex(i int) *Argument {
+	if i < len(ags.args) {
+		return ags.args[i]
+	}
+	return emptyArg
+}
+
+/*************************************************************
+ * Argument definition
+ *************************************************************/
+
 // Argument a command argument definition
 type Argument struct {
+	// valWrapper Value TODO ...
 	// Name argument name. it's required
 	Name string
 	// ShowName is a name for display help. default is equals to Name.
