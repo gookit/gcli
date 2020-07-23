@@ -104,6 +104,15 @@ func (v Value) Int64() int64 {
 	return mathutil.MustInt64(v.V)
 }
 
+// Float64 value
+func (v Value) Float64() float64 {
+	if v.V == nil {
+		return 0
+	}
+
+	return mathutil.MustFloat(v.V)
+}
+
 // Bool value
 func (v Value) Bool() bool {
 	if v.V == nil {

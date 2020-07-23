@@ -105,6 +105,38 @@ func (gf *GFlags) boolOpt(p *bool, name string, defValue bool, description strin
 	}
 }
 
+// --- float option
+
+// Float64Opt binding an string option flag
+func (gf *GFlags) Float64Opt(p *float64, info Meta) {
+	info.Name = gf.checkName(info.Name)
+	defValue := info.DValue().Float64()
+
+	// binding option and shortcuts
+	gf.float64Opt(p, info.Name, defValue, info.Description(), info.Shortcuts)
+}
+
+// BoolVar binding an bool option
+func (gf *GFlags) Float64Var(p *float64, name string, defValue float64, description string, shortcuts ...string) {
+	name = gf.checkName(name)
+
+	// binding option and shortcuts
+	gf.float64Opt(p, name, defValue, description, shortcuts)
+}
+
+func (gf *GFlags) float64Opt(p *float64, name string, defValue float64, description string, shortNames []string) {
+	// binding option to flag.FlagSet
+	gf.fs.Float64Var(p, name, defValue, description)
+
+	// check and format
+	fmtNames := gf.checkShortNames(name, shortNames)
+	if len(fmtNames) > 0 {
+		for _, s := range fmtNames {
+			gf.fs.Float64Var(p, s, defValue, "") // dont add description for short name
+		}
+	}
+}
+
 // --- string option
 
 // StrOpt binding an string option flag
@@ -114,6 +146,14 @@ func (gf *GFlags) StrOpt(p *string, info Meta) {
 
 	// binding option and shortcuts
 	gf.strOpt(p, info.Name, defValue, info.Description(), info.Shortcuts)
+}
+
+// BoolVar binding an bool option
+func (gf *GFlags) StrVar(p *string, name, defValue, description string, shortcuts ...string) {
+	name = gf.checkName(name)
+
+	// binding option and shortcuts
+	gf.strOpt(p, name, defValue, description, shortcuts)
 }
 
 func (gf *GFlags) strOpt(p *string, name, defValue, description string, shortNames []string) {
@@ -309,7 +349,7 @@ func (gf *GFlags) checkShortNames(name string, shorts []string) []string {
 		char := short[0]
 		short = string(char)
 		// A 65 -> Z 90, a 97 -> z 122
-		if !isAlphabet(char) {
+		if !strutil.IsAlphabet(char) {
 			panicf("shortcut name only allow: A-Za-z(given: '%s')", short)
 		}
 
