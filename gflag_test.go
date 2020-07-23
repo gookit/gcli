@@ -28,3 +28,18 @@ func TestGFlags_FromStruct(t *testing.T) {
 
 	assert.NoError(t, err)
 }
+
+func TestGFlags_PrintHelpPanel(t *testing.T) {
+	gf := gcli.NewGFlags("test")
+
+	testOpts := struct {
+		opt1 int
+		opt2 bool
+		opt3 string
+	}{}
+
+	gf.StrOpt(&testOpts.opt3, &gcli.Meta{
+		Name:   "test",
+		UseFor: "test desc",
+	})
+}

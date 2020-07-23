@@ -73,8 +73,8 @@ func shortcuts2str(ss []string) string {
 		newSs = append(newSs, "-", s)
 	}
 
-	// eg: -t,-o
-	return strings.Join(newSs, ",")
+	// eg: "-t, -o"
+	return strings.Join(newSs, ", ")
 }
 
 /*************************************************************

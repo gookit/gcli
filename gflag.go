@@ -67,7 +67,7 @@ func (gf *GFlags) FromStruct(ptr interface{}) error {
  * - binding option var
  ***********************************************************************/
 
-// --- bool opt
+// --- bool option
 
 // BoolOpt binding an bool option flag
 func (gf *GFlags) BoolOpt(p *bool, info *Meta) {
@@ -99,7 +99,7 @@ func (gf *GFlags) boolOpt(p *bool, name string, defValue bool, description strin
 	}
 }
 
-// --- string opt
+// --- string option
 
 // StrOpt binding an string option flag
 func (gf *GFlags) StrOpt(p *string, info *Meta) {
@@ -123,7 +123,69 @@ func (gf *GFlags) strOpt(p *string, name, defValue, description string, shortNam
 	}
 }
 
-// --- uintX opt
+// --- intX option
+
+// IntOpt binding an uint option flag
+func (gf *GFlags) IntOpt(p *int, info *Meta) {
+	info.Name = gf.checkName(info.Name)
+	defValue := info.DValue().Int()
+
+	// binding option and shortcuts
+	gf.intOpt(p, info.Name, defValue, info.Description(), info.Shortcuts)
+}
+
+// IntVar binding an int option
+func (gf *GFlags) IntVar(p *int, name string, defValue int, description string, shortcuts ...string) {
+	name = gf.checkName(name)
+
+	// binding option and shortcuts
+	gf.intOpt(p, name, defValue, description, shortcuts)
+}
+
+func (gf *GFlags) intOpt(p *int, name string, defValue int, description string, shortNames []string) {
+	// binding option to flag.FlagSet
+	gf.fs.IntVar(p, name, defValue, description)
+
+	// check and format
+	fmtNames := gf.checkShortNames(name, shortNames)
+	if len(fmtNames) > 0 {
+		for _, s := range fmtNames {
+			gf.fs.IntVar(p, s, defValue, "") // dont add description for short name
+		}
+	}
+}
+
+// Int64Opt binding an uint option flag
+func (gf *GFlags) Int64Opt(p *int64, info *Meta) {
+	info.Name = gf.checkName(info.Name)
+	defValue := info.DValue().Int64()
+
+	// binding option and shortcuts
+	gf.int64Opt(p, info.Name, defValue, info.Description(), info.Shortcuts)
+}
+
+// Int64Var binding an int64 option
+func (gf *GFlags) Int64Var(p *int64, name string, defValue int64, description string, shortcuts ...string) {
+	name = gf.checkName(name)
+
+	// binding option and shortcuts
+	gf.int64Opt(p, name, defValue, description, shortcuts)
+}
+
+func (gf *GFlags) int64Opt(p *int64, name string, defValue int64, description string, shortNames []string) {
+	// binding option to flag.FlagSet
+	gf.fs.Int64Var(p, name, defValue, description)
+
+	// check and format
+	fmtNames := gf.checkShortNames(name, shortNames)
+	if len(fmtNames) > 0 {
+		for _, s := range fmtNames {
+			gf.fs.Int64Var(p, s, defValue, "") // dont add description for short name
+		}
+	}
+}
+
+// --- uintX option
 
 // UintOpt binding an uint option flag
 func (gf *GFlags) UintOpt(p *uint, info *Meta) {
@@ -202,6 +264,13 @@ func (gf *GFlags) checkName(name string) string {
 	}
 
 	nameLength := len(name)
+	// is an short name
+	if nameLength == 1 {
+		nameLength += 1 // prefix: "-"
+	} else {
+		nameLength += 2 // prefix: "--"
+	}
+
 	if gf.flagMaxLen < nameLength {
 		gf.flagMaxLen = nameLength
 	}
@@ -247,7 +316,18 @@ func (gf *GFlags) checkShortNames(name string, shorts []string) []string {
 		gf.shortcuts[short] = name
 	}
 
-	gf.names[name] += len(fmtShorts)
+	// one short = '-' + 'x' + ',' + ' '
+	// eg: "-o"
+	// eg: "-o, -a"
+	shortsLen := 4 * len(fmtShorts)
+	nameLength := gf.names[name] + shortsLen
+
+	// update name length
+	gf.names[name] = nameLength
+	if gf.flagMaxLen < nameLength {
+		gf.flagMaxLen = nameLength
+	}
+
 	gf.name2shorts[name] = fmtShorts
 	return fmtShorts
 }
