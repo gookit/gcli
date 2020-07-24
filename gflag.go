@@ -29,9 +29,9 @@ type GFlags struct {
 	// mapping for name to shortcut {"name": {"n", "m"}}
 	name2shorts map[string][]string
 
-	// dont display flag data type
+	// dont display flag data type on print help
 	flagNoType bool
-	// flag and desc at one line
+	// flag and desc at one line on print help
 	flagDescOL bool
 	flagMaxLen int
 }
@@ -63,10 +63,12 @@ func (gf *GFlags) FromStruct(ptr interface{}) error {
 	return nil
 }
 
-// SetHelpOption for render help panel message
-func (gf *GFlags) SetHelpOption(flagNoType, flagDescOL bool) {
+// WithHelpOption for render help panel message
+func (gf *GFlags) WithHelpOption(flagNoType, flagDescOL bool) *GFlags {
 	gf.flagNoType = flagNoType
 	gf.flagDescOL = flagDescOL
+
+	return gf
 }
 
 /***********************************************************************
@@ -423,12 +425,12 @@ func (gf *GFlags) SetFs(fs *flag.FlagSet) {
 	gf.fs = fs
 }
 
-// RenderUsage for all options
-func (gf *GFlags) RenderUsage(w io.Writer) {
-
+// SetOutput for the GFlags
+func (gf *GFlags) SetOutput(out io.Writer) {
+	gf.out = out
 }
 
-// PrintHelp for all options
+// PrintHelpPanel for all options to the gf.out
 func (gf *GFlags) PrintHelpPanel() {
 	// refer gf.Fs().PrintDefaults()
 	gf.Fs().VisitAll(gf.formatOneFlag)
@@ -442,20 +444,22 @@ func (gf *GFlags) formatOneFlag(f *flag.Flag)  {
 		return
 	}
 
-	var s string
+	var s, fullName string
 	name := f.Name
-	fLen := len(f.Name)
+	// eg: "-V, --version" length is: 13
+	fLen := gf.names[name]
 
 	// - build flag name info
 	// is long option
-	if fLen > 1 {
+	if len(name) > 1 {
 		// find shortcuts
 		shortcuts := gf.ShortNames(name)
-		shortsLen := len(shortcuts)
-		if shortsLen == 0 {
-			s = fmt.Sprintf("      <info>--%s</>", name)
+		if len(shortcuts) == 0 {
+			fullName = "--" + name
+			// s = fmt.Sprintf("      <info>--%s</>", name)
 		} else {
-			s = fmt.Sprintf("  <info>%s, --%s</>", shortcuts2str(shortcuts), name)
+			fullName = fmt.Sprintf("%s, --%s", shortcuts2str(shortcuts), name)
+			// s = fmt.Sprintf("  <info>%s, --%s</>", shortcuts2str(shortcuts), name)
 		}
 	} else {
 		// is short option name, skip it
@@ -464,28 +468,31 @@ func (gf *GFlags) formatOneFlag(f *flag.Flag)  {
 		}
 
 		// only short option
-		s = fmt.Sprintf("  <info>-%s</>", name)
+		// s = fmt.Sprintf("  <info>-%s</>", name)
+		fullName = "-" + name
 	}
+
+	s = fmt.Sprintf("<info>%s</>", strutil.PadLeft(fullName, " ", gf.flagMaxLen))
 
 	// - build flag type info
 	typeName, usage := flag.UnquoteUsage(f)
-	// option value data type: int, string, ...
-	if len(typeName) > 0 {
+	// typeName: option value data type: int, string, ..., bool value will return ""
+	if gf.flagNoType == false && len(typeName) > 0 {
 		s += fmt.Sprintf(" <magenta>%s</>", typeName)
 	}
 
-	// Boolean flags of one ASCII letter are so common we
+	// - flag and description at one line
+	// - Boolean flags of one ASCII letter are so common we
 	// treat them specially, putting their usage on the same line.
-	if len(s) <= 4 { // space, space, '-', 'x'.
-		s += "\t"
+	if gf.flagDescOL || fLen <= 4 { // space, space, '-', 'x'.
+		s += "    "
 	} else {
-		// Four spaces before the tab triggers good alignment
-		// for both 4- and 8-space tab stops.
-		s += "\n    \t"
+		// display description on new line
+		s += "\n        "
 	}
 
 	// - build description
-	s += strings.Replace(strutil.UpperFirst(usage), "\n", "\n    \t", -1)
+	s += strings.Replace(strutil.UpperFirst(usage), "\n", "\n        ", -1)
 
 	if !isZeroValue(f, f.DefValue) {
 		if _, ok := f.Value.(*stringValue); ok {
