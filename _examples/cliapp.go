@@ -20,7 +20,7 @@ func main() {
 	app := gcli.NewApp(func(app *gcli.App) {
 		app.Version = "1.0.6"
 		app.Description = "this is my cli application"
-		app.On(gcli.EvtInit, func(data ...interface{}) {
+		app.On(gcli.EvtAppInit, func(data ...interface{}) {
 			// do something...
 			// fmt.Println("init app")
 		})
@@ -37,6 +37,7 @@ func main() {
 
 	var customGOpt string
 	app.GOptsBinder = func(gf *gcli.GFlags) {
+		// gcli.Logf(gcli.VerbInfo, "custom add and global option flag")
 		gf.StrVar(&customGOpt, gcli.FlagMeta{Name: "custom", Desc: "desc message for the option"})
 	}
 

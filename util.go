@@ -2,6 +2,8 @@ package gcli
 
 import (
 	"fmt"
+	"path"
+	"runtime"
 	"strings"
 
 	"github.com/gookit/color"
@@ -33,14 +35,22 @@ func Logf(level uint, format string, v ...interface{}) {
 		return
 	}
 
+	var fnName string
 	name, has := level2name[level]
 	if !has {
-		name = "CRAZY"
-		level = VerbCrazy
+		name, level = "CRAZY", VerbCrazy
+	}
+
+	pc, fName, line, ok := runtime.Caller(1)
+	if !ok {
+		fnName, fName, line = "UNKNOWN", "???.go", 0
+	} else {
+		fName = path.Base(fName)
+		fnName = runtime.FuncForPC(pc).Name()
 	}
 
 	name = level2color[level].Render(name)
-	fmt.Printf("GCli: [%s] %s\n", name, fmt.Sprintf(format, v...))
+	color.Printf("GCli: [%s] [%s() At %s:%d] %s\n", name, fnName, fName, line, fmt.Sprintf(format, v...))
 }
 
 func defaultErrHandler(data ...interface{}) {

@@ -17,27 +17,6 @@ import (
 	"github.com/gookit/goutil/envutil"
 )
 
-// constants for error level 0 - 4
-const (
-	VerbQuiet uint = iota // don't report anything
-	VerbError             // reporting on error
-	VerbWarn
-	VerbInfo
-	VerbDebug
-	VerbCrazy
-)
-
-// constants for hooks event, there are default allowed event names
-const (
-	EvtInit   = "init"
-	EvtBefore = "before"
-	EvtAfter  = "after"
-	EvtError  = "error"
-
-	EvtAppPrepareAfter  = "app.prepare.after"
-	// EvtStop   = "stop"
-)
-
 const (
 	// OK success exit code
 	OK = 0
@@ -55,6 +34,7 @@ var (
 	// global options
 	gOpts = &GlobalOpts{
 		strictMode: true,
+		verbose:    VerbError,
 	}
 	// CLI create a default instance
 	CLI = &cmdLine{
@@ -128,10 +108,8 @@ func SetStrictMode(strict bool) {
 
 // Executor definition
 type Executor interface {
-
 }
 
 // Executor definition
 type RunningAble struct {
-
 }

@@ -137,7 +137,7 @@ func (app *App) Exit(code int) {
 
 // binding global options
 func (app *App) bindingGlobalOpts() {
-	Logf(VerbDebug, "[App.bindingGlobalOpts] will begin binding global options")
+	Logf(VerbDebug, "will begin binding global options")
 	// global options flag
 	// gf := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
 	gf := app.GlobalFlags()
@@ -175,9 +175,9 @@ func (app *App) initialize() {
 	// parseGlobalOpts()
 
 	// add default error handler.
-	app.core.AddOn(EvtError, defaultErrHandler)
+	app.core.AddOn(EvtAppError, defaultErrHandler)
 
-	app.fireEvent(EvtInit, nil)
+	app.fireEvent(EvtAppInit, nil)
 	app.initialized = true
 }
 
@@ -266,7 +266,7 @@ func (app *App) AddCommand(c *Command) *Command {
 
 	// add aliases for the command
 	app.AddAliases(c.Name, c.Aliases)
-	Logf(VerbDebug, "[App.AddCommand] add a new CLI command: %s", c.Name)
+	Logf(VerbDebug, "add a new CLI command: %s", c.Name)
 
 	// init command
 	c.app = app
@@ -377,13 +377,13 @@ func (app *App) AddAliases(command string, aliases []string) {
 
 // On add hook handler for a hook event
 func (app *App) On(name string, handler HookFunc) {
-	Logf(VerbDebug, "[App.On] add application hook: %s", name)
+	Logf(VerbDebug, "add application hook: %s", name)
 
 	app.core.On(name, handler)
 }
 
 func (app *App) fireEvent(event string, data interface{}) {
-	Logf(VerbDebug, "[App.Fire] trigger the application event: %s", event)
+	Logf(VerbDebug, "trigger the application event: <mga>%s</>", event)
 
 	app.core.Fire(event, app, data)
 }

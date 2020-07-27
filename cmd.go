@@ -143,14 +143,14 @@ func (c *Command) initialize() *Command {
 		"fullCmd": c.binName + " " + c.Name,
 	})
 
-	c.Fire(EvtInit, nil)
+	c.Fire(EvtCmdInit, nil)
 
 	// if not set application instance
 	if c.app == nil {
 		// mark is alone
 		c.alone = true
 		// add default error handler.
-		c.Hooks.AddOn(EvtError, defaultErrHandler)
+		c.Hooks.AddOn(EvtCmdError, defaultErrHandler)
 	}
 
 	// init for Flags

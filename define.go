@@ -1,5 +1,31 @@
 package gcli
 
+// constants for error level 0 - 4
+const (
+	VerbQuiet uint = iota // don't report anything
+	VerbError             // reporting on error
+	VerbWarn
+	VerbInfo
+	VerbDebug
+	VerbCrazy
+)
+
+// constants for hooks event, there are default allowed event names
+const (
+	EvtAppInit   = "app.init"
+	EvtAppBefore = "app.run.before"
+	EvtAppAfter  = "app.run.after"
+	EvtAppError  = "app.run.error"
+
+	EvtCmdInit   = "cmd.init"
+	EvtCmdBefore = "cmd.run.before"
+	EvtCmdAfter  = "cmd.run.after"
+	EvtCmdError  = "cmd.run.error"
+
+	EvtAppPrepareAfter = "app.prepare.after"
+	// EvtStop   = "stop"
+)
+
 // GlobalOpts global flags
 type GlobalOpts struct {
 	verbose  uint // message report level

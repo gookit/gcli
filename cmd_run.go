@@ -28,7 +28,7 @@ func (c *Command) parseFlags(args []string) (ss []string, err error) {
 	// fix and compatible
 	args = moveArgumentsToEnd(args)
 
-	Logf(VerbDebug, "[Cmd.parseFlags] flags on after format: %v", args)
+	Logf(VerbDebug, "flags on after format: %v", args)
 
 	// disable output internal error message on parse flags
 	c.Flags.SetOutput(ioutil.Discard)
@@ -53,11 +53,11 @@ func (c *Command) execute(args []string) (err error) {
 		return err
 	}
 
-	c.Fire(EvtBefore, args)
+	c.Fire(EvtCmdBefore, args)
 
 	// call command handler func
 	if c.Func == nil {
-		Logf(VerbWarn, "[Command.Execute] the command '%s' no handler func to running.", c.Name)
+		Logf(VerbWarn, "the command '%s' no handler func to running.", c.Name)
 	} else {
 		// err := c.Func.Run(c, args)
 		err = c.Func(c, args)
@@ -69,9 +69,9 @@ func (c *Command) execute(args []string) (err error) {
 			c.app.AddError(err)
 		}
 
-		c.Fire(EvtError, err)
+		c.Fire(EvtCmdError, err)
 	} else {
-		c.Fire(EvtAfter, nil)
+		c.Fire(EvtCmdAfter, nil)
 	}
 	return
 }
@@ -111,14 +111,14 @@ func (c *Command) collectNamedArgs(inArgs []string) (err error) {
 
 // Fire event handler by name
 func (c *Command) Fire(event string, data interface{}) {
-	Logf(VerbDebug, "[Cmd.Fire] command '%s' trigger the event: %s", c.Name, event)
+	Logf(VerbDebug, "command '%s' trigger the event: %s", c.Name, event)
 
 	c.Hooks.Fire(event, c, data)
 }
 
 // On add hook handler for a hook event
 func (c *Command) On(name string, handler HookFunc) {
-	Logf(VerbDebug, "[Cmd.On] command '%s' add hook: %s", c.Name, name)
+	Logf(VerbDebug, "command '%s' add hook: %s", c.Name, name)
 
 	c.Hooks.On(name, handler)
 }

@@ -12,7 +12,7 @@ import (
 
 // parseGlobalOpts parse global options
 func (app *App) parseGlobalOpts() (ok bool) {
-	Logf(VerbDebug, "[App.parseGFlags] will begin parse global options")
+	Logf(VerbDebug, "will begin parse global options")
 	// global options flag
 	// gf := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
 	gf := app.GlobalFlags()
@@ -41,7 +41,7 @@ func (app *App) parseGlobalOpts() (ok bool) {
 	}
 
 	app.rawFlagArgs = gf.Fs().Args()
-	Logf(VerbDebug, "[App.parseGFlags] console debug is enabled, level is %d", gOpts.verbose)
+	Logf(VerbDebug, "console debug is enabled, verbose level is <mgb>%d</>", gOpts.verbose)
 
 	// TODO show auto-completion for bash/zsh
 	if gOpts.inCompletion {
@@ -88,7 +88,7 @@ func (app *App) prepareRun() (code int) {
 
 // Run running application
 func (app *App) Run() (code int) {
-	Logf(VerbDebug, "[App.Run] will begin run cli application")
+	Logf(VerbDebug, "will begin run cli application")
 
 	// ensure application initialized
 	if !app.initialized {
@@ -107,15 +107,16 @@ func (app *App) Run() (code int) {
 	// trigger event
 	app.fireEvent(EvtAppPrepareAfter, app)
 
-	Logf(VerbCrazy, "[App.Run] begin run console application, process ID: %d", app.PID())
+	Logf(VerbCrazy, "begin run console application, process ID: %d", app.PID())
 
 	args := app.cleanArgs
 	name := app.ResolveName(app.rawName)
 
-	Logf(VerbDebug, "[App.Run] input command: '%s', real command: '%s', flags: %v", app.rawName, name, args)
+	Logf(VerbDebug, "input command: '<cyan>%s</>', real command: '%s', flags: %v", app.rawName, name, args)
 
 	// display unknown input command and similar commands tips
 	if !app.IsCommand(name) {
+		Logf(VerbDebug, "input the command is not an registered: %s", name)
 		app.showCommandTips(name)
 		return
 	}
@@ -123,7 +124,7 @@ func (app *App) Run() (code int) {
 	// do run input command
 	code = app.doRun(name, args)
 
-	Logf(VerbDebug, "[App.Run] command '%s' run complete, exit with code: %d", name, code)
+	Logf(VerbDebug, "command '%s' run complete, exit with code: %d", name, code)
 	return app.exitIfExitOnEnd(code)
 }
 
@@ -139,9 +140,9 @@ func (app *App) doRun(name string, args []string) (code int) {
 	cmd := app.commands[name]
 
 	app.commandName = name
-	app.fireEvent(EvtBefore, cmd.Copy())
+	app.fireEvent(EvtAppBefore, cmd.Copy())
 
-	Logf(VerbDebug, "[App.Run] command raw flags: %v", args)
+	Logf(VerbDebug, "command raw flags: %v", args)
 
 	// if Command.CustomFlags=true, will not run Flags.Parse()
 	if !cmd.CustomFlags {
@@ -159,14 +160,14 @@ func (app *App) doRun(name string, args []string) (code int) {
 		}
 	}
 
-	Logf(VerbDebug, "[App.Run] args on parse end: %v", args)
+	Logf(VerbDebug, "args on parse end: %v", args)
 
 	// do execute command
 	if err := cmd.execute(args); err != nil {
 		code = ERR
-		app.fireEvent(EvtError, err)
+		app.fireEvent(EvtAppError, err)
 	} else {
-		app.fireEvent(EvtAfter, nil)
+		app.fireEvent(EvtAppAfter, nil)
 	}
 	return
 }
