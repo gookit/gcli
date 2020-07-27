@@ -145,7 +145,7 @@ func (c *Command) initialize() *Command {
 
 	c.Fire(EvtCmdInit, nil)
 
-	// if not set application instance
+	// if not attach to application, register error handler
 	if c.app == nil {
 		// mark is alone
 		c.alone = true

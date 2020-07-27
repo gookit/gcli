@@ -48,12 +48,13 @@ func (c *Command) prepare(_ []string) (status int, err error) {
 
 // do execute the command
 func (c *Command) execute(args []string) (err error) {
+	c.Fire(EvtCmdBefore, args)
+
 	// collect and binding named args
 	if err := c.collectNamedArgs(args); err != nil {
+		c.Fire(EvtCmdError, err)
 		return err
 	}
-
-	c.Fire(EvtCmdBefore, args)
 
 	// call command handler func
 	if c.Func == nil {
@@ -64,11 +65,6 @@ func (c *Command) execute(args []string) (err error) {
 	}
 
 	if err != nil {
-		// if run in application, report error to app.
-		if !c.alone {
-			c.app.AddError(err)
-		}
-
 		c.Fire(EvtCmdError, err)
 	} else {
 		c.Fire(EvtCmdAfter, nil)
@@ -111,7 +107,7 @@ func (c *Command) collectNamedArgs(inArgs []string) (err error) {
 
 // Fire event handler by name
 func (c *Command) Fire(event string, data interface{}) {
-	Logf(VerbDebug, "command '%s' trigger the event: %s", c.Name, event)
+	Logf(VerbDebug, "command '%s' trigger the event: <mga>%s</>", c.Name, event)
 
 	c.Hooks.Fire(event, c, data)
 }
