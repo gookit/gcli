@@ -147,10 +147,11 @@ func (app *App) bindingGlobalOpts() {
 	gf.BoolOpt(&gOpts.showHelp, "help", false, "Display the help information", "h")
 	gf.BoolOpt(&gOpts.showVer, "version", false, "Display app version information", "V")
 	gf.BoolOpt(&gOpts.noColor, "no-color", gOpts.noColor, "Disable color when outputting message")
-	// This is a internal command, hidden it.
-	gf.BoolVar(&gOpts.inCompletion, Meta{
-		Name:   "cmd-completion",
-		Desc:   "generate completion scripts for bash/zsh",
+	// This is a internal command
+	gf.BoolVar(&gOpts.inCompletion, FlagMeta{
+		Name: "cmd-completion",
+		Desc: "generate completion scripts for bash/zsh",
+		// hidden it
 		Hidden: true,
 	})
 
