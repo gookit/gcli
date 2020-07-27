@@ -322,11 +322,6 @@ func (gf *GFlags) checkName(name string, meta *FlagMeta) string {
 		panicf("redefined option flag: %s", name)
 	}
 
-	// update name
-	meta.Name = name
-	// check and format short names
-	meta.Shorts = gf.checkShortNames(name, meta.Shorts)
-
 	nameLength := len(name)
 	// is an short name
 	if nameLength == 1 {
@@ -340,15 +335,21 @@ func (gf *GFlags) checkName(name string, meta *FlagMeta) string {
 		gf.flagMaxLen = nameLength
 	}
 
+	// update name
+	meta.Name = name
+	// check and format short names
+	meta.Shorts = gf.checkShortNames(name, nameLength, meta.Shorts)
+
 	// storage meta and name
 	gf.metas[name] = meta
-	gf.names[name] = nameLength
 	return name
 }
 
 // check short names
-func (gf *GFlags) checkShortNames(name string, shorts []string) []string {
+func (gf *GFlags) checkShortNames(name string, nameLength int, shorts []string) []string {
 	if len(shorts) == 0 {
+		// record name without shorts
+		gf.names[name] = nameLength
 		return shorts
 	}
 
@@ -383,10 +384,9 @@ func (gf *GFlags) checkShortNames(name string, shorts []string) []string {
 	}
 
 	// one short = '-' + 'x' + ',' + ' '
-	// eg: "-o"
-	// eg: "-o, -a"
-	shortsLen := 4 * len(fmtShorts)
-	nameLength := gf.names[name] + shortsLen
+	// eg: "-o, " len=4
+	// eg: "-o, -a, " len=8
+	nameLength += 4 * len(fmtShorts)
 
 	// update name length
 	gf.names[name] = nameLength
