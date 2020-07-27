@@ -6,6 +6,10 @@ type GlobalOpts struct {
 	noColor  bool
 	showVer  bool
 	showHelp bool
+	// dont display progress
+	noProgress bool
+	// close interactive confirm
+	noInteractive bool
 	// StrictMode use strict mode for parse flags
 	// If True(default):
 	// 	- short opt must be begin "-", long opt must be begin "--"

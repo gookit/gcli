@@ -35,6 +35,7 @@ func (app *App) parseGlobalOpts() (ok bool) {
 		return
 	}
 
+	// disable color
 	if gOpts.noColor {
 		color.Enable = false
 	}

@@ -147,6 +147,8 @@ func (app *App) bindingGlobalOpts() {
 	gf.BoolOpt(&gOpts.showHelp, "help", false, "Display the help information", "h")
 	gf.BoolOpt(&gOpts.showVer, "version", false, "Display app version information", "V")
 	gf.BoolOpt(&gOpts.noColor, "no-color", gOpts.noColor, "Disable color when outputting message")
+	gf.BoolOpt(&gOpts.noProgress, "no-progress", gOpts.noProgress, "Disable display progress message")
+	gf.BoolOpt(&gOpts.noInteractive, "no-interactive", gOpts.noInteractive, "Disable interactive confirm")
 	// This is a internal command
 	gf.BoolVar(&gOpts.inCompletion, FlagMeta{
 		Name: "cmd-completion",
