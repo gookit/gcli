@@ -7,7 +7,6 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2/helper"
-	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -38,12 +37,8 @@ func (app *App) parseGlobalOpts() (ok bool) {
 		return
 	}
 
-	dump.P(gOpts)
 	// check global options
 	if gOpts.showHelp {
-		// TODO ...
-		gfs.PrintHelpPanel()
-
 		app.showApplicationHelp()
 		return
 	}
@@ -274,6 +269,7 @@ func (app *App) showCommandTips(name string) {
 // display app help and list all commands
 func (app *App) showApplicationHelp() {
 	app.gFlags.PrintHelpPanel()
+
 	// commandsHelp = color.ReplaceTag(commandsHelp)
 	// render help text template
 	s := helper.RenderText(commandsHelp, map[string]interface{}{

@@ -97,7 +97,7 @@ func NewApp(fn ...func(a *App)) *App {
 			gFlags: NewGFlags("globalOpts").WithOption(GFlagOption{
 				WithoutType: true,
 				NameDescOL:  true,
-				Alignment:   true, // left
+				Alignment:   AlignRight,
 			}),
 		},
 		// config

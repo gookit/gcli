@@ -15,6 +15,14 @@ import (
 	"github.com/gookit/goutil/strutil"
 )
 
+// The options alignment type
+// - Align right, padding left
+// - Align left, padding right
+const (
+	AlignLeft  = strutil.PosRight
+	AlignRight = strutil.PosLeft
+)
+
 // GFlagOption for render help information
 type GFlagOption struct {
 	// WithoutType dont display flag data type on print help
@@ -22,24 +30,23 @@ type GFlagOption struct {
 	// NameDescOL flag and desc at one line on print help
 	NameDescOL bool
 	// Alignment flag align left or right. default is: right
-	// e.g:
-	// 	true  - left
-	// 	false - right
-	Alignment bool
+	Alignment uint8
 }
 
 // GFlags definition
 type GFlags struct {
+	// GFlagOption option for render help message
 	GFlagOption
 	// raw flag set
 	fs *flag.FlagSet
 	// buf for build help message
 	buf *bytes.Buffer
-	// option for render help message
 	// output for print help message
 	out io.Writer
 	// all option names of the command. {name: length}
 	names map[string]int
+	// metadata for all options
+	metas map[string]*Meta
 	// shortcuts for command options. {short:name}
 	// eg. {"n": "name", "o": "opt"}
 	shortcuts map[string]string
@@ -282,6 +289,8 @@ func (gf *GFlags) Uint64Var(p *uint64, info Meta) {
 	info.Name = gf.checkName(info.Name)
 	defValue := info.DValue().Int64()
 
+	gf.metas[info.Name] = &info
+
 	// binding option and shortcuts
 	gf.uint64Opt(p, info.Name, uint64(defValue), info.Description(), info.Shortcuts)
 }
@@ -309,9 +318,10 @@ func (gf *GFlags) uint64Opt(p *uint64, name string, defValue uint64, description
 
 // check option name and return clean name
 func (gf *GFlags) checkName(name string) string {
-	// init gf.names
+	// init gf.names, gf.metas
 	if gf.names == nil {
 		gf.names = map[string]int{}
+		gf.metas = map[string]*Meta{}
 	}
 
 	name = strings.Trim(name, "- ")
@@ -399,6 +409,7 @@ func (gf *GFlags) checkShortNames(name string, shorts []string) []string {
 
 // PrintHelpPanel for all options to the gf.out
 func (gf *GFlags) PrintHelpPanel() {
+	dump.P(gf.flagMaxLen)
 	color.Fprint(gf.out, gf.String())
 }
 
@@ -418,8 +429,12 @@ func (gf *GFlags) String() string {
 }
 
 func (gf *GFlags) formatOneFlag(f *flag.Flag)  {
-	// if desc is empty(hidden flag), skip it
-	if f.Usage == "" {
+	meta := gf.metas[f.Name]
+
+	// skip render:
+	// - it is hidden flag option
+	// - flag desc is empty
+	if meta.Hidden || f.Usage == "" {
 		return
 	}
 
@@ -451,14 +466,9 @@ func (gf *GFlags) formatOneFlag(f *flag.Flag)  {
 		fullName = "-" + name
 	}
 
-	if gf.Alignment {
-		// Align left, padding right
-		fullName = strutil.PadRight(fullName, " ", gf.flagMaxLen)
-	} else {
-		// Align right, padding left
-		fullName = strutil.PadLeft(fullName, " ", gf.flagMaxLen)
-	}
-dump.P(gf)
+	// padding space to same width.
+	fullName = strutil.Padding(fullName, " ", gf.flagMaxLen, gf.Alignment)
+
 	s = fmt.Sprintf("  <info>%s</>", fullName)
 
 	// - build flag type info
@@ -496,9 +506,18 @@ dump.P(gf)
 }
 
 /***********************************************************************
- * GFlag:
+ * GFlags:
  * - helper methods
  ***********************************************************************/
+
+// IterAll Iteration all flag options with metadata
+func (gf *GFlags) IterAll(fn func(f *flag.Flag, meta *Meta)) {
+	gf.Fs().VisitAll(func(f *flag.Flag) {
+		if _, ok := gf.metas[f.Name]; ok {
+			fn(f, gf.metas[f.Name])
+		}
+	})
+}
 
 // ShortNames get all short-names of the option
 func (gf *GFlags) ShortNames(name string) (ss []string) {
@@ -522,6 +541,23 @@ func (gf *GFlags) IsShortcut(short string) bool {
 
 	_, ok := gf.shortcuts[short]
 	return ok
+}
+
+// Exists check it is a option name
+func (gf *GFlags) Exists(name string) bool {
+	_, ok := gf.names[name]
+	return ok
+}
+
+// Hidden there are given option names
+func (gf *GFlags) Hidden(names ...string) {
+	for _, name := range names {
+		if !gf.Exists(name) { // not registered
+			continue
+		}
+
+		gf.metas[name].Hidden = true
+	}
 }
 
 // Name of the Flags
@@ -555,11 +591,11 @@ type Meta struct {
 	// defVal *Value
 	// name and description
 	Name, UseFor string
+	Hidden, Required bool
 	// short names
 	Shortcuts []string
 	// default value for the option
 	DefValue interface{}
-	Required bool
 }
 
 // DValue wrap the default value
