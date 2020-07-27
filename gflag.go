@@ -11,16 +11,33 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/goutil"
+	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/strutil"
 )
 
+// GFlagOption for render help information
+type GFlagOption struct {
+	// WithoutType dont display flag data type on print help
+	WithoutType bool
+	// NameDescOL flag and desc at one line on print help
+	NameDescOL bool
+	// Alignment flag align left or right. default is: right
+	// e.g:
+	// 	true  - left
+	// 	false - right
+	Alignment bool
+}
+
 // GFlags definition
 type GFlags struct {
+	GFlagOption
+	// raw flag set
 	fs *flag.FlagSet
-	// output for print help message
-	out io.Writer
 	// buf for build help message
 	buf *bytes.Buffer
+	// option for render help message
+	// output for print help message
+	out io.Writer
 	// all option names of the command. {name: length}
 	names map[string]int
 	// shortcuts for command options. {short:name}
@@ -28,11 +45,8 @@ type GFlags struct {
 	shortcuts map[string]string
 	// mapping for name to shortcut {"name": {"n", "m"}}
 	name2shorts map[string][]string
-
-	// dont display flag data type on print help
-	flagNoType bool
-	// flag and desc at one line on print help
-	flagDescOL bool
+	// flag name max length
+	// eg: "-V, --version" length is 13
 	flagMaxLen int
 }
 
@@ -40,7 +54,6 @@ type GFlags struct {
 func NewGFlags(name string) *GFlags {
 	gf := &GFlags{
 		out: os.Stdout,
-		buf: new(bytes.Buffer),
 		fs: flag.NewFlagSet(name, flag.ContinueOnError),
 	}
 
@@ -63,11 +76,9 @@ func (gf *GFlags) FromStruct(ptr interface{}) error {
 	return nil
 }
 
-// WithHelpOption for render help panel message
-func (gf *GFlags) WithHelpOption(flagNoType, flagDescOL bool) *GFlags {
-	gf.flagNoType = flagNoType
-	gf.flagDescOL = flagDescOL
-
+// WithOption for render help panel message
+func (gf *GFlags) WithOption(cfg GFlagOption) *GFlags {
+	gf.GFlagOption = cfg
 	return gf
 }
 
@@ -383,6 +394,109 @@ func (gf *GFlags) checkShortNames(name string, shorts []string) []string {
 
 /***********************************************************************
  * GFlag:
+ * - render help message
+ ***********************************************************************/
+
+// PrintHelpPanel for all options to the gf.out
+func (gf *GFlags) PrintHelpPanel() {
+	color.Fprint(gf.out, gf.String())
+}
+
+// String for all flag options
+func (gf *GFlags) String() string {
+	if gf.buf == nil {
+		gf.buf = new(bytes.Buffer)
+	}
+
+	// repeat call
+	if gf.buf.Len() < 1 {
+		// refer gf.Fs().PrintDefaults()
+		gf.Fs().VisitAll(gf.formatOneFlag)
+	}
+
+	return gf.buf.String()
+}
+
+func (gf *GFlags) formatOneFlag(f *flag.Flag)  {
+	// if desc is empty(hidden flag), skip it
+	if f.Usage == "" {
+		return
+	}
+
+	var s, fullName string
+	name := f.Name
+	// eg: "-V, --version" length is: 13
+	fLen := gf.names[name]
+
+	// - build flag name info
+	// is long option
+	if len(name) > 1 {
+		// find shortcuts
+		shortcuts := gf.ShortNames(name)
+		if len(shortcuts) == 0 {
+			fullName = "--" + name
+			// s = fmt.Sprintf("      <info>--%s</>", name)
+		} else {
+			fullName = fmt.Sprintf("%s, --%s", shortcuts2str(shortcuts), name)
+			// s = fmt.Sprintf("  <info>%s, --%s</>", shortcuts2str(shortcuts), name)
+		}
+	} else {
+		// is short option name, skip it
+		if gf.IsShortcut(name) {
+			return
+		}
+
+		// only short option
+		// s = fmt.Sprintf("  <info>-%s</>", name)
+		fullName = "-" + name
+	}
+
+	if gf.Alignment {
+		// Align left, padding right
+		fullName = strutil.PadRight(fullName, " ", gf.flagMaxLen)
+	} else {
+		// Align right, padding left
+		fullName = strutil.PadLeft(fullName, " ", gf.flagMaxLen)
+	}
+dump.P(gf)
+	s = fmt.Sprintf("  <info>%s</>", fullName)
+
+	// - build flag type info
+	typeName, usage := flag.UnquoteUsage(f)
+	// typeName: option value data type: int, string, ..., bool value will return ""
+	if gf.WithoutType == false && len(typeName) > 0 {
+		s += fmt.Sprintf(" <magenta>%s</>", typeName)
+	}
+
+	// - flag and description at one line
+	// - Boolean flags of one ASCII letter are so common we
+	// treat them specially, putting their usage on the same line.
+	if gf.NameDescOL || fLen <= 4 { // space, space, '-', 'x'.
+		s += "    "
+	} else {
+		// display description on new line
+		s += "\n        "
+	}
+
+	// - build description
+	s += strings.Replace(strutil.UpperFirst(usage), "\n", "\n        ", -1)
+
+	if !isZeroValue(f, f.DefValue) {
+		if _, ok := f.Value.(*stringValue); ok {
+			// put quotes on the value
+			s += fmt.Sprintf(" (default <magentaB>%q</>)", f.DefValue)
+		} else {
+			s += fmt.Sprintf(" (default <magentaB>%v</>)", f.DefValue)
+		}
+	}
+
+	// save to buffer
+	gf.buf.WriteString(s)
+	gf.buf.WriteByte('\n')
+}
+
+/***********************************************************************
+ * GFlag:
  * - helper methods
  ***********************************************************************/
 
@@ -430,84 +544,6 @@ func (gf *GFlags) SetOutput(out io.Writer) {
 	gf.out = out
 }
 
-// PrintHelpPanel for all options to the gf.out
-func (gf *GFlags) PrintHelpPanel() {
-	// refer gf.Fs().PrintDefaults()
-	gf.Fs().VisitAll(gf.formatOneFlag)
-
-	color.Fprint(gf.out, gf.buf.String())
-}
-
-func (gf *GFlags) formatOneFlag(f *flag.Flag)  {
-	// if desc is empty(hidden flag), skip it
-	if f.Usage == "" {
-		return
-	}
-
-	var s, fullName string
-	name := f.Name
-	// eg: "-V, --version" length is: 13
-	fLen := gf.names[name]
-
-	// - build flag name info
-	// is long option
-	if len(name) > 1 {
-		// find shortcuts
-		shortcuts := gf.ShortNames(name)
-		if len(shortcuts) == 0 {
-			fullName = "--" + name
-			// s = fmt.Sprintf("      <info>--%s</>", name)
-		} else {
-			fullName = fmt.Sprintf("%s, --%s", shortcuts2str(shortcuts), name)
-			// s = fmt.Sprintf("  <info>%s, --%s</>", shortcuts2str(shortcuts), name)
-		}
-	} else {
-		// is short option name, skip it
-		if gf.IsShortcut(name) {
-			return
-		}
-
-		// only short option
-		// s = fmt.Sprintf("  <info>-%s</>", name)
-		fullName = "-" + name
-	}
-
-	s = fmt.Sprintf("<info>%s</>", strutil.PadLeft(fullName, " ", gf.flagMaxLen))
-
-	// - build flag type info
-	typeName, usage := flag.UnquoteUsage(f)
-	// typeName: option value data type: int, string, ..., bool value will return ""
-	if gf.flagNoType == false && len(typeName) > 0 {
-		s += fmt.Sprintf(" <magenta>%s</>", typeName)
-	}
-
-	// - flag and description at one line
-	// - Boolean flags of one ASCII letter are so common we
-	// treat them specially, putting their usage on the same line.
-	if gf.flagDescOL || fLen <= 4 { // space, space, '-', 'x'.
-		s += "    "
-	} else {
-		// display description on new line
-		s += "\n        "
-	}
-
-	// - build description
-	s += strings.Replace(strutil.UpperFirst(usage), "\n", "\n        ", -1)
-
-	if !isZeroValue(f, f.DefValue) {
-		if _, ok := f.Value.(*stringValue); ok {
-			// put quotes on the value
-			s += fmt.Sprintf(" (default <magentaB>%q</>)", f.DefValue)
-		} else {
-			s += fmt.Sprintf(" (default <magentaB>%v</>)", f.DefValue)
-		}
-	}
-
-	// save to buffer
-	gf.buf.WriteString(s)
-	gf.buf.WriteByte('\n')
-}
-
 /***********************************************************************
  * GFlag:
  * - flag metadata
@@ -515,7 +551,7 @@ func (gf *GFlags) formatOneFlag(f *flag.Flag)  {
 
 // Meta for an flag(option/argument)
 type Meta struct {
-	varPtr interface{}
+	// varPtr interface{}
 	// defVal *Value
 	// name and description
 	Name, UseFor string

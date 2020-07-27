@@ -94,7 +94,11 @@ func NewApp(fn ...func(a *App)) *App {
 		// cmdLine: CLI,
 		core: core{
 			cmdLine: CLI,
-			gFlags: NewGFlags("globalOpts").WithHelpOption(true, true),
+			gFlags: NewGFlags("globalOpts").WithOption(GFlagOption{
+				WithoutType: true,
+				NameDescOL:  true,
+				Alignment:   true, // left
+			}),
 		},
 		// config
 		ExitOnEnd: true,

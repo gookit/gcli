@@ -273,6 +273,7 @@ func (app *App) showCommandTips(name string) {
 
 // display app help and list all commands
 func (app *App) showApplicationHelp() {
+	app.gFlags.PrintHelpPanel()
 	// commandsHelp = color.ReplaceTag(commandsHelp)
 	// render help text template
 	s := helper.RenderText(commandsHelp, map[string]interface{}{
