@@ -11,7 +11,6 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/goutil"
-	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -47,14 +46,16 @@ type GFlags struct {
 	names map[string]int
 	// metadata for all options
 	metas map[string]*FlagMeta
-	// shortcuts for command options. {short:name}
+	// short names for options. format: {short:name}
 	// eg. {"n": "name", "o": "opt"}
-	shortcuts map[string]string
+	shorts map[string]string
 	// mapping for name to shortcut {"name": {"n", "m"}}
 	name2shorts map[string][]string
 	// flag name max length
 	// eg: "-V, --version" length is 13
 	flagMaxLen int
+	// exist short names. useful for render help
+	existShort bool
 }
 
 // NewGFlags create an GFlags
@@ -102,16 +103,16 @@ func (gf *GFlags) BoolVar(p *bool, meta FlagMeta) {
 }
 
 // BoolOpt binding an bool option
-func (gf *GFlags) BoolOpt(p *bool, name string, defValue bool, desc string, shortcuts ...string) {
+func (gf *GFlags) BoolOpt(p *bool, name string, defValue bool, desc string, shorts ...string) {
 	gf.boolOpt(p, &FlagMeta{
 		Name:   name,
 		Desc:   desc,
 		DefVal: defValue,
-		Shorts: shortcuts,
+		Shorts: shorts,
 	})
 }
 
-// binding option and shortcuts
+// binding option and shorts
 func (gf *GFlags) boolOpt(p *bool, meta *FlagMeta) {
 	defValue := meta.DValue().Bool()
 	fmtName := gf.checkName(meta.Name, meta)
@@ -133,12 +134,12 @@ func (gf *GFlags) Float64Var(p *float64, meta FlagMeta) {
 }
 
 // Float64Opt binding an float64 option
-func (gf *GFlags) Float64Opt(p *float64, name string, defValue float64, desc string, shortcuts ...string) {
+func (gf *GFlags) Float64Opt(p *float64, name string, defValue float64, desc string, shorts ...string) {
 	gf.float64Opt(p, &FlagMeta{
 		Name:   name,
 		Desc:   desc,
 		DefVal: defValue,
-		Shorts: shortcuts,
+		Shorts: shorts,
 	})
 }
 
@@ -163,16 +164,16 @@ func (gf *GFlags) StrVar(p *string, meta FlagMeta) {
 }
 
 // StrOpt binding an string option
-func (gf *GFlags) StrOpt(p *string, name, defValue, desc string, shortcuts ...string) {
+func (gf *GFlags) StrOpt(p *string, name, defValue, desc string, shorts ...string) {
 	gf.strOpt(p, &FlagMeta{
 		Name:   name,
 		Desc:   desc,
 		DefVal: defValue,
-		Shorts: shortcuts,
+		Shorts: shorts,
 	})
 }
 
-// binding option and shortcuts
+// binding option and shorts
 func (gf *GFlags) strOpt(p *string, meta *FlagMeta) {
 	defValue := meta.DValue().String()
 	fmtName := gf.checkName(meta.Name, meta)
@@ -194,12 +195,12 @@ func (gf *GFlags) IntVar(p *int, meta FlagMeta) {
 }
 
 // IntOpt binding an int option
-func (gf *GFlags) IntOpt(p *int, name string, defValue int, desc string, shortcuts ...string) {
+func (gf *GFlags) IntOpt(p *int, name string, defValue int, desc string, shorts ...string) {
 	gf.intOpt(p, &FlagMeta{
 		Name:   name,
 		Desc:   desc,
 		DefVal: defValue,
-		Shorts: shortcuts,
+		Shorts: shorts,
 	})
 }
 
@@ -222,12 +223,12 @@ func (gf *GFlags) Int64Var(p *int64, meta FlagMeta) {
 }
 
 // Int64Opt binding an int64 option
-func (gf *GFlags) Int64Opt(p *int64, name string, defValue int64, desc string, shortcuts ...string) {
+func (gf *GFlags) Int64Opt(p *int64, name string, defValue int64, desc string, shorts ...string) {
 	gf.int64Opt(p, &FlagMeta{
 		Name:   name,
 		Desc:   desc,
 		DefVal: defValue,
-		Shorts: shortcuts,
+		Shorts: shorts,
 	})
 }
 
@@ -252,12 +253,12 @@ func (gf *GFlags) UintVar(p *uint, meta FlagMeta) {
 }
 
 // UintOpt binding an uint option
-func (gf *GFlags) UintOpt(p *uint, name string, defValue uint, desc string, shortcuts ...string) {
+func (gf *GFlags) UintOpt(p *uint, name string, defValue uint, desc string, shorts ...string) {
 	gf.uintOpt(p, &FlagMeta{
 		Name:   name,
 		Desc:   desc,
 		DefVal: defValue,
-		Shorts: shortcuts,
+		Shorts: shorts,
 	})
 }
 
@@ -276,18 +277,18 @@ func (gf *GFlags) uintOpt(p *uint, meta *FlagMeta) {
 
 // Uint64Var binding an uint option flag
 func (gf *GFlags) Uint64Var(p *uint64, meta FlagMeta) {
-	// binding option and shortcuts
+	// binding option and shorts
 	gf.uint64Opt(p, &meta)
 }
 
 // Uint64Opt binding an uint64 option
-func (gf *GFlags) Uint64Opt(p *uint64, name string, defValue uint64, desc string, shortcuts ...string) {
-	// binding option and shortcuts
+func (gf *GFlags) Uint64Opt(p *uint64, name string, defValue uint64, desc string, shorts ...string) {
+	// binding option and shorts
 	gf.uint64Opt(p, &FlagMeta{
 		Name:   name,
 		Desc:   desc,
 		DefVal: defValue,
-		Shorts: shortcuts,
+		Shorts: shorts,
 	})
 }
 
@@ -304,7 +305,7 @@ func (gf *GFlags) uint64Opt(p *uint64, meta *FlagMeta) {
 	}
 }
 
-// check option name and return clean name
+// check option name, short-names
 func (gf *GFlags) checkName(name string, meta *FlagMeta) string {
 	// init gf.names, gf.metas
 	if gf.names == nil {
@@ -326,6 +327,7 @@ func (gf *GFlags) checkName(name string, meta *FlagMeta) string {
 	// is an short name
 	if nameLength == 1 {
 		nameLength += 1 // prefix: "-"
+		gf.existShort = true
 	} else {
 		nameLength += 2 // prefix: "--"
 	}
@@ -353,9 +355,9 @@ func (gf *GFlags) checkShortNames(name string, nameLength int, shorts []string) 
 		return shorts
 	}
 
-	// init gf.shortcuts and gf.name2shorts
-	if gf.shortcuts == nil {
-		gf.shortcuts = map[string]string{}
+	// init gf.shorts and gf.name2shorts
+	if gf.shorts == nil {
+		gf.shorts = map[string]string{}
 		gf.name2shorts = map[string][]string{}
 	}
 
@@ -374,19 +376,21 @@ func (gf *GFlags) checkShortNames(name string, nameLength int, shorts []string) 
 			panicf("shortcut name only allow: A-Za-z(given: '%s')", short)
 		}
 
-		if n, ok := gf.shortcuts[short]; ok {
+		if n, ok := gf.shorts[short]; ok {
 			panicf("shortcut name '%s' has been used by option '%s'", short, n)
 		}
 
 		fmtShorts = append(fmtShorts, short)
 		// storage short name
-		gf.shortcuts[short] = name
+		gf.shorts[short] = name
 	}
 
 	// one short = '-' + 'x' + ',' + ' '
 	// eg: "-o, " len=4
 	// eg: "-o, -a, " len=8
 	nameLength += 4 * len(fmtShorts)
+
+	gf.existShort = true
 
 	// update name length
 	gf.names[name] = nameLength
@@ -405,7 +409,6 @@ func (gf *GFlags) checkShortNames(name string, nameLength int, shorts []string) 
 
 // PrintHelpPanel for all options to the gf.out
 func (gf *GFlags) PrintHelpPanel() {
-	dump.P(gf.flagMaxLen)
 	color.Fprint(gf.out, gf.String())
 }
 
@@ -417,6 +420,10 @@ func (gf *GFlags) String() string {
 
 	// repeat call
 	if gf.buf.Len() < 1 {
+		if gf.existShort {
+			gf.flagMaxLen += 4
+		}
+
 		// refer gf.Fs().PrintDefaults()
 		gf.Fs().VisitAll(gf.formatOneFlag)
 	}
@@ -445,14 +452,15 @@ func (gf *GFlags) formatOneFlag(f *flag.Flag) {
 	// - build flag name info
 	// is long option
 	if len(name) > 1 {
-		// find shortcuts
-		shortcuts := gf.ShortNames(name)
-		if len(shortcuts) == 0 {
-			fullName = "--" + name
-			// s = fmt.Sprintf("      <info>--%s</>", name)
+		// find shorts
+		if shorts := gf.ShortNames(name); len(shorts) > 0 {
+			fullName = fmt.Sprintf("%s, --%s", shorts2str(shorts), name)
 		} else {
-			fullName = fmt.Sprintf("%s, --%s", shortcuts2str(shortcuts), name)
-			// s = fmt.Sprintf("  <info>%s, --%s</>", shortcuts2str(shortcuts), name)
+			fullName = "--" + name
+			// if has short names. add 4 space. eg: "-s, "
+			if gf.existShort {
+				fullName = "    " + fullName
+			}
 		}
 	} else {
 		// is short option name, skip it
@@ -465,8 +473,10 @@ func (gf *GFlags) formatOneFlag(f *flag.Flag) {
 		fullName = "-" + name
 	}
 
-	// padding space to same width.
-	fullName = strutil.Padding(fullName, " ", gf.flagMaxLen, gf.Alignment)
+	// gf.NameDescOL = true: padding space to same width.
+	if gf.NameDescOL {
+		fullName = strutil.Padding(fullName, " ", gf.flagMaxLen, gf.Alignment)
+	}
 
 	s = fmt.Sprintf("  <info>%s</>", fullName)
 
@@ -527,6 +537,11 @@ func (gf *GFlags) ShortNames(name string) (ss []string) {
 	return gf.name2shorts[name]
 }
 
+// HasShorts check
+// func (gf *GFlags) HasShorts() bool {
+// 	return len(gf.shorts) > 0
+// }
+
 // IsShortOpt alias of the IsShortcut()
 func (gf *GFlags) IsShortOpt(short string) bool {
 	return gf.IsShortName(short)
@@ -538,7 +553,7 @@ func (gf *GFlags) IsShortName(short string) bool {
 		return false
 	}
 
-	_, ok := gf.shortcuts[short]
+	_, ok := gf.shorts[short]
 	return ok
 }
 

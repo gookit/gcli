@@ -217,11 +217,7 @@ var commandsHelp = `{{.Description}} (Version: <info>{{.Version}}</>)
   {$binName} [Global Options...] <info>{command}</> [--option ...] [argument ...]
 
 <comment>Global Options:</>
-      <info>--verbose</>     Set error reporting level(quiet 0 - 4 debug)
-      <info>--no-color</>    Disable color when outputting message
-  <info>-h, --help</>        Display the help information
-  <info>-V, --version</>     Display app version information
-
+{{.GOpts}}
 <comment>Available Commands:</>{{range $module, $cs := .Cs}}{{if $module}}
 <comment> {{ $module }}</>{{end}}{{ range $cs }}
   <info>{{.Name | paddingName }}</> {{.UseFor}}{{if .Aliases}} (alias: <cyan>{{ join .Aliases ","}}</>){{end}}{{end}}{{end}}
@@ -256,12 +252,11 @@ func (app *App) showCommandTips(name string) {
 
 // display app help and list all commands
 func (app *App) showApplicationHelp() {
-	app.gFlags.PrintHelpPanel()
-
 	// commandsHelp = color.ReplaceTag(commandsHelp)
 	// render help text template
 	s := helper.RenderText(commandsHelp, map[string]interface{}{
 		"Cs": app.moduleCommands,
+		"GOpts": app.gFlags.String(),
 		// app version
 		"Version": app.Version,
 		// always upper first char

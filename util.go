@@ -52,16 +52,6 @@ func defaultErrHandler(data ...interface{}) {
 	}
 }
 
-func shortcuts2str(ss []string) string {
-	var newSs []string
-	for _, s := range ss {
-		newSs = append(newSs, "-" + s)
-	}
-
-	// eg: "-t, -o"
-	return strings.Join(newSs, ", ")
-}
-
 /*************************************************************
  * some helper methods
  *************************************************************/
@@ -150,4 +140,14 @@ func moveArgumentsToEnd(args []string) []string {
 	}
 
 	return append(args[argEnd:], args[0:argEnd]...)
+}
+
+func shorts2str(ss []string) string {
+	var newSs []string
+	for _, s := range ss {
+		newSs = append(newSs, "-" + s)
+	}
+
+	// eg: "-t, -o"
+	return strings.Join(newSs, ", ")
 }
