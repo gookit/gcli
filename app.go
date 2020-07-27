@@ -135,6 +135,31 @@ func (app *App) Exit(code int) {
 	app.ExitFunc(code)
 }
 
+// binding global options
+func (app *App) bindingGlobalOpts() {
+	Logf(VerbDebug, "[App.bindingGlobalOpts] will begin binding global options")
+	// global options flag
+	// gf := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
+	gf := app.GlobalFlags()
+
+	// binding global options
+	gf.UintOpt(&gOpts.verbose, "verbose", gOpts.verbose, "Set error reporting level(quiet 0 - 4 debug)")
+	gf.BoolOpt(&gOpts.showHelp, "help", false, "Display the help information", "h")
+	gf.BoolOpt(&gOpts.showVer, "version", false, "Display app version information", "V")
+	gf.BoolOpt(&gOpts.noColor, "no-color", gOpts.noColor, "Disable color when outputting message")
+	// This is a internal command, hidden it.
+	gf.BoolVar(&gOpts.inCompletion, Meta{
+		Name:   "cmd-completion",
+		Desc:   "generate completion scripts for bash/zsh",
+		Hidden: true,
+	})
+
+	// support binding custom global options
+	if app.GOptsBinder != nil {
+		app.GOptsBinder(gf)
+	}
+}
+
 // initialize application
 func (app *App) initialize() {
 	app.names = make(map[string]int)
@@ -142,7 +167,8 @@ func (app *App) initialize() {
 	// init some help tpl vars
 	app.core.AddVars(app.core.innerHelpVars())
 
-	// parse GlobalOpts
+	// binding GlobalOpts
+	app.bindingGlobalOpts()
 	// parseGlobalOpts()
 
 	// add default error handler.

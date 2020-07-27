@@ -37,7 +37,7 @@ func main() {
 
 	var customGOpt string
 	app.GOptsBinder = func(gf *gcli.GFlags) {
-		gf.StrVar(&customGOpt, gcli.Meta{Name: "custom", UseFor: "desc message"})
+		gf.StrVar(&customGOpt, gcli.Meta{Name: "custom", Desc: "desc message"})
 	}
 
 	// app.Strict = true

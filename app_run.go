@@ -14,24 +14,11 @@ import (
 func (app *App) parseGlobalOpts() (ok bool) {
 	Logf(VerbDebug, "[App.parseGFlags] will begin parse global options")
 	// global options flag
-	// gfs := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
-	gfs := app.GlobalFlags()
-
-	// binding global options
-	gfs.UintOpt(&gOpts.verbose, "verbose", gOpts.verbose, "Set error reporting level(quiet 0 - 4 debug)")
-	gfs.BoolOpt(&gOpts.showHelp, "help", false, "Display the help information", "h")
-	gfs.BoolOpt(&gOpts.showVer, "version", false, "Display app version information", "V")
-	gfs.BoolOpt(&gOpts.noColor, "no-color", gOpts.noColor, "Disable color when outputting message")
-	// this is a internal command
-	gfs.BoolOpt(&gOpts.inCompletion, "cmd-completion", false, "")
-
-	// support binding custom global options
-	if app.GOptsBinder != nil {
-		app.GOptsBinder(gfs)
-	}
+	// gf := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
+	gf := app.GlobalFlags()
 
 	// parse global options
-	err := gfs.Parse(app.Args[1:])
+	err := gf.Parse(app.Args[1:])
 	if err != nil {
 		color.Error.Tips(err.Error())
 		return
@@ -52,7 +39,7 @@ func (app *App) parseGlobalOpts() (ok bool) {
 		color.Enable = false
 	}
 
-	app.rawFlagArgs = gfs.Fs().Args()
+	app.rawFlagArgs = gf.Fs().Args()
 	Logf(VerbDebug, "[App.parseGFlags] console debug is enabled, level is %d", gOpts.verbose)
 
 	// TODO show auto-completion for bash/zsh

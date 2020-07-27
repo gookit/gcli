@@ -12,8 +12,8 @@ func TestGFlags_StrOpt(t *testing.T) {
 
 	var str string
 	gf.StrVar(&str, gcli.Meta{
-		Name:   "test",
-		UseFor: "test desc",
+		Name: "test",
+		Desc: "test desc",
 	})
 
 	err := gf.Parse([]string{})
@@ -47,7 +47,7 @@ func TestGFlags_PrintHelpPanel(t *testing.T) {
 	}{}
 
 	gf.StrVar(&testOpts.opt3, gcli.Meta{
-		Name:   "test",
-		UseFor: "test desc",
+		Name: "test",
+		Desc: "test desc",
 	})
 }
