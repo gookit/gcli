@@ -12,15 +12,14 @@ type core struct {
 	HelpVars
 	Hooks // allowed hooks: "init", "before", "after", "error"
 	// global options flag set
-	gFlags *GFlags
+	*GFlags
 	// GOptsBinder you can custom binding global options
 	GOptsBinder func(gf *GFlags)
-
 }
 
 // GlobalFlags get the app GlobalFlags
 func (c core) GlobalFlags() *GFlags {
-	return c.gFlags
+	return c.GFlags
 }
 
 // common basic help vars
@@ -118,15 +117,6 @@ func (c *cmdLine) WorkDir() string {
 // ArgLine os.Args to string, but no binName.
 func (c *cmdLine) ArgLine() string {
 	return c.argLine
-}
-
-// TODO remove
-func (c *cmdLine) helpVars() map[string]string {
-	return map[string]string{
-		"pid":     fmt.Sprint(CLI.pid),
-		"workDir": CLI.workDir,
-		"binName": CLI.binName,
-	}
 }
 
 func (c *cmdLine) hasHelpKeywords() bool {

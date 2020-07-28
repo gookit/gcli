@@ -1,5 +1,10 @@
 package gcli
 
+import (
+	"fmt"
+	"strconv"
+)
+
 // constants for error level 0 - 4
 const (
 	VerbQuiet uint = iota // don't report anything
@@ -69,4 +74,67 @@ type Commander interface {
 	BindFlags(c *Command)
 	// Execute(c *Command, args []string) error
 	Run(c *Command, args []string) error
+}
+
+// Executor definition
+type Executor interface {
+}
+
+// Executor definition
+type RunningAble struct {
+}
+
+/*************************************************************************
+ * options: some special flag vars
+ * - implemented flag.Value interface
+ *************************************************************************/
+
+// Ints The int flag list, implemented flag.Value interface
+type Ints []int
+
+// String to string
+func (s *Ints) String() string {
+	return fmt.Sprintf("%v", *s)
+}
+
+// Set new value
+func (s *Ints) Set(value string) error {
+	intVal, err := strconv.Atoi(value)
+	if err == nil {
+		*s = append(*s, intVal)
+	}
+
+	return err
+}
+
+// Strings The string flag list, implemented flag.Value interface
+type Strings []string
+
+// String to string
+func (s *Strings) String() string {
+	return fmt.Sprintf("%v", *s)
+}
+
+// Set new value
+func (s *Strings) Set(value string) error {
+	*s = append(*s, value)
+	return nil
+}
+
+// Booleans The bool flag list, implemented flag.Value interface
+type Booleans []bool
+
+// String to string
+func (s *Booleans) String() string {
+	return fmt.Sprintf("%v", *s)
+}
+
+// Set new value
+func (s *Booleans) Set(value string) error {
+	boolVal, err := strconv.ParseBool(value)
+	if err == nil {
+		*s = append(*s, boolVal)
+	}
+
+	return err
 }

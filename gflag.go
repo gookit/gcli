@@ -277,13 +277,11 @@ func (gf *GFlags) uintOpt(p *uint, meta *FlagMeta) {
 
 // Uint64Var binding an uint option flag
 func (gf *GFlags) Uint64Var(p *uint64, meta FlagMeta) {
-	// binding option and shorts
 	gf.uint64Opt(p, &meta)
 }
 
 // Uint64Opt binding an uint64 option
 func (gf *GFlags) Uint64Opt(p *uint64, name string, defValue uint64, desc string, shorts ...string) {
-	// binding option and shorts
 	gf.uint64Opt(p, &FlagMeta{
 		Name:   name,
 		Desc:   desc,
@@ -292,6 +290,7 @@ func (gf *GFlags) Uint64Opt(p *uint64, name string, defValue uint64, desc string
 	})
 }
 
+// binding option and shorts
 func (gf *GFlags) uint64Opt(p *uint64, meta *FlagMeta) {
 	defValue := meta.DValue().Int64()
 	fmtName := gf.checkName(meta.Name, meta)
@@ -302,6 +301,37 @@ func (gf *GFlags) uint64Opt(p *uint64, meta *FlagMeta) {
 	// binding all short options to flag.FlagSet
 	for _, s := range meta.Shorts {
 		gf.fs.Uint64Var(p, s, uint64(defValue), "") // dont add description for short name
+	}
+}
+
+// Var binding an custom var option flag
+func (gf *GFlags) Var(p flag.Value, meta FlagMeta) {
+	gf.varOpt(p, &meta)
+}
+
+// VarOpt binding a custom var option
+// Usage:
+//		var names gcli.Strings
+// 		cmd.VarOpt(&names, "tables", "t", "description ...")
+func (gf *GFlags) VarOpt(p flag.Value, name, desc string, shorts ...string) {
+	gf.varOpt(p, &FlagMeta{
+		Name:   name,
+		Desc:   desc,
+		// DefVal: defValue,
+		Shorts: shorts,
+	})
+}
+
+// binding option and shorts
+func (gf *GFlags) varOpt(p flag.Value, meta *FlagMeta) {
+	fmtName := gf.checkName(meta.Name, meta)
+
+	// binding option to flag.FlagSet
+	gf.fs.Var(p, fmtName, meta.Desc)
+
+	// binding all short options to flag.FlagSet
+	for _, s := range meta.Shorts {
+		gf.fs.Var(p, s, "") // dont add description for short name
 	}
 }
 

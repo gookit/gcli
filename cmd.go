@@ -10,11 +10,12 @@ import (
 
 // Command a CLI command structure
 type Command struct {
+	core
 	// cmdLine is internal use
-	*cmdLine
-	HelpVars
-	// Hooks can allow setting some hooks func on running.
-	Hooks // allowed hooks: "init", "before", "after", "error"
+	// *cmdLine
+	// HelpVars
+	// // Hooks can allow setting some hooks func on running.
+	// Hooks // allowed hooks: "init", "before", "after", "error"
 
 	// Name is the command name.
 	Name string
@@ -117,7 +118,7 @@ func (c *Command) Runnable() bool {
 
 // initialize command
 func (c *Command) initialize() *Command {
-	c.cmdLine = CLI
+	c.core.cmdLine = CLI
 
 	// format description
 	if len(c.UseFor) > 0 {
@@ -136,7 +137,7 @@ func (c *Command) initialize() *Command {
 
 	// set help vars
 	// c.Vars = c.app.vars // Error: var is map, map is ref addr
-	c.AddVars(c.helpVars())
+	c.AddVars(c.core.innerHelpVars())
 	c.AddVars(map[string]string{
 		"cmd": c.Name,
 		// full command

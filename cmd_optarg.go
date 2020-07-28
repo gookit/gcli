@@ -2,65 +2,10 @@ package gcli
 
 import (
 	"flag"
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 )
-
-/*************************************************************
- * options: some special vars
- *************************************************************/
-
-// Ints The int flag list, implemented flag.Value interface
-type Ints []int
-
-// String to string
-func (s *Ints) String() string {
-	return fmt.Sprintf("%v", *s)
-}
-
-// Set new value
-func (s *Ints) Set(value string) error {
-	intVal, err := strconv.Atoi(value)
-	if err == nil {
-		*s = append(*s, intVal)
-	}
-
-	return err
-}
-
-// Strings The string flag list, implemented flag.Value interface
-type Strings []string
-
-// String to string
-func (s *Strings) String() string {
-	return fmt.Sprintf("%v", *s)
-}
-
-// Set new value
-func (s *Strings) Set(value string) error {
-	*s = append(*s, value)
-	return nil
-}
-
-// Booleans The bool flag list, implemented flag.Value interface
-type Booleans []bool
-
-// String to string
-func (s *Booleans) String() string {
-	return fmt.Sprintf("%v", *s)
-}
-
-// Set new value
-func (s *Booleans) Set(value string) error {
-	boolVal, err := strconv.ParseBool(value)
-	if err == nil {
-		*s = append(*s, boolVal)
-	}
-
-	return err
-}
 
 /*************************************************************
  * command options
@@ -105,19 +50,6 @@ func (c *Command) BoolOpt(p *bool, name, short string, defValue bool, descriptio
 
 	if s, ok := c.addShortcut(name, short); ok {
 		c.Flags.BoolVar(p, s, defValue, "")
-	}
-
-	return c
-}
-
-// VarOpt binding a custom var option
-// Usage:
-// 		cmd.VarOpt(&opts.Strings, "tables", "t", "description ...")
-func (c *Command) VarOpt(p flag.Value, name string, short string, description string) *Command {
-	c.Flags.Var(p, name, description)
-
-	if s, ok := c.addShortcut(name, short); ok {
-		c.Flags.Var(p, s, "")
 	}
 
 	return c

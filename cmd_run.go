@@ -153,8 +153,21 @@ func (c *Command) Run(inArgs []string) (err error) {
 
 	// - Alone running command
 
+	// mark is alone
+	c.alone = true
+	// only init global flags on alone run.
+	c.core.GFlags = NewGFlags(c.Name + ".GlobalOpts").WithOption(GFlagOption{
+		Alignment: AlignLeft,
+	})
+
+	// binding global options
+	bindingCommonGOpts(c.GFlags)
+
 	// init the command
 	c.initialize()
+
+	// add default error handler.
+	c.Hooks.AddOn(EvtCmdError, defaultErrHandler)
 
 	// check input args
 	if len(inArgs) == 0 {
@@ -164,7 +177,7 @@ func (c *Command) Run(inArgs []string) (err error) {
 	// if Command.CustomFlags=true, will not run Flags.Parse()
 	if !c.CustomFlags {
 		// contains keywords "-h" OR "--help" on end
-		if CLI.hasHelpKeywords() {
+		if c.hasHelpKeywords() {
 			c.ShowHelp()
 			return
 		}

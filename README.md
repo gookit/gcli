@@ -11,7 +11,9 @@
 
 A simple to use command line application, written using golang.
 
-> **[中文说明](README.zh-CN.md)**
+## [中文说明](README.zh-CN.md)
+
+中文说明请看 **[README.zh-CN](README.zh-CN.md)**
 
 ## Screenshots
 
