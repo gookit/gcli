@@ -68,8 +68,6 @@ type Command struct {
 	disabled bool
 	// all option names of the command
 	optNames map[string]string
-	// shortcuts for command options(Flags) {short:name} eg. {"n": "name", "o": "opt"}
-	shortcuts map[string]string
 }
 
 // NewCommand create a new command instance.
@@ -123,6 +121,13 @@ func (c *Command) Runnable() bool {
 func (c *Command) initialize() *Command {
 	c.core.cmdLine = CLI
 
+	// init for cmd Flags
+	c.Flags.InitFlagSet(c.Name)
+	c.Flags.FSet().SetOutput(c.Flags.out)
+	c.Flags.FSet().Usage = func() { // call on exists "-h" "--help"
+		c.ShowHelp()
+	}
+
 	// format description
 	if len(c.UseFor) > 0 {
 		c.UseFor = strutil.UpperFirst(c.UseFor)
@@ -148,11 +153,6 @@ func (c *Command) initialize() *Command {
 	})
 
 	c.Fire(EvtCmdInit, nil)
-
-	// init for Flags
-	c.Flags.FSet().Usage = func() { // call on exists "-h" "--help"
-		c.ShowHelp(false)
-	}
 
 	return c
 }

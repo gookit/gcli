@@ -112,7 +112,7 @@ func (app *App) Run() (code int) {
 	args := app.cleanArgs
 	name := app.ResolveName(app.rawName)
 
-	Logf(VerbDebug, "input command: '<cyan>%s</>', real command: '%s', flags: %v", app.rawName, name, args)
+	Logf(VerbDebug, "input command: '<cyan>%s</>', real command: '<mga>%s</>', flags: %v", app.rawName, name, args)
 
 	// display unknown input command and similar commands tips
 	if !app.IsCommand(name) {
@@ -142,12 +142,13 @@ func (app *App) doRun(name string, args []string) (code int) {
 	app.commandName = name
 	app.fireEvent(EvtAppBefore, cmd.Copy())
 
-	Logf(VerbDebug, "command raw flags: %v", args)
+	Logf(VerbDebug, "command '%s' raw flags: %v", name, args)
 
 	// if Command.CustomFlags=true, will not run Flags.Parse()
 	if !cmd.CustomFlags {
 		// contains keywords "-h" OR "--help" on end
 		if CLI.hasHelpKeywords() {
+			Logf(VerbDebug, "contains help keywords in flags, render command help message")
 			cmd.ShowHelp()
 			return
 		}

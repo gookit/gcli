@@ -148,7 +148,7 @@ import  "github.com/gookit/gcli/v2/builtin"
 
     // ...
     // 添加内置提供的生成命令
-    app.Add(builtin.GenAutoCompleteScript())
+    app.Add(builtin.GenAutoComplete())
 
 ```
 

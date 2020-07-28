@@ -143,7 +143,7 @@ import  "github.com/gookit/gcli/v2/builtin"
 
     // ...
     // add gen command(gen successful you can remove it)
-    app.Add(builtin.GenAutoCompleteScript())
+    app.Add(builtin.GenAutoComplete())
 
 ```
 

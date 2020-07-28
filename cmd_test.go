@@ -37,55 +37,55 @@ func TestNewCommand(t *testing.T) {
 }
 
 func TestCommand_Errorf(t *testing.T) {
-	ris := assert.New(t)
+	is := assert.New(t)
 
 	c := gcli.NewCommand("test", "desc test", nil)
 	c.SetFunc(func(c *gcli.Command, args []string) error {
-		ris.Equal([]string{"hi"}, args)
+		is.Equal([]string{"hi"}, args)
 		return c.Errorf("error message")
 	})
 
-	ris.NotEmpty(c)
+	is.NotEmpty(c)
 
 	err := c.Run(simpleArgs)
-	ris.Error(err)
-	ris.Equal("error message", err.Error())
-	ris.Equal([]string{"hi"}, c.RawArgs())
+	is.Error(err)
+	is.Equal("error message", err.Error())
+	is.Equal([]string{"hi"}, c.RawArgs())
 
-	ris.Panics(func() {
+	is.Panics(func() {
 		c.MustRun(simpleArgs)
 	})
 }
 
 func TestCommand_Run(t *testing.T) {
-	ris := assert.New(t)
+	is := assert.New(t)
 
 	c := gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
-		ris.Equal("test", c.Name)
+		is.Equal("test", c.Name)
 		c.Aliases = []string{"alias1"}
 	})
 	c.SetFunc(func(c *gcli.Command, args []string) error {
 		return nil
 	})
 
-	ris.NotEmpty(c)
+	is.NotEmpty(c)
 	err := c.Run(simpleArgs)
-	ris.NoError(err)
+	is.NoError(err)
 
-	ris.Equal("alias1", c.AliasesString(""))
+	is.Equal("alias1", c.AliasesString(""))
 
 	err = c.Run([]string{"-h"})
-	ris.NoError(err)
-	ris.Equal("alias1", c.AliasesString(""))
+	is.NoError(err)
+	is.Equal("alias1", c.AliasesString(""))
 
 	g := gcli.NewApp()
 	g.AddCommand(c)
 	err = c.Run(simpleArgs)
-	ris.Error(err)
+	is.Error(err)
 }
 
 func TestCommand_ParseFlag(t *testing.T) {
-	ris := assert.New(t)
+	is := assert.New(t)
 
 	var int0 int
 	var str0 string
@@ -93,21 +93,22 @@ func TestCommand_ParseFlag(t *testing.T) {
 	c := gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
 		c.IntOpt(&int0, "int", "", 0, "int desc")
 		c.StrOpt(&str0, "str", "", "", "str desc")
-		ris.Equal("test", c.Name)
-		ris.Equal("int desc", c.OptDes("int"))
+		is.Equal("test", c.Name)
+		is.Equal("int desc", c.FlagMeta("int").Desc)
 	})
+
 	c.SetFunc(func(c *gcli.Command, args []string) error {
-		ris.Equal("test", c.Name)
-		ris.Equal([]string{"txt"}, args)
+		is.Equal("test", c.Name)
+		is.Equal([]string{"txt"}, args)
 		return nil
 	})
 
 	err := c.Run([]string{"txt", "--int", "10", "--str=abc"})
-	ris.NoError(err)
-	ris.Equal(10, int0)
-	ris.Equal("abc", str0)
-	ris.Equal([]string{"txt"}, c.RawArgs())
-	ris.Equal("txt", c.RawArg(0))
+	is.NoError(err)
+	is.Equal(10, int0)
+	is.Equal("abc", str0)
+	is.Equal([]string{"txt"}, c.RawArgs())
+	is.Equal("txt", c.RawArg(0))
 
 	// var str0 string
 	co := struct {
@@ -116,18 +117,64 @@ func TestCommand_ParseFlag(t *testing.T) {
 	}{}
 
 	c = gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
-		ris.Equal("test", c.Name)
+		is.Equal("test", c.Name)
 		c.IntOpt(&int0, "int", "", 0, "desc")
 		c.IntOpt(&co.maxSteps, "max-step", "", 0, "setting the max step value")
 	})
 	c.SetFunc(func(c *gcli.Command, args []string) error {
-		ris.Equal("[txt]", fmt.Sprint(args))
+		is.Equal("[txt]", fmt.Sprint(args))
 		return nil
 	})
 
 	err = c.Run([]string{"--int", "10", "--max-step=100", "txt"})
-	ris.NoError(err)
-	ris.Equal(10, int0)
-	ris.Equal(100, co.maxSteps)
-	ris.Equal("[txt]", fmt.Sprint(c.RawArgs()))
+	is.NoError(err)
+	is.Equal(10, int0)
+	is.Equal(100, co.maxSteps)
+	is.Equal("[txt]", fmt.Sprint(c.RawArgs()))
+}
+
+func TestInts(t *testing.T) {
+	is := assert.New(t)
+	ints := gcli.Ints{}
+
+	err := ints.Set("1")
+	is.NoError(err)
+	err = ints.Set("3")
+	is.NoError(err)
+	is.Equal("[1 3]", ints.String())
+	err = ints.Set("abc")
+	is.Error(err)
+
+	ints = gcli.Ints{1, 3}
+	is.Equal("[1 3]", ints.String())
+}
+
+func TestStrings(t *testing.T) {
+	is := assert.New(t)
+	ss := gcli.Strings{}
+
+	err := ss.Set("1")
+	is.NoError(err)
+	err = ss.Set("3")
+	is.NoError(err)
+	err = ss.Set("abc")
+	is.NoError(err)
+	is.Equal("[1 3 abc]", ss.String())
+}
+
+func TestBooleans(t *testing.T) {
+	is := assert.New(t)
+	val := gcli.Booleans{}
+
+	err := val.Set("false")
+	is.NoError(err)
+	is.False(val[0])
+	is.Equal("[false]", val.String())
+
+	err = val.Set("True")
+	is.NoError(err)
+	is.Equal("[false true]", val.String())
+
+	err = val.Set("abc")
+	is.Error(err)
 }

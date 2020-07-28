@@ -7,6 +7,7 @@ import (
 	"io"
 	"io/ioutil"
 	"os"
+	"reflect"
 	"strings"
 
 	"github.com/gookit/color"
@@ -60,22 +61,10 @@ type Flags struct {
 
 // NewFlags create an new Flags
 func NewFlags(name string) *Flags {
-	fs := &Flags{
-		out:  os.Stdout,
-		fSet: flag.NewFlagSet(name, flag.ContinueOnError),
-	}
-
-	// disable output internal error message on parse flags
-	fs.fSet.SetOutput(ioutil.Discard)
-	// nothing to do ... render usage on after parsed
-	fs.fSet.Usage = func() {}
+	fs := &Flags{out: os.Stdout}
+	fs.InitFlagSet(name)
 
 	return fs
-}
-
-// Parse given arguments
-func (fs *Flags) Parse(args []string) error {
-	return fs.fSet.Parse(args)
 }
 
 // FromStruct from struct tag binding options
@@ -90,8 +79,36 @@ func (fs *Flags) WithOption(cfg FlagsOption) *Flags {
 	return fs
 }
 
+// create and init flag.FlagSet
+func (fs *Flags) InitFlagSet(name string) {
+	if fs.fSet != nil {
+		return
+	}
+
+	fs.fSet = flag.NewFlagSet(name, flag.ContinueOnError)
+	// disable output internal error message on parse flags
+	fs.fSet.SetOutput(ioutil.Discard)
+	// nothing to do ... render usage on after parsed
+	fs.fSet.Usage = func() {}
+}
+
+// Parse given arguments
+func (fs *Flags) Parse(args []string) error {
+	return fs.fSet.Parse(args)
+}
+
+// RawArg get an argument value by index
+func (fs *Flags) RawArg(i int) string {
+	return fs.fSet.Arg(i)
+}
+
+// RawArgs get all raw arguments
+func (fs *Flags) RawArgs() []string {
+	return fs.fSet.Args()
+}
+
 /***********************************************************************
- * GFlag:
+ * Flags:
  * - binding option var
  ***********************************************************************/
 
@@ -297,10 +314,11 @@ func (fs *Flags) varOpt(p flag.Value, meta *FlagMeta) {
 
 // check option name, short-names
 func (fs *Flags) checkName(name string, meta *FlagMeta) string {
-	// init fs.names, fs.metas
+	// NOTICE: must init some required fields
 	if fs.names == nil {
 		fs.names = map[string]int{}
 		fs.metas = map[string]*FlagMeta{}
+		fs.InitFlagSet("flags")
 	}
 
 	// check name
@@ -393,7 +411,7 @@ func (fs *Flags) checkShortNames(name string, nameLength int, shorts []string) [
 }
 
 /***********************************************************************
- * GFlag:
+ * Flags:
  * - render help message
  ***********************************************************************/
 
@@ -480,7 +498,7 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 	// - flag and description at one line
 	// - Boolean flags of one ASCII letter are so common we
 	// treat them specially, putting their usage on the same line.
-	if fs.NameDescOL || fLen <= 4 { // space, space, '-', 'x'.
+	if fs.NameDescOL || (typeName == "" && fLen <= 4) { // space, space, '-', 'x'.
 		s += "    "
 	} else {
 		// display description on new line
@@ -605,8 +623,13 @@ func (fs *Flags) SetOutput(out io.Writer) {
 	fs.out = out
 }
 
+// FlagNames return all option names
+func (fs *Flags) FlagNames() map[string]int {
+	return fs.names
+}
+
 /***********************************************************************
- * GFlag:
+ * Flags:
  * - flag metadata
  ***********************************************************************/
 
@@ -653,3 +676,45 @@ func (m *FlagMeta) Description() string {
 
 	return "no description"
 }
+
+/***********************************************************************
+ * Flags:
+ * - flag value check methods
+ ***********************************************************************/
+
+// isZeroValue guesses whether the string represents the zero
+// value for a flag. It is not accurate but in practice works OK.
+//
+// NOTICE: the func is copied from package 'flag', func 'isZeroValue'
+func isZeroValue(fg *flag.Flag, value string) bool {
+	// Build a zero value of the flag's Value type, and see if the
+	// result of calling its String method equals the value passed in.
+	// This works unless the Value type is itself an interface type.
+	typ := reflect.TypeOf(fg.Value)
+	var z reflect.Value
+	if typ.Kind() == reflect.Ptr {
+		z = reflect.New(typ.Elem())
+	} else {
+		z = reflect.Zero(typ)
+	}
+	if value == z.Interface().(flag.Value).String() {
+		return true
+	}
+
+	switch value {
+	case "false", "", "0":
+		return true
+	}
+	return false
+}
+
+// -- string Value
+// NOTICE: the var is copied from package 'flag'
+type stringValue string
+
+func (s *stringValue) Set(val string) error {
+	*s = stringValue(val)
+	return nil
+}
+func (s *stringValue) Get() interface{} { return string(*s) }
+func (s *stringValue) String() string   { return string(*s) }

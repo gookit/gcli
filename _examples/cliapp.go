@@ -64,7 +64,7 @@ func main() {
 		},
 	})
 
-	app.Add(builtin.GenAutoCompleteScript())
+	app.Add(builtin.GenAutoComplete())
 	// create by func
 	app.NewCommand("test1", "description1", func(c *gcli.Command) {
 		// some config for the command

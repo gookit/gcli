@@ -8,52 +8,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInts(t *testing.T) {
-	is := assert.New(t)
-	ints := gcli.Ints{}
-
-	err := ints.Set("1")
-	is.NoError(err)
-	err = ints.Set("3")
-	is.NoError(err)
-	is.Equal("[1 3]", ints.String())
-	err = ints.Set("abc")
-	is.Error(err)
-
-	ints = gcli.Ints{1, 3}
-	is.Equal("[1 3]", ints.String())
-}
-
-func TestStrings(t *testing.T) {
-	is := assert.New(t)
-	ss := gcli.Strings{}
-
-	err := ss.Set("1")
-	is.NoError(err)
-	err = ss.Set("3")
-	is.NoError(err)
-	err = ss.Set("abc")
-	is.NoError(err)
-	is.Equal("[1 3 abc]", ss.String())
-}
-
-func TestBooleans(t *testing.T) {
-	is := assert.New(t)
-	val := gcli.Booleans{}
-
-	err := val.Set("false")
-	is.NoError(err)
-	is.False(val[0])
-	is.Equal("[false]", val.String())
-
-	err = val.Set("True")
-	is.NoError(err)
-	is.Equal("[false true]", val.String())
-
-	err = val.Set("abc")
-	is.Error(err)
-}
-
 func TestCommand_AddArg(t *testing.T) {
 	is := assert.New(t)
 	c := gcli.NewCommand("test", "test desc", nil)

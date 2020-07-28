@@ -1,92 +1,10 @@
 package gcli
 
 import (
-	"flag"
 	"regexp"
 	"strconv"
 	"strings"
 )
-
-/*************************************************************
- * command options
- *************************************************************/
-
-// addShortcut add a shortcut name for a option name
-func (c *Command) addShortcut(name, short string) (string, bool) {
-	// record all option names
-	if c.optNames == nil {
-		c.optNames = map[string]string{}
-	}
-	c.optNames[name] = ""
-
-	// empty string
-	if len(short) == 0 {
-		return "", false
-	}
-
-	// first add short
-	if c.shortcuts == nil {
-		c.shortcuts = map[string]string{}
-	}
-
-	// ensure it is one char
-	short = string(short[0])
-	if n, ok := c.shortcuts[short]; ok {
-		panicf("The shortcut name '%s' has been used by option '%s'", short, n)
-	}
-
-	c.shortcuts[short] = name
-	return short, true
-}
-
-// isShortOpt alias of the `isShortcut`
-func (c *Command) isShortOpt(short string) bool {
-	return c.isShortcut(short)
-}
-
-// isShortcut check it is a shortcut name
-func (c *Command) isShortcut(short string) bool {
-	if len(short) != 1 {
-		return false
-	}
-
-	_, ok := c.shortcuts[short]
-	return ok
-}
-
-// ShortName get a shortcut name by option name
-func (c *Command) ShortName(name string) string {
-	for s, n := range c.shortcuts {
-		if n == name {
-			return s
-		}
-	}
-
-	return ""
-}
-
-// OptFlag get option Flag by option name
-func (c *Command) OptFlag(name string) *flag.Flag {
-	if _, ok := c.optNames[name]; ok {
-		return c.Flags.Lookup(name)
-	}
-
-	return nil
-}
-
-// OptDes get option description by option name
-func (c *Command) OptDes(name string) string {
-	if _, ok := c.optNames[name]; ok {
-		return c.Flags.Lookup(name).Usage
-	}
-
-	return ""
-}
-
-// OptNames return all option names
-func (c *Command) OptNames() map[string]string {
-	return c.optNames
-}
 
 /*************************************************************
  * command arguments
@@ -183,16 +101,6 @@ func (c *Command) ArgByIndex(i int) *Argument {
 		return c.args[i]
 	}
 	return emptyArg
-}
-
-// RawArgs get all raw arguments
-func (c *Command) RawArgs() []string {
-	return c.Flags.Args()
-}
-
-// RawArg get an argument value by index
-func (c *Command) RawArg(i int) string {
-	return c.Flags.Arg(i)
 }
 
 /*************************************************************

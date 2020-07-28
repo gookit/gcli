@@ -33,17 +33,17 @@ var shellTpls = map[string]string{
 	"bash": bashCompleteScriptTpl,
 }
 
-// GenAutoCompleteScript create command
-func GenAutoCompleteScript() *gcli.Command {
+// GenAutoComplete create command
+func GenAutoComplete() *gcli.Command {
 	c := gcli.Command{
 		Func:    doGen,
-		Name:    "gen:ac",
-		Aliases: []string{"genac", "gen-ac"},
+		Name:    "genac",
+		Aliases: []string{"gen-ac"},
 		// des
 		UseFor: "generate auto complete scripts for current application",
 	}
 
-	genOpts._selfName = "gen:ac"
+	genOpts._selfName = c.Name
 
 	shell := cliutil.CurrentShell(true)
 	if shell == "" {
@@ -56,13 +56,15 @@ func GenAutoCompleteScript() *gcli.Command {
 		"s",
 		shell,
 		"the shell env name for want generated, allow: zsh,bash",
-	).StrOpt(
+	)
+	c.StrOpt(
 		&genOpts.binName,
 		"bin-name",
 		"b",
 		"",
 		"your packaged application bin file name.",
-	).StrOpt(
+	)
+	c.StrOpt(
 		&genOpts.output,
 		"output",
 		"o",
@@ -115,7 +117,7 @@ func doGen(c *gcli.Command, _ []string) (err error) {
 
 	str := helper.RenderText(shellTpls[genOpts.shell], &data, nil)
 
-	color.Info.Println("Now, will write content to file ", genOpts.output)
+	color.Infoln("Now, will write content to file ", genOpts.output)
 	color.Normal.Print("Continue?")
 
 	if !interact.AnswerIsYes(true) {
@@ -123,7 +125,7 @@ func doGen(c *gcli.Command, _ []string) (err error) {
 		return
 	}
 
-	// 以读写方式打开文件，如果不存在，则创建
+	// Open the file for reading and writing, if it does not exist, create it
 	err = ioutil.WriteFile(genOpts.output, []byte(str), 0664)
 	if err != nil {
 		return c.Errorf("Write file error: %s", err.Error())
@@ -183,7 +185,7 @@ func buildForBashShell(app *gcli.App, data map[string]interface{}) map[string]in
 			continue
 		}
 
-		ops := c.OptNames()
+		ops := c.FlagNames()
 		if len(ops) == 0 {
 			continue
 		}
@@ -200,17 +202,17 @@ func buildForBashShell(app *gcli.App, data map[string]interface{}) map[string]in
 		}
 
 		var opList []string
-		for op, st := range ops {
-			if st != "" {
-				opList = append(opList, "-"+st)
-			}
+		for opName := range ops {
+			// if st != "" {
+			// 	opList = append(opList, "-"+st)
+			// }
 
 			pfx := "--"
-			if len(op) == 1 {
+			if len(opName) == 1 {
 				pfx = "-"
 			}
 
-			opList = append(opList, pfx+op)
+			opList = append(opList, pfx+opName)
 		}
 
 		nameOpts[key] = strings.Join(opList, " ")
@@ -281,7 +283,7 @@ func buildForZshShell(app *gcli.App, data map[string]interface{}) map[string]int
 		}
 		nameDes[c.Name] = fmtDes(c.UseFor) + "(alias " + c.AliasesString() + ")"
 
-		ops := c.OptNames()
+		ops := c.FlagNames()
 		oplen := len(ops)
 		if oplen == 0 {
 			continue
@@ -298,21 +300,21 @@ func buildForZshShell(app *gcli.App, data map[string]interface{}) map[string]int
 		sfx := " \\"
 		var i int
 		var opis []string
-		for op, st := range ops {
+		for opName := range ops {
 			i++
 			pfx := "--"
-			opDes := fmtDes(c.Flags.Lookup(op).Usage)
+			opDes := fmtDes(c.Flags.LookupFlag(opName).Usage)
 
-			if len(op) == 1 {
+			if len(opName) == 1 {
 				pfx = "-"
 			}
 
-			opKey := pfx + op
+			opKey := pfx + opName
 			desTpl := "'%s[%s]'%s"
 
-			if st != "" {
+			if shorts := c.ShortNames(opName); len(shorts) > 0 {
 				desTpl = "%s'[%s]'%s"
-				opKey = fmt.Sprintf("{-%s,%s}", st, pfx+op)
+				opKey = fmt.Sprintf("{-%s,%s}", strings.Join(shorts, ",-"), pfx+opName)
 			}
 
 			// latest item
