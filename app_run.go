@@ -40,7 +40,7 @@ func (app *App) parseGlobalOpts() (ok bool) {
 		color.Enable = false
 	}
 
-	app.rawFlagArgs = gf.Fs().Args()
+	app.rawFlagArgs = gf.FSet().Args()
 	Logf(VerbDebug, "console debug is enabled, verbose level is <mgb>%d</>", gOpts.verbose)
 
 	// TODO show auto-completion for bash/zsh

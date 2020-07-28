@@ -94,7 +94,7 @@ func NewApp(fn ...func(a *App)) *App {
 		// cmdLine: CLI,
 		core: core{
 			cmdLine: CLI,
-			gFlags: NewGFlags("appGlobalOpts").WithOption(FlagsOption{
+			gFlags: NewFlags("appGlobalOpts").WithOption(FlagsOption{
 				WithoutType: true,
 				NameDescOL:  true,
 				Alignment:   AlignLeft,
@@ -145,7 +145,7 @@ func (app *App) bindingGlobalOpts() {
 	// binding global options
 	bindingCommonGOpts(gf)
 	// add more ...
-	gf.BoolOpt(&gOpts.showVer, "version", false, "Display app version information", "V")
+	gf.BoolOpt(&gOpts.showVer, "version", "V", false, "Display app version information")
 	// This is a internal command
 	gf.BoolVar(&gOpts.inCompletion, FlagMeta{
 		Name: "cmd-completion",

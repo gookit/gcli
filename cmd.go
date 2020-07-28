@@ -1,7 +1,6 @@
 package gcli
 
 import (
-	"flag"
 	"fmt"
 	"strings"
 
@@ -31,10 +30,10 @@ type Command struct {
 	Config func(c *Command)
 	// CustomFlags indicates that the command will do its own flag parsing.
 	CustomFlags bool
-	// GFlags(command options) is a set of flags specific to this command.
-	GFlags
 	// Flags(command options) is a set of flags specific to this command.
-	Flags flag.FlagSet
+	Flags
+	// Flags(command options) is a set of flags specific to this command.
+	// Flags flag.FlagSet
 	// Examples some usage example display
 	Examples string
 	// Func is the command handler func. Func Runner
@@ -150,8 +149,8 @@ func (c *Command) initialize() *Command {
 
 	c.Fire(EvtCmdInit, nil)
 
-	// init for GFlags
-	c.Flags.Fs().Usage = func() { // call on exists "-h" "--help"
+	// init for Flags
+	c.Flags.FSet().Usage = func() { // call on exists "-h" "--help"
 		c.ShowHelp(false)
 	}
 

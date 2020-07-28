@@ -106,11 +106,11 @@ func SetStrictMode(strict bool) {
 	gOpts.strictMode = strict
 }
 
-func bindingCommonGOpts(gf *GFlags) {
+func bindingCommonGOpts(gf *Flags) {
 	// binding global options
-	gf.UintOpt(&gOpts.verbose, "verbose", gOpts.verbose, "Set error reporting level(quiet 0 - 4 debug)")
-	gf.BoolOpt(&gOpts.showHelp, "help", false, "Display the help information", "h")
-	gf.BoolOpt(&gOpts.noColor, "no-color", gOpts.noColor, "Disable color when outputting message")
-	gf.BoolOpt(&gOpts.noProgress, "no-progress", gOpts.noProgress, "Disable display progress message")
-	gf.BoolOpt(&gOpts.noInteractive, "no-interactive", gOpts.noInteractive, "Disable interactive confirmation operations")
+	gf.UintOpt(&gOpts.verbose, "verbose", "", gOpts.verbose, "Set error reporting level(quiet 0 - 4 debug)")
+	gf.BoolOpt(&gOpts.showHelp, "help", "h", false, "Display the help information")
+	gf.BoolOpt(&gOpts.noColor, "no-color", "", gOpts.noColor, "Disable color when outputting message")
+	gf.BoolOpt(&gOpts.noProgress, "no-progress", "", gOpts.noProgress, "Disable display progress message")
+	gf.BoolOpt(&gOpts.noInteractive, "no-interactive", "", gOpts.noInteractive, "Disable interactive confirmation operations")
 }

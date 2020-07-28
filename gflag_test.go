@@ -7,8 +7,8 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestGFlags_StrOpt(t *testing.T) {
-	gf := gcli.NewGFlags("test")
+func TestFlags_StrOpt(t *testing.T) {
+	gf := gcli.NewFlags("test")
 
 	var str string
 	gf.StrVar(&str, gcli.FlagMeta{
@@ -25,8 +25,8 @@ func TestGFlags_StrOpt(t *testing.T) {
 	assert.Equal(t, "value", str)
 }
 
-func TestGFlags_FromStruct(t *testing.T) {
-	gf := gcli.NewGFlags("test")
+func TestFlags_FromStruct(t *testing.T) {
+	gf := gcli.NewFlags("test")
 
 	type userOpts struct {
 		Opt1 string `gcli:"name=opt;shorts=oh;required=true;desc=message"`
@@ -39,8 +39,8 @@ func TestGFlags_FromStruct(t *testing.T) {
 	assert.NoError(t, err)
 }
 
-func TestGFlags_PrintHelpPanel(t *testing.T) {
-	gf := gcli.NewGFlags("test")
+func TestFlags_PrintHelpPanel(t *testing.T) {
+	gf := gcli.NewFlags("test")
 
 	testOpts := struct {
 		opt1 int
