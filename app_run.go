@@ -162,7 +162,7 @@ func (app *App) doRun(name string, args []string) (code int) {
 				return
 			}
 
-			color.Error.Tips("Flags parse error: %s", err.Error())
+			color.Error.Tips("Flags parse error - %s", err.Error())
 			return ERR
 		}
 	}
