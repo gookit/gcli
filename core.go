@@ -12,14 +12,14 @@ type core struct {
 	HelpVars
 	Hooks // allowed hooks: "init", "before", "after", "error"
 	// global options flag set
-	*GFlags
+	gFlags *GFlags
 	// GOptsBinder you can custom binding global options
 	GOptsBinder func(gf *GFlags)
 }
 
 // GlobalFlags get the app GlobalFlags
 func (c core) GlobalFlags() *GFlags {
-	return c.GFlags
+	return c.gFlags
 }
 
 // common basic help vars

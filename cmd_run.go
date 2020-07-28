@@ -156,12 +156,12 @@ func (c *Command) Run(inArgs []string) (err error) {
 	// mark is alone
 	c.alone = true
 	// only init global flags on alone run.
-	c.core.GFlags = NewGFlags(c.Name + ".GlobalOpts").WithOption(GFlagOption{
+	c.core.gFlags = NewGFlags(c.Name + ".GlobalOpts").WithOption(FlagsOption{
 		Alignment: AlignLeft,
 	})
 
 	// binding global options
-	bindingCommonGOpts(c.GFlags)
+	bindingCommonGOpts(c.gFlags)
 
 	// init the command
 	c.initialize()

@@ -22,8 +22,8 @@ const (
 	AlignRight = strutil.PosLeft
 )
 
-// GFlagOption for render help information
-type GFlagOption struct {
+// FlagsOption for render help information
+type FlagsOption struct {
 	// WithoutType dont display flag data type on print help
 	WithoutType bool
 	// NameDescOL flag and desc at one line on print help
@@ -34,8 +34,8 @@ type GFlagOption struct {
 
 // GFlags definition
 type GFlags struct {
-	// GFlagOption option for render help message
-	GFlagOption
+	// FlagsOption option for render help message
+	FlagsOption
 	// raw flag set
 	fs *flag.FlagSet
 	// buf for build help message
@@ -85,8 +85,8 @@ func (gf *GFlags) FromStruct(ptr interface{}) error {
 }
 
 // WithOption for render help panel message
-func (gf *GFlags) WithOption(cfg GFlagOption) *GFlags {
-	gf.GFlagOption = cfg
+func (gf *GFlags) WithOption(cfg FlagsOption) *GFlags {
+	gf.FlagsOption = cfg
 	return gf
 }
 

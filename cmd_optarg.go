@@ -11,50 +11,6 @@ import (
  * command options
  *************************************************************/
 
-// IntOpt binding a int option
-func (c *Command) IntOpt(p *int, name, short string, defValue int, description string) *Command {
-	c.Flags.IntVar(p, name, defValue, description)
-
-	if s, ok := c.addShortcut(name, short); ok {
-		c.Flags.IntVar(p, s, defValue, "")
-	}
-
-	return c
-}
-
-// UintOpt binding a uint option
-func (c *Command) UintOpt(p *uint, name, short string, defValue uint, description string) *Command {
-	c.Flags.UintVar(p, name, defValue, description)
-
-	if s, ok := c.addShortcut(name, short); ok {
-		c.Flags.UintVar(p, s, defValue, "")
-	}
-
-	return c
-}
-
-// StrOpt binding a string option
-func (c *Command) StrOpt(p *string, name, short string, defValue, description string) *Command {
-	c.Flags.StringVar(p, name, defValue, description)
-
-	if s, ok := c.addShortcut(name, short); ok {
-		c.Flags.StringVar(p, s, defValue, "")
-	}
-
-	return c
-}
-
-// BoolOpt binding a bool option
-func (c *Command) BoolOpt(p *bool, name, short string, defValue bool, description string) *Command {
-	c.Flags.BoolVar(p, name, defValue, description)
-
-	if s, ok := c.addShortcut(name, short); ok {
-		c.Flags.BoolVar(p, s, defValue, "")
-	}
-
-	return c
-}
-
 // addShortcut add a shortcut name for a option name
 func (c *Command) addShortcut(name, short string) (string, bool) {
 	// record all option names

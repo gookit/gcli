@@ -10,6 +10,7 @@ import (
 
 // Command a CLI command structure
 type Command struct {
+	// core is internal use
 	core
 	// cmdLine is internal use
 	// *cmdLine
@@ -25,10 +26,13 @@ type Command struct {
 	UseFor string
 	// Aliases is the command name's alias names
 	Aliases []string
-	// Config func, will call on `initialize`. you can config options and other works
+	// Config func, will call on `initialize`.
+	// - you can config options and other init works
 	Config func(c *Command)
 	// CustomFlags indicates that the command will do its own flag parsing.
 	CustomFlags bool
+	// GFlags(command options) is a set of flags specific to this command.
+	GFlags
 	// Flags(command options) is a set of flags specific to this command.
 	Flags flag.FlagSet
 	// Examples some usage example display
@@ -146,17 +150,8 @@ func (c *Command) initialize() *Command {
 
 	c.Fire(EvtCmdInit, nil)
 
-	// if not attach to application, register error handler
-	if c.app == nil {
-		// mark is alone
-		c.alone = true
-		// add default error handler.
-		c.Hooks.AddOn(EvtCmdError, defaultErrHandler)
-	}
-
-	// init for Flags
-	c.Flags.Init(c.Name, flag.ContinueOnError)
-	c.Flags.Usage = func() { // call on exists "-h" "--help"
+	// init for GFlags
+	c.Flags.Fs().Usage = func() { // call on exists "-h" "--help"
 		c.ShowHelp(false)
 	}
 
