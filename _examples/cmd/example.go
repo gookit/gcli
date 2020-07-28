@@ -34,7 +34,7 @@ func ExampleCommand() *gcli.Command {
 	cmd := &gcli.Command{
 		Func:    exampleExecute,
 		Name:    "module:example",
-		Aliases: []string{"exp", "ex"},
+		Aliases: []string{"module:exp", "exp", "ex"},
 		UseFor:  "this is command description message",
 		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
 		Examples: `
@@ -52,7 +52,7 @@ func ExampleCommand() *gcli.Command {
 	// setting option name and short-option name
 	cmd.StrOpt(&exampleOpts.opt, "opt", "o", "", "the option message")
 	// setting a special option var, it must implement the flag.Value interface
-	cmd.VarOpt(&exampleOpts.names, "names", "the option message", "n")
+	cmd.VarOpt(&exampleOpts.names, "names", "n", "the option message")
 
 	// bind args with names
 	cmd.AddArg("arg0", "the first argument, is required", true)

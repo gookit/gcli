@@ -29,7 +29,9 @@ func TestGFlags_FromStruct(t *testing.T) {
 	gf := gcli.NewGFlags("test")
 
 	type userOpts struct {
-		Opt1 string `gcli:"name=opt;short=o,h;desc=message"`
+		Opt1 string `gcli:"name=opt;shorts=oh;required=true;desc=message"`
+		// the option Opt2
+		Opt2 string `gcli:"name=opt2;required=true;desc=message"`
 	}
 
 	err := gf.FromStruct(&userOpts{})

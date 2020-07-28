@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/strutil"
 )
 
 /*************************************************************
@@ -150,6 +151,18 @@ func moveArgumentsToEnd(args []string) []string {
 	}
 
 	return append(args[argEnd:], args[0:argEnd]...)
+}
+
+// split "ef" to ["e", "f"]
+func splitShortStr(str string) (ss []string) {
+	bs := []byte(str)
+
+	for _, b := range bs {
+		if strutil.IsAlphabet(b) {
+			ss = append(ss, string(b))
+		}
+	}
+	return
 }
 
 func shorts2str(ss []string) string {

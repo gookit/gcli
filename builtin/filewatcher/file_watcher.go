@@ -43,9 +43,9 @@ func FileWatcher(handler func(event fsnotify.Event)) *gcli.Command {
 
 	cmd.StrOpt(&opts.Dir, "dir", "d", "", "the want watched directory")
 	cmd.StrOpt(&opts.Ext, "ext", "", ".go", "the watched file extensions, multi split by '|'")
-	cmd.VarOpt(&opts.Files, "files", "the want watched file paths", "f")
+	cmd.VarOpt(&opts.Files, "files", "f", "the want watched file paths")
 	cmd.StrOpt(&opts.Config, "config", "c", "", "load options from a json config")
-	cmd.VarOpt(&opts.Exclude, "exclude", "the ignored directory or files", "e")
+	cmd.VarOpt(&opts.Exclude, "exclude", "e", "the ignored directory or files")
 
 	opts.handler = handler
 

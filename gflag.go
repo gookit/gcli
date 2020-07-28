@@ -78,7 +78,7 @@ func (gf *GFlags) Parse(args []string) error {
 	return gf.fs.Parse(args)
 }
 
-// FromStruct binding options
+// FromStruct from struct tag binding options
 func (gf *GFlags) FromStruct(ptr interface{}) error {
 	// TODO WIP
 	return nil
@@ -103,13 +103,8 @@ func (gf *GFlags) BoolVar(p *bool, meta FlagMeta) {
 }
 
 // BoolOpt binding an bool option
-func (gf *GFlags) BoolOpt(p *bool, name string, defValue bool, desc string, shorts ...string) {
-	gf.boolOpt(p, &FlagMeta{
-		Name:   name,
-		Desc:   desc,
-		DefVal: defValue,
-		Shorts: shorts,
-	})
+func (gf *GFlags) BoolOpt(p *bool, name, shorts string, defValue bool, desc string) {
+	gf.boolOpt(p, newFlagMeta(name, desc, defValue, splitShortStr(shorts)))
 }
 
 // binding option and shorts
@@ -134,13 +129,8 @@ func (gf *GFlags) Float64Var(p *float64, meta FlagMeta) {
 }
 
 // Float64Opt binding an float64 option
-func (gf *GFlags) Float64Opt(p *float64, name string, defValue float64, desc string, shorts ...string) {
-	gf.float64Opt(p, &FlagMeta{
-		Name:   name,
-		Desc:   desc,
-		DefVal: defValue,
-		Shorts: shorts,
-	})
+func (gf *GFlags) Float64Opt(p *float64, name, shorts string, defValue float64, desc string) {
+	gf.float64Opt(p, newFlagMeta(name, desc, defValue, splitShortStr(shorts)))
 }
 
 func (gf *GFlags) float64Opt(p *float64, meta *FlagMeta) {
@@ -164,13 +154,8 @@ func (gf *GFlags) StrVar(p *string, meta FlagMeta) {
 }
 
 // StrOpt binding an string option
-func (gf *GFlags) StrOpt(p *string, name, defValue, desc string, shorts ...string) {
-	gf.strOpt(p, &FlagMeta{
-		Name:   name,
-		Desc:   desc,
-		DefVal: defValue,
-		Shorts: shorts,
-	})
+func (gf *GFlags) StrOpt(p *string, name, shorts, defValue, desc string) {
+	gf.strOpt(p, newFlagMeta(name, desc, defValue, splitShortStr(shorts)))
 }
 
 // binding option and shorts
@@ -195,13 +180,8 @@ func (gf *GFlags) IntVar(p *int, meta FlagMeta) {
 }
 
 // IntOpt binding an int option
-func (gf *GFlags) IntOpt(p *int, name string, defValue int, desc string, shorts ...string) {
-	gf.intOpt(p, &FlagMeta{
-		Name:   name,
-		Desc:   desc,
-		DefVal: defValue,
-		Shorts: shorts,
-	})
+func (gf *GFlags) IntOpt(p *int, name, shorts string, defValue int, desc string) {
+	gf.intOpt(p, newFlagMeta(name, desc, defValue, splitShortStr(shorts)))
 }
 
 func (gf *GFlags) intOpt(p *int, meta *FlagMeta) {
@@ -223,13 +203,8 @@ func (gf *GFlags) Int64Var(p *int64, meta FlagMeta) {
 }
 
 // Int64Opt binding an int64 option
-func (gf *GFlags) Int64Opt(p *int64, name string, defValue int64, desc string, shorts ...string) {
-	gf.int64Opt(p, &FlagMeta{
-		Name:   name,
-		Desc:   desc,
-		DefVal: defValue,
-		Shorts: shorts,
-	})
+func (gf *GFlags) Int64Opt(p *int64, name, shorts string, defValue int64, desc string) {
+	gf.int64Opt(p, newFlagMeta(name, desc, defValue, splitShortStr(shorts)))
 }
 
 func (gf *GFlags) int64Opt(p *int64, meta *FlagMeta) {
@@ -253,13 +228,8 @@ func (gf *GFlags) UintVar(p *uint, meta FlagMeta) {
 }
 
 // UintOpt binding an uint option
-func (gf *GFlags) UintOpt(p *uint, name string, defValue uint, desc string, shorts ...string) {
-	gf.uintOpt(p, &FlagMeta{
-		Name:   name,
-		Desc:   desc,
-		DefVal: defValue,
-		Shorts: shorts,
-	})
+func (gf *GFlags) UintOpt(p *uint, name, shorts string, defValue uint, desc string) {
+	gf.uintOpt(p, newFlagMeta(name, desc, defValue, splitShortStr(shorts)))
 }
 
 func (gf *GFlags) uintOpt(p *uint, meta *FlagMeta) {
@@ -281,13 +251,8 @@ func (gf *GFlags) Uint64Var(p *uint64, meta FlagMeta) {
 }
 
 // Uint64Opt binding an uint64 option
-func (gf *GFlags) Uint64Opt(p *uint64, name string, defValue uint64, desc string, shorts ...string) {
-	gf.uint64Opt(p, &FlagMeta{
-		Name:   name,
-		Desc:   desc,
-		DefVal: defValue,
-		Shorts: shorts,
-	})
+func (gf *GFlags) Uint64Opt(p *uint64, name, shorts string, defValue uint64, desc string) {
+	gf.uint64Opt(p, newFlagMeta(name, desc, defValue, splitShortStr(shorts)))
 }
 
 // binding option and shorts
@@ -313,13 +278,8 @@ func (gf *GFlags) Var(p flag.Value, meta FlagMeta) {
 // Usage:
 //		var names gcli.Strings
 // 		cmd.VarOpt(&names, "tables", "t", "description ...")
-func (gf *GFlags) VarOpt(p flag.Value, name, desc string, shorts ...string) {
-	gf.varOpt(p, &FlagMeta{
-		Name:   name,
-		Desc:   desc,
-		// DefVal: defValue,
-		Shorts: shorts,
-	})
+func (gf *GFlags) VarOpt(p flag.Value, name, shorts, desc string) {
+	gf.varOpt(p, newFlagMeta(name, desc, nil, splitShortStr(shorts)))
 }
 
 // binding option and shorts
@@ -448,9 +408,9 @@ func (gf *GFlags) String() string {
 		gf.buf = new(bytes.Buffer)
 	}
 
-	// repeat call
+	// repeat call the method
 	if gf.buf.Len() < 1 {
-		if gf.existShort {
+		if gf.existShort { // add 4 space prefix for flag
 			gf.flagMaxLen += 4
 		}
 
@@ -648,20 +608,36 @@ func (gf *GFlags) SetOutput(out io.Writer) {
 // FlagMeta for an flag(option/argument)
 type FlagMeta struct {
 	// varPtr interface{}
-	// defVal *goutil.Value
 	// name and description
 	Name, Desc string
-	// default value for the option
+	// default value for the flag option
 	DefVal interface{}
+	// wrapped the default value
+	defVal *goutil.Value
 	// short names. eg: ["o", "a"]
 	Shorts []string
 	// special setting
 	Hidden, Required bool
 }
 
+// newFlagMeta quick create an FlagMeta
+func newFlagMeta(name, desc string, defVal interface{}, shorts []string) *FlagMeta {
+	return &FlagMeta{
+		Name: name,
+		Desc: desc,
+		// other info
+		DefVal: defVal,
+		Shorts: shorts,
+	}
+}
+
 // DValue wrap the default value
 func (m *FlagMeta) DValue() *goutil.Value {
-	return &goutil.Value{V: m.DefVal}
+	if m.defVal == nil {
+		m.defVal = &goutil.Value{V: m.DefVal}
+	}
+
+	return m.defVal
 }
 
 // Description of the flag
