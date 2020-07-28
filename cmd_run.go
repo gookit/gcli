@@ -28,8 +28,8 @@ func (c *Command) parseFlags(args []string) (ss []string, err error) {
 
 	Logf(VerbDebug, "flags on after format: %v", args)
 
-	// disable output internal error message on parse flags
-	c.Flags.SetOutput(ioutil.Discard)
+	// NOTICE: disable output internal error message on parse flags
+	c.FSet().SetOutput(ioutil.Discard)
 
 	// parse options, don't contains command name.
 	if err = c.Flags.Parse(args); err != nil {
@@ -204,7 +204,7 @@ func (c *Command) Run(inArgs []string) (err error) {
 var commandHelp = `{{.UseFor}}
 {{if .Cmd.NotAlone}}
 <comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.AliasesString}}</>){{end}}{{end}}
-<comment>Usage:</> {$binName} [Global Options...] {{if .Cmd.NotAlone}}<info>{{.Cmd.Name}}</> {{end}}[--option ...] [argument ...]
+<comment>Usage:</> {$binName} [Global Options...] {{if .Cmd.NotAlone}}<info>{{.Cmd.Name}}</> {{end}}[--option ...] [arguments ...]
 
 <comment>Global Options:</>
       <info>--verbose</>     Set error reporting level(quiet 0 - 4 debug)
@@ -222,7 +222,7 @@ var commandHelp = `{{.UseFor}}
 {{.Cmd.Help}}{{end}}`
 
 // ShowHelp show command help info
-func (c *Command) ShowHelp(quit ...bool) {
+func (c *Command) ShowHelp() {
 	// commandHelp = color.ReplaceTag(commandHelp)
 	// clear space and empty new line
 	if c.Examples != "" {

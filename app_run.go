@@ -1,6 +1,7 @@
 package gcli
 
 import (
+	"flag"
 	"fmt"
 	"strings"
 	"text/template"
@@ -156,6 +157,11 @@ func (app *App) doRun(name string, args []string) (code int) {
 		// parse options, don't contains command name.
 		args, err = cmd.parseFlags(args)
 		if err != nil {
+			// if is flag.ErrHelp error
+			if err == flag.ErrHelp {
+				return
+			}
+
 			color.Error.Tips("Flags parse error: %s", err.Error())
 			return ERR
 		}
@@ -186,6 +192,10 @@ func (app *App) Exec(name string, args []string) (err error) {
 		// parse command flags
 		args, err = cmd.parseFlags(args)
 		if err != nil {
+			// ignore flag.ErrHelp error
+			// if err != flag.ErrHelp {
+			// 	return
+			// }
 			return
 		}
 	}

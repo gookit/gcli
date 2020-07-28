@@ -5,6 +5,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2"
+	"github.com/gookit/goutil/dump"
 )
 
 // The string flag list, implemented flag.Value interface
@@ -77,13 +78,13 @@ func exampleExecute(c *gcli.Command, args []string) error {
 
 	magentaln("All options:")
 	fmt.Printf("%+v\n", exampleOpts)
-	// dump.V(exampleOpts)
+	dump.V(exampleOpts)
 	magentaln("Remain args:")
 	fmt.Printf("%v\n", args)
 
 	magentaln("Get arg by name:")
-	arr := c.Arg("arrArg")
-	fmt.Printf("named array arg '%s', value: %v\n", arr.Name, arr.Value)
+	arr := c.Arg("arg0")
+	fmt.Printf("named arg '%s', value: %#v\n", arr.Name, arr.Value)
 
 	magentaln("All named args:")
 	for _, arg := range c.Args() {

@@ -125,6 +125,7 @@ func (c *Command) initialize() *Command {
 	c.Flags.InitFlagSet(c.Name)
 	c.Flags.FSet().SetOutput(c.Flags.out)
 	c.Flags.FSet().Usage = func() { // call on exists "-h" "--help"
+		Logf(VerbDebug, "render help message on exists '-h|--help' or has unknown flag")
 		c.ShowHelp()
 	}
 
