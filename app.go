@@ -277,8 +277,8 @@ func (app *App) AddCommander(cmder Commander) *Command {
 	c.Func = cmder.Run
 
 	// binding flags
-	cmder.BindFlags(c)
-	return c
+	cmder.Prepare(c)
+	return app.AddCommand(c)
 }
 
 // ResolveName get real command name by alias

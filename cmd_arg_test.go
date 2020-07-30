@@ -30,21 +30,23 @@ func TestCommand_AddArg(t *testing.T) {
 
 	is.Len(c.Args(), 2)
 
-	is.PanicsWithValue("GCLI: the command argument name cannot be empty", func() {
+	is.PanicsWithValue("GCli: the command argument name cannot be empty", func() {
 		c.AddArg("", "desc")
 	})
-	is.PanicsWithValue("GCLI: the command argument name ':)&dfd' is invalid, only allow: a-Z 0-9 _ -", func() {
+
+	is.PanicsWithValue("GCli: the command argument name ':)&dfd' is invalid, only allow: a-Z 0-9 _ -", func() {
 		c.AddArg(":)&dfd", "desc")
 	})
-	is.PanicsWithValue("GCLI: the argument name 'arg1' already exists in command 'test'", func() {
+
+	is.PanicsWithValue("GCli: the argument name 'arg1' already exists in command 'test'", func() {
 		c.AddArg("arg1", "desc")
 	})
-	is.PanicsWithValue("GCLI: required argument 'arg2' cannot be defined after optional argument", func() {
+	is.PanicsWithValue("GCli: required argument 'arg2' cannot be defined after optional argument", func() {
 		c.AddArg("arg2", "arg2 desc", true)
 	})
 
 	c.AddArg("arg3", "arg3 desc", false, true)
-	is.PanicsWithValue("GCLI: have defined an array argument, you cannot add argument 'argN'", func() {
+	is.PanicsWithValue("GCli: have defined an array argument, you cannot add argument 'argN'", func() {
 		c.AddArg("argN", "desc", true)
 	})
 }

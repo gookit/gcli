@@ -70,8 +70,8 @@ func (f CmdFunc) Run(c *Command, args []string) error {
 type Commander interface {
 	// Creator for create new command
 	Creator() *Command
-	// BindFlags for the command
-	BindFlags(c *Command)
+	// Prepare bind Flags or Arguments for the command
+	Prepare(c *Command)
 	// Execute(c *Command, args []string) error
 	Run(c *Command, args []string) error
 }

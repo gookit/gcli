@@ -71,6 +71,8 @@ func NewCommand(name, useFor string, fn ...func(c *Command)) *Command {
 		c.Config = fn[0]
 	}
 
+	// set name
+	c.Arguments.SetName(name)
 	return c
 }
 

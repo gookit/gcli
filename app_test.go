@@ -188,7 +188,7 @@ func (uc *UserCommand) Creator() *gcli.Command {
 	return gcli.NewCommand("test", "desc message")
 }
 
-func (uc *UserCommand) BindFlags(c *gcli.Command) {
+func (uc *UserCommand) Prepare(c *gcli.Command) {
 	c.StrOpt(&uc.opt1, "opt", "o", "", "desc")
 }
 
