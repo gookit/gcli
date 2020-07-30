@@ -267,7 +267,7 @@ func (app *App) showApplicationHelp() {
 	// commandsHelp = color.ReplaceTag(commandsHelp)
 	// render help text template
 	s := helper.RenderText(commandsHelp, map[string]interface{}{
-		"Cs": app.moduleCommands,
+		"Cs":    app.moduleCommands,
 		"GOpts": app.gFlags.String(),
 		// app version
 		"Version": app.Version,

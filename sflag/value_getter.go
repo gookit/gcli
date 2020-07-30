@@ -14,8 +14,6 @@ type ValueGetter struct {
 	IsArray bool
 }
 
-
-
 // Int argument value to int
 func (v *ValueGetter) Int(defVal ...int) int {
 	def := 0

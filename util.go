@@ -168,7 +168,7 @@ func splitShortStr(str string) (ss []string) {
 func shorts2str(ss []string) string {
 	var newSs []string
 	for _, s := range ss {
-		newSs = append(newSs, "-" + s)
+		newSs = append(newSs, "-"+s)
 	}
 
 	// eg: "-t, -o"

@@ -11,6 +11,7 @@ package gcli
 import (
 	"log"
 	"os"
+	"regexp"
 	"runtime"
 	"strings"
 
@@ -26,11 +27,15 @@ const (
 	GOON = -1
 	// HelpCommand name
 	HelpCommand = "help"
+	regGoodName = `^[a-zA-Z][\w-]*$`
 )
 
 var (
 	// stdApp store default application instance
 	stdApp *App
+	// good name for command and argument
+	goodName = regexp.MustCompile(regGoodName)
+
 	// global options
 	gOpts = &GlobalOpts{
 		strictMode: true,

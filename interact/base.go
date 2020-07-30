@@ -83,14 +83,14 @@ func (v Value) IsEmpty() bool {
 
 // SelectResult data store
 type SelectResult struct {
-	Value // V the select value(s)
-	K Value // K the select key(s)
+	Value       // V the select value(s)
+	K     Value // K the select key(s)
 }
 
 // create SelectResult create
 func newSelectResult(key, val interface{}) *SelectResult {
 	return &SelectResult{
-		K: Value{val: key},
+		K:     Value{val: key},
 		Value: Value{val: val},
 	}
 }

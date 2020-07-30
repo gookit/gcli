@@ -307,6 +307,10 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 
 ![cmd-help](_examples/images/cmd-help.jpg)
 
+### 添加选项
+
+
+### 绑定参数
 
 ## 进度显示
  

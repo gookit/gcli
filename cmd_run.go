@@ -214,4 +214,3 @@ func (c *Command) ShowHelp() {
 	color.Print(c.ReplaceVars(s))
 	// fmt.Printf("%#v\n", s)
 }
-

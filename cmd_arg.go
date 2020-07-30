@@ -2,7 +2,6 @@ package gcli
 
 import (
 	"fmt"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -214,8 +213,7 @@ type Argument struct {
 }
 
 var (
-	emptyArg    = &Argument{}
-	goodArgName = regexp.MustCompile(`^[\w-]+$`)
+	emptyArg = &Argument{}
 )
 
 // NewArgument quick create an new command argument
@@ -238,7 +236,7 @@ func NewArgument(name, desc string, requiredAndIsArray ...bool) *Argument {
 		// other options
 		ShowName: name,
 		Required: required,
-		IsArray: isArray,
+		IsArray:  isArray,
 	}
 }
 
@@ -248,7 +246,7 @@ func (a *Argument) goodArgument() {
 		panicf("the command argument name cannot be empty")
 	}
 
-	if !goodArgName.MatchString(a.Name) {
+	if !goodName.MatchString(a.Name) {
 		panicf("the command argument name '%s' is invalid, only allow: a-Z 0-9 _ -", a.Name)
 	}
 }
