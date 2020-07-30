@@ -118,7 +118,11 @@ Examples:
 
 ![cmd-list](_examples/images/cmd-list.png)
 
-### Run A Command
+### Run Command
+
+```text
+./cliapp COMMAND [--OPTION VALUE -S VALUE ...] [ARGUMENT0 ARGUMENT1 ...]
+```
 
 ```bash
 % ./cliapp example -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
@@ -195,7 +199,7 @@ Preview:
 app.Add(&gcli.Command{
     Name: "demo",
     // allow color tag and {$cmd} will be replace to 'demo'
-    UseFor: "this is a description <info>message</> for command", 
+    UseFor: "this is a description <info>message</> for command {$cmd}", 
     Aliases: []string{"dm"},
     Func: func (cmd *gcli.Command, args []string) error {
         gcli.Print("hello, in the demo command\n")

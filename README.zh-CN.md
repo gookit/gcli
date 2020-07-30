@@ -87,7 +87,7 @@ func main() {
 }
 ```
 
-## 使用说明
+### 使用说明
 
 先使用本项目下的 [demo](_examples/) 示例代码构建一个小的cli demo应用
 
@@ -95,7 +95,7 @@ func main() {
 % go build ./_examples/cliapp.go                                                           
 ```
 
-### 打印版本信息
+#### 打印版本信息
 
 打印我们在创建cli应用时设置的版本信息。如果你还设置了字符LOGO，也会显示出来。
 
@@ -107,7 +107,7 @@ func main() {
 
 ![app-version](_examples/images/app-version.jpg)
 
-### 应用帮助信息
+#### 显示应用帮助信息
 
 使用 `./cliapp` 或者 `./cliapp -h` 来显示应用的帮助信息，包含所有的可用命令和一些全局选项
 
@@ -121,29 +121,45 @@ func main() {
 
 ![cmd-list](_examples/images/cmd-list.png)
 
-### 运行一个命令
+#### 显示一个命令的帮助
+
+显示一个指定命令的帮助信息
+
+示例：
 
 ```bash
-% ./cliapp example -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
+./cliapp {command} -h
+./cliapp {command} --help
+./cliapp help {command}
+```
+
+![cmd-help](_examples/images/cmd-help.jpg)
+
+#### 相似命令提示
+
+输入了错误的命令，但是有名称相似的会提示出来。
+
+![cmd-tips](_examples/images/err-cmd-tips.jpg)
+
+#### 运行一个命令
+
+语法结构：
+
+```text
+./cliapp COMMAND [--OPTION VALUE -S VALUE ...] [ARGUMENT0 ARGUMENT1 ...]
+```
+
+示例
+
+```bash
+./cliapp ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
 ```
 
 可以观察到选项和参数的搜集结果:
 
 ![run-example](_examples/images/run-example.jpg)
 
-### 显示一个命令的帮助
-
-> by `./cliapp {command} -h` or `./cliapp {command} --help` or `./cliapp help {command}`
-
-![cmd-help](_examples/images/cmd-help.jpg)
-
-### 相似命令提示
-
-输入了错误的命令，但是有名称相似的会提示出来。
-
-![cmd-tips](_examples/images/err-cmd-tips.jpg)
-
-### 生成命令补全脚本
+## 生成命令补全脚本
 
 ```go
 import  "github.com/gookit/gcli/v2/builtin"
