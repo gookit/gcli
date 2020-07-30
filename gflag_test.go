@@ -8,21 +8,40 @@ import (
 )
 
 func TestFlags_StrOpt(t *testing.T) {
-	gf := gcli.NewFlags("test")
+	fs := gcli.NewFlags("testFlags")
+	assert.Len(t, fs.Metas(), 0)
+	assert.Equal(t, "testFlags", fs.Name())
 
 	var str string
-	gf.StrVar(&str, gcli.FlagMeta{
+	fs.StrVar(&str, gcli.FlagMeta{
 		Name: "test",
 		Desc: "test desc",
 	})
 
-	err := gf.Parse([]string{})
+	assert.True(t, fs.HasFlagMeta("test"))
+	assert.False(t, fs.HasFlagMeta("not-exist"))
+	assert.Len(t, fs.Metas(), 1)
+
+	f := fs.LookupFlag("test")
+	assert.NotEmpty(t, f)
+
+	assert.Equal(t, "test", f.Name)
+	assert.Equal(t, "test desc", f.Usage)
+
+	ns := fs.FlagNames()
+	assert.Len(t, ns, 1)
+
+	f = fs.LookupFlag("not-exist")
+	assert.Nil(t, f)
+
+	err := fs.Parse([]string{})
 	assert.NoError(t, err)
 	assert.Equal(t, "", str)
 
-	err = gf.Parse([]string{"--test", "value"})
+	err = fs.Parse([]string{"--test", "value"})
 	assert.NoError(t, err)
 	assert.Equal(t, "value", str)
+	assert.Len(t, fs.ShortNames("test"), 0)
 }
 
 func TestFlags_CheckName(t *testing.T) {
