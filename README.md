@@ -11,6 +11,8 @@
 
 A simple to use command line application, written using golang.
 
+> Since `v2.3.0`, option binding and argument binding have been reconstructed, which may be incompatible with the previous ones.
+
 ## [中文说明](README.zh-CN.md)
 
 中文说明请看 **[README.zh-CN](README.zh-CN.md)**

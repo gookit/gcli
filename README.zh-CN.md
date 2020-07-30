@@ -11,6 +11,8 @@
 
 一个Golang下的简单易用的命令行应用，工具库。包含运行命令，颜色风格，数据展示，进度显示，交互方法等
 
+> 自 `v2.3.0` 重构了选项绑定和参数绑定，可能会跟之前有一些不兼容。
+
 ## [ENGLISH](README.md)
 
 English introduction please ses **[README](README.md)**
@@ -24,7 +26,7 @@ English introduction please ses **[README](README.md)**
 - 使用简单方便，轻量级，功能丰富
 - 支持添加多个命令，并且支持给命令添加别名
 - 输入的命令错误时，将会提示相似命令（包含别名提示）
-- 快速方便的添加选项绑定 `--long`，支持添加短选项 `-s`
+- 快速方便的添加选项绑定(`--long`)，支持添加多个短选项（eg: `-s`）
 - 支持绑定参数到指定名称, 支持必须`required`，可选，数组`isArray` 三种设定
   - 运行命令时将会自动检测，并按对应关系收集参数
 - 支持丰富的颜色渲染输出, 由[gookit/color](https://github.com/gookit/color)提供
