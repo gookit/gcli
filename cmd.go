@@ -172,6 +172,22 @@ func (c *Command) ID() string {
 	return c.Name
 }
 
+// ID get command ID name.
+func (c *Command) goodName() string {
+	name := strings.Trim(strings.TrimSpace(c.Name), ": ")
+	if name == "" {
+		panicf("the command name can not be empty")
+	}
+
+	if !goodCmdName.MatchString(name) {
+		panicf("the command name '%s' is invalid, must match: %s", name, regGoodCmdName)
+	}
+
+	// update name
+	c.Name = name
+	return name
+}
+
 /*************************************************************
  * helper methods
  *************************************************************/

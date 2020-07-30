@@ -225,13 +225,14 @@ func (app *App) Add(c *Command, more ...*Command) {
 
 // AddCommand add a new command
 func (app *App) AddCommand(c *Command) *Command {
-	c.Name = strings.Trim(strings.TrimSpace(c.Name), ": ")
-	if c.Name == "" {
-		panicf("the added command name can not be empty.")
+	// validate command name
+	cName := c.goodName()
+	if _, ok := app.aliases[cName]; ok {
+		panicf("The name '%s' is already used as an alias", cName)
 	}
 
 	if c.IsDisabled() {
-		Logf(VerbDebug, "command %s has been disabled, skip add", c.Name)
+		Logf(VerbDebug, "command '%s' has been disabled, skip add", cName)
 		return c
 	}
 
@@ -241,15 +242,15 @@ func (app *App) AddCommand(c *Command) *Command {
 	}
 
 	// check and find module name
-	if i := strings.IndexByte(c.Name, ':'); i > 0 {
+	if i := strings.IndexByte(cName, ':'); i > 0 {
 		c.module = c.Name[:i]
 	}
 
-	nameLen := len(c.Name)
+	nameLen := len(cName)
 
 	// add command to app
-	app.names[c.Name] = nameLen
-	app.commands[c.Name] = c
+	app.names[cName] = nameLen
+	app.commands[cName] = c
 
 	// record command name max length
 	if nameLen > app.nameMaxLen {
@@ -262,8 +263,8 @@ func (app *App) AddCommand(c *Command) *Command {
 	app.moduleCommands[c.module][c.Name] = c
 
 	// add aliases for the command
-	app.AddAliases(c.Name, c.Aliases)
-	Logf(VerbDebug, "add a new CLI command: %s", c.Name)
+	app.AddAliases(c.Name, c.Aliases...)
+	Logf(VerbDebug, "register a new CLI command: %s", cName)
 
 	// init command
 	c.app = app
@@ -336,7 +337,6 @@ func (app *App) removeCommand(name string) bool {
 
 	delete(app.names, name)
 	delete(app.commands, name)
-
 	return true
 }
 
@@ -347,7 +347,7 @@ func (app *App) IsAlias(str string) bool {
 }
 
 // AddAliases add alias names for a command
-func (app *App) AddAliases(command string, aliases []string) {
+func (app *App) AddAliases(command string, aliases ...string) {
 	if app.aliases == nil {
 		app.aliases = make(map[string]string)
 	}
@@ -359,6 +359,10 @@ func (app *App) AddAliases(command string, aliases []string) {
 
 	// add alias
 	for _, alias := range aliases {
+		if _, has := app.names[alias]; has {
+			panicf("The name '%s' has been used as an command name", alias)
+		}
+
 		if cmd, has := app.aliases[alias]; has {
 			panicf("The alias '%s' has been used by command '%s'", alias, cmd)
 		}

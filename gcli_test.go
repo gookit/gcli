@@ -12,7 +12,7 @@ func TestVerbose(t *testing.T) {
 	is := assert.New(t)
 
 	old := gcli.Verbose()
-	is.Equal(gcli.VerbQuiet, old)
+	is.Equal(gcli.VerbError, old)
 
 	gcli.SetDebugMode()
 	is.Equal(gcli.VerbDebug, gcli.Verbose())
@@ -24,7 +24,7 @@ func TestVerbose(t *testing.T) {
 	is.Equal(gcli.VerbInfo, gcli.Verbose())
 
 	gcli.SetVerbose(old)
-	is.Equal(gcli.VerbQuiet, gcli.Verbose())
+	is.Equal(gcli.VerbError, gcli.Verbose())
 }
 
 func TestStrictMode(t *testing.T) {

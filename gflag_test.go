@@ -26,6 +26,19 @@ func TestFlags_StrOpt(t *testing.T) {
 }
 
 func TestFlags_CheckName(t *testing.T) {
+	assert.PanicsWithValue(t, "GCli: redefined option flag 'opt1'", func() {
+		var i int64
+		fs := gcli.NewFlags()
+		fs.Int64Opt(&i, "opt1", "", 0, "desc")
+		fs.Int64Opt(&i, "opt1", "", 0, "desc")
+	})
+
+	assert.PanicsWithValue(t, "GCli: option flag name cannot be empty", func() {
+		var b bool
+		fs := gcli.NewFlags()
+		fs.BoolOpt(&b, "", "", false, "desc")
+	})
+
 	assert.PanicsWithValue(t, "GCli: option flag name '+invalid' is invalid, must match: ^[a-zA-Z][\\w-]*$", func() {
 		var fv uint
 		fs := gcli.NewFlags()
@@ -60,6 +73,12 @@ func TestFlags_CheckShorts(t *testing.T) {
 		})
 	})
 
+	assert.PanicsWithValue(t, "GCli: short name 'a' has been used as the current option name", func() {
+		var i int
+		fs := gcli.NewFlags()
+		fs.IntVar(&i, gcli.FlagMeta{Name: "a", Shorts: []string{"a"}})
+	})
+
 	assert.PanicsWithValue(t, "GCli: short name 's' has been used as an option name", func() {
 		var i int
 		fs := gcli.NewFlags()
@@ -90,7 +109,7 @@ func TestFlags_FromStruct(t *testing.T) {
 }
 
 func TestFlags_PrintHelpPanel(t *testing.T) {
-	gf := gcli.NewFlags("test")
+	fs := gcli.NewFlags("test")
 
 	testOpts := struct {
 		opt1 int
@@ -98,8 +117,10 @@ func TestFlags_PrintHelpPanel(t *testing.T) {
 		opt3 string
 	}{}
 
-	gf.StrVar(&testOpts.opt3, gcli.FlagMeta{
+	fs.StrVar(&testOpts.opt3, gcli.FlagMeta{
 		Name: "test",
 		Desc: "test desc",
 	})
+	fs.BoolOpt(&testOpts.opt2,"bol", "ab", false, "opt2 desc")
+	fs.PrintHelpPanel()
 }

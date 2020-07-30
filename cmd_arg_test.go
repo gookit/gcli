@@ -34,7 +34,7 @@ func TestCommand_AddArg(t *testing.T) {
 		c.AddArg("", "desc")
 	})
 
-	is.PanicsWithValue("GCli: the command argument name ':)&dfd' is invalid, only allow: a-Z 0-9 _ -", func() {
+	is.PanicsWithValue("GCli: the command argument name ':)&dfd' is invalid, must match: ^[a-zA-Z][\\w-]*$", func() {
 		c.AddArg(":)&dfd", "desc")
 	})
 

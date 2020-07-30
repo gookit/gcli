@@ -103,13 +103,13 @@ func (ags *Arguments) AddArg(name, desc string, requiredAndIsArray ...bool) *Arg
 }
 
 // Add alias of the AddArgument()
-func (ags *Arguments) Add(arg *Argument) *Argument {
-	return ags.AddArgument(arg)
+func (ags *Arguments) Add(arg Argument) *Argument {
+	return ags.AddArgument(&arg)
 }
 
 // BindArg alias of the AddArgument()
-func (ags *Arguments) BindArg(arg *Argument) *Argument {
-	return ags.AddArgument(arg)
+func (ags *Arguments) BindArg(arg Argument) *Argument {
+	return ags.AddArgument(&arg)
 }
 
 // AddArgument binding an named argument for the command.
@@ -124,10 +124,8 @@ func (ags *Arguments) AddArgument(arg *Argument) *Argument {
 		ags.argsIndexes = make(map[string]int)
 	}
 
-	// validate argument
-	arg.goodArgument()
-
-	name := arg.Name
+	// validate argument name
+	name := arg.goodArgument()
 	if _, has := ags.argsIndexes[name]; has {
 		panicf("the argument name '%s' already exists in command '%s'", name, ags.name)
 	}
@@ -212,24 +210,16 @@ type Argument struct {
 	index int
 }
 
-var (
-	emptyArg = &Argument{}
-)
-
 // NewArgument quick create an new command argument
 func NewArgument(name, desc string, requiredAndIsArray ...bool) *Argument {
 	var isArray, required bool
-
-	length := len(requiredAndIsArray)
-	if length > 0 {
+	if ln := len(requiredAndIsArray); ln > 0 {
 		required = requiredAndIsArray[0]
-
-		if length > 1 {
+		if ln > 1 {
 			isArray = requiredAndIsArray[1]
 		}
 	}
 
-	// create new argument
 	return &Argument{
 		Name: name,
 		Desc: desc,
@@ -240,15 +230,17 @@ func NewArgument(name, desc string, requiredAndIsArray ...bool) *Argument {
 	}
 }
 
-func (a *Argument) goodArgument() {
+func (a *Argument) goodArgument() string {
 	a.Name = strings.TrimSpace(a.Name)
 	if a.Name == "" {
 		panicf("the command argument name cannot be empty")
 	}
 
 	if !goodName.MatchString(a.Name) {
-		panicf("the command argument name '%s' is invalid, only allow: a-Z 0-9 _ -", a.Name)
+		panicf("the command argument name '%s' is invalid, must match: %s", a.Name, regGoodName)
 	}
+
+	return a.Name
 }
 
 // HelpName for render help message

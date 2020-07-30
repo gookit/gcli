@@ -9,7 +9,6 @@
 package gcli
 
 import (
-	"log"
 	"os"
 	"regexp"
 	"runtime"
@@ -27,21 +26,29 @@ const (
 	GOON = -1
 	// HelpCommand name
 	HelpCommand = "help"
+	// match an good option, argument name
 	regGoodName = `^[a-zA-Z][\w-]*$`
+	// match an good command name
+	regGoodCmdName = `^[a-zA-Z][\w:-]*$`
 )
 
 var (
 	// stdApp store default application instance
 	stdApp *App
-	// good name for command and argument
+	// an empty argument
+	emptyArg = &Argument{}
+	// good name for option and argument
 	goodName = regexp.MustCompile(regGoodName)
+	// match an good command name
+	goodCmdName = regexp.MustCompile(regGoodCmdName)
 
 	// global options
 	gOpts = &GlobalOpts{
 		strictMode: true,
 		verbose:    VerbError,
 	}
-	// CLI create a default instance
+
+	// CLI create an default instance
 	CLI = &cmdLine{
 		pid: os.Getpid(),
 		// more info
@@ -54,7 +61,7 @@ var (
 // init
 func init() {
 	// don't display date on print log
-	log.SetFlags(0)
+	// log.SetFlags(0)
 
 	workDir, _ := os.Getwd()
 	CLI.workDir = workDir
