@@ -3,7 +3,6 @@ package gcli
 import (
 	"errors"
 	"flag"
-	"fmt"
 	"os"
 	"strings"
 
@@ -48,14 +47,14 @@ func (c *Command) execute(args []string) (err error) {
 	c.Fire(EvtCmdBefore, args)
 
 	// collect and binding named args
-	if err := c.collectNamedArgs(args); err != nil {
+	if err := c.ParseArgs(args); err != nil {
 		c.Fire(EvtCmdError, err)
 		return err
 	}
 
 	// call command handler func
 	if c.Func == nil {
-		Logf(VerbWarn, "the command '%s' no handler func to running.", c.Name)
+		Logf(VerbWarn, "the command '%s' no handler func to running", c.Name)
 	} else {
 		// err := c.Func.Run(c, args)
 		err = c.Func(c, args)
@@ -65,39 +64,6 @@ func (c *Command) execute(args []string) (err error) {
 		c.Fire(EvtCmdError, err)
 	} else {
 		c.Fire(EvtCmdAfter, nil)
-	}
-	return
-}
-
-func (c *Command) collectNamedArgs(inArgs []string) (err error) {
-	var num int
-	inNum := len(inArgs)
-
-	for i, arg := range c.args {
-		// num is equals to "index + 1"
-		num = i + 1
-		if num > inNum { // not enough args
-			if arg.Required {
-				return fmt.Errorf("must set value for the argument: %s (position %d)", arg.ShowName, arg.index)
-			}
-			break
-		}
-
-		if arg.IsArray {
-			err = arg.bindValue(inArgs[i:])
-			inNum = num // must reset inNum
-		} else {
-			err = arg.bindValue(inArgs[i])
-		}
-
-		// has error on binding arg value
-		if err != nil {
-			return
-		}
-	}
-
-	if !c.alone && gOpts.strictMode && inNum > num {
-		return fmt.Errorf("entered too many arguments: %v", inArgs[num:])
 	}
 	return
 }
@@ -213,7 +179,7 @@ var commandHelp = `{{.UseFor}}
 <comment>Options:</>
 {{.Options}}{{end}}{{if .Cmd.Args}}
 <comment>Arguments:</>{{range $a := .Cmd.Args}}
-  <info>{{$a.Name | printf "%-12s"}}</>{{$a.Description | ucFirst}}{{if $a.Required}}<red>*</>{{end}}{{end}}
+  <info>{{$a.HelpName | printf "%-12s"}}</>{{$a.Desc | ucFirst}}{{if $a.Required}}<red>*</>{{end}}{{end}}
 {{end}}{{if .Cmd.Examples}}
 <comment>Examples:</>
 {{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}

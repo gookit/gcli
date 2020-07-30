@@ -1,5 +1,5 @@
 #
-# @build-example build . -f Dockerfile -t algoo:test
+# @build-example build . -f Dockerfile -t gcli:test
 #
 
 ################################################################################

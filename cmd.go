@@ -28,10 +28,6 @@ type Command struct {
 	// Config func, will call on `initialize`.
 	// - you can config options and other init works
 	Config func(c *Command)
-	// CustomFlags indicates that the command will do its own flag parsing.
-	CustomFlags bool
-	// Flags(command options) is a set of flags specific to this command.
-	Flags
 	// Flags(command options) is a set of flags specific to this command.
 	// Flags flag.FlagSet
 	// Examples some usage example display
@@ -41,24 +37,12 @@ type Command struct {
 	// Help is the long help message text
 	Help string
 
-	// arguments definition for the command.
-	// eg. {
-	// 	{"arg0", "this is first argument", false, false},
-	// 	{"arg1", "this is second argument", false, false},
-	// }
-	// if you want get raw args, can use: c.RawArgs()
-	args []*Argument
-	// record min length for args
-	// argsMinLen int
-	// record argument names and defined positional relationships
-	// {
-	// 	// name: position
-	// 	"arg0": 0,
-	// 	"arg1": 1,
-	// }
-	argsIndexes    map[string]int
-	hasArrayArg    bool
-	hasOptionalArg bool
+	// CustomFlags indicates that the command will do its own flag parsing.
+	CustomFlags bool
+	// Flags options for the command.
+	Flags
+	// Arguments for the command
+	Arguments
 
 	// application
 	app *App
@@ -117,9 +101,13 @@ func (c *Command) Runnable() bool {
 	return c.Func != nil
 }
 
-// initialize command
+// initialize works for the command
 func (c *Command) initialize() *Command {
 	c.core.cmdLine = CLI
+
+	// init for cmd Arguments
+	c.Arguments.SetName(c.Name)
+	c.Arguments.SetValidateNum(!c.alone && gOpts.strictMode)
 
 	// init for cmd Flags
 	c.Flags.InitFlagSet(c.Name)

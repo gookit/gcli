@@ -1,10 +1,86 @@
 package gcli
 
 import (
+	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
 )
+
+/*************************************************************
+ * Arguments definition
+ *************************************************************/
+
+// Arguments definition
+type Arguments struct {
+	// Inherited from Command
+	name string
+	// args definition for a command.
+	// eg. {
+	// 	{"arg0", "this is first argument", false, false},
+	// 	{"arg1", "this is second argument", false, false},
+	// }
+	args []*Argument
+	// record min length for args
+	// argsMinLen int
+	// record argument names and defined positional relationships
+	// {
+	// 	// name: position
+	// 	"arg0": 0,
+	// 	"arg1": 1,
+	// }
+	argsIndexes map[string]int
+	// validate the args number is right
+	validateNum bool
+	// mark exists array argument
+	hasArrayArg bool
+	// mark exists optional argument
+	hasOptionalArg bool
+}
+
+// SetName for Arguments
+func (ags *Arguments) SetName(name string) {
+	ags.name = name
+}
+
+// SetValidateNum check
+func (ags *Arguments) SetValidateNum(validateNum bool) {
+	ags.validateNum = validateNum
+}
+
+// ParseArgs for Arguments
+func (ags *Arguments) ParseArgs(args []string) (err error) {
+	var num int
+	inNum := len(args)
+
+	for i, arg := range ags.args {
+		// num is equals to "index + 1"
+		num = i + 1
+		if num > inNum { // not enough args
+			if arg.Required {
+				return fmt.Errorf("must set value for the argument: %s(position#%d)", arg.ShowName, arg.index)
+			}
+			break
+		}
+
+		if arg.IsArray {
+			err = arg.bindValue(args[i:])
+			inNum = num // must reset inNum
+		} else {
+			err = arg.bindValue(args[i])
+		}
+
+		// has error on binding arg value
+		if err != nil {
+			return
+		}
+	}
+
+	if ags.validateNum && inNum > num {
+		return fmt.Errorf("entered too many arguments: %v", args[num:])
+	}
+	return
+}
 
 /*************************************************************
  * command arguments
@@ -20,16 +96,21 @@ import (
 // 	cmd.AddArg("name", "description")
 // 	cmd.AddArg("name", "description", true) // required
 // 	cmd.AddArg("names", "description", true, true) // required and is array
-func (c *Command) AddArg(name, description string, requiredAndIsArray ...bool) *Argument {
+func (ags *Arguments) AddArg(name, desc string, requiredAndIsArray ...bool) *Argument {
 	// create new argument
-	newArg := NewArgument(name, description, requiredAndIsArray...)
+	newArg := NewArgument(name, desc, requiredAndIsArray...)
 
-	return c.AddArgument(newArg)
+	return ags.AddArgument(newArg)
+}
+
+// Add alias of the AddArgument()
+func (ags *Arguments) Add(arg *Argument) *Argument {
+	return ags.AddArgument(arg)
 }
 
 // BindArg alias of the AddArgument()
-func (c *Command) BindArg(arg *Argument) *Argument {
-	return c.AddArgument(arg)
+func (ags *Arguments) BindArg(arg *Argument) *Argument {
+	return ags.AddArgument(arg)
 }
 
 // AddArgument binding an named argument for the command.
@@ -39,98 +120,42 @@ func (c *Command) BindArg(arg *Argument) *Argument {
 //  - Only one array parameter is allowed
 // 	- The (array) argument of multiple values ​​can only be defined at the end
 //
-func (c *Command) AddArgument(arg *Argument) *Argument {
-	if c.argsIndexes == nil {
-		c.argsIndexes = make(map[string]int)
+func (ags *Arguments) AddArgument(arg *Argument) *Argument {
+	if ags.argsIndexes == nil {
+		ags.argsIndexes = make(map[string]int)
 	}
 
 	// validate argument
 	arg.goodArgument()
 
 	name := arg.Name
-	if _, has := c.argsIndexes[name]; has {
-		panicf("the argument name '%s' already exists in command '%s'", name, c.Name)
+	if _, has := ags.argsIndexes[name]; has {
+		panicf("the argument name '%s' already exists in command '%s'", name, ags.name)
 	}
 
-	if c.hasArrayArg {
+	if ags.hasArrayArg {
 		panicf("have defined an array argument, you cannot add argument '%s'", name)
 	}
 
-	if arg.Required && c.hasOptionalArg {
+	if arg.Required && ags.hasOptionalArg {
 		panicf("required argument '%s' cannot be defined after optional argument", name)
 	}
 
 	// add argument index record
-	arg.index = len(c.args)
-	c.argsIndexes[name] = arg.index
+	arg.index = len(ags.args)
+	ags.argsIndexes[name] = arg.index
 
 	// add argument
-	c.args = append(c.args, arg)
+	ags.args = append(ags.args, arg)
 	if !arg.Required {
-		c.hasOptionalArg = true
+		ags.hasOptionalArg = true
 	}
 
 	if arg.IsArray {
-		c.hasArrayArg = true
+		ags.hasArrayArg = true
 	}
 
 	return arg
-}
-
-// Args get all defined argument
-func (c *Command) Args() []*Argument {
-	return c.args
-}
-
-// Arg get arg by defined name.
-// Usage:
-// 	intVal := c.Arg("name").Int()
-// 	strVal := c.Arg("name").String()
-// 	arrVal := c.Arg("names").Array()
-func (c *Command) Arg(name string) *Argument {
-	i, ok := c.argsIndexes[name]
-	if !ok {
-		return emptyArg
-	}
-	return c.args[i]
-}
-
-// ArgByIndex get named arg by index
-func (c *Command) ArgByIndex(i int) *Argument {
-	if i < len(c.args) {
-		return c.args[i]
-	}
-	return emptyArg
-}
-
-/*************************************************************
- * Argument definition
- *************************************************************/
-
-// Arguments definition
-type Arguments struct {
-	// args definition for a command.
-	// eg. {
-	// 	{"arg0", "this is first argument", false, false},
-	// 	{"arg1", "this is second argument", false, false},
-	// }
-	args []*Argument
-	// record min length for args
-	// argsMinLen int
-	// record argument names and defined positional relationships
-	// {
-	// 	// name: position
-	// 	"arg0": 0,
-	// 	"arg1": 1,
-	// }
-	argsIndexes  map[string]int
-	hasArrayable bool
-	hasOptional  bool
-}
-
-// Add a new argument
-func (ags *Arguments) Add(name, description string) {
-	// todo ...
 }
 
 // Args get all defined argument
@@ -140,9 +165,9 @@ func (ags *Arguments) Args() []*Argument {
 
 // Arg get arg by defined name.
 // Usage:
-// 	intVal := c.Arg("name").Int()
-// 	strVal := c.Arg("name").String()
-// 	arrVal := c.Arg("names").Array()
+// 	intVal := ags.Arg("name").Int()
+// 	strVal := ags.Arg("name").String()
+// 	arrVal := ags.Arg("names").Array()
 func (ags *Arguments) Arg(name string) *Argument {
 	i, ok := ags.argsIndexes[name]
 	if !ok {
@@ -165,17 +190,19 @@ func (ags *Arguments) ArgByIndex(i int) *Argument {
 
 // Argument a command argument definition
 type Argument struct {
-	// valWrapper Value TODO ...
 	// Name argument name. it's required
 	Name string
+	// Desc argument description message
+	Desc string
+	// Type name. eg: string, int, array
+	// Type string
 	// ShowName is a name for display help. default is equals to Name.
 	ShowName string
-	// Description argument description message
-	Description string
 	// Required arg is required
 	Required bool
 	// IsArray if is array, can allow accept multi values, and must in last.
 	IsArray bool
+	// valWrapper Value TODO ...
 	// value store parsed argument data. (type: string, []string)
 	Value interface{}
 	// Handler custom argument value parse handler
@@ -192,7 +219,7 @@ var (
 )
 
 // NewArgument quick create an new command argument
-func NewArgument(name, description string, requiredAndIsArray ...bool) *Argument {
+func NewArgument(name, desc string, requiredAndIsArray ...bool) *Argument {
 	var isArray, required bool
 
 	length := len(requiredAndIsArray)
@@ -206,7 +233,12 @@ func NewArgument(name, description string, requiredAndIsArray ...bool) *Argument
 
 	// create new argument
 	return &Argument{
-		Name: name, ShowName: name, Description: description, Required: required, IsArray: isArray,
+		Name: name,
+		Desc: desc,
+		// other options
+		ShowName: name,
+		Required: required,
+		IsArray: isArray,
 	}
 }
 
@@ -219,6 +251,15 @@ func (a *Argument) goodArgument() {
 	if !goodArgName.MatchString(a.Name) {
 		panicf("the command argument name '%s' is invalid, only allow: a-Z 0-9 _ -", a.Name)
 	}
+}
+
+// HelpName for render help message
+func (a *Argument) HelpName() string {
+	if a.IsArray {
+		return a.ShowName + "..."
+	}
+
+	return a.ShowName
 }
 
 // Config the argument

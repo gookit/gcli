@@ -59,7 +59,7 @@ func TestArgument(t *testing.T) {
 	is.False(arg.HasValue())
 
 	is.Equal("arg0", arg.Name)
-	is.Equal("arg desc", arg.Description)
+	is.Equal("arg desc", arg.Desc)
 	is.Equal(0, arg.Index())
 
 	// no value
