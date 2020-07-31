@@ -202,7 +202,7 @@ type Argument struct {
 	// valWrapper Value TODO ...
 	// value store parsed argument data. (type: string, []string)
 	Value interface{}
-	// Handler custom argument value parse handler
+	// Handler custom argument value handler on call GetValue()
 	Handler func(val interface{}) interface{}
 	// Validator you can add an validator, will call it on binding argument value
 	Validator func(val interface{}) (interface{}, error)
@@ -253,10 +253,12 @@ func (a *Argument) HelpName() string {
 }
 
 // Config the argument
-func (a *Argument) Config(fn func(arg *Argument)) {
+func (a *Argument) WithConfig(fn func(arg *Argument)) *Argument {
 	if fn != nil {
 		fn(a)
 	}
+
+	return a
 }
 
 // WithValidator set an value validator of the argument
@@ -265,10 +267,19 @@ func (a *Argument) WithValidator(fn func(interface{}) (interface{}, error)) *Arg
 	return a
 }
 
-// WithValue set an value of the argument
-func (a *Argument) WithValue(val interface{}) *Argument {
-	a.Value = val
-	return a
+// SetValue set an validated value
+func (a *Argument) SetValue(val interface{}) error {
+	return a.bindValue(val)
+}
+
+// GetValue get value by custom handler func
+func (a *Argument) GetValue() interface{} {
+	val := a.Value
+	if a.Handler != nil {
+		return a.Handler(val)
+	}
+
+	return val
 }
 
 // Int argument value to int
@@ -341,15 +352,6 @@ func (a *Argument) Strings() (ss []string) {
 	return
 }
 
-// GetValue get value by custom handler func
-func (a *Argument) GetValue() interface{} {
-	val := a.Value
-	if a.Handler != nil {
-		return a.Handler(val)
-	}
-
-	return val
-}
 
 // HasValue value is empty
 func (a *Argument) HasValue() bool {
@@ -366,13 +368,16 @@ func (a *Argument) Index() int {
 	return a.index
 }
 
-// bind an value of the argument
+// bind an value to the argument
 func (a *Argument) bindValue(val interface{}) (err error) {
 	// has validator
 	if a.Validator != nil {
 		val, err = a.Validator(val)
+		if err == nil {
+			a.Value = val
+		}
+	} else {
+		a.Value = val
 	}
-
-	a.Value = val
 	return
 }

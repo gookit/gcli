@@ -450,14 +450,11 @@ func (fs *Flags) String() string {
 
 func (fs *Flags) formatOneFlag(f *flag.Flag) {
 	// Skip render:
-	// - meta is not exists
+	// - meta is not exists(Has ensured that it is not a short name)
 	// - it is hidden flag option
 	// - flag desc is empty
-	meta, ok := fs.metas[f.Name]
-	if !ok {
-		return
-	}
-	if meta.Hidden || f.Usage == "" {
+	meta, has := fs.metas[f.Name]
+	if !has || meta.Hidden {
 		return
 	}
 
@@ -480,11 +477,6 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 			}
 		}
 	} else {
-		// is short option name, skip it
-		if fs.IsShortName(name) {
-			return
-		}
-
 		// only short option
 		// s = fmt.Sprintf("  <info>-%s</>", name)
 		fullName = "-" + name
@@ -564,11 +556,6 @@ func (fs *Flags) ShortNames(name string) (ss []string) {
 	return fs.name2shorts[name]
 }
 
-// HasShorts check
-// func (gf *Flags) HasShorts() bool {
-// 	return len(gf.shorts) > 0
-// }
-
 // IsShortOpt alias of the IsShortcut()
 func (fs *Flags) IsShortOpt(short string) bool {
 	return fs.IsShortName(short)
@@ -582,6 +569,11 @@ func (fs *Flags) IsShortName(short string) bool {
 
 	_, ok := fs.shorts[short]
 	return ok
+}
+
+// IsOption check it is a option name
+func (fs *Flags) IsOption(name string) bool {
+	return fs.HasOption(name)
 }
 
 // HasOption check it is a option name
@@ -687,6 +679,20 @@ func newFlagMeta(name, desc string, defVal interface{}, shorts []string) *FlagMe
 		DefVal: defVal,
 		Shorts: shorts,
 	}
+}
+
+// Shorts2String join shorts to an string
+func (m *FlagMeta) Shorts2String(sep ...string) string {
+	if len(m.Shorts) == 0 {
+		return ""
+	}
+
+	char := ","
+	if len(sep) > 0 {
+		char = sep[0]
+	}
+
+	return strings.Join(m.Shorts, char)
 }
 
 // DValue wrap the default value

@@ -1,6 +1,7 @@
 package gcli_test
 
 import (
+	"strconv"
 	"strings"
 	"testing"
 
@@ -90,7 +91,8 @@ func TestArgument(t *testing.T) {
 	is.Equal("", arg.String())
 
 	// string int value
-	arg.WithValue("23")
+	err := arg.SetValue("23")
+	is.NoError(err)
 	is.Equal(23, arg.Int())
 	is.Equal("23", arg.String())
 
@@ -102,16 +104,55 @@ func TestArgument(t *testing.T) {
 	is.Equal("", arg.String())
 	is.Equal([]string{"a", "b"}, arg.Array())
 
+	// required and is-array
+	arg = gcli.NewArgument("arg1", "arg desc", true, true)
+	is.True(arg.IsArray)
+	is.True(arg.Required)
+	is.Equal("arg1...", arg.HelpName())
+}
+
+func TestArgument_GetValue(t *testing.T) {
+	arg := gcli.NewArgument("arg0", "arg desc")
+
 	// custom handler
 	arg.Value = "a-b-c"
 	arg.Handler = func(value interface{}) interface{} {
 		str := value.(string)
 		return strings.SplitN(str, "-", 2)
 	}
-	is.Equal([]string{"a", "b-c"}, arg.GetValue())
+	assert.Equal(t, []string{"a", "b-c"}, arg.GetValue())
+}
 
-	// required and is-array
-	arg = gcli.NewArgument("arg1", "arg desc", true, true)
-	is.True(arg.IsArray)
-	is.True(arg.Required)
+var str2int = func(val interface{}) (interface{}, error) {
+	return strconv.Atoi(val.(string))
+}
+
+func TestArgument_WithConfig(t *testing.T) {
+	arg := gcli.NewArgument("arg0", "arg desc").WithConfig(func(arg *gcli.Argument) {
+		arg.Value = 23
+	})
+
+	assert.Equal(t, 23, arg.Value)
+	assert.Equal(t, "arg0", arg.HelpName())
+}
+
+func TestArgument_SetValue(t *testing.T) {
+	arg := gcli.NewArgument("arg0", "arg desc")
+	// convert "12" to 12
+	arg.Validator = str2int
+
+	err := arg.SetValue("12")
+	assert.NoError(t, err)
+	assert.Equal(t, 12, arg.Value)
+	arg.Value = nil // reset value
+
+	err = arg.SetValue("abc")
+	assert.Error(t, err)
+	assert.Nil(t, arg.Value)
+
+	// convert "12" to 12
+	arg = gcli.NewArgument("arg0", "arg desc").WithValidator(str2int)
+	err = arg.SetValue("12")
+	assert.NoError(t, err)
+	assert.Equal(t, 12, arg.Value)
 }
