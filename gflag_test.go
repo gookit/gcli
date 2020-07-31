@@ -7,10 +7,33 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestFlags_Basic(t *testing.T) {
+	fs := gcli.NewFlags("testFlags")
+
+	assert.Len(t, fs.Metas(), 0)
+	assert.Equal(t, 0, fs.Len())
+	assert.Equal(t, "testFlags", fs.Name())
+
+	assert.Nil(t, fs.LookupFlag("opt1"))
+	assert.Len(t, fs.ShortNames("opt"), 0)
+	assert.False(t, fs.HasFlag("opt1"))
+	assert.False(t, fs.HasOption("opt1"))
+}
+
+func TestFlags_BoolOpt(t *testing.T) {
+	fs := gcli.NewFlags("testFlags")
+
+	var b1, b2 bool
+	fs.BoolOpt(&b1, "bl1", "ab", false, "desc1")
+	fs.BoolVar(&b2, gcli.FlagMeta{
+		Name: "bl2",
+		Desc: "desc2",
+	})
+}
+
 func TestFlags_StrOpt(t *testing.T) {
 	fs := gcli.NewFlags("testFlags")
 	assert.Len(t, fs.Metas(), 0)
-	assert.Equal(t, "testFlags", fs.Name())
 
 	var str string
 	fs.StrVar(&str, gcli.FlagMeta{
@@ -139,7 +162,9 @@ func TestFlags_PrintHelpPanel(t *testing.T) {
 	fs.StrVar(&testOpts.opt3, gcli.FlagMeta{
 		Name: "test",
 		Desc: "test desc",
+		//
+		Required: true,
 	})
-	fs.BoolOpt(&testOpts.opt2,"bol", "ab", false, "opt2 desc")
+	fs.BoolOpt(&testOpts.opt2, "bol", "ab", false, "opt2 desc")
 	fs.PrintHelpPanel()
 }

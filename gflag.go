@@ -21,6 +21,9 @@ import (
 const (
 	AlignLeft  = strutil.PosRight
 	AlignRight = strutil.PosLeft
+
+	// default desc
+	defaultDesc = "No description"
 )
 
 // FlagsOption for render help information
@@ -495,7 +498,7 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 	s = fmt.Sprintf("  <info>%s</>", fullName)
 
 	// - build flag type info
-	typeName, usage := flag.UnquoteUsage(f)
+	typeName, desc := flag.UnquoteUsage(f)
 	// typeName: option value data type: int, string, ..., bool value will return ""
 	if fs.WithoutType == false && len(typeName) > 0 {
 		s += fmt.Sprintf(" <magenta>%s</>", typeName)
@@ -511,9 +514,19 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 		s += "\n        "
 	}
 
-	// - build description
-	s += strings.Replace(strutil.UpperFirst(usage), "\n", "\n        ", -1)
+	// --- build description
+	if desc == "" {
+		desc = defaultDesc
+	}
 
+	// flag is required
+	if meta.Required {
+		s += "<red>*</>"
+	}
+
+	s += strings.Replace(strutil.UpperFirst(desc), "\n", "\n        ", -1)
+
+	// ---- append default value
 	if !isZeroValue(f, f.DefValue) {
 		if _, ok := f.Value.(*stringValue); ok {
 			// put quotes on the value
@@ -577,6 +590,12 @@ func (fs *Flags) HasOption(name string) bool {
 	return ok
 }
 
+// HasFlag check it is a option name. alias of HasOption()
+func (fs *Flags) HasFlag(name string) bool {
+	_, ok := fs.names[name]
+	return ok
+}
+
 // HasFlagMeta check it is has FlagMeta
 func (fs *Flags) HasFlagMeta(name string) bool {
 	_, ok := fs.metas[name]
@@ -612,6 +631,11 @@ func (fs *Flags) Metas() map[string]*FlagMeta {
 // Name of the Flags
 func (fs *Flags) Name() string {
 	return fs.fSet.Name()
+}
+
+// Len of the Flags
+func (fs *Flags) Len() int {
+	return len(fs.names)
 }
 
 // FSet get the raw *flag.FlagSet
@@ -690,14 +714,6 @@ func (m *FlagMeta) goodName() string {
 	return name
 }
 
-// Description of the flag
-func (m *FlagMeta) Description() string {
-	if len(m.Desc) > 0 {
-		return m.Desc
-	}
-
-	return "no description"
-}
 
 /***********************************************************************
  * Flags:
