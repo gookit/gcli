@@ -316,13 +316,15 @@ go build ./_examples/cliapp.go && ./cliapp example -h
  
 - `progress.Bar` 通用的进度条
 
-![prog-demo](_examples/images/progress/prog-bar.jpg)
+![prog-demo](_examples/images/progress/prog-bar.png)
 
 - `progress.Txt` 文本进度条
 
 ```text
 Data handling ... ... 50% (25/50)
 ```
+
+![prog-text](_examples/images/progress/prog-txt.gif)
 
 - `progress.LoadBar` 加载中
 
@@ -392,8 +394,11 @@ go run ./_examples/cliapp.go prog roundTrip
 ```go
 package main
 
-import "fmt"
-import "github.com/gookit/gcli/v2/interact"
+import (
+	"fmt"
+
+	"github.com/gookit/gcli/v2/interact"
+)
 
 func main() {
 	username, _ := interact.ReadLine("Your name?")
@@ -425,12 +430,12 @@ if ans != "" {
 ### 单选
 
 ```go
-	ans := interact.SelectOne(
-		"Your city name(use array)?",
-		[]string{"chengdu", "beijing", "shanghai"},
-		"",
-	)
-	color.Comment.Println("your select is: ", ans)
+ans := interact.SelectOne(
+    "Your city name(use array)?",
+    []string{"chengdu", "beijing", "shanghai"},
+    "",
+)
+color.Comment.Println("your select is: ", ans)
 ```
 
 ![interact-select](_examples/images/interact/select.jpg)
@@ -438,12 +443,12 @@ if ans != "" {
 ### 多选
 
 ```go
-	ans := interact.MultiSelect(
-		"Your city name(use array)?",
-		[]string{"chengdu", "beijing", "shanghai"},
-		nil,
-	)
-	color.Comment.Println("your select is: ", ans)
+ans := interact.MultiSelect(
+    "Your city name(use array)?",
+    []string{"chengdu", "beijing", "shanghai"},
+    nil,
+)
+color.Comment.Println("your select is: ", ans)
 ```
 
 ![interact-select](_examples/images/interact/m-select.jpg)
@@ -451,11 +456,11 @@ if ans != "" {
 ### 确认消息
 
 ```go
-	if interact.Confirm("Ensure continue") {
-		fmt.Println(emoji.Render(":smile: Confirmed"))
-	} else {
-		color.Warn.Println("Unconfirmed")
-	}
+if interact.Confirm("Ensure continue") {
+    fmt.Println(emoji.Render(":smile: Confirmed"))
+} else {
+    color.Warn.Println("Unconfirmed")
+}
 ```
 
 ![interact-confirm](_examples/images/interact/confirm.jpg)
@@ -463,9 +468,9 @@ if ans != "" {
 ### 读取密码输入
 
 ```go
-	pwd := interact.ReadPassword()
+pwd := interact.ReadPassword()
 
-	color.Comment.Println("your input password is: ", pwd)
+color.Comment.Println("your input password is: ", pwd)
 ```
 
 ![interact-passwd](_examples/images/interact/passwd.jpg)
@@ -474,9 +479,9 @@ if ans != "" {
 
 ## 使用颜色输出
 
-> **颜色输出使用 [gookit/color](https://github.com/gookit/color)**
+> **颜色输出使用 [gookit/color](https://github.com/gookit/color)** 支持在windows `cmd.exe` `powerShell` 环境
 
-### 颜色输出展示
+- 颜色输出展示
 
 ![colored-demo](_examples/images/color/color-demo.jpg)
 
@@ -525,7 +530,7 @@ func main() {
 }
 ```
 
-### 构建风格
+- 构建风格
 
 ```go
 // 仅设置前景色
@@ -541,53 +546,23 @@ style.Println("custom color style")
 color.Style{color.FgCyan, color.OpBold}.Println("custom color style")
 ```
 
-### 使用内置风格
-
-#### 基础颜色
-
-> 支持在windows `cmd.exe` 使用
-
-- `color.Bold`
-- `color.Black`
-- `color.White`
-- `color.Gray`
-- `color.Red`
-- `color.Green`
-- `color.Yellow`
-- `color.Blue`
-- `color.Magenta`
-- `color.Cyan`
+- 使用内置风格
 
 ```go
 color.Bold.Println("bold message")
 color.Yellow.Println("yellow message")
 ```
 
-#### 扩展风格主题 
-
-> 支持在windows `cmd.exe` 使用
-
-- `color.Info`
-- `color.Note`
-- `color.Light`
-- `color.Error`
-- `color.Danger`
-- `color.Notice`
-- `color.Success`
-- `color.Comment`
-- `color.Primary`
-- `color.Warning`
-- `color.Question`
-- `color.Secondary`
+扩展风格主题:
 
 ```go
 color.Info.Println("Info message")
 color.Success.Println("Success message")
 ```
 
-#### 使用颜色html标签
+- 使用颜色html标签
 
-> **支持** 在windows `cmd.exe` `powerShell` 使用颜色标签
+> 同样 **支持** 在windows `cmd.exe` `powerShell` 使用颜色标签
 
 使用颜色标签可以非常方便简单的构建自己需要的任何格式
 
