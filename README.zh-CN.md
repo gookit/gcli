@@ -197,12 +197,6 @@ OK, auto-complete file generate successful
 
 ## 编写命令
 
-### 关于参数定义
-
-- 必须的参数不能定义在可选参数之后
-- 只允许有一个数组参数（多个值的）
-- 数组参数只能定义在最后
-
 ### 简单使用
 
 ```go
@@ -309,8 +303,97 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 
 ### 添加选项
 
+添加选项可用的方法：
+
+```go
+BoolOpt(p *bool, name, shorts string, defValue bool, desc string)
+BoolVar(p *bool, meta FlagMeta)
+Float64Opt(p *float64, name, shorts string, defValue float64, desc string)
+Float64Var(p *float64, meta FlagMeta)
+Int64Opt(p *int64, name, shorts string, defValue int64, desc string)
+Int64Var(p *int64, meta FlagMeta)
+IntOpt(p *int, name, shorts string, defValue int, desc string)
+IntVar(p *int, meta FlagMeta)
+StrOpt(p *string, name, shorts, defValue, desc string)
+StrVar(p *string, meta FlagMeta)
+Uint64Opt(p *uint64, name, shorts string, defValue uint64, desc string)
+Uint64Var(p *uint64, meta FlagMeta)
+UintOpt(p *uint, name, shorts string, defValue uint, desc string)
+UintVar(p *uint, meta FlagMeta)
+Var(p flag.Value, meta FlagMeta)
+VarOpt(p flag.Value, name, shorts, desc string)
+```
+
+Usage examples:
+
+```go
+var id int
+var b bool
+var opt, dir string
+var f1 float64
+var names gcli.Strings
+
+// bind options
+cmd.IntOpt(&id, "id", "", 2, "the id option")
+cmd.BoolOpt(&b, "bl", "b", false, "the bool option")
+// notice `DIRECTORY` will replace to option value type
+cmd.StrOpt(&dir, "dir", "d", "", "the `DIRECTORY` option")
+// setting option name and short-option name
+cmd.StrOpt(&opt, "opt", "o", "", "the option message")
+// setting a special option var, it must implement the flag.Value interface
+cmd.VarOpt(&names, "names", "n", "the option message")
+```
 
 ### 绑定参数
+
+关于参数定义：
+
+- `必须的` 参数不能定义在 `可选参数` 之后
+- 只允许有一个数组参数（多个值的）
+- 数组参数只能定义在最后
+
+绑定参数可用的方法:
+
+```go
+Add(arg Argument) *Argument
+AddArg(name, desc string, requiredAndIsArray ...bool) *Argument
+AddArgument(arg *Argument) *Argument
+BindArg(arg Argument) *Argument
+```
+
+用法示例：
+
+```go
+cmd.AddArg("arg0", "the first argument, is required", true)
+cmd.AddArg("arg1", "the second argument, is required", true)
+cmd.AddArg("arg2", "the optional argument, is optional")
+cmd.AddArg("arrArg", "the array argument, is array", false, true)
+```
+
+也可以使用 `Arg()/BindArg()`:
+
+```go
+cmd.Arg("arg0", gcli.Argument{
+	Name: "ag0",
+	Desc: "the first argument, is required",
+	Require: true,
+})
+cmd.BindArg("arg0", gcli.Argument{
+	Name: "ag0",
+	Desc: "the second argument, is required",
+	Require: true,
+})
+cmd.Arg("arg2", gcli.Argument{
+	Name: "ag0",
+	Desc: "the third argument, is is optional",
+})
+
+cmd.BindArg("arrArg", gcli.Argument{
+	Name: "arrArg",
+	Desc: "the third argument, is is array",
+	IsArray: true,
+})
+```
 
 ## 进度显示
  

@@ -83,11 +83,6 @@ func StdApp() *App {
 	return stdApp
 }
 
-// Exit program
-func Exit(code int) {
-	os.Exit(code)
-}
-
 // Verbose returns verbose level
 func Verbose() uint {
 	return gOpts.verbose
