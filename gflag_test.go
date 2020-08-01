@@ -188,6 +188,24 @@ func TestFlags_Uint64Opt(t *testing.T) {
 	assert.Equal(t, uint64(163), uint2)
 }
 
+func TestFlags_VarOpt(t *testing.T) {
+	fs := gcli.NewFlags("testFlags")
+
+	var ints gcli.Ints
+	fs.Var(&ints, gcli.FlagMeta{Name: "ints", Desc: "desc"})
+	assert.NoError(t, fs.Parse([]string{"--ints", "123", "--ints", "163"}))
+
+	assert.Len(t, ints, 2)
+	assert.Equal(t, "[123 163]", ints.String())
+
+	var ss gcli.Strings
+	fs.VarOpt(&ss, "names", "ns", "desc")
+	assert.NoError(t, fs.Parse([]string{"--names", "abc", "-n", "def", "-s", "ghi"}))
+
+	assert.Len(t, ss, 3)
+	assert.Equal(t, "[abc def ghi]", ss.String())
+}
+
 func TestFlags_CheckName(t *testing.T) {
 	assert.PanicsWithValue(t, "GCli: redefined option flag 'opt1'", func() {
 		var i int64
