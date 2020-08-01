@@ -322,9 +322,10 @@ Demo: `./cliapp prog bar`
 
 - `progress.Txt` 文本进度条
 
-```text
-Data handling ... ... 50% (25/50)
-```
+Demo: `./cliapp prog txt`
+
+![prog-bar](_examples/images/progress/prog-txt.svg)
+
 
 ![prog-text](_examples/images/progress/prog-txt.gif)
 

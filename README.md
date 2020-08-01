@@ -304,15 +304,15 @@ Such as: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` ...
  
 - `progress.Bar` progress bar
 
-demo: `./cliapp prog bar`
+Demo: `./cliapp prog bar`
 
 ![prog-bar](_examples/images/progress/prog-bar.svg)
 
 - `progress.Txt` text progress bar
 
-```text
-Data handling ... ... 50% (25/50)
-```
+Demo: `./cliapp prog txt`
+
+![prog-bar](_examples/images/progress/prog-txt.svg)
 
 - `progress.LoadBar` pending/loading progress bar
 

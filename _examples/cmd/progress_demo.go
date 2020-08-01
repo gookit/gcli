@@ -133,12 +133,12 @@ func runRoundTripBar(max int) {
 
 func txtProgressBar(maxStep int) {
 	txt := progress.Txt(maxStep)
-	txt.AddMessage("message", "handling ... ")
+	txt.AddMessage("message", "Handling ... ")
 	// txt.Overwrite = false
 	// running
 	runProgressBar(txt, maxStep, 80)
 
-	txt.Finish()
+	txt.Finish("Completed")
 }
 
 func dynamicTextBar(maxStep int) {
