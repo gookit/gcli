@@ -326,9 +326,6 @@ Demo: `./cliapp prog txt`
 
 ![prog-bar](_examples/images/progress/prog-txt.svg)
 
-
-![prog-text](_examples/images/progress/prog-txt.gif)
-
 - `progress.LoadBar` 加载中
 
 ![prog-demo](_examples/images/progress/prog-spinner.jpg)

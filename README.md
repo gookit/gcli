@@ -385,8 +385,11 @@ Examples:
 ```go
 package main
 
-import "fmt"
-import "github.com/gookit/gcli/v2/interact"
+import (
+	"fmt"
+
+	"github.com/gookit/gcli/v2/interact"
+)
 
 func main() {
 	username, _ := interact.ReadLine("Your name?")
@@ -403,6 +406,8 @@ func main() {
 
 ### Read Input
 
+read user input message
+
 ```go
 ans, _ := interact.ReadLine("Your name? ")
 
@@ -418,12 +423,12 @@ if ans != "" {
 ### Select/Choice
 
 ```go
-	ans := interact.SelectOne(
-		"Your city name(use array)?",
-		[]string{"chengdu", "beijing", "shanghai"},
-		"",
-	)
-	color.Comment.Println("your select is: ", ans)
+ans := interact.SelectOne(
+    "Your city name(use array)?",
+    []string{"chengdu", "beijing", "shanghai"},
+    "",
+)
+color.Comment.Println("your select is: ", ans)
 ```
 
 ![interact-select](_examples/images/interact/select.jpg)
@@ -431,12 +436,12 @@ if ans != "" {
 ### Multi Select/Checkbox
 
 ```go
-	ans := interact.MultiSelect(
-		"Your city name(use array)?",
-		[]string{"chengdu", "beijing", "shanghai"},
-		nil,
-	)
-	color.Comment.Println("your select is: ", ans)
+ans := interact.MultiSelect(
+    "Your city name(use array)?",
+    []string{"chengdu", "beijing", "shanghai"},
+    nil,
+)
+color.Comment.Println("your select is: ", ans)
 ```
 
 ![interact-select](_examples/images/interact/m-select.jpg)
@@ -444,11 +449,11 @@ if ans != "" {
 ### Confirm Message
 
 ```go
-	if interact.Confirm("Ensure continue") {
-		fmt.Println(emoji.Render(":smile: Confirmed"))
-	} else {
-		color.Warn.Println("Unconfirmed")
-	}
+if interact.Confirm("Ensure continue") {
+    fmt.Println(emoji.Render(":smile: Confirmed"))
+} else {
+    color.Warn.Println("Unconfirmed")
+}
 ```
 
 ![interact-confirm](_examples/images/interact/confirm.jpg)
@@ -456,16 +461,18 @@ if ans != "" {
 ### Read Password
 
 ```go
-	pwd := interact.ReadPassword()
+pwd := interact.ReadPassword()
 
-	color.Comment.Println("your input password is: ", pwd)
+color.Comment.Println("your input password is: ", pwd)
 ```
 
 ![interact-passwd](_examples/images/interact/passwd.jpg)
 
 ## CLI Color
 
-### Color output display
+> **Terminal color use [gookit/color](https://github.com/gookit/color)** Support windows `cmd.exe` `powerShell`
+
+- Color output display
 
 ![colored-demo](_examples/images/color/color-demo.jpg)
 
@@ -516,51 +523,25 @@ func main() {
 
 ### More usage
 
-#### Basic color
-
-> support on windows `cmd.exe`
-
-- `color.Bold`
-- `color.Black`
-- `color.White`
-- `color.Gray`
-- `color.Red`
-- `color.Green`
-- `color.Yellow`
-- `color.Blue`
-- `color.Magenta`
-- `color.Cyan`
+- Basic color
 
 ```go
 color.Bold.Println("bold message")
 color.Yellow.Println("yellow message")
 ```
 
-#### Extra themes
-
-> support on windows `cmd.exe`
-
-- `color.Info`
-- `color.Note`
-- `color.Light`
-- `color.Error`
-- `color.Danger`
-- `color.Notice`
-- `color.Success`
-- `color.Comment`
-- `color.Primary`
-- `color.Warning`
-- `color.Question`
-- `color.Secondary`
+- Extra themes
 
 ```go
 color.Info.Println("Info message")
+color.Danger.Println("Danger message")
+color.Error.Println("Error message")
 color.Success.Println("Success message")
 ```
 
-#### Use like html tag
+- Use like html tag
 
-> **support** working on windows `cmd.exe` `powerShell` 
+> **Support** working on windows `cmd.exe` `powerShell` 
 
 ```go
 // use style tag
