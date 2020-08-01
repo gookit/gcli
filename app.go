@@ -244,6 +244,7 @@ func (app *App) AddCommand(c *Command) *Command {
 	// check and find module name
 	if i := strings.IndexByte(cName, ':'); i > 0 {
 		c.module = c.Name[:i]
+		c.subName = c.Name[i+1:]
 	}
 
 	nameLen := len(cName)

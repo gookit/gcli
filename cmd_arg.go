@@ -160,6 +160,12 @@ func (ags *Arguments) Args() []*Argument {
 	return ags.args
 }
 
+// HasArg check named argument is defined
+func (ags *Arguments) HasArg(name string) bool {
+	_, ok := ags.argsIndexes[name]
+	return ok
+}
+
 // Arg get arg by defined name.
 // Usage:
 // 	intVal := ags.Arg("name").Int()

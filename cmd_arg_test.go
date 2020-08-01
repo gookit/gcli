@@ -18,6 +18,8 @@ func TestCommand_AddArg(t *testing.T) {
 
 	ret := c.ArgByIndex(0)
 	is.Equal(ret, arg)
+	ret = c.ArgByIndex(1)
+	is.True(ret.IsEmpty())
 
 	arg = c.AddArg("arg1", "arg1 desc")
 	is.Equal(1, arg.Index())
@@ -50,6 +52,14 @@ func TestCommand_AddArg(t *testing.T) {
 	is.PanicsWithValue("GCli: have defined an array argument, you cannot add argument 'argN'", func() {
 		c.AddArg("argN", "desc", true)
 	})
+}
+
+func TestArguments_BindArg(t *testing.T) {
+	is := assert.New(t)
+	ags := gcli.Arguments{}
+
+	ags.BindArg(gcli.Argument{Name: "ag0"})
+	is.True(ags.HasArg("ag0"))
 }
 
 func TestArgument(t *testing.T) {

@@ -18,6 +18,7 @@ func TestNewCommand(t *testing.T) {
 	})
 
 	is.NotEmpty(c)
+	is.False(c.Runnable())
 	is.Nil(c.App())
 
 	err := c.Run(simpleArgs)
@@ -34,6 +35,11 @@ func TestNewCommand(t *testing.T) {
 	// is.Equal("", c.ArgLine())
 	is.Equal("alias1,alias2", c.AliasesString())
 	is.Equal("alias1alias2", c.AliasesString(""))
+
+	c = gcli.NewCommand("test1", "desc test")
+	app := gcli.NewApp()
+	c.AttachTo(app)
+	is.True(app.HasCommand("test1"))
 }
 
 func TestCommand_Errorf(t *testing.T) {
@@ -46,6 +52,7 @@ func TestCommand_Errorf(t *testing.T) {
 	})
 
 	is.NotEmpty(c)
+	is.True(c.Runnable())
 
 	err := c.Run(simpleArgs)
 	is.Error(err)
@@ -71,6 +78,8 @@ func TestCommand_Run(t *testing.T) {
 	is.NotEmpty(c)
 	err := c.Run(simpleArgs)
 	is.NoError(err)
+	is.True(c.IsAlone())
+	is.False(c.NotAlone())
 
 	is.Equal("alias1", c.AliasesString(""))
 

@@ -40,6 +40,11 @@ func TestStdApp(t *testing.T) {
 	app.SetLogo("logo2", "info")
 	is.Equal("logo2", app.Logo.Text)
 	is.Equal("info", app.Logo.Style)
+
+	app.ExitFunc = func(i int) {
+		is.Equal(255, i)
+	}
+	app.Exit(255)
 }
 
 func TestApp_Add(t *testing.T) {
@@ -70,6 +75,7 @@ func TestApp_Add(t *testing.T) {
 	app.AddCommand(c)
 
 	is.Equal("mdl", c.Module())
+	is.Equal("test", c.SubName())
 	is.Equal("m1:c3", app.ResolveName("alias1"))
 	is.True(app.IsAlias("alias1"))
 }
@@ -92,6 +98,9 @@ func TestApp_AddCommand(t *testing.T) {
 
 	assert.PanicsWithValue(t, "GCli: the command name can not be empty", func() {
 		app.AddCommand(&gcli.Command{})
+	})
+	assert.PanicsWithValue(t, "GCli: the command name '+dbd' is invalid, must match: ^[a-zA-Z][\\w:-]*$", func() {
+		app.AddCommand(&gcli.Command{Name: "+dbd"})
 	})
 }
 

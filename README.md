@@ -5,7 +5,7 @@
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/gookit/gcli)](https://github.com/gookit/gcli)
 [![Build Status](https://travis-ci.org/gookit/gcli.svg?branch=master)](https://travis-ci.org/gookit/gcli)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/60c587f0491748fcabc1b3fe08d98074)](https://app.codacy.com/app/inhere/gcli?utm_source=github.com&utm_medium=referral&utm_content=gookit/gcli&utm_campaign=Badge_Grade_Dashboard)
-[![GoDoc](https://godoc.org/github.com/gookit/gcli?status.svg)](https://godoc.org/github.com/gookit/gcli)
+[![GoDoc](https://pkg.go.dev/github.com/gookit/gcli?status.svg)](https://godoc.org/github.com/gookit/gcli/v2)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gcli)](https://goreportcard.com/report/github.com/gookit/gcli)
 [![Coverage Status](https://coveralls.io/repos/github/gookit/gcli/badge.svg?branch=master)](https://coveralls.io/github/gookit/gcli?branch=master)
 
@@ -41,8 +41,8 @@ A simple to use command line application, written using golang.
 
 ## GoDoc
 
-- [godoc for gopkg](https://godoc.org/gopkg.in/gookit/gcli.v2)
-- [godoc for github](https://godoc.org/github.com/gookit/gcli)
+- [godoc for gopkg](https://pkg.go.dev/gopkg.in/gookit/gcli.v2)
+- [godoc for github](https://pkg.go.dev/github.com/gookit/gcli/v2)
 
 ## Install
 
@@ -187,12 +187,6 @@ Preview:
 
 ## Write a command
 
-### About arguments
-
-- Required argument cannot be defined after optional argument
-- Only one array parameter is allowed
-- The (array) argument of multiple values ​​can only be defined at the end
-
 ### Quick add
 
 ```go
@@ -255,9 +249,6 @@ func ExampleCommand() *gcli.Command {
 
 	// bind args with names
 	cmd.AddArg("arg0", "the first argument, is required", true)
-	cmd.AddArg("arg1", "the second argument, is required", true)
-	cmd.AddArg("arg2", "the optional argument, is optional")
-	cmd.AddArg("arrArg", "the array argument, is array", false, true)
 
 	return cmd
 }
@@ -295,6 +286,100 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 ```
 
 ![cmd-help](_examples/images/cmd-help.jpg)
+
+### Bind Option(flag)
+
+Available methods:
+
+```go
+BoolOpt(p *bool, name, shorts string, defValue bool, desc string)
+BoolVar(p *bool, meta FlagMeta)
+Float64Opt(p *float64, name, shorts string, defValue float64, desc string)
+Float64Var(p *float64, meta FlagMeta)
+Int64Opt(p *int64, name, shorts string, defValue int64, desc string)
+Int64Var(p *int64, meta FlagMeta)
+IntOpt(p *int, name, shorts string, defValue int, desc string)
+IntVar(p *int, meta FlagMeta)
+StrOpt(p *string, name, shorts, defValue, desc string)
+StrVar(p *string, meta FlagMeta)
+Uint64Opt(p *uint64, name, shorts string, defValue uint64, desc string)
+Uint64Var(p *uint64, meta FlagMeta)
+UintOpt(p *uint, name, shorts string, defValue uint, desc string)
+UintVar(p *uint, meta FlagMeta)
+Var(p flag.Value, meta FlagMeta)
+VarOpt(p flag.Value, name, shorts, desc string)
+```
+
+Usage examples:
+
+```go
+var id int
+var b bool
+var opt, dir string
+var f1 float64
+var names gcli.Strings
+
+// bind options
+cmd.IntOpt(&id, "id", "", 2, "the id option")
+cmd.BoolOpt(&b, "bl", "b", false, "the bool option")
+// notice `DIRECTORY` will replace to option value type
+cmd.StrOpt(&dir, "dir", "d", "", "the `DIRECTORY` option")
+// setting option name and short-option name
+cmd.StrOpt(&opt, "opt", "o", "", "the option message")
+// setting a special option var, it must implement the flag.Value interface
+cmd.VarOpt(&names, "names", "n", "the option message")
+```
+
+### Bind Argument
+
+About arguments:
+
+- Required argument cannot be defined after optional argument
+- Only one array parameter is allowed
+- The (array)argument of multiple values ​​can only be defined at the end
+
+Available methods:
+
+```go
+Add(arg Argument) *Argument
+AddArg(name, desc string, requiredAndIsArray ...bool) *Argument
+AddArgument(arg *Argument) *Argument
+BindArg(arg Argument) *Argument
+```
+
+Usage examples:
+
+```go
+cmd.AddArg("arg0", "the first argument, is required", true)
+cmd.AddArg("arg1", "the second argument, is required", true)
+cmd.AddArg("arg2", "the optional argument, is optional")
+cmd.AddArg("arrArg", "the array argument, is array", false, true)
+```
+
+can also use `Arg()/BindArg()`:
+
+```go
+cmd.Arg("arg0", gcli.Argument{
+	Name: "ag0",
+	Desc: "the first argument, is required",
+	Require: true,
+})
+cmd.BindArg("arg0", gcli.Argument{
+	Name: "ag0",
+	Desc: "the second argument, is required",
+	Require: true,
+})
+cmd.Arg("arg2", gcli.Argument{
+	Name: "ag0",
+	Desc: "the third argument, is is optional",
+})
+
+cmd.BindArg("arrArg", gcli.Argument{
+	Name: "arrArg",
+	Desc: "the third argument, is is array",
+	IsArray: true,
+})
+```
 
 ## Progress display
 
