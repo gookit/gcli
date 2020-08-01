@@ -11,7 +11,7 @@ import (
 
 type progressDemo struct {
 	maxSteps  int
-	overwrite bool
+	overwrite, random bool
 
 	handlers map[string]func(int)
 }
@@ -27,10 +27,17 @@ func ProgressDemoCmd() *gcli.Command {
 		Config: func(c *gcli.Command) {
 			c.IntOpt(&pd.maxSteps, "max-step", "", 100, "setting the max step value")
 			c.BoolOpt(&pd.overwrite, "overwrite", "o", true, "setting overwrite progress bar line")
-			c.AddArg("name",
-				"progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
-				true,
-			)
+			c.BoolVar(&pd.random, gcli.FlagMeta{Name: "random", Desc: "use random style for progress bar"})
+			// c.AddArg("name",
+			// 	"progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
+			// 	true,
+			// )
+			c.Add(gcli.Argument{
+				Name: "name",
+				Desc: "progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
+
+				Required: true,
+			})
 		},
 		Examples: `Text progress bar:
   {$fullCmd} txt
@@ -46,7 +53,7 @@ func (pd *progressDemo) Run(c *gcli.Command, _ []string) error {
 	name := c.Arg("name").String()
 	max := pd.maxSteps
 
-	color.Info.Println("Progress Demo:")
+	color.Infoln("Progress Demo:")
 	switch name {
 	case "bar":
 		showProgressBar(max)
@@ -67,7 +74,10 @@ func (pd *progressDemo) Run(c *gcli.Command, _ []string) error {
 }
 
 func showProgressBar(maxStep int) {
-	cs := progress.RandomBarStyle()
+	cs := progress.BarStyles[3]
+	if pd.random {
+		cs = progress.RandomBarStyle()
+	}
 
 	p := progress.CustomBar(40, cs)
 	p.MaxSteps = uint(maxStep)
@@ -77,7 +87,7 @@ func showProgressBar(maxStep int) {
 	// p.AddMessage("message", " handling ...")
 
 	// running
-	runProgressBar(p, maxStep, 100)
+	runProgressBar(p, maxStep, 60)
 	p.Finish()
 }
 

@@ -86,7 +86,7 @@ func main() {
 }
 ```
 
-## Usage
+### Usage
 
 - build a demo package 
 
@@ -94,7 +94,7 @@ func main() {
 % go build ./_examples/cliapp.go                                                           
 ```
 
-### Display version
+#### Display version
 
 ```bash
 % ./cliapp --version      
@@ -104,7 +104,7 @@ func main() {
 
 ![app-version](_examples/images/app-version.jpg)
 
-### Display app help
+#### Display app help
 
 > by `./cliapp` or `./cliapp -h` or `./cliapp --help`
 
@@ -118,7 +118,7 @@ Examples:
 
 ![cmd-list](_examples/images/cmd-list.png)
 
-### Run Command
+#### Run Command
 
 ```text
 ./cliapp COMMAND [--OPTION VALUE -S VALUE ...] [ARGUMENT0 ARGUMENT1 ...]
@@ -132,17 +132,17 @@ you can see:
 
 ![run-example](_examples/images/run-example.jpg)
 
-### Display Command Help
+#### Display Command Help
 
 > by `./cliapp example -h` or `./cliapp example --help`
 
 ![cmd-help](_examples/images/cmd-help.jpg)
 
-### Error Command Tips
+#### Error Command Tips
 
 ![command tips](_examples/images/err-cmd-tips.jpg)
 
-### Generate Auto Completion Scripts
+## Generate Auto Completion Scripts
 
 ```go
 import  "github.com/gookit/gcli/v2/builtin"
@@ -187,13 +187,13 @@ Preview:
 
 ## Write a command
 
-### About argument definition
+### About arguments
 
 - Required argument cannot be defined after optional argument
 - Only one array parameter is allowed
 - The (array) argument of multiple values ​​can only be defined at the end
 
-### Simple use
+### Quick add
 
 ```go
 app.Add(&gcli.Command{
@@ -299,11 +299,14 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 ## Progress display
 
 Package progress provide terminal progress bar display.
+
 Such as: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` ...
  
 - `progress.Bar` progress bar
 
-![prog-demo](_examples/images/progress/prog-bar.jpg)
+demo: `./cliapp prog bar`
+
+![prog-bar](_examples/images/progress/prog-bar.svg)
 
 - `progress.Txt` text progress bar
 

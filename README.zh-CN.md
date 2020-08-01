@@ -316,7 +316,9 @@ go build ./_examples/cliapp.go && ./cliapp example -h
  
 - `progress.Bar` 通用的进度条
 
-![prog-demo](_examples/images/progress/prog-bar.png)
+Demo: `./cliapp prog bar`
+
+![prog-bar](_examples/images/progress/prog-bar.svg)
 
 - `progress.Txt` 文本进度条
 
