@@ -25,8 +25,8 @@ type Command struct {
 	// Name is the full command name.
 	Name string
 	// module is the name for grouped commands
-	// subname is the name for grouped commands
-	// eg: "sys:info" -> module: "sys", subname: "info"
+	// subName is the name for grouped commands
+	// eg: "sys:info" -> module: "sys", subName: "info"
 	module, subName string
 	// UseFor is the command description message.
 	UseFor string
@@ -43,6 +43,8 @@ type Command struct {
 	Func CmdFunc
 	// Help is the long help message text
 	Help string
+	// HelpRender custom render cmd help message
+	HelpRender func(c *Command)
 
 	// CustomFlags indicates that the command will do its own flag parsing.
 	CustomFlags bool
@@ -58,7 +60,7 @@ type Command struct {
 	// mark is disabled. if true will skip register to cli-app.
 	disabled bool
 	// all option names of the command
-	optNames map[string]string
+	// optNames map[string]string
 }
 
 // NewCommand create a new command instance.
@@ -346,17 +348,14 @@ func (c *Command) Run(inArgs []string) (err error) {
  * command help
  *************************************************************/
 
-// help template for a command
-var commandHelp = `{{.UseFor}}
+// CmdHelpTemplate help template for a command
+var CmdHelpTemplate = `{{.UseFor}}
 {{if .Cmd.NotAlone}}
 <comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.AliasesString}}</>){{end}}{{end}}
 <comment>Usage:</> {$binName} [Global Options...] {{if .Cmd.NotAlone}}<info>{{.Cmd.Name}}</> {{end}}[--option ...] [arguments ...]
 
 <comment>Global Options:</>
-      <info>--verbose</>     Set error reporting level(quiet 0 - 4 debug)
-      <info>--no-color</>    Disable color when outputting message
-  <info>-h, --help</>        Display this help information
-{{if .Options}}
+{{.GOpts}}{{if .Options}}
 <comment>Options:</>
 {{.Options}}{{end}}{{if .Cmd.Args}}
 <comment>Arguments:</>{{range $a := .Cmd.Args}}
@@ -369,7 +368,12 @@ var commandHelp = `{{.UseFor}}
 
 // ShowHelp show command help info
 func (c *Command) ShowHelp() {
-	// commandHelp = color.ReplaceTag(commandHelp)
+	// custom help render func
+	if c.HelpRender != nil {
+		c.HelpRender(c)
+		return
+	}
+
 	// clear space and empty new line
 	if c.Examples != "" {
 		c.Examples = strings.Trim(c.Examples, "\n") + "\n"
@@ -380,11 +384,11 @@ func (c *Command) ShowHelp() {
 		c.Help = strings.Join([]string{strings.TrimSpace(c.Help), "\n"}, "")
 	}
 
-	// render and output help info
-	// RenderTplStr(os.Stdout, commandHelp, map[string]interface{}{
-	// render but not output
-	s := helper.RenderText(commandHelp, map[string]interface{}{
+	// render help message
+	s := helper.RenderText(CmdHelpTemplate, map[string]interface{}{
 		"Cmd": c,
+		// global options
+		"GOpts": c.gFlags.String(),
 		// parse options to string
 		"Options": c.Flags.String(),
 		// always upper first char

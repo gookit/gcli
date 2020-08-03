@@ -62,7 +62,6 @@ var (
 func init() {
 	// don't display date on print log
 	// log.SetFlags(0)
-
 	workDir, _ := os.Getwd()
 	CLI.workDir = workDir
 
@@ -81,6 +80,11 @@ func InitStdApp(fn ...func(a *App)) *App {
 // StdApp get the default std app
 func StdApp() *App {
 	return stdApp
+}
+
+// GOpts get the global options
+func GOpts() *GlobalOpts {
+	return gOpts
 }
 
 // Verbose returns verbose level
@@ -113,11 +117,11 @@ func SetStrictMode(strict bool) {
 	gOpts.strictMode = strict
 }
 
-func bindingCommonGOpts(gf *Flags) {
+func bindingCommonGOpts(fs *Flags) {
 	// binding global options
-	gf.UintOpt(&gOpts.verbose, "verbose", "", gOpts.verbose, "Set error reporting level(quiet 0 - 4 debug)")
-	gf.BoolOpt(&gOpts.showHelp, "help", "h", false, "Display the help information")
-	gf.BoolOpt(&gOpts.noColor, "no-color", "", gOpts.noColor, "Disable color when outputting message")
-	gf.BoolOpt(&gOpts.noProgress, "no-progress", "", gOpts.noProgress, "Disable display progress message")
-	gf.BoolOpt(&gOpts.noInteractive, "no-interactive", "", gOpts.noInteractive, "Disable interactive confirmation operations")
+	fs.UintOpt(&gOpts.verbose, "verbose", "", gOpts.verbose, "Set error reporting level(quiet 0 - 4 debug)")
+	fs.BoolOpt(&gOpts.showHelp, "help", "h", false, "Display the help information")
+	fs.BoolOpt(&gOpts.NoColor, "no-color", "", gOpts.NoColor, "Disable color when outputting message")
+	fs.BoolOpt(&gOpts.noProgress, "no-progress", "", gOpts.noProgress, "Disable display progress message")
+	fs.BoolOpt(&gOpts.noInteractive, "no-interactive", "", gOpts.noInteractive, "Disable interactive confirmation operations")
 }

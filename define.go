@@ -34,7 +34,7 @@ const (
 // GlobalOpts global flags
 type GlobalOpts struct {
 	verbose  uint // message report level
-	noColor  bool
+	NoColor  bool
 	showVer  bool
 	showHelp bool
 	// dont display progress

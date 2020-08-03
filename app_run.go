@@ -37,7 +37,7 @@ func (app *App) parseGlobalOpts() (ok bool) {
 	}
 
 	// disable color
-	if gOpts.noColor {
+	if gOpts.NoColor {
 		color.Enable = false
 	}
 
@@ -223,8 +223,8 @@ func (app *App) CommandNames() []string {
  * display app help
  *************************************************************/
 
-// help template for all commands
-var commandsHelp = `{{.Description}} (Version: <info>{{.Version}}</>)
+// AppHelpTemplate help template for app(all commands)
+var AppHelpTemplate = `{{.Description}} (Version: <info>{{.Version}}</>)
 <comment>Usage:</>
   {$binName} [Global Options...] <info>{command}</> [--option ...] [argument ...]
 
@@ -264,9 +264,9 @@ func (app *App) showCommandTips(name string) {
 
 // display app help and list all commands
 func (app *App) showApplicationHelp() {
-	// commandsHelp = color.ReplaceTag(commandsHelp)
+	// cmdHelpTemplate = color.ReplaceTag(cmdHelpTemplate)
 	// render help text template
-	s := helper.RenderText(commandsHelp, map[string]interface{}{
+	s := helper.RenderText(AppHelpTemplate, map[string]interface{}{
 		"Cs":    app.moduleCommands,
 		"GOpts": app.gFlags.String(),
 		// app version

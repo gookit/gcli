@@ -264,11 +264,13 @@ func (app *App) AddCommand(c *Command) *Command {
 	app.moduleCommands[c.module][c.Name] = c
 
 	// add aliases for the command
-	app.AddAliases(c.Name, c.Aliases...)
+	app.addAliases(c.Name, c.Aliases, false)
 	Logf(VerbDebug, "register a new CLI command: %s", cName)
 
 	// init command
 	c.app = app
+	// inherit global flags from application
+	c.core.gFlags = app.gFlags
 	c.initialize()
 	return c
 }
@@ -349,6 +351,11 @@ func (app *App) IsAlias(str string) bool {
 
 // AddAliases add alias names for a command
 func (app *App) AddAliases(command string, aliases ...string) {
+	app.addAliases(command, aliases, true)
+}
+
+// addAliases add alias names for a command
+func (app *App) addAliases(command string, aliases []string, sync bool) {
 	if app.aliases == nil {
 		app.aliases = make(map[string]string)
 	}
@@ -370,7 +377,9 @@ func (app *App) AddAliases(command string, aliases ...string) {
 
 		app.aliases[alias] = command
 		// sync to Command
-		c.Aliases = append(c.Aliases, alias)
+		if sync {
+			c.Aliases = append(c.Aliases, alias)
+		}
 	}
 }
 

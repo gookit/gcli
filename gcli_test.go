@@ -13,6 +13,7 @@ func TestVerbose(t *testing.T) {
 
 	old := gcli.Verbose()
 	is.Equal(gcli.VerbError, old)
+	is.True(gcli.GOpts().NoColor)
 
 	gcli.SetDebugMode()
 	is.Equal(gcli.VerbDebug, gcli.Verbose())
