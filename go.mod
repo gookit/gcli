@@ -3,7 +3,7 @@ module github.com/gookit/gcli/v2
 go 1.12
 
 require (
-	github.com/fsnotify/fsnotify v1.4.7
+	github.com/fsnotify/fsnotify v1.4.9
 	github.com/gookit/color v1.2.7
 	github.com/gookit/goutil v0.3.1
 	github.com/stretchr/testify v1.4.0
