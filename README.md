@@ -24,18 +24,21 @@ A simple to use command line application, written using golang.
 ## Features
 
 - Simple to use
-- Support for adding multiple commands and supporting command aliases
-- When the command entered is incorrect, a similar command will be prompted(including an alias prompt)
-- Support option binding `--long`, support for adding short options(`-s`)
-- POSIX-style short flag combining (`-a -b` = `-ab`).
-- Support binding argument to specified name, support `required`, optional, `array` three settings
+- Support for adding multiple commands and supporting command **aliases**
+- `option/flag` Support option binding `--long`, support for adding short options(`-s`)
+  - POSIX-style short flag combining (`-a -b` = `-ab`)
+  - Support setting `Required`, indicating a required option parameter
+  - Support setting `Validator`, which can customize the validation input parameters
+- `argument` Support binding argument to specify name
+  - Support `required`, optional, `array` settings
   - It will be automatically detected and collected when the command is run.
-- Supports rich color output. powered by [gookit/color](https://github.com/gookit/color)
+- Supports rich color output. provide by [gookit/color](https://github.com/gookit/color)
   - Supports html tab-style color rendering, compatible with Windows
   - Built-in `info, error, success, danger` and other styles, can be used directly
-- Built-in user interaction methods: `ReadLine`, `Confirm`, `Select`, `MultiSelect` ...
-- Built-in progress display methods: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` ...
+- `interact` Built-in user interaction methods: `ReadLine`, `Confirm`, `Select`, `MultiSelect` ...
+- `progress` Built-in progress display methods: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` ...
 - Automatically generate command help information and support color display
+- When the command entered is incorrect, a similar command will be prompted(including an alias prompt)
 - Supports generation of `zsh` and `bash` command completion script files
 - Supports a single command as a stand-alone application
 
@@ -226,39 +229,39 @@ var exampleOpts = struct {
 }{}
 
 // ExampleCommand command definition
-func ExampleCommand() *gcli.Command {
-	cmd := &gcli.Command{
-		Name:        "example",
-		UseFor: "this is a description message",
-		Aliases:     []string{"exp", "ex"},
-		Func:          exampleExecute,
-		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
-		Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1
-  <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
-	}
+var ExampleCommand = &gcli.Command{
+	Name:        "example",
+	UseFor: "this is a description message",
+	Aliases:     []string{"exp", "ex"}, // 命令别名
+	// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
+	Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1
+<cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
+	Config: func(c *gcli.Command) {
+		// 绑定命令选项信息
+		c.IntOpt(&exampleOpts.id, "id", "", 2, "the id option")
+		c.StrOpt(&exampleOpts.c, "config", "c", "value", "the config option")
+		// notice `DIRECTORY` will replace to option value type
+		c.StrOpt(&exampleOpts.dir, "dir", "d", "", "the `DIRECTORY` option")
+		// 支持设置选项短名称
+		c.StrOpt(&exampleOpts.opt, "opt", "o", "", "the option message")
+		// 支持绑定自定义变量, 但必须实现 flag.Value 接口
+		c.VarOpt(&exampleOpts.names, "names", "n", "the option message")
 
-	// bind options
-	cmd.IntOpt(&exampleOpts.id, "id", "", 2, "the id option")
-	cmd.StrOpt(&exampleOpts.c, "config", "c", "value", "the config option")
-	// notice `DIRECTORY` will replace to option value type
-	cmd.StrOpt(&exampleOpts.dir, "dir", "d", "", "the `DIRECTORY` option")
-	// setting option name and short-option name
-	cmd.StrOpt(&exampleOpts.opt, "opt", "o", "", "the option message")
-	// setting a special option var, it must implement the flag.Value interface
-	cmd.VarOpt(&exampleOpts.names, "names", "n", "the option message")
-
-	// bind args with names
-	cmd.AddArg("arg0", "the first argument, is required", true)
-
-	return cmd
+		// 绑定命令参数信息，按参数位置绑定
+		c.AddArg("arg0", "the first argument, is required", true)
+		c.AddArg("arg1", "the second argument, is required", true)
+		c.AddArg("arg2", "the optional argument, is optional")
+		c.AddArg("arrArg", "the array argument, is array", false, true)
+	},
+	Func:  exampleExecute,
 }
 
-// command running
+// 命令执行主逻辑代码
 // example run:
 // 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
 func exampleExecute(c *gcli.Command, args []string) error {
 	fmt.Print("hello, in example command\n")
-	
+
 	magentaln := color.Magenta.Println
 
 	magentaln("All options:")

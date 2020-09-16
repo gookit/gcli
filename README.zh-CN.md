@@ -15,7 +15,7 @@
 
 ## [ENGLISH](README.md)
 
-English introduction please ses **[README](README.md)**
+The english introduction please ses **[README](README.md)**
 
 ## 截图展示
 
@@ -25,15 +25,19 @@ English introduction please ses **[README](README.md)**
 
 - 使用简单方便，轻量级，功能丰富
 - 支持添加多个命令，并且支持给命令添加别名
-- 输入的命令错误时，将会提示相似命令（包含别名提示）
-- 快速方便的添加选项绑定(`--long`)，支持添加多个短选项（eg: `-s`）
-- 支持绑定参数到指定名称, 支持必须`required`，可选，数组`isArray` 三种设定
+- `option/flag` 快速方便的添加选项绑定(`--long`)，支持添加多个短选项（eg: `-s`）
+  - 选项支持设置 `Required`，表明为必须的选项参数
+  - 选项支持设置 `Validator`，可以自定义验证输入参数
+- `argument` 支持绑定 `参数` 到指定名称(参数 _是指flag绑定后剩余的参数信息_)
+  - 支持参数设置 可选/必须 `Required`，数组 `isArray`
   - 运行命令时将会自动检测，并按对应关系收集参数
-- 支持丰富的颜色渲染输出, 由[gookit/color](https://github.com/gookit/color)提供
+- `colorable` 支持丰富的颜色渲染输出, 由[gookit/color](https://github.com/gookit/color)提供
   - 同时支持html标签式的颜色渲染，兼容Windows
   - 内置`info,error,success,danger`等多种风格，可直接使用
-- 内置提供用户交互方法: `ReadLine`, `Confirm`, `Select`, `MultiSelect` 等
-- 内置提供进度显示方法: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` 等
+- `interact` 内置提供用户交互方法: `ReadLine`, `Confirm`, `Select`, `MultiSelect` 等
+- `progress` 内置提供进度显示方法: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` 等
+- 输入的命令错误时，将会提示相似命令（包含别名提示）
+- 自动处理返回错误，`error` 会自动渲染为错误提示信息
 - 自动根据命令生成帮助信息，并且支持颜色显示
 - 支持为当前CLI应用生成 `zsh`,`bash` 下的命令补全脚本文件
 - 支持将单个命令当做独立应用运行
@@ -221,6 +225,7 @@ package cmd
 
 import (
 	"fmt"
+
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v2"
 )
@@ -235,34 +240,31 @@ var exampleOpts = struct {
 }{}
 
 // ExampleCommand command definition
-func ExampleCommand() *gcli.Command {
-	cmd := &gcli.Command{
-		Name:        "example",
-		UseFor: "this is a description message",
-		Aliases:     []string{"exp", "ex"}, // 命令别名
-		Func:          exampleExecute,
-		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
-		Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1
-  <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
-	}
+var ExampleCommand = &gcli.Command{
+	Name:        "example",
+	UseFor: "this is a description message",
+	Aliases:     []string{"exp", "ex"}, // 命令别名
+	// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
+	Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1
+<cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
+	Config: func(c *gcli.Command) {
+		// 绑定命令选项信息
+		c.IntOpt(&exampleOpts.id, "id", "", 2, "the id option")
+		c.StrOpt(&exampleOpts.c, "config", "c", "value", "the config option")
+		// notice `DIRECTORY` will replace to option value type
+		c.StrOpt(&exampleOpts.dir, "dir", "d", "", "the `DIRECTORY` option")
+		// 支持设置选项短名称
+		c.StrOpt(&exampleOpts.opt, "opt", "o", "", "the option message")
+		// 支持绑定自定义变量, 但必须实现 flag.Value 接口
+		c.VarOpt(&exampleOpts.names, "names", "n", "the option message")
 
-	// 绑定命令选项信息
-	cmd.IntOpt(&exampleOpts.id, "id", "", 2, "the id option")
-	cmd.StrOpt(&exampleOpts.c, "config", "c", "value", "the config option")
-	// notice `DIRECTORY` will replace to option value type
-	cmd.StrOpt(&exampleOpts.dir, "dir", "d", "", "the `DIRECTORY` option")
-	// 支持设置选项短名称
-	cmd.StrOpt(&exampleOpts.opt, "opt", "o", "", "the option message")
-	// 支持绑定自定义变量, 但必须实现 flag.Value 接口
-	cmd.VarOpt(&exampleOpts.names, "names", "n", "the option message")
-
-	// 绑定命令参数信息，按参数位置绑定
-	cmd.AddArg("arg0", "the first argument, is required", true)
-	cmd.AddArg("arg1", "the second argument, is required", true)
-	cmd.AddArg("arg2", "the optional argument, is optional")
-	cmd.AddArg("arrArg", "the array argument, is array", false, true)
-
-	return cmd
+		// 绑定命令参数信息，按参数位置绑定
+		c.AddArg("arg0", "the first argument, is required", true)
+		c.AddArg("arg1", "the second argument, is required", true)
+		c.AddArg("arg2", "the optional argument, is optional")
+		c.AddArg("arrArg", "the array argument, is array", false, true)
+	},
+	Func:  exampleExecute,
 }
 
 // 命令执行主逻辑代码
@@ -370,10 +372,10 @@ cmd.AddArg("arg2", "the optional argument, is optional")
 cmd.AddArg("arrArg", "the array argument, is array", false, true)
 ```
 
-也可以使用 `Arg()/BindArg()`:
+也可以使用 `Add()/BindArg()`:
 
 ```go
-cmd.Arg("arg0", gcli.Argument{
+cmd.Add("arg0", gcli.Argument{
 	Name: "ag0",
 	Desc: "the first argument, is required",
 	Require: true,
@@ -383,7 +385,7 @@ cmd.BindArg("arg0", gcli.Argument{
 	Desc: "the second argument, is required",
 	Require: true,
 })
-cmd.Arg("arg2", gcli.Argument{
+cmd.Add("arg2", gcli.Argument{
 	Name: "ag0",
 	Desc: "the third argument, is is optional",
 })
@@ -393,6 +395,35 @@ cmd.BindArg("arrArg", gcli.Argument{
 	Desc: "the third argument, is is array",
 	IsArray: true,
 })
+```
+
+### 获取参数
+
+可以通过 `c.Arg(name string) *gcli.Argument` 获取参数，通过上面内置的方法可以将参数转换文常用的数据类型
+
+```go
+var MyCommand = &gcli.Command{
+    Name: "example",
+    UseFor: "this is an example command",
+    Config: func(c *gcli.Command) {
+        cmd.BindArg("arg0", gcli.Argument{
+            Name: "ag0",
+            Desc: "the first argument, is required",
+            Require: true,
+        })
+        cmd.Add("arg1", gcli.Argument{
+            Name: "ag1",
+            Desc: "the second argument, is is optional",
+        })
+    },
+    Func: func(c *gcli.Command, args []string) error {
+        arg0 := c.Arg("arg0").String()
+        arg1 := c.Arg("arg1").Int()
+        
+        fmt.Println(arg0, arg1)
+        return nil
+    },
+}
 ```
 
 ## 进度显示

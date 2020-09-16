@@ -48,10 +48,10 @@ type Command struct {
 
 	// CustomFlags indicates that the command will do its own flag parsing.
 	CustomFlags bool
-	// Flags options for the command.
-	Flags
 	// Arguments for the command
 	Arguments
+	// Flags options for the command.
+	Flags
 
 	// application
 	app *App
@@ -213,7 +213,7 @@ func (c *Command) parseFlags(args []string) (ss []string, err error) {
 	// c.FSet().SetOutput(ioutil.Discard)
 
 	// parse options, don't contains command name.
-	if err = c.Flags.Parse(args); err != nil {
+	if err = c.Parse(args); err != nil {
 		return
 	}
 

@@ -99,8 +99,8 @@ func TestFlags_Float64Opt(t *testing.T) {
 	var f1, f2 float64
 	fs.Float64Opt(&f1, "f1", "ab", 0, "desc1")
 	fs.Float64Var(&f2, gcli.FlagMeta{
-		Name: "f2",
-		Desc: "desc2",
+		Name:   "f2",
+		Desc:   "desc2",
 		DefVal: 3.14,
 	})
 
@@ -117,8 +117,8 @@ func TestFlags_IntOpt(t *testing.T) {
 	var int1, int2 int
 	fs.IntOpt(&int1, "int1", "ab", 0, "desc1")
 	fs.IntVar(&int2, gcli.FlagMeta{
-		Name: "int2",
-		Desc: "desc2",
+		Name:   "int2",
+		Desc:   "desc2",
 		DefVal: 314,
 	})
 
@@ -135,8 +135,8 @@ func TestFlags_Int64Opt(t *testing.T) {
 	var int1, int2 int64
 	fs.Int64Opt(&int1, "int1", "ab", 0, "desc1")
 	fs.Int64Var(&int2, gcli.FlagMeta{
-		Name: "int2",
-		Desc: "desc2",
+		Name:   "int2",
+		Desc:   "desc2",
 		DefVal: 314,
 	})
 
@@ -153,8 +153,8 @@ func TestFlags_UintOpt(t *testing.T) {
 	var int1, int2 uint
 	fs.UintOpt(&int1, "int1", "ab", 0, "desc1")
 	fs.UintVar(&int2, gcli.FlagMeta{
-		Name: "c",
-		Desc: "desc2",
+		Name:   "c",
+		Desc:   "desc2",
 		DefVal: 314,
 	})
 
@@ -171,8 +171,8 @@ func TestFlags_Uint64Opt(t *testing.T) {
 	var uint1, uint2 uint64
 	fs.Uint64Opt(&uint1, "uint1", "ab", 0, "desc1")
 	fs.Uint64Var(&uint2, gcli.FlagMeta{
-		Name: "uint2",
-		Desc: "desc2",
+		Name:   "uint2",
+		Desc:   "desc2",
 		DefVal: 314,
 		Shorts: []string{"c", "", "f"},
 	})

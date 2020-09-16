@@ -55,7 +55,7 @@ type Flags struct {
 	shorts map[string]string
 	// mapping for name to shortcut {"name": {"n", "m"}}
 	name2shorts map[string][]string
-	// flag name max length
+	// flag name max length. useful for render help
 	// eg: "-V, --version" length is 13
 	flagMaxLen int
 	// exist short names. useful for render help
@@ -101,8 +101,21 @@ func (fs *Flags) InitFlagSet(name string) {
 }
 
 // Parse given arguments
-func (fs *Flags) Parse(args []string) error {
-	return fs.fSet.Parse(args)
+func (fs *Flags) Parse(args []string) (err error) {
+	err = fs.fSet.Parse(args)
+	if err != nil {
+		return
+	}
+
+	// call flags validate
+	for name, meta := range fs.metas {
+		fItem := fs.fSet.Lookup(name)
+		err = meta.Validate(fItem.Value.String())
+		if err != nil {
+			return err
+		}
+	}
+	return
 }
 
 // RawArg get an argument value by index
@@ -666,8 +679,10 @@ type FlagMeta struct {
 	defVal *goutil.Value
 	// short names. eg: ["o", "a"]
 	Shorts []string
-	// special setting
+	// advanced settings
 	Hidden, Required bool
+	// Validator support validate the option flag value
+	Validator func(val string) error
 }
 
 // newFlagMeta quick create an FlagMeta
@@ -695,6 +710,21 @@ func (m *FlagMeta) Shorts2String(sep ...string) string {
 	return strings.Join(m.Shorts, char)
 }
 
+// Validate the binding value
+func (m *FlagMeta) Validate(val string) error {
+	// check required
+	if m.Required && val == "" {
+		return fmt.Errorf("flag '%s' is required", m.Name)
+	}
+
+	// call user custom validator
+	if m.Validator != nil {
+		return m.Validator(val)
+	}
+
+	return nil
+}
+
 // DValue wrap the default value
 func (m *FlagMeta) DValue() *goutil.Value {
 	if m.defVal == nil {
@@ -719,7 +749,6 @@ func (m *FlagMeta) goodName() string {
 	m.Name = name
 	return name
 }
-
 
 /***********************************************************************
  * Flags:

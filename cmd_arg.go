@@ -358,7 +358,6 @@ func (a *Argument) Strings() (ss []string) {
 	return
 }
 
-
 // HasValue value is empty
 func (a *Argument) HasValue() bool {
 	return a.Value != nil
