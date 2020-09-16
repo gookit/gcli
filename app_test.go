@@ -136,7 +136,7 @@ func TestApp_Run(t *testing.T) {
 	gcli.SetVerbose(gcli.VerbCrazy)
 
 	defer func() {
-		color.ResetOutput()
+		color.ResetOptions()
 		gcli.SetVerbose(gcli.VerbError)
 	}()
 
@@ -201,7 +201,7 @@ func TestApp_showCommandHelp(t *testing.T) {
 	buf := new(bytes.Buffer)
 	color.Disable()
 	color.SetOutput(buf)
-	defer color.ResetOutput()
+	defer color.ResetOptions()
 
 	app := gcli.NewApp(func(a *gcli.App) {
 		a.ExitOnEnd = false
@@ -261,7 +261,7 @@ func TestApp_showVersion(t *testing.T) {
 	buf := new(bytes.Buffer)
 	color.Disable()
 	color.SetOutput(buf)
-	defer color.ResetOutput()
+	defer color.ResetOptions()
 
 	app.Run()
 	str := buf.String()
@@ -282,7 +282,7 @@ func TestApp_showCommandTips(t *testing.T) {
 	buf := new(bytes.Buffer)
 	color.Disable()
 	color.SetOutput(buf)
-	defer color.ResetOutput()
+	defer color.ResetOptions()
 
 	app.Run()
 	str := buf.String()

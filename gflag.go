@@ -21,7 +21,8 @@ import (
 const (
 	AlignLeft  = strutil.PosRight
 	AlignRight = strutil.PosLeft
-
+	// FlagTagName on struct
+	FlagTagName = "flag"
 	// default desc
 	defaultDesc = "No description"
 )
@@ -34,6 +35,8 @@ type FlagsOption struct {
 	NameDescOL bool
 	// Alignment flag align left or right. default is: right
 	Alignment uint8
+	// TagName on struct
+	TagName string
 }
 
 // Flags struct definition

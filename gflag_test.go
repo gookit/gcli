@@ -2,6 +2,7 @@ package gcli_test
 
 import (
 	"bytes"
+	"errors"
 	"flag"
 	"fmt"
 	"testing"
@@ -275,13 +276,44 @@ func TestFlags_CheckShorts(t *testing.T) {
 	})
 }
 
+func TestFlags_Parse(t *testing.T) {
+	var str string
+
+	gf := gcli.NewFlags("test")
+	gf.StrVar(&str, gcli.FlagMeta{
+		Name:     "opt1",
+		Required: true,
+		Validator: func(val string) error {
+			if len(val) < 5 {
+				return errors.New("flag value min len is 5")
+			}
+
+			return nil
+		},
+	})
+
+	err := gf.Parse([]string{})
+	assert.Error(t, err)
+
+	err = gf.Parse([]string{"--opt1", ""})
+	assert.Error(t, err)
+
+	err = gf.Parse([]string{"--opt1", "val"})
+	assert.Error(t, err)
+	assert.Equal(t, "flag value min len is 5", err.Error())
+
+	err = gf.Parse([]string{"--opt1", "value"})
+	assert.NoError(t, err)
+	assert.Equal(t, "value", str)
+}
+
 func TestFlags_FromStruct(t *testing.T) {
 	gf := gcli.NewFlags("test")
 
 	type userOpts struct {
-		Opt1 string `gcli:"name=opt;shorts=oh;required=true;desc=message"`
+		Opt1 string `flag:"name=opt;shorts=oh;required=true;desc=message"`
 		// the option Opt2
-		Opt2 string `gcli:"name=opt2;required=true;desc=message"`
+		Opt2 string `flag:"name=opt2;required=true;desc=message"`
 	}
 
 	err := gf.FromStruct(&userOpts{})
@@ -307,4 +339,29 @@ func TestFlags_PrintHelpPanel(t *testing.T) {
 	})
 	fs.BoolOpt(&testOpts.opt2, "bol", "ab", false, "opt2 desc")
 	fs.PrintHelpPanel()
+}
+
+func TestFlagMeta_Validate(t *testing.T) {
+	fm := gcli.FlagMeta{
+		Name:     "opt1",
+		Required: true,
+		Validator: func(val string) error {
+			if len(val) < 5 {
+				return errors.New("flag value min len is 5")
+			}
+
+			return nil
+		},
+	}
+
+	err := fm.Validate("")
+	assert.Error(t, err)
+	assert.Equal(t, "flag 'opt1' is required", err.Error())
+
+	err = fm.Validate("val")
+	assert.Error(t, err)
+	assert.Equal(t, "flag value min len is 5", err.Error())
+
+	err = fm.Validate("value")
+	assert.NoError(t, err)
 }

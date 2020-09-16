@@ -98,6 +98,7 @@ func NewApp(fn ...func(a *App)) *App {
 				WithoutType: true,
 				NameDescOL:  true,
 				Alignment:   AlignLeft,
+				TagName:     FlagTagName,
 			}),
 		},
 		// config
