@@ -138,3 +138,31 @@ func (s *Booleans) Set(value string) error {
 
 	return err
 }
+
+// EnumString The string flag list, implemented flag.Value interface
+type EnumString struct {
+	val string
+	enum []string
+}
+
+// String to string
+func (s *EnumString) String() string {
+	return s.val
+}
+
+// Set new value, will check value is right
+func (s *EnumString) Set(value string) error {
+	var ok bool
+	for _, item := range s.enum {
+		if value == item {
+			ok = true
+			break
+		}
+	}
+
+	if !ok {
+		return fmt.Errorf("value must one of the: %v", s.enum)
+	}
+
+	return nil
+}
