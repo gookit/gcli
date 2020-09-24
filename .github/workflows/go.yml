@@ -1,5 +1,11 @@
 name: action-tests
-on: [push]
+on:
+  push:
+    paths:
+      - '**.go'
+      - '**.yml'
+      - 'go.mod'
+
 jobs:
 
   test:

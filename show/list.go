@@ -169,10 +169,10 @@ type Lists struct {
 func NewLists(listMap map[string]interface{}) *Lists {
 	ls := &Lists{
 		Opts: &ListOption{
-			SepChar:    " ",
-			KeyStyle:   "info",
-			LeftIndent: "  ",
-			//
+			SepChar:  " ",
+			KeyStyle: "info",
+			// more
+			LeftIndent:  "  ",
 			KeyMinWidth: 8,
 			IgnoreEmpty: true,
 			TitleStyle:  "comment",

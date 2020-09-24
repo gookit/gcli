@@ -205,8 +205,7 @@ func (c *Command) parseFlags(args []string) (ss []string, err error) {
 	}
 
 	// fix and compatible
-	args = moveArgumentsToEnd(args)
-
+	// args = moveArgumentsToEnd(args)
 	Logf(VerbDebug, "flags on after format: %v", args)
 
 	// NOTICE: disable output internal error message on parse flags

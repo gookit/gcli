@@ -32,7 +32,7 @@ A simple to use command line application, written using golang.
 - `argument` Support binding argument to specify name
   - Support `required`, optional, `array` settings
   - It will be automatically detected and collected when the command is run.
-- Supports rich color output. provide by [gookit/color](https://github.com/gookit/color)
+- `colorable` Supports rich color output. provide by [gookit/color](https://github.com/gookit/color)
   - Supports html tab-style color rendering, compatible with Windows
   - Built-in `info, error, success, danger` and other styles, can be used directly
 - `interact` Built-in user interaction methods: `ReadLine`, `Confirm`, `Select`, `MultiSelect` ...
