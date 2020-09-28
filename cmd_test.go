@@ -112,7 +112,7 @@ func TestCommand_ParseFlag(t *testing.T) {
 		return nil
 	})
 
-	err := c.Run([]string{"txt", "--int", "10", "--str=abc"})
+	err := c.Run([]string{"--int", "10", "--str=abc", "txt"})
 	is.NoError(err)
 	is.Equal(10, int0)
 	is.Equal("abc", str0)
