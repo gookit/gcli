@@ -276,6 +276,31 @@ func TestFlags_CheckShorts(t *testing.T) {
 	})
 }
 
+var flagOpts = struct {
+	intv int
+	strv string
+}{}
+
+func TestFlags_Run(t *testing.T) {
+	is := assert.New(t)
+
+	fg := gcli.NewFlags("test", "desc message")
+	fg.ExitFunc = func(code int) {
+		// ...
+	}
+
+	fg.IntOpt(&flagOpts.intv, "intv", "i", 0, "desc message for intv")
+	fg.StrOpt(&flagOpts.strv, "strv", "s", "", "desc message for strv")
+
+	// parse
+	fg.Run([]string{"./app", "-i", "23", "-s", "inhere"})
+	is.Equal(23, flagOpts.intv)
+	is.Equal("inhere", flagOpts.strv)
+
+	// help
+	fg.Run([]string{"./app", "-h"})
+}
+
 func TestFlags_Parse(t *testing.T) {
 	var str string
 
