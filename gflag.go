@@ -41,6 +41,10 @@ type FlagsOption struct {
 
 // Flags struct definition
 type Flags struct {
+	// Desc message
+	Desc string
+	// ExitFunc for handle exit
+	ExitFunc func(code int)
 	// FlagsOption option for render help message
 	FlagsOption
 	// raw flag set
@@ -66,12 +70,16 @@ type Flags struct {
 }
 
 // NewFlags create an new Flags
-func NewFlags(name ...string) *Flags {
+func NewFlags(nameWithDesc ...string) *Flags {
 	fs := &Flags{out: os.Stdout}
+	fs.ExitFunc = os.Exit
 
 	fName := "flags"
-	if len(name) > 0 {
-		fName = name[0]
+	if num := len(nameWithDesc); num > 0 {
+		fName = nameWithDesc[0]
+		if num > 1 {
+			fs.Desc = nameWithDesc[1]
+		}
 	}
 
 	fs.InitFlagSet(fName)
@@ -103,7 +111,45 @@ func (fs *Flags) InitFlagSet(name string) {
 	fs.fSet.Usage = func() {}
 }
 
+// Run flags parse and handle help render
+// Usage:
+// 	gf := gcli.NewFlags()
+//  ...
+// 	gf.Run(os.Args)
+func (fs *Flags) Run(args []string) {
+	binName, waitArgs := args[0], args[1:]
+
+	fs.RegisterHelp(func() {
+		if fs.Desc != "" {
+			color.Infoln(fs.Desc)
+		}
+
+		color.Comment.Println("Usage:")
+		color.Cyan.Println(" ", binName, "[--OPTIONS...]\n")
+		color.Comment.Println("Options:")
+
+		fs.PrintHelpPanel()
+	})
+
+	// do parsing
+	if err := fs.Parse(waitArgs); err != nil {
+		if err == flag.ErrHelp {
+			fs.ExitFunc(0)
+		} else {
+			color.Errorf("flag parse error - %s", err.Error())
+			fs.ExitFunc(2)
+		}
+	}
+}
+
 // Parse given arguments
+//
+// Usage:
+// 	gf := gcli.NewFlags()
+// 	gf.BoolOpt(&debug, "debug", "", defDebug, "open debug mode")
+// 	gf.UintOpt(&port, "port", "p", 18081, "the http server port")
+//
+// 	err := gf.Parse(os.Args[1:])
 func (fs *Flags) Parse(args []string) (err error) {
 	err = fs.fSet.Parse(args)
 	if err != nil {
@@ -439,6 +485,11 @@ func (fs *Flags) checkShortNames(name string, nameLength int, shorts []string) [
  * Flags:
  * - render help message
  ***********************************************************************/
+
+// RegisterHelp set the raw *flag.FlagSet.Usage
+func (fs *Flags) RegisterHelp(fn func()) {
+	fs.fSet.Usage = fn
+}
 
 // PrintHelpPanel for all options to the gf.out
 func (fs *Flags) PrintHelpPanel() {
