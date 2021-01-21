@@ -3,7 +3,10 @@ package gcli
 import (
 	"fmt"
 	"os"
+	"path"
 	"strings"
+
+	"github.com/gookit/color"
 )
 
 // core definition
@@ -15,6 +18,21 @@ type core struct {
 	gFlags *Flags
 	// GOptsBinder you can custom binding global options
 	GOptsBinder func(gf *Flags)
+}
+
+// Println message
+func (c core) Println(a ...interface{}) {
+	fmt.Println(a...)
+}
+
+// Infoln message
+func (c core) Infoln(a ...interface{}) {
+	color.Info.Println(a...)
+}
+
+// Warnln message
+func (c core) Warnln(a ...interface{}) {
+	color.Warn.Println(a...)
 }
 
 // GlobalFlags get the app GlobalFlags
@@ -109,7 +127,12 @@ func (c *cmdLine) BinName() string {
 	return c.binName
 }
 
-// WorkDir get work dir
+// BinDir get bin script dirname
+func (c *cmdLine) BinDir() string {
+	return path.Dir(c.binName)
+}
+
+// WorkDir get work dirname
 func (c *cmdLine) WorkDir() string {
 	return c.workDir
 }

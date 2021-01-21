@@ -31,6 +31,8 @@ const (
 	// EvtStop   = "stop"
 )
 
+const maxFunc = 64
+
 // GlobalOpts global flags
 type GlobalOpts struct {
 	verbose  uint // message report level
@@ -52,17 +54,17 @@ type GlobalOpts struct {
 	inCompletion bool
 }
 
-// Runner interface
+// Runner /Executor interface
 type Runner interface {
 	// Config(c *Command)
 	Run(c *Command, args []string) error
 }
 
-// CmdFunc definition
-type CmdFunc func(c *Command, args []string) error
+// RunnerFunc definition
+type RunnerFunc func(c *Command, args []string) error
 
 // Run implement the Runner interface
-func (f CmdFunc) Run(c *Command, args []string) error {
+func (f RunnerFunc) Run(c *Command, args []string) error {
 	return f(c, args)
 }
 
@@ -70,18 +72,27 @@ func (f CmdFunc) Run(c *Command, args []string) error {
 type Commander interface {
 	// Creator for create new command
 	Creator() *Command
-	// Prepare bind Flags or Arguments for the command
-	Prepare(c *Command)
+	// Config bind Flags or Arguments for the command
+	Config(c *Command)
 	// Execute(c *Command, args []string) error
 	Run(c *Command, args []string) error
 }
 
-// Executor definition
-type Executor interface {
+// router struct definition TODO refactoring
+type router struct {
+
 }
 
-// Executor definition
-type RunningAble struct {
+// HandlersChain middleware handlers chain definition
+type HandlersChain []RunnerFunc
+
+// Last returns the last handler in the chain. ie. the last handler is the main own.
+func (c HandlersChain) Last() RunnerFunc {
+	length := len(c)
+	if length > 0 {
+		return c[length-1]
+	}
+	return nil
 }
 
 /*************************************************************************

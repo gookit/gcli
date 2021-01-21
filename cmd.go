@@ -22,6 +22,21 @@ type Command struct {
 	// // Hooks can allow setting some hooks func on running.
 	// Hooks // allowed hooks: "init", "before", "after", "error"
 
+	// --- for middleware ---
+	// run error
+	runErr error
+	// middleware index number
+	middleIdx int8
+	// middleware functions
+	middles HandlersChain
+
+	// Parent parent command
+	parent *Command
+	// Subs sub commands of the Command
+	Subs []*Command
+	// mapping sub-command.name => Subs.index of the Subs
+	subName2index map[string]int
+
 	// Name is the full command name.
 	Name string
 	// module is the name for grouped commands
@@ -35,23 +50,21 @@ type Command struct {
 	// Config func, will call on `initialize`.
 	// - you can config options and other init works
 	Config func(c *Command)
-	// Flags(command options) is a set of flags specific to this command.
-	// Flags flag.FlagSet
 	// Examples some usage example display
 	Examples string
 	// Func is the command handler func. Func Runner
-	Func CmdFunc
+	Func RunnerFunc
 	// Help is the long help message text
 	Help string
 	// HelpRender custom render cmd help message
 	HelpRender func(c *Command)
 
-	// CustomFlags indicates that the command will do its own flag parsing.
-	CustomFlags bool
+	// Flags options for the command
+	Flags
 	// Arguments for the command
 	Arguments
-	// Flags options for the command.
-	Flags
+	// CustomFlags indicates that the command will do its own flag parsing.
+	CustomFlags bool
 
 	// application
 	app *App
@@ -86,7 +99,7 @@ func NewCommand(name, useFor string, fn ...func(c *Command)) *Command {
 }
 
 // SetFunc Settings command handler func
-func (c *Command) SetFunc(fn CmdFunc) *Command {
+func (c *Command) SetFunc(fn RunnerFunc) *Command {
 	c.Func = fn
 	return c
 }
@@ -194,6 +207,44 @@ func (c *Command) goodName() string {
 }
 
 /*************************************************************
+ * parent and subs
+ *************************************************************/
+
+// Parent get parent
+func (c *Command) Parent() *Command {
+	return c.parent
+}
+
+// SetParent set parent
+func (c *Command) SetParent(parent *Command) {
+	c.parent = parent
+}
+
+// find sub command by name
+func (c *Command) findSub(name string) *Command {
+	if index, ok := c.subName2index[name]; ok {
+		return c.Subs[index]
+	}
+
+	return nil
+}
+
+// Next processing, run all middleware handlers
+func (c *Command) Next() {
+	c.middleIdx++
+	s := int8(len(c.middles))
+
+	for ; c.middleIdx < s; c.middleIdx++ {
+		err := c.middles[c.middleIdx](c, c.RawArgs())
+		// will abort on error
+		if err != nil {
+			c.runErr = err
+			return
+		}
+	}
+}
+
+/*************************************************************
  * command run
  *************************************************************/
 
@@ -216,6 +267,7 @@ func (c *Command) parseFlags(args []string) (ss []string, err error) {
 		return
 	}
 
+	// remaining args
 	return c.Flags.RawArgs(), nil
 }
 

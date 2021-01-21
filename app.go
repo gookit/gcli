@@ -282,7 +282,7 @@ func (app *App) AddCommander(cmder Commander) *Command {
 	c.Func = cmder.Run
 
 	// binding flags
-	cmder.Prepare(c)
+	cmder.Config(c)
 	return app.AddCommand(c)
 }
 

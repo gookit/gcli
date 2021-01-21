@@ -325,7 +325,7 @@ func (uc *UserCommand) Creator() *gcli.Command {
 	return gcli.NewCommand("test", "desc message")
 }
 
-func (uc *UserCommand) Prepare(c *gcli.Command) {
+func (uc *UserCommand) Config(c *gcli.Command) {
 	c.StrOpt(&uc.opt1, "opt", "o", "", "desc")
 }
 
