@@ -113,7 +113,7 @@ func (app *App) Run() (code int) {
 	args := app.cleanArgs
 	name := app.ResolveName(app.rawName)
 
-	Logf(VerbDebug, "input command: '<cyan>%s</>', real command: '<mga>%s</>', flags: %v", app.rawName, name, args)
+	Debugf("input command: '<cyan>%s</>', real command: '<mga>%s</>', flags: %v", app.rawName, name, args)
 
 	// display unknown input command and similar commands tips
 	if !app.IsCommand(name) {
@@ -125,11 +125,13 @@ func (app *App) Run() (code int) {
 	// do run input command
 	code = app.doRun(name, args)
 
-	Logf(VerbDebug, "command '%s' run complete, exit with code: %d", name, code)
+	Debugf("command '%s' run complete, exit with code: %d", name, code)
 	return app.exitIfExitOnEnd(code)
 }
 
 func (app *App) exitIfExitOnEnd(code int) int {
+	Debugf("application exit with code %d", code)
+
 	if app.ExitOnEnd {
 		app.Exit(code)
 	}
@@ -241,6 +243,8 @@ Use "<cyan>{$binName} {COMMAND} -h</>" for more information about a command
 
 // display app version info
 func (app *App) showVersionInfo() {
+	Debugf("print application version info")
+
 	color.Printf(
 		"%s\n\nVersion: <cyan>%s</>\n",
 		strutil.UpperFirst(app.Description),
@@ -254,6 +258,8 @@ func (app *App) showVersionInfo() {
 
 // display unknown input command and similar commands tips
 func (app *App) showCommandTips(name string) {
+	Debugf("show similar command tips")
+
 	color.Error.Tips(`unknown input command "<mga>%s</>"`, name)
 	if ns := app.findSimilarCmd(name); len(ns) > 0 {
 		color.Printf("\nMaybe you mean:\n  <green>%s</>\n", strings.Join(ns, ", "))
@@ -264,6 +270,8 @@ func (app *App) showCommandTips(name string) {
 
 // display app help and list all commands
 func (app *App) showApplicationHelp() {
+	Debugf("render application commands list")
+
 	// cmdHelpTemplate = color.ReplaceTag(cmdHelpTemplate)
 	// render help text template
 	s := helper.RenderText(AppHelpTemplate, map[string]interface{}{

@@ -31,7 +31,17 @@ var level2color = map[uint]color.Color{
 }
 
 // Logf print log message
+func Debugf(format string, v ...interface{}) {
+	logf(VerbDebug, format, v...)
+}
+
+// Logf print log message
 func Logf(level uint, format string, v ...interface{}) {
+	logf(level, format, v...)
+}
+
+// print log message
+func logf(level uint, format string, v ...interface{}) {
 	if gOpts.verbose < level {
 		return
 	}
@@ -42,7 +52,7 @@ func Logf(level uint, format string, v ...interface{}) {
 		name, level = "CRAZY", VerbCrazy
 	}
 
-	pc, fName, line, ok := runtime.Caller(1)
+	pc, fName, line, ok := runtime.Caller(2)
 	if !ok {
 		fnName, fName, line = "UNKNOWN", "???.go", 0
 	} else {
@@ -51,7 +61,7 @@ func Logf(level uint, format string, v ...interface{}) {
 	}
 
 	name = level2color[level].Render(name)
-	color.Printf("GCli: [%s] [%s() At %s:%d] %s\n", name, fnName, fName, line, fmt.Sprintf(format, v...))
+	color.Printf("GCli: [%s] [%s(), %s:%d] %s\n", name, fnName, fName, line, fmt.Sprintf(format, v...))
 }
 
 func defaultErrHandler(data ...interface{}) {

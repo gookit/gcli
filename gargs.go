@@ -89,7 +89,7 @@ func (ags *Arguments) ParseArgs(args []string) (err error) {
 // Notice:
 // 	- Required argument cannot be defined after optional argument
 //  - Only one array parameter is allowed
-// 	- The (array) argument of multiple values ​​can only be defined at the end
+// 	- The (array) argument of multiple values can only be defined at the end
 //
 // Usage:
 // 	cmd.AddArg("name", "description")
@@ -117,7 +117,7 @@ func (ags *Arguments) BindArg(arg Argument) *Argument {
 // Notice:
 // 	- Required argument cannot be defined after optional argument
 //  - Only one array parameter is allowed
-// 	- The (array) argument of multiple values ​​can only be defined at the end
+// 	- The (array) argument of multiple values can only be defined at the end
 //
 func (ags *Arguments) AddArgument(arg *Argument) *Argument {
 	if ags.argsIndexes == nil {
