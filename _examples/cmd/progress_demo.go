@@ -21,7 +21,7 @@ var pd = &progressDemo{}
 func ProgressDemoCmd() *gcli.Command {
 	c := &gcli.Command{
 		Name:    "prog",
-		UseFor:  "there are some progress bar run demos",
+		Desc:    "there are some progress bar run demos",
 		Aliases: []string{"prg:demo", "progress"},
 		Func:    pd.Run,
 		Config: func(c *gcli.Command) {

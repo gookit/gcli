@@ -17,7 +17,7 @@ func SpinnerDemoCmd() *gcli.Command {
 
 	return &gcli.Command{
 		Name:    "spinner",
-		UseFor:  "there are some CLI spinner bar run demos",
+		Desc:    "there are some CLI spinner bar run demos",
 		Aliases: []string{"spr", "spr:demo"},
 		Func:    sd.Run,
 		Config: func(c *gcli.Command) {

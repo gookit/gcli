@@ -16,7 +16,7 @@ func InteractDemoCommand() *gcli.Command {
 		Name:    "interact",
 		Func:    interactDemo,
 		Aliases: []string{"itt"},
-		UseFor:  "the command will show some interactive methods",
+		Desc:    "the command will show some interactive methods",
 		Examples: `{$fullCmd} confirm
   {$fullCmd} select
 `,

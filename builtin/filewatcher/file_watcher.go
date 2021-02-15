@@ -29,7 +29,7 @@ func FileWatcher(handler func(event fsnotify.Event)) *gcli.Command {
 		Name: "watch",
 		Func: watch,
 
-		UseFor: "file system change notification, by fsnotify",
+		Desc: "file system change notification, by fsnotify",
 
 		Aliases: []string{"fwatch", "fswatch"},
 		Examples: `watch a dir:

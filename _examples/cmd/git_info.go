@@ -26,7 +26,7 @@ func GitCommand() *gcli.Command {
 	cmd := gcli.Command{
 		Name:    "git:info",
 		Aliases: []string{"git-info"},
-		UseFor:  "collect project latest commit info by git log command",
+		Desc:    "collect project latest commit info by git log command",
 
 		Func: gitExecute,
 	}

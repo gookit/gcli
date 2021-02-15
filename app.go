@@ -6,7 +6,7 @@ import (
 )
 
 // Version the gCli version
-var Version = "2.2.1"
+var Version = "3.0.1"
 
 /*************************************************************
  * CLI application
@@ -35,10 +35,10 @@ type App struct {
 
 	// Name app name
 	Name string
+	// Desc app description
+	Desc string
 	// Version app version. like "1.0.1"
 	Version string
-	// Description app description
-	Description string
 	// Logo ASCII logo setting
 	Logo Logo
 	// Args default is equals to os.args
@@ -108,8 +108,8 @@ func NewApp(fn ...func(a *App)) *App {
 		// group
 		moduleCommands: make(map[string]map[string]*Command),
 		// some default values
-		nameMaxLen:  12,
-		Description: "This is my CLI application",
+		nameMaxLen: 12,
+		Desc:       "This is my CLI application",
 	}
 
 	if len(fn) > 0 {

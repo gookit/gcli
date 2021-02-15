@@ -8,7 +8,7 @@ func ShowDemoCommand() *gcli.Command {
 		Name: "show",
 		Func: runShow,
 		//
-		UseFor: "the command will show some data format methods",
+		Desc: "the command will show some data format methods",
 	}
 
 	return c

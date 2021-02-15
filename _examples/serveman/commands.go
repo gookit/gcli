@@ -31,8 +31,8 @@ var (
 // eg: cliapp serve:start
 func ServerStart() *gcli.Command {
 	c := &gcli.Command{
-		Name:   "start",
-		UseFor: "start server",
+		Name: "start",
+		Desc: "start server",
 		Func: func(c *gcli.Command, args []string) error {
 			return startServer(c.BinName())
 		},
@@ -67,8 +67,8 @@ func startServer(binFile string) (err error) {
 
 func ServerStop() *gcli.Command {
 	c := &gcli.Command{
-		Name:   "stop",
-		UseFor: "stop the running server(by PID file)",
+		Name: "stop",
+		Desc: "stop the running server(by PID file)",
 	}
 
 	c.Func = func(_ *gcli.Command, _ []string) error {
@@ -90,8 +90,8 @@ func stopServer() error {
 // ServerRestart Server restart
 func ServerRestart() *gcli.Command {
 	return &gcli.Command{
-		Name:   "restart",
-		UseFor: "restart the running server by PID file",
+		Name: "restart",
+		Desc: "restart the running server by PID file",
 		Func: func(c *gcli.Command, _ []string) (err error) {
 			// c.App().SubRun("stop", []string{"-c", confFile})
 			if err = stopServer(); err != nil {

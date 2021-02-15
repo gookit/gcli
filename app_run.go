@@ -226,7 +226,7 @@ func (app *App) CommandNames() []string {
  *************************************************************/
 
 // AppHelpTemplate help template for app(all commands)
-var AppHelpTemplate = `{{.Description}} (Version: <info>{{.Version}}</>)
+var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
 <comment>Usage:</>
   {$binName} [Global Options...] <info>{command}</> [--option ...] [argument ...]
 
@@ -234,7 +234,7 @@ var AppHelpTemplate = `{{.Description}} (Version: <info>{{.Version}}</>)
 {{.GOpts}}
 <comment>Available Commands:</>{{range $module, $cs := .Cs}}{{if $module}}
 <comment> {{ $module }}</>{{end}}{{ range $cs }}
-  <info>{{.Name | paddingName }}</> {{.UseFor}}{{if .Aliases}} (alias: <cyan>{{ join .Aliases ","}}</>){{end}}{{end}}{{end}}
+  <info>{{.Name | paddingName }}</> {{.Desc}}{{if .Aliases}} (alias: <cyan>{{ join .Aliases ","}}</>){{end}}{{end}}{{end}}
 
   <info>{{ paddingName "help" }}</> Display help information
 
@@ -247,7 +247,7 @@ func (app *App) showVersionInfo() {
 
 	color.Printf(
 		"%s\n\nVersion: <cyan>%s</>\n",
-		strutil.UpperFirst(app.Description),
+		strutil.UpperFirst(app.Desc),
 		app.Version,
 	)
 
@@ -280,7 +280,7 @@ func (app *App) showApplicationHelp() {
 		// app version
 		"Version": app.Version,
 		// always upper first char
-		"Description": strutil.UpperFirst(app.Description),
+		"Desc": strutil.UpperFirst(app.Desc),
 	}, template.FuncMap{
 		"paddingName": func(n string) string {
 			return strutil.PadRight(n, " ", app.nameMaxLen)

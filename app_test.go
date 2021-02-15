@@ -12,8 +12,8 @@ import (
 
 var (
 	emptyCmd = &gcli.Command{
-		Name:   "empty",
-		UseFor: "an test command",
+		Name: "empty",
+		Desc: "an test command",
 	}
 )
 
@@ -58,7 +58,7 @@ func TestApp_Add(t *testing.T) {
 	}))
 	app.AddCommand(&gcli.Command{
 		Name:    "m1:c3",
-		UseFor:  "{$cmd} desc",
+		Desc:    "{$cmd} desc",
 		Aliases: []string{"alias1"},
 		Config: func(c *gcli.Command) {
 			is.Equal("m1:c3", c.Name)
@@ -111,7 +111,7 @@ func TestApp_AddAliases(t *testing.T) {
 
 	cmd := &gcli.Command{
 		Name:    "test",
-		UseFor:  "the desc",
+		Desc:    "the desc",
 		Aliases: []string{"alias1"},
 	}
 	app.AddCommand(cmd)
@@ -159,8 +159,8 @@ func TestApp_Run(t *testing.T) {
 
 	var argStr, cmdRet string
 	app.Add(&gcli.Command{
-		Name:   "test",
-		UseFor: "desc for test command",
+		Name: "test",
+		Desc: "desc for test command",
 		Config: func(c *gcli.Command) {
 			c.AddArg("arg0", "desc")
 			c.Add(gcli.Argument{Name: "arg1", Desc: "desc1"})
@@ -247,7 +247,7 @@ func TestApp_showVersion(t *testing.T) {
 	app := gcli.NewApp(func(a *gcli.App) {
 		a.ExitOnEnd = false
 		a.Version = "1.3.9"
-		a.Description = "application desc"
+		a.Desc = "application desc"
 		a.Logo = gcli.Logo{
 			Text:  "MY-LOGO",
 			Style: "info",

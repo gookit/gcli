@@ -19,7 +19,7 @@ func main() {
 	cmd := gcli.Command{
 		Name:    "test",
 		Aliases: []string{"ts"},
-		UseFor:  "this is a description <info>message</> for {$cmd}", // // {$cmd} will be replace to 'test'
+		Desc:    "this is a description <info>message</> for {$cmd}", // // {$cmd} will be replace to 'test'
 	}
 
 	cmd.BoolOpt(&opts.visualMode, "visual", "v", false, "Prints the font name.")

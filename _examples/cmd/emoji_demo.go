@@ -11,7 +11,7 @@ import (
 func EmojiDemoCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "emoji",
-		UseFor:  "this is a emoji usage example command",
+		Desc:    "this is a emoji usage example command",
 		Aliases: []string{"emoj"},
 		Config: func(c *gcli.Command) {
 			c.AddArg("subcmd", "The name of the subcommand you want to run. allow: render, search", true)

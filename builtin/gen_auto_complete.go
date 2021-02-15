@@ -40,7 +40,7 @@ func GenAutoComplete() *gcli.Command {
 		Name:    "genac",
 		Aliases: []string{"gen-ac"},
 		// des
-		UseFor: "generate auto complete scripts for current application",
+		Desc: "generate auto complete scripts for current application",
 	}
 
 	genOpts._selfName = c.Name
@@ -281,7 +281,7 @@ func buildForZshShell(app *gcli.App, data map[string]interface{}) map[string]int
 		if n == genOpts._selfName {
 			continue
 		}
-		nameDes[c.Name] = fmtDes(c.UseFor) + "(alias " + c.AliasesString() + ")"
+		nameDes[c.Name] = fmtDes(c.Desc) + "(alias " + c.AliasesString() + ")"
 
 		ops := c.FlagNames()
 		oplen := len(ops)

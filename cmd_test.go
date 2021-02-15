@@ -97,12 +97,12 @@ func TestCommand_RunWithSubs(t *testing.T) {
 	// l0: root command
 	r := &gcli.Command{
 		Name: "git",
-		UseFor: "git usage",
+		Desc: "git usage",
 		Subs: []*gcli.Command{
 			// l1: sub command 1
 			{
 				Name: "add",
-				UseFor: "add command for git",
+				Desc: "add command for git",
 				Func: func (c *gcli.Command, args []string) error {
 					c.Println(c.Name)
 					return nil
@@ -111,7 +111,7 @@ func TestCommand_RunWithSubs(t *testing.T) {
 			// l1: sub command 2
 			{
 				Name: "remote",
-				UseFor: "remote command for git",
+				Desc: "remote command for git",
 				Func: func (c *gcli.Command, args []string) error {
 					c.Println(c.Name)
 					return nil
@@ -120,7 +120,7 @@ func TestCommand_RunWithSubs(t *testing.T) {
 					// l2: sub command 3
 					{
 						Name: "add",
-						UseFor: "add command for git remote",
+						Desc: "add command for git remote",
 						Func: func (c *gcli.Command, args []string) error {
 							c.Println(c.Name)
 							return nil

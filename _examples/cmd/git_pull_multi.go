@@ -17,7 +17,7 @@ import (
 // GitPullMulti use git pull for update multi project
 var GitPullMulti = &gcli.Command{
 	Name:    "git:pull",
-	UseFor:  "use git pull for update multi project",
+	Desc:    "use git pull for update multi project",
 	Aliases: []string{"git-pull"},
 	Config: func(c *gcli.Command) {
 		c.AddArg(

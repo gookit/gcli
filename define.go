@@ -83,6 +83,17 @@ type router struct {
 
 }
 
+type command struct {
+	// Name of the command
+	Name string
+	// Desc is the description message.
+	Desc string
+	// the max length for added command names. default set 12.
+	nameMaxLen int
+	// default command name
+	defaultCommand string
+}
+
 // will inject to every Command
 type commandGroup struct {
 	// Subs sub commands of the Command

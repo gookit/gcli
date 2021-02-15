@@ -36,7 +36,7 @@ func ExampleCommand() *gcli.Command {
 		Func:    exampleExecute,
 		Name:    "module:example",
 		Aliases: []string{"module:exp", "exp", "ex"},
-		UseFor:  "this is command description message",
+		Desc:    "this is command description message",
 		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
 		Examples: `
   {$binName} {$cmd} --id 12 -c val ag0 ag1

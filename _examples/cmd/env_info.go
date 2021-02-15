@@ -22,7 +22,7 @@ func EnvInfoCommand() *gcli.Command {
 	cmd := gcli.Command{
 		Name:    "module:env",
 		Aliases: []string{"env-info", "ei"},
-		UseFor:  "collect project info by git info",
+		Desc:    "collect project info by git info",
 
 		Func: envInfoRun,
 	}

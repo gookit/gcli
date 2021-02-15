@@ -19,7 +19,7 @@ import (
 func main() {
 	app := gcli.NewApp(func(app *gcli.App) {
 		app.Version = "1.0.6"
-		app.Description = "this is my cli application"
+		app.Desc = "this is my cli application"
 		app.On(gcli.EvtAppInit, func(data ...interface{}) {
 			// do something...
 			// fmt.Println("init app")
@@ -57,7 +57,7 @@ func main() {
 	app.Add(&gcli.Command{
 		Name:    "test",
 		Aliases: []string{"ts"},
-		UseFor:  "this is a description <info>message</> for command {$cmd}",
+		Desc:    "this is a description <info>message</> for command {$cmd}",
 		Func: func(cmd *gcli.Command, args []string) error {
 			gcli.Print("hello, in the test command\n")
 			return nil

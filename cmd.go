@@ -43,8 +43,8 @@ type Command struct {
 	// subName is the name for grouped commands
 	// eg: "sys:info" -> module: "sys", subName: "info"
 	module, subName string
-	// UseFor is the command description message.
-	UseFor string
+	// Desc is the command description message.
+	Desc string
 	// Aliases is the command name's alias names
 	Aliases []string
 	// Config func, will call on `initialize`.
@@ -84,8 +84,8 @@ type Command struct {
 // 	app.Add(cmd) // OR cmd.AttachTo(app)
 func NewCommand(name, useFor string, fn ...func(c *Command)) *Command {
 	c := &Command{
-		Name:   name,
-		UseFor: useFor,
+		Name: name,
+		Desc: useFor,
 	}
 
 	// has config func
@@ -142,12 +142,12 @@ func (c *Command) initialize() *Command {
 	}
 
 	// format description
-	if len(c.UseFor) > 0 {
-		c.UseFor = strutil.UpperFirst(c.UseFor)
+	if len(c.Desc) > 0 {
+		c.Desc = strutil.UpperFirst(c.Desc)
 
 		// contains help var "{$cmd}". replace on here is for 'app help'
-		if strings.Contains(c.UseFor, "{$cmd}") {
-			c.UseFor = strings.Replace(c.UseFor, "{$cmd}", c.Name, -1)
+		if strings.Contains(c.Desc, "{$cmd}") {
+			c.Desc = strings.Replace(c.Desc, "{$cmd}", c.Name, -1)
 		}
 	}
 
@@ -409,7 +409,7 @@ func (c *Command) Run(inArgs []string) (err error) {
  *************************************************************/
 
 // CmdHelpTemplate help template for a command
-var CmdHelpTemplate = `{{.UseFor}}
+var CmdHelpTemplate = `{{.Desc}}
 {{if .Cmd.NotAlone}}
 <comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.AliasesString}}</>){{end}}{{end}}
 <comment>Usage:</> {$binName} [Global Options...] {{if .Cmd.NotAlone}}<info>{{.Cmd.Name}}</> {{end}}[--option ...] [arguments ...]
@@ -452,7 +452,7 @@ func (c *Command) ShowHelp() {
 		// parse options to string
 		"Options": c.Flags.String(),
 		// always upper first char
-		"UseFor": c.UseFor,
+		"Desc": c.Desc,
 	}, nil)
 
 	// parse help vars then print help
