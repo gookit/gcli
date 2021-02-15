@@ -1,5 +1,4 @@
 //+build !windows
-
 package helper
 
 import (

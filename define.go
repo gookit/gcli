@@ -83,6 +83,17 @@ type router struct {
 
 }
 
+// will inject to every Command
+type commandGroup struct {
+	// Subs sub commands of the Command
+	Subs []*Command
+	// mapping sub-command.name => Subs.index of the Subs
+	subName2index map[string]int
+
+	// all commands for the group
+	commands map[string]*Command
+}
+
 // HandlersChain middleware handlers chain definition
 type HandlersChain []RunnerFunc
 

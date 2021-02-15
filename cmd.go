@@ -215,6 +215,15 @@ func (c *Command) Parent() *Command {
 	return c.parent
 }
 
+// Root get root command
+func (c *Command) Root() *Command {
+	if c.parent != nil {
+		return c.parent.Root()
+	}
+
+	return c
+}
+
 // SetParent set parent
 func (c *Command) SetParent(parent *Command) {
 	c.parent = parent
