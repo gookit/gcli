@@ -11,3 +11,8 @@ require (
 	golang.org/x/sys v0.0.0-20210119212857-b64e53b001e4 // indirect
 	golang.org/x/term v0.0.0-20201210144234-2321bbc49cbf // indirect
 )
+
+// for develop
+replace (
+	github.com/gookit/goutil => ../goutil
+)

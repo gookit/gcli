@@ -29,7 +29,8 @@ const (
 	// match an good option, argument name
 	regGoodName = `^[a-zA-Z][\w-]*$`
 	// match an good command name
-	regGoodCmdName = `^[a-zA-Z][\w:-]*$`
+	// regGoodCmdName = `^[a-zA-Z][\w:-]*$`
+	regGoodCmdName = `^[a-zA-Z][\w-]*$`
 )
 
 var (

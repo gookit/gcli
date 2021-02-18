@@ -2,6 +2,7 @@ package gcli_test
 
 import (
 	"bytes"
+	"fmt"
 	"strings"
 	"testing"
 
@@ -14,6 +15,14 @@ var (
 	emptyCmd = &gcli.Command{
 		Name: "empty",
 		Desc: "an test command",
+	}
+	simpleCmd = &gcli.Command{
+		Name: "simple",
+		Desc: "an simple command",
+		Func: func(c *gcli.Command, args []string) error {
+			fmt.Println(c.Path(), args)
+			return nil
+		},
 	}
 )
 
@@ -46,9 +55,14 @@ func TestStdApp(t *testing.T) {
 	}
 	app.Exit(255)
 
-	app = gcli.NewApp(func(a *gcli.App) {
+}
+
+func TestApp_New(t *testing.T) {
+	// is := assert.New(t)
+	app := gcli.NewApp(func(a *gcli.App) {
 
 	})
+	app.AddCommand(simpleCmd)
 }
 
 func TestApp_Add(t *testing.T) {
@@ -333,6 +347,6 @@ func (uc *UserCommand) Config(c *gcli.Command) {
 	c.StrOpt(&uc.opt1, "opt", "o", "", "desc")
 }
 
-func (uc *UserCommand) Run(c *gcli.Command, args []string) error {
+func (uc *UserCommand) Execute(c *gcli.Command, args []string) error {
 	return nil
 }

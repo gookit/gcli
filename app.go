@@ -2,7 +2,6 @@ package gcli
 
 import (
 	"os"
-	"strings"
 )
 
 // Version the gCli version
@@ -39,7 +38,7 @@ type App struct {
 	// Desc app description
 	Desc string
 	// Version app version. like "1.0.1"
-	Version string
+	// Version string
 	// Logo ASCII logo setting
 	Logo Logo
 	// Args default is equals to os.args
@@ -72,8 +71,6 @@ type App struct {
 	cleanArgs []string
 	// current command name
 	commandName string
-	// Whether it has been initialized
-	initialized bool
 }
 
 // NewApp create new app instance.
@@ -84,25 +81,14 @@ type App struct {
 // 		// do something before init ....
 // 		a.Hooks[gcli.EvtInit] = func () {}
 // 	})
-func NewApp(fn ...func(a *App)) *App {
+func NewApp(fn ...func(app *App)) *App {
 	app := &App{
 		Args: os.Args,
 		Name: "GCli App",
-		Desc: "This is my CLI application",
+		Desc: "This is my console application",
 		Logo: Logo{Style: "info"},
 		// set a default version
-		Version: "1.0.0",
-		// internal
-		// cmdLine: CLI,
-		core: core{
-			cmdLine: CLI,
-			gFlags: NewFlags("app.GlobalOpts").WithOption(FlagsOption{
-				WithoutType: true,
-				NameDescOL:  true,
-				Alignment:   AlignLeft,
-				TagName:     FlagTagName,
-			}),
-		},
+		// Version: "1.0.0",
 		// config
 		ExitOnEnd: true,
 		// commands
@@ -112,6 +98,21 @@ func NewApp(fn ...func(a *App)) *App {
 		// some default values
 		nameMaxLen: 12,
 	}
+
+	// set a default version
+	app.Version = "1.0.0"
+	// internal core
+	app.core = core{
+		cmdLine: CLI,
+		gFlags: NewFlags("app.GlobalOpts").WithOption(FlagsOption{
+			WithoutType: true,
+			NameDescOL:  true,
+			Alignment:   AlignLeft,
+			TagName:     FlagTagName,
+		}),
+	}
+	// init commandBase
+	app.commandBase = newCommandBase()
 
 	if len(fn) > 0 {
 		fn[0](app)
@@ -188,26 +189,6 @@ func (app *App) SetLogo(logo string, style ...string) {
 	}
 }
 
-// SetDebugMode level
-func (app *App) SetDebugMode() {
-	SetDebugMode()
-}
-
-// SetQuietMode level
-func (app *App) SetQuietMode() {
-	SetQuietMode()
-}
-
-// SetVerbose level
-func (app *App) SetVerbose(verbose uint) {
-	SetVerbose(verbose)
-}
-
-// DefaultCommand set default command name
-func (app *App) DefaultCommand(name string) {
-	app.defaultCommand = name
-}
-
 // NewCommand create a new command
 func (app *App) NewCommand(name, useFor string, config func(c *Command)) *Command {
 	return NewCommand(name, useFor, config)
@@ -225,66 +206,30 @@ func (app *App) Add(c *Command, more ...*Command) {
 	}
 }
 
-// AddCommand add a new command
-func (app *App) AddCommand(c *Command) *Command {
-	// validate command name
-	cName := c.goodName()
-	if _, ok := app.aliases[cName]; ok {
-		panicf("The name '%s' is already used as an alias", cName)
-	}
-
-	if c.IsDisabled() {
-		Logf(VerbDebug, "command '%s' has been disabled, skip add", cName)
-		return c
-	}
-
+// AddCommand add a new command to the app
+func (app *App) AddCommand(c *Command) {
 	// initialize application
 	if !app.initialized {
 		app.initialize()
 	}
 
-	// check and find module name
-	if i := strings.IndexByte(cName, ':'); i > 0 {
-		c.module = c.Name[:i]
-		c.subName = c.Name[i+1:]
-	}
-
-	nameLen := len(cName)
-
-	// add command to app
-	app.names[cName] = nameLen
-	app.commands[cName] = c
-
-	// record command name max length
-	if nameLen > app.nameMaxWidth {
-		app.nameMaxWidth = nameLen
-	}
-
-	if _, ok := app.moduleCommands[c.module]; !ok {
-		app.moduleCommands[c.module] = make(map[string]*Command)
-	}
-	app.moduleCommands[c.module][c.Name] = c
-
-	// add aliases for the command
-	app.addAliases(c.Name, c.Aliases, false)
-	Logf(VerbDebug, "register a new CLI command: %s", cName)
-
 	// init command
 	c.app = app
 	// inherit global flags from application
 	c.core.gFlags = app.gFlags
-	c.initialize()
-	return c
+
+	// do add
+	app.commandBase.addCommand(c)
 }
 
 // AddCommander to the application
-func (app *App) AddCommander(cmder Commander) *Command {
+func (app *App) AddCommander(cmder Commander) {
 	c := cmder.Creator()
-	c.Func = cmder.Run
+	c.Func = cmder.Execute
 
 	// binding flags
 	cmder.Config(c)
-	return app.AddCommand(c)
+	app.AddCommand(c)
 }
 
 // ResolveName get real command name by alias
@@ -294,27 +239,6 @@ func (app *App) ResolveName(alias string) string {
 	}
 
 	return alias
-}
-
-// RealCommandName get real command name by alias
-// Deprecated
-func (app *App) RealCommandName(alias string) string {
-	if name, has := app.aliases[alias]; has {
-		return name
-	}
-
-	return alias
-}
-
-// IsCommand name check
-func (app *App) IsCommand(name string) bool {
-	_, has := app.names[name]
-	return has
-}
-
-// HasCommand in the application
-func (app *App) HasCommand(name string) bool {
-	return app.IsCommand(name)
 }
 
 // RemoveCommand from the application
@@ -405,11 +329,6 @@ func (app *App) fireEvent(event string, data interface{}) {
 // func stop(code int) {
 // 	os.Exit(code)
 // }
-
-// AddError to the application
-func (app *App) AddError(err error) {
-	app.errors = append(app.errors, err)
-}
 
 // Names get all command names
 func (app *App) Names() map[string]int {

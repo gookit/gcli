@@ -21,15 +21,13 @@ type Command struct {
 	// HelpVars
 	// // Hooks can allow setting some hooks func on running.
 	// Hooks // allowed hooks: "init", "before", "after", "error"
+	commandBase
 
 	// Name is the full command name.
 	Name string
 	// Desc is the command description message.
 	Desc string
-	// Logo ASCII logo setting
-	Logo Logo
-	// Version app version. like "1.0.1"
-	Version string
+
 	// Aliases is the command name's alias names
 	Aliases []string
 	// Config func, will call on `initialize`.
@@ -44,6 +42,9 @@ type Command struct {
 	// middleware functions
 	middles HandlersChain
 	// errorHandler // loop find parent.errorHandler
+
+	// path of the command. 'parent current'
+	path string
 
 	// Parent parent command
 	parent *Command
@@ -98,10 +99,10 @@ type Command struct {
 //	// OR with an config func
 // 	cmd := NewCommand("my-cmd", "description", func(c *Command) { ... })
 // 	app.Add(cmd) // OR cmd.AttachTo(app)
-func NewCommand(name, useFor string, fn ...func(c *Command)) *Command {
+func NewCommand(name, desc string, fn ...func(c *Command)) *Command {
 	c := &Command{
 		Name: name,
-		Desc: useFor,
+		Desc: desc,
 	}
 
 	// has config func
@@ -125,6 +126,11 @@ func (c *Command) AttachTo(app *App) {
 	app.AddCommand(c)
 }
 
+// Path get command path
+func (c *Command) Path() string {
+	return c.path
+}
+
 // Disable set cmd is disabled
 func (c *Command) Disable() {
 	c.disabled = true
@@ -141,9 +147,29 @@ func (c *Command) Runnable() bool {
 	return c.Func != nil
 }
 
+// AddCommand add a sub command
+func (c *Command) AddCommand(sub *Command) {
+	// initialize command
+	if !c.initialized {
+		c.initialize()
+	}
+
+	// init command
+	sub.parent = c
+	// inherit global flags from application
+	sub.core.gFlags = c.gFlags
+
+	// do add
+	c.commandBase.addCommand(c)
+}
+
 // initialize works for the command
 func (c *Command) initialize() *Command {
+	c.initialized = true
 	c.core.cmdLine = CLI
+
+	// init commandBase
+	c.commandBase = newCommandBase()
 
 	// init for cmd Arguments
 	c.Arguments.SetName(c.Name)
