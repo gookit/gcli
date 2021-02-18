@@ -37,10 +37,8 @@ type App struct {
 	Name string
 	// Desc app description
 	Desc string
-	// Version app version. like "1.0.1"
-	// Version string
 	// Logo ASCII logo setting
-	Logo Logo
+	// Logo Logo
 	// Args default is equals to os.args
 	Args []string
 	// ExitOnEnd call os.Exit on running end
@@ -60,12 +58,9 @@ type App struct {
 	commands map[string]*Command
 	// all commands by module
 	moduleCommands map[string]map[string]*Command
-	// the max length for added command names. default set 12.
-	nameMaxLen int
-	// default command name
-	defaultCommand string
+
 	// raw input command name
-	rawName     string
+	inputName   string
 	rawFlagArgs []string
 	// clean os.args, not contains bin-name and command-name
 	cleanArgs []string
@@ -86,7 +81,6 @@ func NewApp(fn ...func(app *App)) *App {
 		Args: os.Args,
 		Name: "GCli App",
 		Desc: "This is my console application",
-		Logo: Logo{Style: "info"},
 		// set a default version
 		// Version: "1.0.0",
 		// config
@@ -95,12 +89,9 @@ func NewApp(fn ...func(app *App)) *App {
 		commands: make(map[string]*Command),
 		// group
 		moduleCommands: make(map[string]map[string]*Command),
-		// some default values
-		nameMaxLen: 12,
+
 	}
 
-	// set a default version
-	app.Version = "1.0.0"
 	// internal core
 	app.core = core{
 		cmdLine: CLI,
@@ -113,6 +104,9 @@ func NewApp(fn ...func(app *App)) *App {
 	}
 	// init commandBase
 	app.commandBase = newCommandBase()
+	// set a default version
+	app.Version = "1.0.0"
+	app.SetLogo("", "info")
 
 	if len(fn) > 0 {
 		fn[0](app)
@@ -179,14 +173,6 @@ func (app *App) initialize() {
 
 	app.fireEvent(EvtAppInit, nil)
 	app.initialized = true
-}
-
-// SetLogo text and color style
-func (app *App) SetLogo(logo string, style ...string) {
-	app.Logo.Text = logo
-	if len(style) > 0 {
-		app.Logo.Style = style[0]
-	}
 }
 
 // NewCommand create a new command
@@ -267,12 +253,6 @@ func (app *App) removeCommand(name string) bool {
 	delete(app.names, name)
 	delete(app.commands, name)
 	return true
-}
-
-// IsAlias name check
-func (app *App) IsAlias(str string) bool {
-	_, has := app.aliases[str]
-	return has
 }
 
 // AddAliases add alias names for a command

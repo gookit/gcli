@@ -82,7 +82,7 @@ func (app *App) prepareRun() (code int) {
 		return app.showCommandHelp(args[1:])
 	}
 
-	app.rawName = args[0]
+	app.inputName = args[0]
 	app.cleanArgs = args[1:]
 	return GOON
 }
@@ -111,9 +111,9 @@ func (app *App) Run() (code int) {
 	Logf(VerbCrazy, "begin run console application, process ID: %d", app.PID())
 
 	args := app.cleanArgs
-	name := app.ResolveName(app.rawName)
+	name := app.cmdAliases.ResolveAlias(app.inputName)
 
-	Debugf("input command: '<cyan>%s</>', real command: '<mga>%s</>', flags: %v", app.rawName, name, args)
+	Debugf("input command: '<cyan>%s</>', real command: '<mga>%s</>', flags: %v", app.inputName, name, args)
 
 	// display unknown input command and similar commands tips
 	if !app.IsCommand(name) {
@@ -283,7 +283,7 @@ func (app *App) showApplicationHelp() {
 		"Desc": strutil.UpperFirst(app.Desc),
 	}, template.FuncMap{
 		"paddingName": func(n string) string {
-			return strutil.PadRight(n, " ", app.nameMaxLen)
+			return strutil.PadRight(n, " ", app.nameMaxWidth)
 		},
 	})
 

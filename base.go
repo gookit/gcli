@@ -2,11 +2,6 @@ package gcli
 
 import "github.com/gookit/goutil/maputil"
 
-// router struct definition TODO refactoring
-type router struct {
-
-}
-
 // will inject to every Command
 type commandBase struct {
 	// Logo ASCII logo setting
@@ -46,7 +41,14 @@ func newCommandBase() commandBase {
 		cmdNames: make(map[string]int),
 		name2idx: make(map[string]int),
 		cmdAliases: make(maputil.Aliases),
+
+		nameMaxWidth: 12,
 	}
+}
+
+// IsAlias name check
+func (b commandBase) IsAlias(alias string) bool {
+	return b.cmdAliases.HasAlias(alias)
 }
 
 // SetDefaultCommand set default sub-command name
@@ -104,6 +106,14 @@ func (b commandBase) addCommand(c *Command)  {
 	c.initialize()
 	// append
 	b.Cmds = append(b.Cmds, c)
+}
+
+// SetLogo text and color style
+func (b commandBase) SetLogo(logo string, style ...string) {
+	b.Logo.Text = logo
+	if len(style) > 0 {
+		b.Logo.Style = style[0]
+	}
 }
 
 // AddError to the application

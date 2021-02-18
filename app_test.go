@@ -63,6 +63,8 @@ func TestApp_New(t *testing.T) {
 
 	})
 	app.AddCommand(simpleCmd)
+
+	assert.True(t, app.HasCommand(simpleCmd.Name))
 }
 
 func TestApp_Add(t *testing.T) {
