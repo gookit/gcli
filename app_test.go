@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -45,6 +45,10 @@ func TestStdApp(t *testing.T) {
 		is.Equal(255, i)
 	}
 	app.Exit(255)
+
+	app = gcli.NewApp(func(a *gcli.App) {
+
+	})
 }
 
 func TestApp_Add(t *testing.T) {

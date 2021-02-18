@@ -4,8 +4,8 @@ import (
 	"os"
 	"runtime"
 
-	"github.com/gookit/gcli/v2"
-	"github.com/gookit/gcli/v2/show"
+	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/show"
 )
 
 // options for the command

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 )
 
 var colorOpts = struct {

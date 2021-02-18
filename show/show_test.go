@@ -5,7 +5,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/gookit/gcli/v2/show"
+	"github.com/gookit/gcli/v3/show"
 	"github.com/stretchr/testify/assert"
 )
 

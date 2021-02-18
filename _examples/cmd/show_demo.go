@@ -1,6 +1,6 @@
 package cmd
 
-import "github.com/gookit/gcli/v2"
+import "github.com/gookit/gcli/v3"
 
 // ShowDemoCommand create
 func ShowDemoCommand() *gcli.Command {

@@ -24,7 +24,7 @@ import (
 	"os/exec"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2/interact"
+	"github.com/gookit/gcli/v3/interact"
 )
 
 func main() {

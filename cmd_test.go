@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 	"github.com/stretchr/testify/assert"
 )
 

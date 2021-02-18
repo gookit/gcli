@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2/helper"
+	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -22,6 +22,20 @@ type Command struct {
 	// // Hooks can allow setting some hooks func on running.
 	// Hooks // allowed hooks: "init", "before", "after", "error"
 
+	// Name is the full command name.
+	Name string
+	// Desc is the command description message.
+	Desc string
+	// Logo ASCII logo setting
+	Logo Logo
+	// Version app version. like "1.0.1"
+	Version string
+	// Aliases is the command name's alias names
+	Aliases []string
+	// Config func, will call on `initialize`.
+	// - you can config options and other init works
+	Config func(c *Command)
+
 	// --- for middleware ---
 	// run error
 	runErr error
@@ -29,27 +43,29 @@ type Command struct {
 	middleIdx int8
 	// middleware functions
 	middles HandlersChain
+	// errorHandler // loop find parent.errorHandler
 
 	// Parent parent command
 	parent *Command
+
 	// Subs sub commands of the Command
 	Subs []*Command
 	// mapping sub-command.name => Subs.index of the Subs
 	subName2index map[string]int
+	// the max length for added command names. default set 12.
+	nameMaxWidth int
+	// the default command name. default is empty, will render help message.
+	defaultCommand string
 
-	// Name is the full command name.
-	Name string
+	// all commands for the group
+	// commands map[string]*Command
+	// sub command aliases map. {alias: name}
+	cmdAliases map[string]string
+
 	// module is the name for grouped commands
 	// subName is the name for grouped commands
 	// eg: "sys:info" -> module: "sys", subName: "info"
 	module, subName string
-	// Desc is the command description message.
-	Desc string
-	// Aliases is the command name's alias names
-	Aliases []string
-	// Config func, will call on `initialize`.
-	// - you can config options and other init works
-	Config func(c *Command)
 	// Examples some usage example display
 	Examples string
 	// Func is the command handler func. Func Runner

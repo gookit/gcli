@@ -6,10 +6,10 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
-	"github.com/gookit/gcli/v2/helper"
-	"github.com/gookit/gcli/v2/interact"
-	"github.com/gookit/gcli/v2/show"
+	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/gcli/v3/interact"
+	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/cliutil"
 )
 

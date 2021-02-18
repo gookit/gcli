@@ -5,7 +5,7 @@
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/gookit/gcli)](https://github.com/gookit/gcli)
 [![Build Status](https://travis-ci.org/gookit/gcli.svg?branch=master)](https://travis-ci.org/gookit/gcli)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/60c587f0491748fcabc1b3fe08d98074)](https://app.codacy.com/app/inhere/gcli?utm_source=github.com&utm_medium=referral&utm_content=gookit/gcli&utm_campaign=Badge_Grade_Dashboard)
-[![GoDoc](https://pkg.go.dev/github.com/gookit/gcli?status.svg)](https://godoc.org/github.com/gookit/gcli/v2)
+[![GoDoc](https://pkg.go.dev/github.com/gookit/gcli?status.svg)](https://godoc.org/github.com/gookit/gcli/v3)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gcli)](https://goreportcard.com/report/github.com/gookit/gcli)
 [![Coverage Status](https://coveralls.io/repos/github/gookit/gcli/badge.svg?branch=master)](https://coveralls.io/github/gookit/gcli?branch=master)
 
@@ -45,12 +45,12 @@ A simple to use command line application, written using golang.
 ## GoDoc
 
 - [godoc for gopkg](https://pkg.go.dev/gopkg.in/gookit/gcli.v2)
-- [godoc for github](https://pkg.go.dev/github.com/gookit/gcli/v2)
+- [godoc for github](https://pkg.go.dev/github.com/gookit/gcli/v3)
 
 ## Install
 
 ```bash
-go get github.com/gookit/gcli/v2
+go get github.com/gookit/gcli/v3
 ```
 
 ## Quick start
@@ -60,8 +60,8 @@ package main
 
 import (
     "runtime"
-    "github.com/gookit/gcli/v2"
-    "github.com/gookit/gcli/v2/_examples/cmd"
+    "github.com/gookit/gcli/v3"
+    "github.com/gookit/gcli/v3/_examples/cmd"
 )
 
 // for test run: go build ./_examples/cliapp.go && ./cliapp
@@ -148,7 +148,7 @@ you can see:
 ## Generate Auto Completion Scripts
 
 ```go
-import  "github.com/gookit/gcli/v2/builtin"
+import  "github.com/gookit/gcli/v3/builtin"
 
     // ...
     // add gen command(gen successful you can remove it)
@@ -216,7 +216,7 @@ import (
 	"fmt"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 )
 
 // options for the command
@@ -425,7 +425,7 @@ package main
 import (
 	"time"
 
-	"github.com/gookit/gcli/v2/progress"
+	"github.com/gookit/gcli/v3/progress"
 )
 
 func main()  {
@@ -476,7 +476,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/gookit/gcli/v2/interact"
+	"github.com/gookit/gcli/v3/interact"
 )
 
 func main() {

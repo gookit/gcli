@@ -32,6 +32,7 @@ type App struct {
 	// *cmdLine
 	// HelpVars
 	// Hooks // allow hooks: "init", "before", "after", "error"
+	commandBase
 
 	// Name app name
 	Name string
@@ -87,6 +88,7 @@ func NewApp(fn ...func(a *App)) *App {
 	app := &App{
 		Args: os.Args,
 		Name: "GCli App",
+		Desc: "This is my CLI application",
 		Logo: Logo{Style: "info"},
 		// set a default version
 		Version: "1.0.0",
@@ -94,7 +96,7 @@ func NewApp(fn ...func(a *App)) *App {
 		// cmdLine: CLI,
 		core: core{
 			cmdLine: CLI,
-			gFlags: NewFlags("appGlobalOpts").WithOption(FlagsOption{
+			gFlags: NewFlags("app.GlobalOpts").WithOption(FlagsOption{
 				WithoutType: true,
 				NameDescOL:  true,
 				Alignment:   AlignLeft,
@@ -109,7 +111,6 @@ func NewApp(fn ...func(a *App)) *App {
 		moduleCommands: make(map[string]map[string]*Command),
 		// some default values
 		nameMaxLen: 12,
-		Desc:       "This is my CLI application",
 	}
 
 	if len(fn) > 0 {
@@ -255,8 +256,8 @@ func (app *App) AddCommand(c *Command) *Command {
 	app.commands[cName] = c
 
 	// record command name max length
-	if nameLen > app.nameMaxLen {
-		app.nameMaxLen = nameLen
+	if nameLen > app.nameMaxWidth {
+		app.nameMaxWidth = nameLen
 	}
 
 	if _, ok := app.moduleCommands[c.module]; !ok {

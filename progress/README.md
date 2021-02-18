@@ -15,7 +15,7 @@ please see https://godoc.org/github.com/gookit/gcli/progress
 ## Install
 
 ```bash
-go get -u github.com/gookit/gcli/v2
+go get -u github.com/gookit/gcli/v3
 ```
 
 ## Usage
@@ -28,7 +28,7 @@ package main
 import (
 	"time"
 
-	"github.com/gookit/gcli/v2/progress"
+	"github.com/gookit/gcli/v3/progress"
 )
 
 func main()  {
@@ -91,7 +91,7 @@ Examples:
 
 ```go
 package main
-import "github.com/gookit/gcli/v2/progress"
+import "github.com/gookit/gcli/v3/progress"
 
 // CustomBar create a custom progress bar
 func main() {

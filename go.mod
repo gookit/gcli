@@ -1,4 +1,4 @@
-module github.com/gookit/gcli/v2
+module github.com/gookit/gcli/v3
 
 go 1.12
 

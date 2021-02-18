@@ -83,26 +83,26 @@ type router struct {
 
 }
 
-type command struct {
-	// Name of the command
-	Name string
-	// Desc is the description message.
-	Desc string
-	// the max length for added command names. default set 12.
-	nameMaxLen int
-	// default command name
-	defaultCommand string
-}
-
 // will inject to every Command
-type commandGroup struct {
+type commandBase struct {
 	// Subs sub commands of the Command
 	Subs []*Command
 	// mapping sub-command.name => Subs.index of the Subs
 	subName2index map[string]int
+	// the max length for added command names. default set 12.
+	nameMaxWidth int
+	// the default command name. default is empty, will render help message.
+	defaultCommand string
 
 	// all commands for the group
-	commands map[string]*Command
+	// commands map[string]*Command
+	// sub command aliases map. {alias: name}
+	cmdAliases map[string]string
+}
+
+// AddCommand to the group
+func (cb commandBase) AddCommand(c *Command)  {
+	cb.Subs = append(cb.Subs, c)
 }
 
 // HandlersChain middleware handlers chain definition

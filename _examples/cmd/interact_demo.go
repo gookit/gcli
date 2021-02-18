@@ -5,9 +5,9 @@ import (
 	"os/exec"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
-	"github.com/gookit/gcli/v2/interact"
-	"github.com/gookit/gcli/v2/show/emoji"
+	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/interact"
+	"github.com/gookit/gcli/v3/show/emoji"
 )
 
 // InteractDemoCommand create

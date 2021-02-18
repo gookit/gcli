@@ -20,6 +20,10 @@ type core struct {
 	GOptsBinder func(gf *Flags)
 }
 
+// init
+func (c core) init() {
+}
+
 // Println message
 func (c core) Println(a ...interface{}) {
 	fmt.Println(a...)

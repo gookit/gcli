@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 )
 
 type genEmojiMap struct {

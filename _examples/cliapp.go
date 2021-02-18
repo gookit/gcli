@@ -2,12 +2,12 @@ package main
 
 import (
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
-	"github.com/gookit/gcli/v2/_examples/cmd"
-	"github.com/gookit/gcli/v2/builtin"
+	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/_examples/cmd"
+	"github.com/gookit/gcli/v3/builtin"
 
-	// "github.com/gookit/gcli/v2/builtin/filewatcher"
-	// "github.com/gookit/gcli/v2/builtin/reverseproxy"
+	// "github.com/gookit/gcli/v3/builtin/filewatcher"
+	// "github.com/gookit/gcli/v3/builtin/reverseproxy"
 )
 
 // local run:
