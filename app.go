@@ -4,9 +4,6 @@ import (
 	"os"
 )
 
-// Version the gCli version
-var Version = "3.0.1"
-
 /*************************************************************
  * CLI application
  *************************************************************/
@@ -50,17 +47,13 @@ type App struct {
 	// command names. key is name, value is name string length
 	// eg. {"test": 4, "example": 7}
 	names map[string]int
-	// store some runtime errors
-	errors []error
+
 	// command aliases map. {alias: name}
-	aliases map[string]string
-	// all commands for the app
-	commands map[string]*Command
+	// aliases map[string]string
+
 	// all commands by module
 	moduleCommands map[string]map[string]*Command
 
-	// raw input command name
-	inputName   string
 	rawFlagArgs []string
 	// clean os.args, not contains bin-name and command-name
 	cleanArgs []string
@@ -85,11 +78,8 @@ func NewApp(fn ...func(app *App)) *App {
 		// Version: "1.0.0",
 		// config
 		ExitOnEnd: true,
-		// commands
-		commands: make(map[string]*Command),
 		// group
 		moduleCommands: make(map[string]map[string]*Command),
-
 	}
 
 	// internal core
@@ -218,15 +208,6 @@ func (app *App) AddCommander(cmder Commander) {
 	app.AddCommand(c)
 }
 
-// ResolveName get real command name by alias
-func (app *App) ResolveName(alias string) string {
-	if name, has := app.aliases[alias]; has {
-		return name
-	}
-
-	return alias
-}
-
 // RemoveCommand from the application
 func (app *App) RemoveCommand(names ...string) int {
 	var num int
@@ -244,13 +225,13 @@ func (app *App) removeCommand(name string) bool {
 	}
 
 	// remove all aliases
-	for alias, cName := range app.aliases {
+	for alias, cName := range app.cmdAliases {
 		if cName == name {
-			delete(app.aliases, alias)
+			delete(app.cmdAliases, alias)
 		}
 	}
 
-	delete(app.names, name)
+	delete(app.cmdNames, name)
 	delete(app.commands, name)
 	return true
 }
@@ -262,10 +243,6 @@ func (app *App) AddAliases(command string, aliases ...string) {
 
 // addAliases add alias names for a command
 func (app *App) addAliases(command string, aliases []string, sync bool) {
-	if app.aliases == nil {
-		app.aliases = make(map[string]string)
-	}
-
 	c, has := app.commands[command]
 	if !has {
 		panicf("The command '%s' is not exists", command)
@@ -273,21 +250,23 @@ func (app *App) addAliases(command string, aliases []string, sync bool) {
 
 	// add alias
 	for _, alias := range aliases {
-		if _, has := app.names[alias]; has {
+		if app.IsCommand(alias) {
 			panicf("The name '%s' has been used as an command name", alias)
 		}
 
-		if cmd, has := app.aliases[alias]; has {
-			panicf("The alias '%s' has been used by command '%s'", alias, cmd)
-		}
+		app.cmdAliases.AddAlias(command, alias)
 
-		app.aliases[alias] = command
 		// sync to Command
 		if sync {
 			c.Aliases = append(c.Aliases, alias)
 		}
 	}
 }
+
+// Match command by path. eg. ["top", "sub"]
+// func (app *App) Match(names []string) *Command {
+// 	return app.commandBase.match(names)
+// }
 
 // On add hook handler for a hook event
 // func (app *App) BeforeInit(name string, handler HookFunc) {}
@@ -309,16 +288,6 @@ func (app *App) fireEvent(event string, data interface{}) {
 // func stop(code int) {
 // 	os.Exit(code)
 // }
-
-// Names get all command names
-func (app *App) Names() map[string]int {
-	return app.names
-}
-
-// Commands get all commands
-func (app *App) Commands() map[string]*Command {
-	return app.commands
-}
 
 // CleanArgs get clean args
 func (app *App) CleanArgs() []string {

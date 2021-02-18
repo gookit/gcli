@@ -211,16 +211,6 @@ func (app *App) CommandName() string {
 	return app.commandName
 }
 
-// CommandNames get all command names
-func (app *App) CommandNames() []string {
-	var ss []string
-	for n := range app.names {
-		ss = append(ss, n)
-	}
-
-	return ss
-}
-
 /*************************************************************
  * display app help
  *************************************************************/
@@ -300,7 +290,7 @@ func (app *App) showCommandHelp(list []string) (code int) {
 	}
 
 	// get real name
-	name := app.ResolveName(list[0])
+	name := app.cmdAliases.ResolveAlias(list[0])
 	if name == HelpCommand || name == "-h" {
 		color.Println("Display help message for application or command.\n")
 		color.Printf("Usage:\n <cyan>%s {COMMAND} --help</> OR <cyan>%s help {COMMAND}</>\n", binName, binName)
@@ -330,7 +320,7 @@ func (app *App) findSimilarCmd(input string) []string {
 	// fmt.Print(input, ins)
 	ln := len(input)
 
-	names := app.Names()
+	names := app.CmdNameMap()
 	names["help"] = 4 // add 'help' command
 
 	// find from command names
@@ -350,7 +340,7 @@ func (app *App) findSimilarCmd(input string) []string {
 	}
 
 	// find from aliases
-	for alias := range app.aliases {
+	for alias := range app.cmdAliases {
 		// max find 5 items
 		if len(ss) >= 5 {
 			break

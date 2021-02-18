@@ -24,6 +24,14 @@ var (
 			return nil
 		},
 	}
+	subCmd = &gcli.Command{
+		Name: "sub",
+		Desc: "an simple sub command",
+		Func: func(c *gcli.Command, args []string) error {
+			fmt.Println(c.Path(), args)
+			return nil
+		},
+	}
 )
 
 func TestStdApp(t *testing.T) {
@@ -62,9 +70,15 @@ func TestApp_New(t *testing.T) {
 	app := gcli.NewApp(func(a *gcli.App) {
 
 	})
+
+	simpleCmd.AddCommand(subCmd)
+
 	app.AddCommand(simpleCmd)
 
 	assert.True(t, app.HasCommand(simpleCmd.Name))
+
+	c := app.MatchByPath("simple:sub")
+	assert.NotNil(t, c)
 }
 
 func TestApp_Add(t *testing.T) {
@@ -88,15 +102,16 @@ func TestApp_Add(t *testing.T) {
 	is.True(app.IsCommand("c1"))
 	is.True(app.IsCommand("c2"))
 	is.True(app.HasCommand("m1:c3"))
-	is.Len(app.Names(), 3)
-	is.NotEmpty(app.Names())
+	is.Len(app.CmdNames(), 3)
+	is.Len(app.CmdNameMap(), 3)
+	is.NotEmpty(app.CommandNames())
 
 	c := gcli.NewCommand("mdl:test", "desc test2")
 	app.AddCommand(c)
 
 	is.Equal("mdl", c.Module())
 	is.Equal("test", c.SubName())
-	is.Equal("m1:c3", app.ResolveName("alias1"))
+	is.Equal("m1:c3", app.ResolveAlias("alias1"))
 	is.True(app.IsAlias("alias1"))
 }
 
@@ -119,8 +134,8 @@ func TestApp_AddCommand(t *testing.T) {
 	assert.PanicsWithValue(t, "GCli: the command name can not be empty", func() {
 		app.AddCommand(&gcli.Command{})
 	})
-	assert.PanicsWithValue(t, "GCli: the command name '+dbd' is invalid, must match: ^[a-zA-Z][\\w:-]*$", func() {
-		app.AddCommand(&gcli.Command{Name: "+dbd"})
+	assert.PanicsWithValue(t, "GCli: the command name '+xdd' is invalid, must match: ^[a-zA-Z][\\w-]*$", func() {
+		app.AddCommand(&gcli.Command{Name: "+xdd"})
 	})
 }
 

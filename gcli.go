@@ -24,6 +24,8 @@ const (
 	ERR = 2
 	// GOON prepare run successful, goon run command
 	GOON = -1
+	// CommandSep char
+	CommandSep = ":"
 	// HelpCommand name
 	HelpCommand = "help"
 	// match an good option, argument name
@@ -34,6 +36,9 @@ const (
 )
 
 var (
+	// Version the gCli version
+	Version = "3.0.1"
+
 	// stdApp store default application instance
 	stdApp *App
 	// an empty argument

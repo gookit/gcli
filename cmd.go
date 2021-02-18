@@ -116,6 +116,21 @@ func NewCommand(name, desc string, fn ...func(c *Command)) *Command {
 }
 
 // SetFunc Settings command handler func
+func (c *Command) Match(nodes []string) *Command {
+	ln := len(nodes)
+	if ln == 0 {
+		return c
+	}
+
+	return c.commandBase.Match(nodes)
+}
+
+// Match command by path. eg. "top:sub"
+func (c *Command) MatchByPath(path string) *Command {
+	return c.Match(strings.Split(path, CommandSep))
+}
+
+// SetFunc Settings command handler func
 func (c *Command) SetFunc(fn RunnerFunc) *Command {
 	c.Func = fn
 	return c
