@@ -17,10 +17,17 @@ type commandBase struct {
 	// Cmds []*Command
 	// mapping sub-command.name => Cmds.index of the Cmds
 	// name2idx map[string]int
+
+	// all commands for the group
+	commands map[string]*Command
 	// command names. key is name, value is name string length
 	// eg. {"test": 4, "example": 7}
 	cmdNames map[string]int
+	// sub command aliases map. {alias: name}
+	cmdAliases maputil.Aliases
 
+	// raw input command name
+	inputName string
 	// the max width for added command names. default set 12.
 	nameMaxWidth int
 	// the default command name.
@@ -31,13 +38,6 @@ type commandBase struct {
 
 	// Whether it has been initialized
 	initialized bool
-	// raw input command name
-	inputName string
-
-	// all commands for the group
-	commands map[string]*Command
-	// sub command aliases map. {alias: name}
-	cmdAliases maputil.Aliases
 
 	// store some runtime errors
 	errors []error
@@ -50,7 +50,7 @@ func newCommandBase() commandBase {
 		cmdNames: make(map[string]int),
 		// name2idx: make(map[string]int),
 		commands: make(map[string]*Command),
-
+		// set an default value.
 		nameMaxWidth: 12,
 		cmdAliases:   make(maputil.Aliases),
 	}
@@ -90,8 +90,10 @@ func (b commandBase) IsCommand(name string) bool {
 
 // add Command to the group
 func (b commandBase) addCommand(c *Command) {
-	// validate command name
-	cName := c.goodName()
+	// init command
+	c.initialize()
+
+	cName := c.Name
 	if _, ok := b.cmdNames[cName]; ok {
 		panicf("The command name '%s' is already added", cName)
 	}
@@ -119,11 +121,9 @@ func (b commandBase) addCommand(c *Command) {
 	b.cmdAliases.AddAliases(c.Name, c.Aliases)
 	Logf(VerbDebug, "register a new CLI command: %s", cName)
 
-	// init command
 	// c.app = app
 	// inherit global flags from application
 	// c.core.gFlags = app.gFlags
-	c.initialize()
 	// append
 	b.commands[cName] = c
 }

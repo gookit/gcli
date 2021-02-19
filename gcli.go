@@ -9,11 +9,7 @@
 package gcli
 
 import (
-	"os"
 	"regexp"
-	"strings"
-
-	"github.com/gookit/goutil/envutil"
 )
 
 const (
@@ -61,13 +57,13 @@ var (
 func init() {
 	// don't display date on print log
 	// log.SetFlags(0)
-	workDir, _ := os.Getwd()
-	CLI.workDir = workDir
+	// workDir, _ := os.Getwd()
+	// CLI.workDir = workDir
 
-	// binName will contains work dir path on windows
-	if envutil.IsWin() {
-		CLI.binName = strings.Replace(CLI.binName, workDir+"\\", "", 1)
-	}
+	// // binName will contains work dir path on windows
+	// if envutil.IsWin() {
+	// 	CLI.binName = strings.Replace(CLI.binName, workDir+"\\", "", 1)
+	// }
 }
 
 // InitStdApp create the default cli app.

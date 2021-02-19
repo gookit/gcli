@@ -149,6 +149,10 @@ func (app *App) bindingGlobalOpts() {
 
 // initialize application
 func (app *App) initialize() {
+	if app.initialized {
+		return
+	}
+
 	app.names = make(map[string]int)
 
 	// init some help tpl vars
@@ -184,10 +188,8 @@ func (app *App) Add(c *Command, more ...*Command) {
 
 // AddCommand add a new command to the app
 func (app *App) AddCommand(c *Command) {
-	// initialize application
-	if !app.initialized {
-		app.initialize()
-	}
+	// initialize application before add command
+	app.initialize()
 
 	// init command
 	c.app = app

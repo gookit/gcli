@@ -102,11 +102,6 @@ func (ags *Arguments) AddArg(name, desc string, requiredAndIsArray ...bool) *Arg
 	return ags.AddArgument(newArg)
 }
 
-// Add alias of the AddArgument()
-func (ags *Arguments) Add(arg Argument) *Argument {
-	return ags.AddArgument(&arg)
-}
-
 // BindArg alias of the AddArgument()
 func (ags *Arguments) BindArg(arg Argument) *Argument {
 	return ags.AddArgument(&arg)

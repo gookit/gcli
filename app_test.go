@@ -65,7 +65,7 @@ func TestStdApp(t *testing.T) {
 
 }
 
-func TestApp_New(t *testing.T) {
+func TestApp_MatchByPath(t *testing.T) {
 	// is := assert.New(t)
 	app := gcli.NewApp(func(a *gcli.App) {
 
@@ -77,13 +77,14 @@ func TestApp_New(t *testing.T) {
 	)
 
 	simpleCmd.AddCommand(subCmd)
-
 	app.AddCommand(simpleCmd)
 
 	assert.True(t, app.HasCommand(simpleCmd.Name))
 
 	c := app.MatchByPath("simple:sub")
 	assert.NotNil(t, c)
+	assert.Equal(t, "sub", c.Name)
+	assert.Equal(t, "simple", c.ParentName())
 }
 
 func TestApp_Add(t *testing.T) {
@@ -203,7 +204,7 @@ func TestApp_Run(t *testing.T) {
 		Desc: "desc for test command",
 		Config: func(c *gcli.Command) {
 			c.AddArg("arg0", "desc")
-			c.Add(gcli.Argument{Name: "arg1", Desc: "desc1"})
+			c.BindArg(gcli.Argument{Name: "arg1", Desc: "desc1"})
 		},
 		Func: func(c *gcli.Command, args []string) error {
 			cmdRet = c.Name

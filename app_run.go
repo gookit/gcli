@@ -89,12 +89,10 @@ func (app *App) prepareRun() (code int) {
 
 // Run running application
 func (app *App) Run() (code int) {
-	Logf(VerbDebug, "will begin run cli application")
-
 	// ensure application initialized
-	if !app.initialized {
-		app.initialize()
-	}
+	app.initialize()
+
+	Logf(VerbDebug, "will begin run cli application")
 
 	// parse global flags
 	if !app.parseGlobalOpts() {

@@ -6,6 +6,7 @@ import (
 	"path"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 
 	"github.com/gookit/color"
@@ -22,8 +23,16 @@ type core struct {
 	GOptsBinder func(gf *Flags)
 }
 
-// init
-func (c core) init() {
+// init core
+func (c core) init(cmdName string) {
+	c.cmdLine = CLI
+
+	c.AddVars(c.innerHelpVars())
+	c.AddVars(map[string]string{
+		"cmd": cmdName,
+		// full command
+		"fullCmd": c.binFile + " " + cmdName,
+	})
 }
 
 // Println message
@@ -49,7 +58,7 @@ func (c core) GlobalFlags() *Flags {
 // common basic help vars
 func (c core) innerHelpVars() map[string]string {
 	return map[string]string{
-		"pid":     fmt.Sprint(CLI.pid),
+		"pid":     CLI.PIDString(),
 		"workDir": CLI.workDir,
 		"binFile": CLI.binFile,
 		"binName": CLI.binName,
@@ -118,20 +127,32 @@ type cmdLine struct {
 
 func newCmdLine() *cmdLine {
 	binFile := os.Args[0]
+	workDir, _ := os.Getwd()
+
+	// binName will contains work dir path on windows
+	// if envutil.IsWin() {
+	// 	binFile = strings.Replace(CLI.binName, workDir+"\\", "", 1)
+	// }
 
 	return &cmdLine{
 		pid: os.Getpid(),
 		// more info
 		osName:  runtime.GOOS,
+		workDir: workDir,
 		binFile: binFile,
 		binName: filepath.Base(binFile),
 		argLine: strings.Join(os.Args[1:], " "),
 	}
 }
 
-// PID get PID
+// PID get pid
 func (c *cmdLine) PID() int {
 	return c.pid
+}
+
+// PIDString get pid as string
+func (c *cmdLine) PIDString() string {
+	return strconv.Itoa(c.pid)
 }
 
 // OsName is equals to `runtime.GOOS`
@@ -170,6 +191,10 @@ func (c *cmdLine) ArgLine() string {
 }
 
 func (c *cmdLine) hasHelpKeywords() bool {
+	if c.argLine == "" {
+		return false
+	}
+
 	return strings.HasSuffix(c.argLine, " -h") || strings.HasSuffix(c.argLine, " --help")
 }
 

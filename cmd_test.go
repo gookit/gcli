@@ -135,9 +135,12 @@ var r = &gcli.Command{
 }
 
 func TestCommand_Match(t *testing.T) {
+	err := r.Run([]string{})
+	fmt.Println(err)
 	c := r.MatchByPath("git:add")
 
-	fmt.Println(c)
+	assert.NotNil(t, c)
+	assert.Equal(t, "add", c.Name)
 }
 
 func TestCommand_RunWithSubs(t *testing.T) {

@@ -153,29 +153,46 @@ func (c *Command) Runnable() bool {
 	return c.Func != nil
 }
 
+// AddSubs add one or multi sub-command(s)
+func (c *Command) AddSubs(sub *Command, more ...*Command) {
+	c.AddCommand(sub)
+
+	if len(more) > 0 {
+		for _, cmd := range more {
+			c.AddCommand(cmd)
+		}
+	}
+}
+
 // AddCommand add a sub command
 func (c *Command) AddCommand(sub *Command) {
-	// initialize command
-	if !c.initialized {
-		c.initialize()
-	}
-
 	// init command
 	sub.parent = c
 	// inherit global flags from application
 	sub.core.gFlags = c.gFlags
 
+	// initialize command
+	c.initialize()
+
 	// do add
-	c.commandBase.addCommand(c)
+	c.commandBase.addCommand(sub)
 }
 
 // initialize works for the command
-func (c *Command) initialize() *Command {
-	c.initialized = true
-	c.core.cmdLine = CLI
+func (c *Command) initialize() {
+	if c.initialized {
+		return
+	}
+
+	// check command name
+	cName := c.goodName()
+
+	// init core
+	c.core.init(cName)
 
 	// init commandBase
 	c.commandBase = newCommandBase()
+	c.initialized = true
 
 	// load common subs
 	if len(c.Subs) > 0 {
@@ -185,11 +202,11 @@ func (c *Command) initialize() *Command {
 	}
 
 	// init for cmd Arguments
-	c.Arguments.SetName(c.Name)
+	c.Arguments.SetName(cName)
 	c.Arguments.SetValidateNum(!c.alone && gOpts.strictMode)
 
 	// init for cmd Flags
-	c.Flags.InitFlagSet(c.Name)
+	c.Flags.InitFlagSet(cName)
 	c.Flags.FSet().SetOutput(c.Flags.out)
 	c.Flags.FSet().Usage = func() { // call on exists "-h" "--help"
 		Logf(VerbDebug, "render help message on exists '-h|--help' or has unknown flag")
@@ -211,18 +228,7 @@ func (c *Command) initialize() *Command {
 		c.Config(c)
 	}
 
-	// set help vars
-	// c.Vars = c.app.vars // Error: var is map, map is ref addr
-	c.AddVars(c.core.innerHelpVars())
-	c.AddVars(map[string]string{
-		"cmd": c.Name,
-		// full command
-		"fullCmd": c.binName + " " + c.Name,
-	})
-
 	c.Fire(EvtCmdInit, nil)
-
-	return c
 }
 
 // IsAlone running
