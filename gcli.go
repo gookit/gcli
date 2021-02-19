@@ -11,7 +11,6 @@ package gcli
 import (
 	"os"
 	"regexp"
-	"runtime"
 	"strings"
 
 	"github.com/gookit/goutil/envutil"
@@ -55,13 +54,7 @@ var (
 	}
 
 	// CLI create an default instance
-	CLI = &cmdLine{
-		pid: os.Getpid(),
-		// more info
-		osName:  runtime.GOOS,
-		binName: os.Args[0],
-		argLine: strings.Join(os.Args[1:], " "),
-	}
+	CLI = newCmdLine()
 )
 
 // init

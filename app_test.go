@@ -71,6 +71,11 @@ func TestApp_New(t *testing.T) {
 
 	})
 
+	app.Add(
+		gcli.NewCommand("cmd1", "desc"),
+		gcli.NewCommand("cmd2", "desc2"),
+	)
+
 	simpleCmd.AddCommand(subCmd)
 
 	app.AddCommand(simpleCmd)
@@ -109,8 +114,8 @@ func TestApp_Add(t *testing.T) {
 	c := gcli.NewCommand("mdl:test", "desc test2")
 	app.AddCommand(c)
 
-	is.Equal("mdl", c.Module())
-	is.Equal("test", c.SubName())
+	is.Equal("mdl", c.ParentName())
+	is.Equal("test", c.Name)
 	is.Equal("m1:c3", app.ResolveAlias("alias1"))
 	is.True(app.IsAlias("alias1"))
 }
@@ -327,21 +332,21 @@ func TestApp_showCommandTips(t *testing.T) {
   empty`)
 }
 
-func TestApp_RemoveCommand(t *testing.T) {
-	app := gcli.NewApp()
-
-	app.Add(
-		gcli.NewCommand("cmd1", "desc"),
-		gcli.NewCommand("cmd2", "desc"),
-	)
-
-	assert.Len(t, app.Commands(), 2)
-	assert.True(t, app.IsCommand("cmd1"))
-
-	assert.Equal(t, 1, app.RemoveCommand("cmd1"))
-	assert.Len(t, app.Commands(), 1)
-	assert.False(t, app.IsCommand("cmd1"))
-}
+// func TestApp_RemoveCommand(t *testing.T) {
+// 	app := gcli.NewApp()
+//
+// 	app.Add(
+// 		gcli.NewCommand("cmd1", "desc"),
+// 		gcli.NewCommand("cmd2", "desc"),
+// 	)
+//
+// 	assert.Len(t, app.Commands(), 2)
+// 	assert.True(t, app.IsCommand("cmd1"))
+//
+// 	assert.Equal(t, 1, app.RemoveCommand("cmd1"))
+// 	assert.Len(t, app.Commands(), 1)
+// 	assert.False(t, app.IsCommand("cmd1"))
+// }
 
 func TestApp_AddCommander(t *testing.T) {
 	app := gcli.NewApp()

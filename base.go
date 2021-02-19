@@ -14,9 +14,9 @@ type commandBase struct {
 	Version string
 
 	// Cmds sub commands of the Command
-	Cmds []*Command
+	// Cmds []*Command
 	// mapping sub-command.name => Cmds.index of the Cmds
-	name2idx map[string]int
+	// name2idx map[string]int
 	// command names. key is name, value is name string length
 	// eg. {"test": 4, "example": 7}
 	cmdNames map[string]int
@@ -48,7 +48,7 @@ type commandBase struct {
 func newCommandBase() commandBase {
 	return commandBase{
 		cmdNames: make(map[string]int),
-		name2idx: make(map[string]int),
+		// name2idx: make(map[string]int),
 		commands: make(map[string]*Command),
 
 		nameMaxWidth: 12,

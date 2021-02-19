@@ -208,34 +208,6 @@ func (app *App) AddCommander(cmder Commander) {
 	app.AddCommand(c)
 }
 
-// RemoveCommand from the application
-func (app *App) RemoveCommand(names ...string) int {
-	var num int
-	for _, name := range names {
-		if app.removeCommand(name) {
-			num++
-		}
-	}
-	return num
-}
-
-func (app *App) removeCommand(name string) bool {
-	if !app.IsCommand(name) {
-		return false
-	}
-
-	// remove all aliases
-	for alias, cName := range app.cmdAliases {
-		if cName == name {
-			delete(app.cmdAliases, alias)
-		}
-	}
-
-	delete(app.cmdNames, name)
-	delete(app.commands, name)
-	return true
-}
-
 // AddAliases add alias names for a command
 func (app *App) AddAliases(command string, aliases ...string) {
 	app.addAliases(command, aliases, true)

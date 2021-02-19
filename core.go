@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"path/filepath"
+	"runtime"
 	"strings"
 
 	"github.com/gookit/color"
@@ -49,6 +51,7 @@ func (c core) innerHelpVars() map[string]string {
 	return map[string]string{
 		"pid":     fmt.Sprint(CLI.pid),
 		"workDir": CLI.workDir,
+		"binFile": CLI.binFile,
 		"binName": CLI.binName,
 	}
 }
@@ -105,10 +108,25 @@ type cmdLine struct {
 	osName string
 	// the CLI app work dir path. by `os.Getwd()`
 	workDir string
-	// bin script name, by `os.Args[0]`. eg "./cliapp"
+	// bin script file, by `os.Args[0]`. eg "./path/to/cliapp"
+	binFile string
+	// bin script filename. eg "cliapp"
 	binName string
 	// os.Args to string, but no binName.
 	argLine string
+}
+
+func newCmdLine() *cmdLine {
+	binFile := os.Args[0]
+
+	return &cmdLine{
+		pid: os.Getpid(),
+		// more info
+		osName:  runtime.GOOS,
+		binFile: binFile,
+		binName: filepath.Base(binFile),
+		argLine: strings.Join(os.Args[1:], " "),
+	}
 }
 
 // PID get PID
@@ -126,6 +144,11 @@ func (c *cmdLine) OsArgs() []string {
 	return os.Args
 }
 
+// BinName get bin script file
+func (c *cmdLine) BinFile() string {
+	return c.binFile
+}
+
 // BinName get bin script name
 func (c *cmdLine) BinName() string {
 	return c.binName
@@ -133,7 +156,7 @@ func (c *cmdLine) BinName() string {
 
 // BinDir get bin script dirname
 func (c *cmdLine) BinDir() string {
-	return path.Dir(c.binName)
+	return path.Dir(c.binFile)
 }
 
 // WorkDir get work dirname

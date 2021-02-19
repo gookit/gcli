@@ -52,16 +52,7 @@ type Command struct {
 	// Subs sub commands of the Command
 	Subs []*Command
 	// mapping sub-command.name => Subs.index of the Subs
-	subName2index map[string]int
-	// the max length for added command names. default set 12.
-	nameMaxWidth int
-	// the default command name. default is empty, will render help message.
-	defaultCommand string
-
-	// all commands for the group
-	// commands map[string]*Command
-	// sub command aliases map. {alias: name}
-	cmdAliases map[string]string
+	// subName2index map[string]int
 
 	// module is the name for grouped commands
 	// subName is the name for grouped commands
@@ -186,6 +177,13 @@ func (c *Command) initialize() *Command {
 	// init commandBase
 	c.commandBase = newCommandBase()
 
+	// load common subs
+	if len(c.Subs) > 0 {
+		for _, sub := range c.Subs {
+			c.AddCommand(sub)
+		}
+	}
+
 	// init for cmd Arguments
 	c.Arguments.SetName(c.Name)
 	c.Arguments.SetValidateNum(!c.alone && gOpts.strictMode)
@@ -238,8 +236,12 @@ func (c *Command) NotAlone() bool {
 }
 
 // Module name of the grouped command
-func (c *Command) Module() string {
-	return c.module
+func (c *Command) ParentName() string {
+	if c.parent != nil {
+		return c.parent.Name
+	}
+
+	return ""
 }
 
 // SubName name of the grouped command
@@ -287,13 +289,13 @@ func (c *Command) SetParent(parent *Command) {
 }
 
 // find sub command by name
-func (c *Command) findSub(name string) *Command {
-	if index, ok := c.subName2index[name]; ok {
-		return c.Subs[index]
-	}
-
-	return nil
-}
+// func (c *Command) findSub(name string) *Command {
+// 	if index, ok := c.subName2index[name]; ok {
+// 		return c.Subs[index]
+// 	}
+//
+// 	return nil
+// }
 
 // Next processing, run all middleware handlers
 func (c *Command) Next() {

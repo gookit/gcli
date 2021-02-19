@@ -93,48 +93,54 @@ func TestCommand_Run(t *testing.T) {
 	is.Error(err)
 }
 
-func TestCommand_RunWithSubs(t *testing.T) {
-	// l0: root command
-	r := &gcli.Command{
-		Name: "git",
-		Desc: "git usage",
-		Subs: []*gcli.Command{
-			// l1: sub command 1
-			{
-				Name: "add",
-				Desc: "add command for git",
-				Func: func (c *gcli.Command, args []string) error {
-					c.Println(c.Name)
-					return nil
-				},
+// l0: root command
+var r = &gcli.Command{
+	Name: "git",
+	Desc: "git usage",
+	Subs: []*gcli.Command{
+		// l1: sub command 1
+		{
+			Name: "add",
+			Desc: "the clone command for git",
+			Func: func(c *gcli.Command, args []string) error {
+				c.Println(c.Name)
+				return nil
 			},
-			// l1: sub command 2
-			{
-				Name: "remote",
-				Desc: "remote command for git",
-				Func: func (c *gcli.Command, args []string) error {
-					c.Println(c.Name)
-					return nil
-				},
-				Subs: []*gcli.Command{
-					// l2: sub command 3
-					{
-						Name: "add",
-						Desc: "add command for git remote",
-						Func: func (c *gcli.Command, args []string) error {
-							c.Println(c.Name)
-							return nil
-						},
+		},
+		// l1: sub command 2
+		{
+			Name: "remote",
+			Desc: "remote command for git",
+			Func: func(c *gcli.Command, args []string) error {
+				c.Println(c.Name)
+				return nil
+			},
+			Subs: []*gcli.Command{
+				// l2: sub command 3
+				{
+					Name: "add",
+					Desc: "add command for git remote",
+					Func: func(c *gcli.Command, args []string) error {
+						c.Println(c.Name)
+						return nil
 					},
 				},
 			},
 		},
-		Func: func (c *gcli.Command, args []string) error {
-			c.Println(c.Name)
-			return nil
-		},
-	}
+	},
+	Func: func(c *gcli.Command, args []string) error {
+		c.Println(c.Name)
+		return nil
+	},
+}
 
+func TestCommand_Match(t *testing.T) {
+	c := r.MatchByPath("git:add")
+
+	fmt.Println(c)
+}
+
+func TestCommand_RunWithSubs(t *testing.T) {
 	err := r.Run([]string{"add", "./"})
 	fmt.Println(err)
 
