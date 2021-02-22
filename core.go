@@ -23,6 +23,20 @@ type core struct {
 	GOptsBinder func(gf *Flags)
 }
 
+func newCore(cmdName string) core {
+	c := core{}
+
+	c.cmdLine = CLI
+	c.AddVars(c.innerHelpVars())
+	c.AddVars(map[string]string{
+		"cmd": cmdName,
+		// full command
+		"fullCmd": c.binFile + " " + cmdName,
+	})
+
+	return c
+}
+
 // init core
 func (c core) init(cmdName string) {
 	c.cmdLine = CLI

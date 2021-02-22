@@ -108,6 +108,9 @@ func NewCommand(name, desc string, fn ...func(c *Command)) *Command {
 
 // SetFunc Settings command handler func
 func (c *Command) Match(nodes []string) *Command {
+	// must ensure is initialized
+	c.initialize()
+
 	ln := len(nodes)
 	if ln == 0 {
 		return c
@@ -178,6 +181,18 @@ func (c *Command) AddCommand(sub *Command) {
 	c.commandBase.addCommand(sub)
 }
 
+// init core
+func (c *Command) initCore(cmdName string) {
+	c.core.cmdLine = CLI
+
+	c.AddVars(c.innerHelpVars())
+	c.AddVars(map[string]string{
+		"cmd": cmdName,
+		// full command
+		"fullCmd": c.binFile + " " + cmdName,
+	})
+}
+
 // initialize works for the command
 func (c *Command) initialize() {
 	if c.initialized {
@@ -188,7 +203,9 @@ func (c *Command) initialize() {
 	cName := c.goodName()
 
 	// init core
-	c.core.init(cName)
+	c.initCore(cName)
+	// c.core.init(cName)
+	// c.core = newCore(cName)
 
 	// init commandBase
 	c.commandBase = newCommandBase()
@@ -433,14 +450,13 @@ func (c *Command) Run(inArgs []string) (err error) {
 
 	// binding global options
 	bindingCommonGOpts(c.gFlags)
-
 	// TODO parse global options
 
 	// init the command
 	c.initialize()
 
 	// add default error handler.
-	c.Hooks.AddOn(EvtCmdError, defaultErrHandler)
+	c.AddOn(EvtCmdError, defaultErrHandler)
 
 	// check input args
 	if len(inArgs) == 0 {

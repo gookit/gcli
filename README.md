@@ -5,13 +5,11 @@
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/gookit/gcli)](https://github.com/gookit/gcli)
 [![Build Status](https://travis-ci.org/gookit/gcli.svg?branch=master)](https://travis-ci.org/gookit/gcli)
 [![Codacy Badge](https://api.codacy.com/project/badge/Grade/60c587f0491748fcabc1b3fe08d98074)](https://app.codacy.com/app/inhere/gcli?utm_source=github.com&utm_medium=referral&utm_content=gookit/gcli&utm_campaign=Badge_Grade_Dashboard)
-[![GoDoc](https://pkg.go.dev/github.com/gookit/gcli?status.svg)](https://godoc.org/github.com/gookit/gcli/v3)
+[![GoDoc](https://godoc.org/github.com/gookit/gcli?status.svg)](https://pkg.go.dev/github.com/gookit/gcli/v3)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gcli)](https://goreportcard.com/report/github.com/gookit/gcli)
 [![Coverage Status](https://coveralls.io/repos/github/gookit/gcli/badge.svg?branch=master)](https://coveralls.io/github/gookit/gcli?branch=master)
 
-A simple to use command line application, written using golang.
-
-> Since `v2.3.0`, option binding and argument binding have been reconstructed, which may be incompatible with the previous ones.
+A simple-to-use command line application, written using golang.
 
 ## [中文说明](README.zh-CN.md)
 
