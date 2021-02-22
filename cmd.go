@@ -178,7 +178,13 @@ func (c *Command) Match(nodes []string) *Command {
 
 // Match command by path. eg. "top:sub"
 func (c *Command) MatchByPath(path string) *Command {
-	return c.Match(strings.Split(path, CommandSep))
+	var names []string
+	path = strings.TrimSpace(path)
+	if path != "" {
+		names = strings.Split(path, CommandSep)
+	}
+
+	return c.Match(names)
 }
 
 // init core
@@ -188,7 +194,9 @@ func (c *Command) initCore(cmdName string) {
 	c.AddVars(c.innerHelpVars())
 	c.AddVars(map[string]string{
 		"cmd": cmdName,
-		// full command
+		// binName with command
+		"binWithCmd": c.binName + " " + cmdName,
+		// binFile with command
 		"fullCmd": c.binFile + " " + cmdName,
 	})
 }
@@ -306,9 +314,14 @@ func (c *Command) ParentName() string {
 	return ""
 }
 
-// SubName name of the grouped command
-func (c *Command) SubName() string {
-	return c.subName
+// Sub get sub command by name. eg "sub"
+func (c *Command) Sub(name string) *Command {
+	return c.GetCommand(name)
+}
+
+// SubCommand get sub command by name. eg "sub"
+func (c *Command) SubCommand(name string) *Command {
+	return c.GetCommand(name)
 }
 
 // find sub command by name
@@ -407,7 +420,7 @@ func (c *Command) MustRun(inArgs []string) {
 	}
 }
 
-// Run Alone the current command
+// Run Alone running current command
 func (c *Command) Run(inArgs []string) (err error) {
 	// - Running in application.
 	if c.app != nil {

@@ -112,6 +112,7 @@ var r = &gcli.Command{
 		{
 			Name: "remote",
 			Desc: "remote command for git",
+			Aliases: []string{"rmt"},
 			Func: func(c *gcli.Command, args []string) error {
 				dump.Println(c.Name)
 				return nil
@@ -121,6 +122,15 @@ var r = &gcli.Command{
 				{
 					Name: "add",
 					Desc: "add command for git remote",
+					Func: func(c *gcli.Command, args []string) error {
+						dump.Println(c.Name)
+						return nil
+					},
+				},
+				// l2: sub command 4
+				{
+					Name: "set-url",
+					Desc: "set-url command for git remote",
 					Func: func(c *gcli.Command, args []string) error {
 						dump.Println(c.Name)
 						return nil
@@ -145,6 +155,7 @@ func TestCommand_MatchByPath(t *testing.T) {
 	c = r.MatchByPath("remote:add")
 	assert.NotNil(t, c)
 	assert.Equal(t, "add", c.Name)
+	assert.Equal(t, "Add command for git remote", c.Desc)
 	assert.Equal(t, "remote", c.Parent().Name)
 	assert.Equal(t, "git", c.Root().Name)
 
@@ -157,12 +168,27 @@ func TestCommand_MatchByPath(t *testing.T) {
 	assert.Nil(t, c)
 }
 
+func TestCommand_Sub(t *testing.T) {
+	r.MatchByPath("") // use for init
+
+	assert.True(t, r.HasCommand("add"))
+	assert.True(t, r.IsCommand("remote"))
+
+	c := r.Sub("add")
+	assert.NotNil(t, c)
+	assert.Equal(t, "add", c.Name)
+}
+
 func TestCommand_Run_oneLevelSub(t *testing.T) {
 	err := r.Run([]string{"add", "./"})
 	fmt.Println(err)
 }
 
 func TestCommand_Run_moreLevelSub(t *testing.T) {
+	assert.True(t, r.IsAlias("rmt"))
+	assert.False(t, r.IsAlias("not-exist"))
+	assert.Equal(t, "remote", r.ResolveAlias("rmt"))
+
 	err := r.Run([]string{
 		"remote",
 		"add",

@@ -23,30 +23,33 @@ type core struct {
 	GOptsBinder func(gf *Flags)
 }
 
-func newCore(cmdName string) core {
-	c := core{}
-
-	c.cmdLine = CLI
-	c.AddVars(c.innerHelpVars())
-	c.AddVars(map[string]string{
-		"cmd": cmdName,
-		// full command
-		"fullCmd": c.binFile + " " + cmdName,
-	})
-
-	return c
-}
-
 // init core
-func (c core) init(cmdName string) {
-	c.cmdLine = CLI
+// func (c core) init(cmdName string) {
+// 	c.cmdLine = CLI
+//
+// 	c.AddVars(c.innerHelpVars())
+// 	c.AddVars(map[string]string{
+// 		"cmd": cmdName,
+// 		// binName with command
+// 		"binWithCmd": c.binName + " " + cmdName,
+// 		// binFile with command
+// 		"fullCmd": c.binFile + " " + cmdName,
+// 	})
+// }
 
-	c.AddVars(c.innerHelpVars())
-	c.AddVars(map[string]string{
-		"cmd": cmdName,
-		// full command
-		"fullCmd": c.binFile + " " + cmdName,
-	})
+func (c core) parseGlobalOpts(args []string) (ok bool) {
+	if c.gFlags == nil { // skip on nil
+		return true
+	}
+
+	// parse global options
+	err := c.gFlags.Parse(args)
+	if err != nil {
+		color.Error.Tips(err.Error())
+		return
+	}
+
+	return true
 }
 
 // Println message

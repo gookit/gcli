@@ -12,14 +12,14 @@ import (
 )
 
 // parseGlobalOpts parse global options
-func (app *App) parseGlobalOpts() (ok bool) {
+func (app *App) parseGlobalOpts(args []string) (ok bool) {
 	Logf(VerbDebug, "will begin parse global options")
 	// global options flag
 	// gf := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
 	gf := app.GlobalFlags()
 
 	// parse global options
-	err := gf.Parse(app.Args[1:])
+	err := gf.Parse(args)
 	if err != nil {
 		color.Error.Tips(err.Error())
 		return
@@ -95,7 +95,7 @@ func (app *App) Run() (code int) {
 	Logf(VerbDebug, "will begin run cli application")
 
 	// parse global flags
-	if !app.parseGlobalOpts() {
+	if !app.parseGlobalOpts(app.Args[1:]) {
 		return app.exitIfExitOnEnd(code)
 	}
 

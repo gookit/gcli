@@ -157,6 +157,11 @@ func (b commandBase) MatchByPath(path string) *Command {
 	return b.Match(strings.Split(path, CommandSep))
 }
 
+// GetCommand get command by name. eg "sub"
+func (b commandBase) GetCommand(name string) *Command {
+	return b.commands[name]
+}
+
 // SetLogo text and color style
 func (b commandBase) SetLogo(logo string, style ...string) {
 	b.Logo.Text = logo
