@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/dump"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -103,7 +104,7 @@ var r = &gcli.Command{
 			Name: "add",
 			Desc: "the clone command for git",
 			Func: func(c *gcli.Command, args []string) error {
-				c.Println(c.Name)
+				dump.Println(c.Name)
 				return nil
 			},
 		},
@@ -112,7 +113,7 @@ var r = &gcli.Command{
 			Name: "remote",
 			Desc: "remote command for git",
 			Func: func(c *gcli.Command, args []string) error {
-				c.Println(c.Name)
+				dump.Println(c.Name)
 				return nil
 			},
 			Subs: []*gcli.Command{
@@ -121,7 +122,7 @@ var r = &gcli.Command{
 					Name: "add",
 					Desc: "add command for git remote",
 					Func: func(c *gcli.Command, args []string) error {
-						c.Println(c.Name)
+						dump.Println(c.Name)
 						return nil
 					},
 				},
@@ -129,26 +130,45 @@ var r = &gcli.Command{
 		},
 	},
 	Func: func(c *gcli.Command, args []string) error {
-		c.Println(c.Name)
+		dump.Println(c.Name)
 		return nil
 	},
 }
 
-func TestCommand_Match(t *testing.T) {
-	err := r.Run([]string{"git"})
-	fmt.Println(err)
-	c := r.MatchByPath("git:add")
+func TestCommand_MatchByPath(t *testing.T) {
+	c := r.MatchByPath("add")
 
 	assert.NotNil(t, c)
 	assert.Equal(t, "add", c.Name)
-	assert.Equal(t, "git", c.Parent().Name)
+	assert.Equal(t, "git", c.ParentName())
+
+	c = r.MatchByPath("remote:add")
+	assert.NotNil(t, c)
+	assert.Equal(t, "add", c.Name)
+	assert.Equal(t, "remote", c.Parent().Name)
+	assert.Equal(t, "git", c.Root().Name)
+
+	// empty will return self
+	c = r.MatchByPath("")
+	assert.NotNil(t, c)
+	assert.Equal(t, "git", c.Name)
+
+	c = r.MatchByPath("not-exist")
+	assert.Nil(t, c)
 }
 
-func TestCommand_RunWithSubs(t *testing.T) {
+func TestCommand_Run_oneLevelSub(t *testing.T) {
 	err := r.Run([]string{"add", "./"})
 	fmt.Println(err)
+}
 
-	err = r.Run([]string{"remote", "add", "origin", "https://github.com/inhere/goblog"})
+func TestCommand_Run_moreLevelSub(t *testing.T) {
+	err := r.Run([]string{
+		"remote",
+		"add",
+		"origin",
+		"https://github.com/inhere/goblog",
+	})
 	fmt.Println(err)
 }
 

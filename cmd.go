@@ -107,24 +107,6 @@ func NewCommand(name, desc string, fn ...func(c *Command)) *Command {
 }
 
 // SetFunc Settings command handler func
-func (c *Command) Match(nodes []string) *Command {
-	// must ensure is initialized
-	c.initialize()
-
-	ln := len(nodes)
-	if ln == 0 {
-		return c
-	}
-
-	return c.commandBase.Match(nodes)
-}
-
-// Match command by path. eg. "top:sub"
-func (c *Command) MatchByPath(path string) *Command {
-	return c.Match(strings.Split(path, CommandSep))
-}
-
-// SetFunc Settings command handler func
 func (c *Command) SetFunc(fn RunnerFunc) *Command {
 	c.Func = fn
 	return c
@@ -179,6 +161,24 @@ func (c *Command) AddCommand(sub *Command) {
 
 	// do add
 	c.commandBase.addCommand(sub)
+}
+
+// SetFunc Settings command handler func
+func (c *Command) Match(nodes []string) *Command {
+	// must ensure is initialized
+	c.initialize()
+
+	ln := len(nodes)
+	if ln == 0 {
+		return c
+	}
+
+	return c.commandBase.Match(nodes)
+}
+
+// Match command by path. eg. "top:sub"
+func (c *Command) MatchByPath(path string) *Command {
+	return c.Match(strings.Split(path, CommandSep))
 }
 
 // init core
@@ -258,20 +258,6 @@ func (c *Command) NotAlone() bool {
 	return !c.alone
 }
 
-// Module name of the grouped command
-func (c *Command) ParentName() string {
-	if c.parent != nil {
-		return c.parent.Name
-	}
-
-	return ""
-}
-
-// SubName name of the grouped command
-func (c *Command) SubName() string {
-	return c.subName
-}
-
 // ID get command ID name.
 func (c *Command) goodName() string {
 	name := strings.Trim(strings.TrimSpace(c.Name), ": ")
@@ -309,6 +295,20 @@ func (c *Command) Root() *Command {
 // SetParent set parent
 func (c *Command) SetParent(parent *Command) {
 	c.parent = parent
+}
+
+// Module name of the grouped command
+func (c *Command) ParentName() string {
+	if c.parent != nil {
+		return c.parent.Name
+	}
+
+	return ""
+}
+
+// SubName name of the grouped command
+func (c *Command) SubName() string {
+	return c.subName
 }
 
 // find sub command by name
@@ -393,36 +393,11 @@ func (c *Command) execute(args []string) (err error) {
 	return
 }
 
-// Fire event handler by name
-func (c *Command) Fire(event string, data interface{}) {
-	Logf(VerbDebug, "command '%s' trigger the event: <mga>%s</>", c.Name, event)
-
-	c.Hooks.Fire(event, c, data)
-}
-
-// On add hook handler for a hook event
-func (c *Command) On(name string, handler HookFunc) {
-	Logf(VerbDebug, "command '%s' add hook: %s", c.Name, name)
-
-	c.Hooks.On(name, handler)
-}
-
-// Copy a new command for current
-func (c *Command) Copy() *Command {
-	nc := *c
-	// reset some fields
-	nc.Func = nil
-	nc.Hooks.ClearHooks()
-	// nc.Flags = flag.FlagSet{}
-
-	return &nc
-}
-
 /*************************************************************
  * alone running
  *************************************************************/
 
-var errCallRun = errors.New("this method can only be called in standalone mode")
+var errCallRun = errors.New("c.Run() method can only be called in standalone mode")
 
 // MustRun Alone the current command, will panic on error
 func (c *Command) MustRun(inArgs []string) {
@@ -483,6 +458,31 @@ func (c *Command) Run(inArgs []string) (err error) {
 	}
 
 	return c.execute(inArgs)
+}
+
+// Fire event handler by name
+func (c *Command) Fire(event string, data interface{}) {
+	Logf(VerbDebug, "command '%s' trigger the event: <mga>%s</>", c.Name, event)
+
+	c.Hooks.Fire(event, c, data)
+}
+
+// On add hook handler for a hook event
+func (c *Command) On(name string, handler HookFunc) {
+	Logf(VerbDebug, "command '%s' add hook: %s", c.Name, name)
+
+	c.Hooks.On(name, handler)
+}
+
+// Copy a new command for current
+func (c *Command) Copy() *Command {
+	nc := *c
+	// reset some fields
+	nc.Func = nil
+	nc.Hooks.ClearHooks()
+	// nc.Flags = flag.FlagSet{}
+
+	return &nc
 }
 
 /*************************************************************
