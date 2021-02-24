@@ -128,7 +128,7 @@ func (b commandBase) addCommand(c *Command) {
 	b.commands[cName] = c
 }
 
-// Match command by path. eg. "top:sub"
+// Match command by path names. eg. ["top", "sub"]
 func (b commandBase) Match(names []string) *Command {
 	ln := len(names)
 	if ln == 0 {
@@ -152,9 +152,19 @@ func (b commandBase) Match(names []string) *Command {
 	return c
 }
 
-// Match command by path. eg. "top:sub"
+// Match command by path. eg. "top:sub" or "top sub"
 func (b commandBase) MatchByPath(path string) *Command {
-	return b.Match(strings.Split(path, CommandSep))
+	var names []string
+	path = strings.TrimSpace(path)
+	if path != "" {
+		if strings.ContainsRune(path, ' ') {
+			names = strings.Split(path, " ")
+		} else {
+			names = strings.Split(path, CommandSep)
+		}
+	}
+
+	return b.Match(names)
 }
 
 // GetCommand get command by name. eg "sub"

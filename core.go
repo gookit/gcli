@@ -15,6 +15,7 @@ import (
 // core definition TODO rename to context ??
 type core struct {
 	*cmdLine
+	SimplePrinter
 	// HelpVars help template vars.
 	HelpVars
 	// Hooks manage. allowed hooks: "init", "before", "after", "error"
@@ -54,21 +55,6 @@ func (c core) parseGlobalOpts(args []string) (ok bool) {
 	return true
 }
 
-// Println message
-func (c core) Println(a ...interface{}) {
-	fmt.Println(a...)
-}
-
-// Infoln message
-func (c core) Infoln(a ...interface{}) {
-	color.Info.Println(a...)
-}
-
-// Warnln message
-func (c core) Warnln(a ...interface{}) {
-	color.Warn.Println(a...)
-}
-
 // GlobalFlags get the app GlobalFlags
 func (c core) GlobalFlags() *Flags {
 	return c.gFlags
@@ -82,6 +68,39 @@ func (c core) innerHelpVars() map[string]string {
 		"binFile": CLI.binFile,
 		"binName": CLI.binName,
 	}
+}
+
+// SimplePrinter struct. for inject struct
+type SimplePrinter struct {}
+
+// Print message
+func (s SimplePrinter) Print(v ...interface{}) {
+	color.Print(v...)
+}
+
+// Printf message
+func (s SimplePrinter) Printf(format string, v ...interface{}) {
+	color.Printf(format, v...)
+}
+
+// Println message
+func (s SimplePrinter) Println(v ...interface{}) {
+	color.Println(v...)
+}
+
+// Infoln message
+func (s SimplePrinter) Infoln(a ...interface{}) {
+	color.Info.Println(a...)
+}
+
+// Warnln message
+func (s SimplePrinter) Warnln(a ...interface{}) {
+	color.Warn.Println(a...)
+}
+
+// Errorln message
+func (s SimplePrinter) Errorln(a ...interface{}) {
+	color.Error.Println(a...)
 }
 
 /*************************************************************

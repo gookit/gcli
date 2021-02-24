@@ -66,9 +66,9 @@ func main() {
 
 	app.Add(builtin.GenAutoComplete())
 	// create by func
-	app.NewCommand("test1", "description1", func(c *gcli.Command) {
+	gcli.NewCommand("test1", "description1", func(c *gcli.Command) {
 		// some config for the command
-	}).SetFunc(func(c *gcli.Command, args []string) error {
+	}).WithFunc(func(c *gcli.Command, args []string) error {
 		color.Green.Println("hello, command is: ", c.Name)
 		return nil
 	}).AttachTo(app)

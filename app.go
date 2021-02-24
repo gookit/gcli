@@ -170,9 +170,9 @@ func (app *App) initialize() {
 }
 
 // NewCommand create a new command
-func (app *App) NewCommand(name, useFor string, config func(c *Command)) *Command {
-	return NewCommand(name, useFor, config)
-}
+// func (app *App) NewCommand(name, useFor string, config func(c *Command)) *Command {
+// 	return NewCommand(name, useFor, config)
+// }
 
 // Add add one or multi command(s)
 func (app *App) Add(c *Command, more ...*Command) {

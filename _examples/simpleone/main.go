@@ -13,8 +13,8 @@ var opts = struct {
 	sample     bool
 }{}
 
-// test run: go build ./_examples/alone && ./alone -h
-// test run: go rum ./_examples/alone
+// test run: go build ./_examples/simpleone && ./simpleone -h
+// test run: go run ./_examples/simpleone
 func main() {
 	cmd := gcli.Command{
 		Name:    "test",
@@ -27,8 +27,8 @@ func main() {
 	cmd.BoolOpt(&opts.list, "list", "", false, "Lists all available fonts.")
 	cmd.BoolOpt(&opts.sample, "sample", "", false, "Prints a sample with that font.")
 
-	cmd.Func = func(_ *gcli.Command, args []string) error {
-		gcli.Print("hello, in the alone command\n")
+	cmd.Func = func(c *gcli.Command, args []string) error {
+		c.Infoln("hello, in the alone command")
 
 		// fmt.Printf("%+v\n", cmd.Flags)
 		fmt.Printf("opts %+v\n", opts)

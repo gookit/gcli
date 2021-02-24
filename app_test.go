@@ -91,7 +91,7 @@ func TestApp_Add(t *testing.T) {
 	is := assert.New(t)
 
 	app := gcli.NewApp()
-	app.Add(app.NewCommand("c1", "c1 desc", func(c *gcli.Command) {
+	app.Add(gcli.NewCommand("c1", "c1 desc", func(c *gcli.Command) {
 		is.Equal("c1", c.Name)
 	}), gcli.NewCommand("c2", "c2 desc", func(c *gcli.Command) {
 		is.Equal("c2", c.Name)

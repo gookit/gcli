@@ -43,8 +43,8 @@ type Command struct {
 	middles HandlersChain
 	// errorHandler // loop find parent.errorHandler
 
-	// path of the command. 'parent current'
-	path string
+	// path names of the command. 'parent current'
+	pathNames []string
 
 	// Parent parent command
 	parent *Command
@@ -72,7 +72,7 @@ type Command struct {
 	// Arguments for the command
 	Arguments
 	// CustomFlags indicates that the command will do its own flag parsing.
-	CustomFlags bool
+	// CustomFlags bool
 
 	// application
 	app *App
@@ -80,8 +80,6 @@ type Command struct {
 	alone bool
 	// mark is disabled. if true will skip register to cli-app.
 	disabled bool
-	// all option names of the command
-	// optNames map[string]string
 }
 
 // NewCommand create a new command instance.
@@ -107,7 +105,12 @@ func NewCommand(name, desc string, fn ...func(c *Command)) *Command {
 }
 
 // SetFunc Settings command handler func
-func (c *Command) SetFunc(fn RunnerFunc) *Command {
+func (c *Command) SetFunc(fn RunnerFunc) {
+	c.Func = fn
+}
+
+// WithFunc Settings command handler func
+func (c *Command) WithFunc(fn RunnerFunc) *Command {
 	c.Func = fn
 	return c
 }
@@ -117,9 +120,19 @@ func (c *Command) AttachTo(app *App) {
 	app.AddCommand(c)
 }
 
-// Path get command path
+// ID get command ID string
+func (c *Command) ID() string {
+	return strings.Join(c.pathNames, CommandSep)
+}
+
+// Path get command full path
 func (c *Command) Path() string {
-	return c.path
+	return strings.Join(c.pathNames, " ")
+}
+
+// PathNames get command path names
+func (c *Command) PathNames() []string {
+	return c.pathNames
 }
 
 // Disable set cmd is disabled
@@ -159,33 +172,36 @@ func (c *Command) AddCommand(sub *Command) {
 	// initialize command
 	c.initialize()
 
+	// extend path names from parent
+	sub.pathNames = c.pathNames[0:]
+
 	// do add
 	c.commandBase.addCommand(sub)
 }
 
-// SetFunc Settings command handler func
-func (c *Command) Match(nodes []string) *Command {
+// Match sub command by input names
+func (c *Command) Match(names []string) *Command {
 	// must ensure is initialized
 	c.initialize()
 
-	ln := len(nodes)
-	if ln == 0 {
+	ln := len(names)
+	if ln == 0 { // return self.
 		return c
 	}
 
-	return c.commandBase.Match(nodes)
+	return c.commandBase.Match(names)
 }
 
 // Match command by path. eg. "top:sub"
-func (c *Command) MatchByPath(path string) *Command {
-	var names []string
-	path = strings.TrimSpace(path)
-	if path != "" {
-		names = strings.Split(path, CommandSep)
-	}
-
-	return c.Match(names)
-}
+// func (c *Command) MatchByPath(path string) *Command {
+// 	var names []string
+// 	path = strings.TrimSpace(path)
+// 	if path != "" {
+// 		names = strings.Split(path, CommandSep)
+// 	}
+//
+// 	return c.Match(names)
+// }
 
 // init core
 func (c *Command) initCore(cmdName string) {
@@ -225,6 +241,8 @@ func (c *Command) initialize() {
 			c.AddCommand(sub)
 		}
 	}
+
+	c.pathNames = append(c.pathNames, cName)
 
 	// init for cmd Arguments
 	c.Arguments.SetName(cName)
@@ -365,8 +383,8 @@ func (c *Command) Next() {
 var errCallRun = errors.New("c.Run() method can only be called in standalone mode")
 
 // MustRun Alone the current command, will panic on error
-func (c *Command) MustRun(inArgs []string) {
-	if err := c.Run(inArgs); err != nil {
+func (c *Command) MustRun(args []string) {
+	if err := c.Run(args); err != nil {
 		color.Error.Println("Run command error: %s", err.Error())
 		panic(err)
 	}
@@ -397,8 +415,8 @@ func (c *Command) Run(args []string) (err error) {
 	// add default error handler.
 	c.AddOn(EvtCmdError, defaultErrHandler)
 
-	// check input args
-	if len(args) == 0 {
+	// if not set input args
+	if args == nil {
 		args = os.Args[1:]
 	}
 
@@ -420,17 +438,10 @@ func (c *Command) Run(args []string) (err error) {
 		return
 	}
 
-	// parse flags
-	args, err = c.parseOptions(args)
-	if err != nil {
-		// ignore flag.ErrHelp error
-		if err == flag.ErrHelp {
-			err = nil
-		}
-		return
-	}
-
-	return c.innerExecute(args)
+	// dispatch and parse flags and execute command
+	return c.innerDispatch(args)
+	// parse flags and execute command
+	// return c.innerExecute(args, true)
 }
 
 /*************************************************************
@@ -474,17 +485,18 @@ func (c *Command) innerDispatch(args []string) (err error) {
 }
 
 // execute the command
-func (c *Command) innerExecute(args []string) (err error) {
+func (c *Command) innerExecute(args []string, igrErrHelp bool) (err error) {
 	// parse flags
 	args, err = c.parseOptions(args)
 	if err != nil {
-		// ignore flag.ErrHelp error
-		if err == flag.ErrHelp {
+		// whether ignore flag.ErrHelp error
+		if igrErrHelp && err == flag.ErrHelp {
 			err = nil
 		}
 		return
 	}
 
+	// do execute command
 	return c.doExecute(args)
 }
 

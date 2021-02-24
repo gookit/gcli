@@ -105,8 +105,12 @@ var r = &gcli.Command{
 		{
 			Name: "add",
 			Desc: "the clone command for git",
+			Config: func(c *gcli.Command) {
+				c.AddArg("files", "added files", true)
+			},
 			Func: func(c *gcli.Command, args []string) error {
-				dump.Println(c.Name)
+				bf.WriteString("command path: " + c.Path())
+				dump.Println(c.Name, args)
 				return nil
 			},
 		},
@@ -116,7 +120,7 @@ var r = &gcli.Command{
 			Desc: "remote command for git",
 			Aliases: []string{"rmt"},
 			Func: func(c *gcli.Command, args []string) error {
-				dump.Println(c.Name)
+				dump.Println(c.Path())
 				return nil
 			},
 			Subs: []*gcli.Command{
@@ -124,8 +128,12 @@ var r = &gcli.Command{
 				{
 					Name: "add",
 					Desc: "add command for git remote",
+					Config: func(c *gcli.Command) {
+						c.AddArg("name", "the remote name", true)
+						c.AddArg("address", "the remote address", true)
+					},
 					Func: func(c *gcli.Command, args []string) error {
-						dump.Println(c.Name)
+						dump.Println(c.Path())
 						return nil
 					},
 				},
@@ -134,7 +142,7 @@ var r = &gcli.Command{
 					Name: "set-url",
 					Desc: "set-url command for git remote",
 					Func: func(c *gcli.Command, args []string) error {
-						dump.Println(c.Name)
+						dump.Println(c.Path())
 						return nil
 					},
 				},
@@ -142,8 +150,8 @@ var r = &gcli.Command{
 		},
 	},
 	Func: func(c *gcli.Command, args []string) error {
-		bf.WriteString("at command: " + c.Name)
-		dump.Println(c.Name, args)
+		bf.WriteString("command path: " + c.Path())
+		dump.Println(c.Path(), args)
 		return nil
 	},
 }
@@ -192,16 +200,17 @@ func TestCommand_Run_oneLevelSub(t *testing.T) {
 }
 
 func TestCommand_Run_moreLevelSub(t *testing.T) {
-	assert.True(t, r.IsAlias("rmt"))
-	assert.False(t, r.IsAlias("not-exist"))
-	assert.Equal(t, "remote", r.ResolveAlias("rmt"))
-
 	err := r.Run([]string{
 		"remote",
 		"add",
 		"origin",
 		"https://github.com/inhere/goblog",
 	})
+
+	assert.True(t, r.IsAlias("rmt"))
+	assert.False(t, r.IsAlias("not-exist"))
+	assert.Equal(t, "remote", r.ResolveAlias("rmt"))
+
 	fmt.Println(err)
 }
 

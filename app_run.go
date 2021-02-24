@@ -168,7 +168,7 @@ func (app *App) doRun(name string, args []string) (code int) {
 	Logf(VerbDebug, "args on parse end: %v", args)
 
 	// do execute command
-	if err := cmd.innerExecute(args); err != nil {
+	if err := cmd.innerExecute(args, true); err != nil {
 		code = ERR
 		app.fireEvent(EvtAppError, err)
 	} else {
@@ -185,18 +185,8 @@ func (app *App) Exec(name string, args []string) (err error) {
 
 	cmd := app.commands[name]
 
-	// parse command flags
-	args, err = cmd.parseOptions(args)
-	if err != nil {
-		// ignore flag.ErrHelp error
-		// if err != flag.ErrHelp {
-		// 	return
-		// }
-		return
-	}
-
-	// do execute command
-	return cmd.doExecute(args)
+	// parse flags and execute command
+	return cmd.innerExecute(args, false)
 }
 
 // CommandName get current command name
