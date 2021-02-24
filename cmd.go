@@ -227,9 +227,10 @@ func (c *Command) initialize() {
 	cName := c.goodName()
 
 	// init core
-	c.initCore(cName)
 	// c.core.init(cName)
 	// c.core = newCore(cName)
+	c.initCore(cName)
+	c.pathNames = append(c.pathNames, cName)
 
 	// init commandBase
 	c.commandBase = newCommandBase()
@@ -241,8 +242,6 @@ func (c *Command) initialize() {
 			c.AddCommand(sub)
 		}
 	}
-
-	c.pathNames = append(c.pathNames, cName)
 
 	// init for cmd Arguments
 	c.Arguments.SetName(cName)

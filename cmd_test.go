@@ -133,7 +133,8 @@ var r = &gcli.Command{
 						c.AddArg("address", "the remote address", true)
 					},
 					Func: func(c *gcli.Command, args []string) error {
-						dump.Println(c.Path())
+						bf.WriteString("command path: " + c.Path())
+						dump.Println(c.Path(), args)
 						return nil
 					},
 				},
@@ -142,7 +143,8 @@ var r = &gcli.Command{
 					Name: "set-url",
 					Desc: "set-url command for git remote",
 					Func: func(c *gcli.Command, args []string) error {
-						dump.Println(c.Path())
+						bf.WriteString("command path: " + c.Path())
+						dump.Println(c.Path(), args)
 						return nil
 					},
 				},
@@ -200,18 +202,19 @@ func TestCommand_Run_oneLevelSub(t *testing.T) {
 }
 
 func TestCommand_Run_moreLevelSub(t *testing.T) {
+	bf.Reset() // reset buffer
 	err := r.Run([]string{
 		"remote",
 		"add",
 		"origin",
-		"https://github.com/inhere/goblog",
+		"https://github.com/inhere/console",
 	})
 
+	assert.NoError(t, err)
 	assert.True(t, r.IsAlias("rmt"))
 	assert.False(t, r.IsAlias("not-exist"))
 	assert.Equal(t, "remote", r.ResolveAlias("rmt"))
-
-	fmt.Println(err)
+	assert.Equal(t, "command path: git remote add", bf.String())
 }
 
 func TestCommand_ParseFlag(t *testing.T) {
