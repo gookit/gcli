@@ -1,6 +1,7 @@
 package gcli_test
 
 import (
+	"bytes"
 	"fmt"
 	"testing"
 
@@ -94,6 +95,7 @@ func TestCommand_Run(t *testing.T) {
 	is.Error(err)
 }
 
+var bf = new(bytes.Buffer)
 // l0: root command
 var r = &gcli.Command{
 	Name: "git",
@@ -140,7 +142,8 @@ var r = &gcli.Command{
 		},
 	},
 	Func: func(c *gcli.Command, args []string) error {
-		dump.Println(c.Name)
+		bf.WriteString("at command: " + c.Name)
+		dump.Println(c.Name, args)
 		return nil
 	},
 }
@@ -171,17 +174,21 @@ func TestCommand_MatchByPath(t *testing.T) {
 func TestCommand_Sub(t *testing.T) {
 	r.MatchByPath("") // use for init
 
-	assert.True(t, r.HasCommand("add"))
+	assert.True(t, r.IsRoot())
+	assert.True(t, r.IsCommand("remote"))
 	assert.True(t, r.IsCommand("remote"))
 
 	c := r.Sub("add")
 	assert.NotNil(t, c)
+	assert.False(t, c.IsRoot())
 	assert.Equal(t, "add", c.Name)
 }
 
 func TestCommand_Run_oneLevelSub(t *testing.T) {
+	bf.Reset() // reset buffer
+
 	err := r.Run([]string{"add", "./"})
-	fmt.Println(err)
+	assert.NoError(t, err)
 }
 
 func TestCommand_Run_moreLevelSub(t *testing.T) {

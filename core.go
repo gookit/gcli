@@ -12,11 +12,13 @@ import (
 	"github.com/gookit/color"
 )
 
-// core definition
+// core definition TODO rename to context ??
 type core struct {
 	*cmdLine
+	// HelpVars help template vars.
 	HelpVars
-	Hooks // allowed hooks: "init", "before", "after", "error"
+	// Hooks manage. allowed hooks: "init", "before", "after", "error"
+	Hooks
 	// global options flag set
 	gFlags *Flags
 	// GOptsBinder you can custom binding global options

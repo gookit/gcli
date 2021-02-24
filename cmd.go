@@ -286,11 +286,6 @@ func (c *Command) goodName() string {
  * parent and subs
  *************************************************************/
 
-// Parent get parent
-func (c *Command) Parent() *Command {
-	return c.parent
-}
-
 // Root get root command
 func (c *Command) Root() *Command {
 	if c.parent != nil {
@@ -298,6 +293,16 @@ func (c *Command) Root() *Command {
 	}
 
 	return c
+}
+
+// IsRoot command
+func (c *Command) IsRoot() bool {
+	return c.parent == nil
+}
+
+// Parent get parent
+func (c *Command) Parent() *Command {
+	return c.parent
 }
 
 // SetParent set parent
@@ -421,7 +426,7 @@ func (c *Command) MustRun(inArgs []string) {
 }
 
 // Run Alone running current command
-func (c *Command) Run(inArgs []string) (err error) {
+func (c *Command) Run(args []string) (err error) {
 	// - Running in application.
 	if c.app != nil {
 		return errCallRun
@@ -438,7 +443,6 @@ func (c *Command) Run(inArgs []string) (err error) {
 
 	// binding global options
 	bindingCommonGOpts(c.gFlags)
-	// TODO parse global options
 
 	// init the command
 	c.initialize()
@@ -447,8 +451,16 @@ func (c *Command) Run(inArgs []string) (err error) {
 	c.AddOn(EvtCmdError, defaultErrHandler)
 
 	// check input args
-	if len(inArgs) == 0 {
-		inArgs = os.Args[1:]
+	if len(args) == 0 {
+		args = os.Args[1:]
+	}
+
+	// parse global options
+	gf := c.GlobalFlags()
+	err = gf.Parse(args)
+	if err != nil {
+		color.Error.Tips(err.Error())
+		return
 	}
 
 	// if Command.CustomFlags=true, will not run Flags.Parse()
@@ -460,7 +472,7 @@ func (c *Command) Run(inArgs []string) (err error) {
 		}
 
 		// if CustomFlags=true, will not run Flags.Parse()
-		inArgs, err = c.parseFlags(inArgs)
+		args, err = c.parseFlags(args)
 		if err != nil {
 			// ignore flag.ErrHelp error
 			if err == flag.ErrHelp {
@@ -470,7 +482,7 @@ func (c *Command) Run(inArgs []string) (err error) {
 		}
 	}
 
-	return c.execute(inArgs)
+	return c.execute(args)
 }
 
 // Fire event handler by name
