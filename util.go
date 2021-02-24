@@ -101,7 +101,10 @@ func panicf(format string, v ...interface{}) {
 // 	Exit(0)
 // }
 
-// strictFormatArgs '-ab' will split to '-a -b', '--o' -> '-o'
+// strictFormatArgs
+// TODO mode:
+//  POSIX '-ab' will split to '-a -b', '--o' -> '-o'
+//  UNIX '-ab' will split to '-a b'
 func strictFormatArgs(args []string) (fmtArgs []string) {
 	if len(args) == 0 {
 		return args

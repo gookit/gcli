@@ -172,7 +172,8 @@ func (fs *Flags) RawArg(i int) string {
 	return fs.fSet.Arg(i)
 }
 
-// RawArgs get all raw arguments
+// RawArgs get all raw arguments.
+// if have been called parse, the return is remaining args.
 func (fs *Flags) RawArgs() []string {
 	return fs.fSet.Args()
 }

@@ -146,31 +146,29 @@ func (app *App) doRun(name string, args []string) (code int) {
 	Logf(VerbDebug, "command '%s' raw flags: %v", name, args)
 
 	// if Command.CustomFlags=true, will not run Flags.Parse()
-	if !cmd.CustomFlags {
-		// contains keywords "-h" OR "--help" on end
-		if CLI.hasHelpKeywords() {
-			Logf(VerbDebug, "contains help keywords in flags, render command help message")
-			cmd.ShowHelp()
+	// contains keywords "-h" OR "--help" on end
+	if cmd.hasHelpKeywords() {
+		Logf(VerbDebug, "contains help keywords in flags, render command help message")
+		cmd.ShowHelp()
+		return
+	}
+
+	// parse options, don't contains command name.
+	args, err = cmd.parseOptions(args)
+	if err != nil {
+		// if is flag.ErrHelp error
+		if err == flag.ErrHelp {
 			return
 		}
 
-		// parse options, don't contains command name.
-		args, err = cmd.parseFlags(args)
-		if err != nil {
-			// if is flag.ErrHelp error
-			if err == flag.ErrHelp {
-				return
-			}
-
-			color.Error.Tips("Flags parse error - %s", err.Error())
-			return ERR
-		}
+		color.Error.Tips("Flags parse error - %s", err.Error())
+		return ERR
 	}
 
 	Logf(VerbDebug, "args on parse end: %v", args)
 
 	// do execute command
-	if err := cmd.execute(args); err != nil {
+	if err := cmd.innerExecute(args); err != nil {
 		code = ERR
 		app.fireEvent(EvtAppError, err)
 	} else {
@@ -187,21 +185,18 @@ func (app *App) Exec(name string, args []string) (err error) {
 
 	cmd := app.commands[name]
 
-	// if Command.CustomFlags=true, will not run Flags.Parse()
-	if !cmd.CustomFlags {
-		// parse command flags
-		args, err = cmd.parseFlags(args)
-		if err != nil {
-			// ignore flag.ErrHelp error
-			// if err != flag.ErrHelp {
-			// 	return
-			// }
-			return
-		}
+	// parse command flags
+	args, err = cmd.parseOptions(args)
+	if err != nil {
+		// ignore flag.ErrHelp error
+		// if err != flag.ErrHelp {
+		// 	return
+		// }
+		return
 	}
 
 	// do execute command
-	return cmd.execute(args)
+	return cmd.doExecute(args)
 }
 
 // CommandName get current command name

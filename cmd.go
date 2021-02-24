@@ -329,6 +329,11 @@ func (c *Command) SubCommand(name string) *Command {
 	return c.GetCommand(name)
 }
 
+// IsSubCommand name check. alias of the HasCommand()
+func (c *Command) IsSubCommand(name string) bool {
+	return c.IsCommand(name)
+}
+
 // find sub command by name
 // func (c *Command) findSub(name string) *Command {
 // 	if index, ok := c.subName2index[name]; ok {
@@ -338,7 +343,7 @@ func (c *Command) SubCommand(name string) *Command {
 // 	return nil
 // }
 
-// Next processing, run all middleware handlers
+// Next TODO processing, run all middleware handlers
 func (c *Command) Next() {
 	c.middleIdx++
 	s := int8(len(c.middles))
@@ -351,64 +356,6 @@ func (c *Command) Next() {
 			return
 		}
 	}
-}
-
-/*************************************************************
- * command run
- *************************************************************/
-
-// do parse option flags, remaining is cmd args
-func (c *Command) parseFlags(args []string) (ss []string, err error) {
-	// strict format options
-	if gOpts.strictMode && len(args) > 0 {
-		args = strictFormatArgs(args)
-	}
-
-	// fix and compatible
-	// args = moveArgumentsToEnd(args)
-	Logf(VerbDebug, "flags on after format: %v", args)
-
-	// NOTICE: disable output internal error message on parse flags
-	// c.FSet().SetOutput(ioutil.Discard)
-
-	// parse options, don't contains command name.
-	if err = c.Parse(args); err != nil {
-		return
-	}
-
-	// remaining args
-	return c.Flags.RawArgs(), nil
-}
-
-// prepare: before execute the command
-func (c *Command) prepare(_ []string) (status int, err error) {
-	return
-}
-
-// do execute the command
-func (c *Command) execute(args []string) (err error) {
-	c.Fire(EvtCmdBefore, args)
-
-	// collect and binding named args
-	if err := c.ParseArgs(args); err != nil {
-		c.Fire(EvtCmdError, err)
-		return err
-	}
-
-	// call command handler func
-	if c.Func == nil {
-		Logf(VerbWarn, "the command '%s' no handler func to running", c.Name)
-	} else {
-		// err := c.Func.Run(c, args)
-		err = c.Func(c, args)
-	}
-
-	if err != nil {
-		c.Fire(EvtCmdError, err)
-	} else {
-		c.Fire(EvtCmdAfter, nil)
-	}
-	return
 }
 
 /*************************************************************
@@ -463,51 +410,136 @@ func (c *Command) Run(args []string) (err error) {
 		return
 	}
 
-	// if Command.CustomFlags=true, will not run Flags.Parse()
-	if !c.CustomFlags {
-		// contains keywords "-h" OR "--help" on end
-		if c.hasHelpKeywords() {
-			c.ShowHelp()
-			return
-		}
+	// remaining args
+	// args = gf.fSet.Args()
+	args = gf.RawArgs()
 
-		// if CustomFlags=true, will not run Flags.Parse()
-		args, err = c.parseFlags(args)
-		if err != nil {
-			// ignore flag.ErrHelp error
-			if err == flag.ErrHelp {
-				err = nil
+	// contains keywords "-h" OR "--help" on end
+	if c.hasHelpKeywords() {
+		c.ShowHelp()
+		return
+	}
+
+	// parse flags
+	args, err = c.parseOptions(args)
+	if err != nil {
+		// ignore flag.ErrHelp error
+		if err == flag.ErrHelp {
+			err = nil
+		}
+		return
+	}
+
+	return c.innerExecute(args)
+}
+
+/*************************************************************
+ * command run
+ *************************************************************/
+
+// dispatch execute the command
+func (c *Command) innerDispatch(args []string) (err error) {
+	// parse command flags
+	args, err = c.parseOptions(args)
+	if err != nil {
+		// ignore flag.ErrHelp error
+		if err == flag.ErrHelp {
+			err = nil
+			// TODO call show help on there
+			// c.ShowHelp()
+		}
+		return
+	}
+
+	// find sub command
+	if len(args) > 0 {
+		name := args[0]
+
+		// ensure is not an option
+		if name[0] != '-' {
+			name = c.ResolveAlias(name)
+
+			// name is an sub command name?
+			if c.IsCommand(name) {
+				sub := c.Command(args[0])
+
+				// loop find sub...command and run it.
+				return sub.innerDispatch(args[1:])
 			}
-			return
 		}
 	}
 
-	return c.execute(args)
+	// do execute command
+	return c.doExecute(args)
 }
 
-// Fire event handler by name
-func (c *Command) Fire(event string, data interface{}) {
-	Logf(VerbDebug, "command '%s' trigger the event: <mga>%s</>", c.Name, event)
+// execute the command
+func (c *Command) innerExecute(args []string) (err error) {
+	// parse flags
+	args, err = c.parseOptions(args)
+	if err != nil {
+		// ignore flag.ErrHelp error
+		if err == flag.ErrHelp {
+			err = nil
+		}
+		return
+	}
 
-	c.Hooks.Fire(event, c, data)
+	return c.doExecute(args)
 }
 
-// On add hook handler for a hook event
-func (c *Command) On(name string, handler HookFunc) {
-	Logf(VerbDebug, "command '%s' add hook: %s", c.Name, name)
+// do parse option flags, remaining is cmd args
+func (c *Command) parseOptions(args []string) (ss []string, err error) {
+	// strict format options
+	if gOpts.strictMode && len(args) > 0 {
+		args = strictFormatArgs(args)
+	}
 
-	c.Hooks.On(name, handler)
+	// fix and compatible
+	// args = moveArgumentsToEnd(args)
+	Logf(VerbDebug, "option flags on after format: %v", args)
+
+	// NOTICE: disable output internal error message on parse flags
+	// c.FSet().SetOutput(ioutil.Discard)
+
+	// parse options, don't contains command name.
+	if err = c.Parse(args); err != nil {
+		return
+	}
+
+	// remaining args
+	return c.Flags.RawArgs(), nil
 }
 
-// Copy a new command for current
-func (c *Command) Copy() *Command {
-	nc := *c
-	// reset some fields
-	nc.Func = nil
-	nc.Hooks.ClearHooks()
-	// nc.Flags = flag.FlagSet{}
+// prepare: before execute the command
+func (c *Command) prepare(_ []string) (status int, err error) {
+	return
+}
 
-	return &nc
+// do execute the command
+func (c *Command) doExecute(args []string) (err error) {
+	c.Fire(EvtCmdBefore, args)
+
+	// collect and binding named argument
+	if err := c.ParseArgs(args); err != nil {
+		c.Fire(EvtCmdError, err)
+		return err
+	}
+
+	// do call command handler func
+	if c.Func == nil {
+		Logf(VerbWarn, "the command '%s' no handler func to running", c.Name)
+	} else {
+		// err := c.Func.Run(c, args)
+		err = c.Func(c, args)
+	}
+
+	if err != nil {
+		c.Fire(EvtCmdError, err)
+	} else {
+		c.Fire(EvtCmdAfter, nil)
+	}
+	return
 }
 
 /*************************************************************
@@ -569,6 +601,31 @@ func (c *Command) ShowHelp() {
 /*************************************************************
  * helper methods
  *************************************************************/
+
+// Fire event handler by name
+func (c *Command) Fire(event string, data interface{}) {
+	Logf(VerbDebug, "command '%s' trigger the event: <mga>%s</>", c.Name, event)
+
+	c.Hooks.Fire(event, c, data)
+}
+
+// On add hook handler for a hook event
+func (c *Command) On(name string, handler HookFunc) {
+	Logf(VerbDebug, "command '%s' add hook: %s", c.Name, name)
+
+	c.Hooks.On(name, handler)
+}
+
+// Copy a new command for current
+func (c *Command) Copy() *Command {
+	nc := *c
+	// reset some fields
+	nc.Func = nil
+	nc.Hooks.ClearHooks()
+	// nc.Flags = flag.FlagSet{}
+
+	return &nc
+}
 
 // App returns the CLI application
 func (c *Command) App() *App {
