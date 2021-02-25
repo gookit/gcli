@@ -101,6 +101,14 @@ func panicf(format string, v ...interface{}) {
 // 	Exit(0)
 // }
 
+func isValidCmdName(name string) bool {
+	if name[0] == '-' { // is option name.
+		return false
+	}
+
+	return goodCmdName.MatchString(name)
+}
+
 // strictFormatArgs
 // TODO mode:
 //  POSIX '-ab' will split to '-a -b', '--o' -> '-o'

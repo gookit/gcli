@@ -194,6 +194,14 @@ func TestCommand_Sub(t *testing.T) {
 	assert.Equal(t, "add", c.Name)
 }
 
+func TestCommand_Run_top(t *testing.T) {
+	bf.Reset() // reset buffer
+
+	err := r.Run([]string{})
+	assert.NoError(t, err)
+	assert.Equal(t, "command path: git", bf.String())
+}
+
 func TestCommand_Run_oneLevelSub(t *testing.T) {
 	bf.Reset() // reset buffer
 

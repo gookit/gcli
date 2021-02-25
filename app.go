@@ -34,27 +34,19 @@ type App struct {
 	Name string
 	// Desc app description
 	Desc string
-	// Logo ASCII logo setting
-	// Logo Logo
-	// Args default is equals to os.args
-	Args []string
+	// Func on run app, if is empty will display help.
+	Func func(app *App, args []string) error
 	// ExitOnEnd call os.Exit on running end
 	ExitOnEnd bool
 	// ExitFunc default is os.Exit
 	ExitFunc func(int)
-	// vars you can add some vars map for render help info
-	// vars map[string]string
-	// command names. key is name, value is name string length
-	// eg. {"test": 4, "example": 7}
-	names map[string]int
 
-	// command aliases map. {alias: name}
-	// aliases map[string]string
-
-	// all commands by module
+	// args on after parse global options and command name.
+	args []string
+	// all commands by module TODO remove
 	moduleCommands map[string]map[string]*Command
 
-	rawFlagArgs []string
+	// rawFlagArgs []string
 	// clean os.args, not contains bin-name and command-name
 	cleanArgs []string
 	// current command name
@@ -71,7 +63,6 @@ type App struct {
 // 	})
 func NewApp(fn ...func(app *App)) *App {
 	app := &App{
-		Args: os.Args,
 		Name: "GCli App",
 		Desc: "This is my console application",
 		// set a default version
@@ -153,7 +144,7 @@ func (app *App) initialize() {
 		return
 	}
 
-	app.names = make(map[string]int)
+	// app.names = make(map[string]int)
 
 	// init some help tpl vars
 	app.core.AddVars(app.core.innerHelpVars())

@@ -30,6 +30,8 @@ type Command struct {
 
 	// Aliases is the command name's alias names
 	Aliases []string
+	// Category for the command
+	Category string
 	// Config func, will call on `initialize`.
 	// - you can config options and other init works
 	Config func(c *Command)

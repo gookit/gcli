@@ -60,6 +60,11 @@ func (c core) GlobalFlags() *Flags {
 	return c.gFlags
 }
 
+// RawOsArgs get the raw os.Args
+func (c core) RawOsArgs() []string {
+	return os.Args
+}
+
 // common basic help vars
 func (c core) innerHelpVars() map[string]string {
 	return map[string]string{

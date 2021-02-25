@@ -3,6 +3,7 @@ package gcli
 import (
 	"flag"
 	"fmt"
+	"os"
 	"strings"
 	"text/template"
 
@@ -41,12 +42,12 @@ func (app *App) parseGlobalOpts(args []string) (ok bool) {
 		color.Enable = false
 	}
 
-	app.rawFlagArgs = gf.FSet().Args()
+	app.args = gf.FSet().Args()
 	Logf(VerbDebug, "console debug is enabled, verbose level is <mgb>%d</>", gOpts.verbose)
 
 	// TODO show auto-completion for bash/zsh
 	if gOpts.inCompletion {
-		app.showAutoCompletion(app.rawFlagArgs)
+		app.showAutoCompletion(app.args)
 		return
 	}
 
@@ -55,12 +56,17 @@ func (app *App) parseGlobalOpts(args []string) (ok bool) {
 
 // prepare to running, parse args, get command name and command args
 func (app *App) prepareRun() (code int) {
-	args := app.rawFlagArgs
+	args := app.args
 	// if no input command
 	if len(args) == 0 {
 		// will try run defaultCommand
 		defCmd := app.defaultCommand
 		if len(defCmd) == 0 {
+			if app.Func != nil {
+
+			}
+
+			Debugf("not input args, and ", defCmd)
 			app.showApplicationHelp()
 			return
 		}
@@ -72,7 +78,7 @@ func (app *App) prepareRun() (code int) {
 		}
 
 		args = []string{defCmd}
-	} else if args[0] == "help" { // is help command
+	} else if args[0] == HelpCommand { // is help command
 		if len(args) == 1 { // like 'help'
 			app.showApplicationHelp()
 			return
@@ -87,16 +93,83 @@ func (app *App) prepareRun() (code int) {
 	return GOON
 }
 
+func (app *App) findCommandName(args []string) (name string) {
+	// not input command, will try run app.defaultCommand
+	if len(args) == 0 {
+		name = app.defaultCommand
+
+		// It is empty
+		if name == "" {
+			return
+		}
+
+		// It is not an valid command name.
+		if false == app.IsCommand(name) {
+			Logf(VerbError, "the default command '%s' is invalid", defCmd)
+			return
+		}
+
+		return name
+	}
+
+	name = args[0]
+
+	// check is valid name string.
+	if isValidCmdName(name) {
+		realName := app.ResolveAlias(name)
+
+		// is valid command name.
+		if app.IsCommand(realName) {
+			app.args = args[1:] // update args.
+			app.inputName = name
+		}
+
+		return realName
+	}
+
+	return ""
+}
+
 // Run running application
-func (app *App) Run() (code int) {
+//
+// Usage:
+//	// run with os.Args
+//	app.Run(nil)
+//	app.Run(os.Args[1:])
+//	// custom args
+//	app.Run([]string{"cmd", ...})
+func (app *App) Run(args []string) (code int) {
 	// ensure application initialized
 	app.initialize()
 
-	Logf(VerbDebug, "will begin run cli application")
+	// if not set input args
+	if args == nil {
+		args = os.Args[1:] // exclude first arg, it's binFile.
+	}
+
+	Debugf("will begin run cli application. args: %v", args)
 
 	// parse global flags
-	if !app.parseGlobalOpts(app.Args[1:]) {
+	if !app.parseGlobalOpts(args) {
 		return app.exitIfExitOnEnd(code)
+	}
+
+	// find command name.
+	name := app.findCommandName(app.args)
+	// It is empty OR is help command name.
+	if name == "" || name == HelpCommand {
+		if len(app.args) == 0 { // like 'help'
+			app.showApplicationHelp()
+			return
+		}
+
+		var cmds []string
+		if isValidCmdName(app.args[0]) {
+			cmds = []string{app.args[0]}
+		}
+
+		// like 'help COMMAND'
+		return app.showCommandHelp(cmds)
 	}
 
 	if code = app.prepareRun(); code != GOON {
@@ -108,8 +181,8 @@ func (app *App) Run() (code int) {
 
 	Logf(VerbCrazy, "begin run console application, process ID: %d", app.PID())
 
-	args := app.cleanArgs
-	name := app.cmdAliases.ResolveAlias(app.inputName)
+	args = app.args
+	name = app.cmdAliases.ResolveAlias(app.inputName)
 
 	Debugf("input command: '<cyan>%s</>', real command: '<mga>%s</>', flags: %v", app.inputName, name, args)
 
@@ -138,7 +211,7 @@ func (app *App) exitIfExitOnEnd(code int) int {
 
 func (app *App) doRun(name string, args []string) (code int) {
 	var err error
-	cmd := app.commands[name]
+	cmd := app.Command(name)
 
 	app.commandName = name
 	app.fireEvent(EvtAppBefore, cmd.Copy())
@@ -175,6 +248,10 @@ func (app *App) doRun(name string, args []string) (code int) {
 		app.fireEvent(EvtAppAfter, nil)
 	}
 	return
+}
+
+func (app *App) runFunc() {
+
 }
 
 // Exec running other command in current command
