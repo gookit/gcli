@@ -1,7 +1,6 @@
 package gcli
 
 import (
-	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -169,52 +168,31 @@ func (app *App) Run(args []string) (code int) {
 	app.fireEvent(EvtAppPrepareAfter, app)
 
 	// do run input command
-	code = app.doRun(name, app.args)
+	code = app.doRunCmd(name, app.args)
 
 	Debugf("command '%s' run complete, exit with code: %d", name, code)
 	return app.exitOnEnd(code)
 }
 
-func (app *App) exitOnEnd(code int) int {
-	Debugf("application exit with code: %d", code)
-
-	if app.ExitOnEnd {
-		app.Exit(code)
-	}
-	return code
-}
-
-func (app *App) doRun(name string, args []string) (code int) {
-	var err error
-
+func (app *App) doRunCmd(name string, args []string) (code int) {
 	cmd := app.Command(name)
 	app.fireEvent(EvtAppBefore, cmd.Copy())
 
 	Debugf("will run command '%s' with args: %v", name, args)
 
 	// contains keywords "-h" OR "--help" on end
-	if cmd.hasHelpKeywords() {
-		Logf(VerbDebug, "contains help keywords in flags, render command help message")
-		cmd.ShowHelp()
-		return
-	}
+	// if cmd.hasHelpKeywords() {
+	// 	Logf(VerbDebug, "contains help keywords in flags, render command help message")
+	// 	cmd.ShowHelp()
+	// 	return
+	// }
 
 	// parse command options
-	args, err = cmd.parseOptions(args)
-	if err != nil {
-		// if is flag.ErrHelp error
-		if err == flag.ErrHelp {
-			return
-		}
-
-		color.Error.Tips("Flags parse error - %s", err.Error())
-		return ERR
-	}
-
-	Debugf("remain args on options parsed: %v", args)
+	// args, err = cmd.parseOptions(args)
 
 	// do execute command
-	if err := cmd.innerExecute(args, true); err != nil {
+	// if err := cmd.innerExecute(args, true); err != nil {
+	if err := cmd.innerDispatch(args); err != nil {
 		code = ERR
 		app.fireEvent(EvtAppError, err)
 	} else {
@@ -236,6 +214,15 @@ func (app *App) doRunFunc(args []string) (code int) {
 	}
 
 	return
+}
+
+func (app *App) exitOnEnd(code int) int {
+	Debugf("application exit with code: %d", code)
+
+	if app.ExitOnEnd {
+		app.Exit(code)
+	}
+	return code
 }
 
 // Exec running other command in current command

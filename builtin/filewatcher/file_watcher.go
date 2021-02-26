@@ -73,17 +73,17 @@ func watch(c *gcli.Command, _ []string) (err error) {
 		for {
 			select {
 			case event := <-watcher.Events:
-				c.Logf(gcli.VerbInfo, "event: %s", event)
+				gcli.Logf(gcli.VerbInfo, "event: %s", event)
 
 				if event.Op&fsnotify.Write == fsnotify.Write {
-					c.Logf(gcli.VerbDebug, "modified file: %s", event.Name)
+					gcli.Logf(gcli.VerbDebug, "modified file: %s", event.Name)
 				}
 
 				if opts.handler != nil {
 					opts.handler(event)
 				}
 			case err := <-watcher.Errors:
-				c.Logf(gcli.VerbError, "error: %s", err.Error())
+				gcli.Logf(gcli.VerbError, "error: %s", err.Error())
 			}
 		}
 	}()

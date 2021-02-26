@@ -8,5 +8,5 @@ func main() {
 	app.Desc = "manage the http server start,stop,restart"
 
 	app.Add(ServerStart(), ServerStop(), ServerRestart())
-	app.Run()
+	app.Run(nil)
 }

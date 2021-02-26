@@ -11,11 +11,11 @@ import (
 )
 
 // local run:
-// 	go run ./_examples/cliapp.go
-// 	go build ./_examples/cliapp.go && ./cliapp
+// 	go run ./_examples/cliapp
+// 	go build ./_examples/cliapp && ./cliapp
 //
 // run on windows(cmd, powerShell):
-// 	go build ./_examples/cliapp.go; ./cliapp
+// 	go build ./_examples/cliapp && ./cliapp
 func main() {
 	app := gcli.NewApp(func(app *gcli.App) {
 		app.Version = "1.0.6"
@@ -76,5 +76,5 @@ func main() {
 	// fmt.Printf("%+v\n", gcli.CommandNames())
 
 	// running
-	app.Run()
+	app.Run(nil)
 }

@@ -32,8 +32,6 @@ func TestNewCommand(t *testing.T) {
 	c.Disable()
 	is.True(c.IsDisabled())
 
-	c.Logf(gcli.VerbInfo, "command log")
-
 	// is.Equal("", c.ArgLine())
 	is.Equal("alias1,alias2", c.AliasesString())
 	is.Equal("alias1alias2", c.AliasesString(""))

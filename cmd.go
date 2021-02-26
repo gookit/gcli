@@ -23,6 +23,13 @@ type Command struct {
 	// Hooks // allowed hooks: "init", "before", "after", "error"
 	commandBase
 
+	// --- provide option and argument parse and binding.
+
+	// Flags options for the command
+	Flags
+	// Arguments for the command
+	Arguments
+
 	// Name is the full command name.
 	Name string
 	// Desc is the command description message.
@@ -53,8 +60,6 @@ type Command struct {
 
 	// Subs sub commands of the Command
 	Subs []*Command
-	// mapping sub-command.name => Subs.index of the Subs
-	// subName2index map[string]int
 
 	// module is the name for grouped commands
 	// subName is the name for grouped commands
@@ -69,10 +74,6 @@ type Command struct {
 	// HelpRender custom render cmd help message
 	HelpRender func(c *Command)
 
-	// Flags options for the command
-	Flags
-	// Arguments for the command
-	Arguments
 	// CustomFlags indicates that the command will do its own flag parsing.
 	// CustomFlags bool
 
@@ -120,21 +121,6 @@ func (c *Command) WithFunc(fn RunnerFunc) *Command {
 // AttachTo attach the command to CLI application
 func (c *Command) AttachTo(app *App) {
 	app.AddCommand(c)
-}
-
-// ID get command ID string
-func (c *Command) ID() string {
-	return strings.Join(c.pathNames, CommandSep)
-}
-
-// Path get command full path
-func (c *Command) Path() string {
-	return strings.Join(c.pathNames, " ")
-}
-
-// PathNames get command path names
-func (c *Command) PathNames() []string {
-	return c.pathNames
 }
 
 // Disable set cmd is disabled
@@ -434,10 +420,10 @@ func (c *Command) Run(args []string) (err error) {
 	args = gf.RawArgs()
 
 	// contains keywords "-h" OR "--help" on end
-	if c.hasHelpKeywords() {
-		c.ShowHelp()
-		return
-	}
+	// if c.hasHelpKeywords() {
+	// 	c.ShowHelp()
+	// 	return
+	// }
 
 	// dispatch and parse flags and execute command
 	return c.innerDispatch(args)
@@ -459,9 +445,14 @@ func (c *Command) innerDispatch(args []string) (err error) {
 			err = nil
 			// TODO call show help on there
 			// c.ShowHelp()
+			return
 		}
+
+		color.Error.Tips("Options parse error - %s", err.Error())
 		return
 	}
+
+	Debugf("cmd: %s - remain args on options parsed: %v", c.Name, args)
 
 	// find sub command
 	if len(args) > 0 {
@@ -617,14 +608,14 @@ func (c *Command) ShowHelp() {
 
 // Fire event handler by name
 func (c *Command) Fire(event string, data interface{}) {
-	Logf(VerbDebug, "command '%s' trigger the event: <mga>%s</>", c.Name, event)
+	Debugf("command '%s' trigger the event: <mga>%s</>", c.Name, event)
 
 	c.Hooks.Fire(event, c, data)
 }
 
 // On add hook handler for a hook event
 func (c *Command) On(name string, handler HookFunc) {
-	Logf(VerbDebug, "command '%s' add hook: %s", c.Name, name)
+	Debugf("command '%s' add hook: %s", c.Name, name)
 
 	c.Hooks.On(name, handler)
 }
@@ -645,6 +636,21 @@ func (c *Command) App() *App {
 	return c.app
 }
 
+// ID get command ID string
+func (c *Command) ID() string {
+	return strings.Join(c.pathNames, CommandSep)
+}
+
+// Path get command full path
+func (c *Command) Path() string {
+	return strings.Join(c.pathNames, " ")
+}
+
+// PathNames get command path names
+func (c *Command) PathNames() []string {
+	return c.pathNames
+}
+
 // Errorf format message and add error to the command
 func (c *Command) Errorf(format string, v ...interface{}) error {
 	return fmt.Errorf(format, v...)
@@ -661,6 +667,6 @@ func (c *Command) AliasesString(sep ...string) string {
 }
 
 // Logf print log message
-func (c *Command) Logf(level uint, format string, v ...interface{}) {
-	Logf(level, format, v...)
-}
+// func (c *Command) Logf(level uint, format string, v ...interface{}) {
+// 	Logf(level, format, v...)
+// }
