@@ -15,14 +15,9 @@ import (
 // parseGlobalOpts parse global options
 func (app *App) parseGlobalOpts(args []string) (ok bool) {
 	Logf(VerbDebug, "will begin parse global options")
-	// global options flag
-	// gf := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
-	gf := app.GlobalFlags()
 
 	// parse global options
-	err := gf.Parse(args)
-	if err != nil {
-		color.Error.Tips(err.Error())
+	if !app.core.parseGlobalOpts(args) { // has error.
 		return
 	}
 
@@ -42,8 +37,8 @@ func (app *App) parseGlobalOpts(args []string) (ok bool) {
 		color.Enable = false
 	}
 
-	app.args = gf.FSet().Args()
-	Logf(VerbDebug, "console debug is enabled, verbose level is <mgb>%d</>", gOpts.verbose)
+	Debugf("global option parsed, verbose level is <mgb>%d</>", gOpts.verbose)
+	app.args = app.GlobalFlags().FSetArgs()
 
 	// TODO show auto-completion for bash/zsh
 	if gOpts.inCompletion {
@@ -55,42 +50,49 @@ func (app *App) parseGlobalOpts(args []string) (ok bool) {
 }
 
 // prepare to running, parse args, get command name and command args
-func (app *App) prepareRun() (code int) {
-	args := app.args
-	// if no input command
-	if len(args) == 0 {
-		// will try run defaultCommand
-		defCmd := app.defaultCommand
-		if len(defCmd) == 0 {
-			if app.Func != nil {
-
-			}
-
-			Debugf("not input args, and ", defCmd)
+func (app *App) prepareRun() (code int, name string) {
+	// find command name.
+	name = app.findCommandName(app.args)
+	// is help command name.
+	if name == HelpCommand {
+		if len(app.args) == 0 { // like 'help'
 			app.showApplicationHelp()
 			return
 		}
 
-		if !app.IsCommand(defCmd) {
-			Logf(VerbError, "The default command '%s' is not exists", defCmd)
-			app.showApplicationHelp()
-			return
-		}
-
-		args = []string{defCmd}
-	} else if args[0] == HelpCommand { // is help command
-		if len(args) == 1 { // like 'help'
-			app.showApplicationHelp()
-			return
+		var cmds []string
+		if isValidCmdName(app.args[0]) {
+			cmds = []string{app.args[0]}
 		}
 
 		// like 'help COMMAND'
-		return app.showCommandHelp(args[1:])
+		code = app.showCommandHelp(cmds)
+		return
 	}
 
-	app.inputName = args[0]
-	app.cleanArgs = args[1:]
-	return GOON
+	// not input and not set defaultCommand
+	if name == "" {
+		// run app.Func
+		if app.Func != nil {
+			code = app.doRunFunc(app.args)
+			return
+		}
+
+		app.showApplicationHelp()
+		return
+	}
+
+	// is not exist name.
+	if app.inputName == "" {
+		Logf(VerbDebug, "input the command is not an registered: %s", name)
+		// display unknown input command and similar commands tips
+		app.showCommandTips(name)
+		return
+	}
+
+	// is valid command name.
+	app.commandName = name
+	return GOON, name
 }
 
 func (app *App) findCommandName(args []string) (name string) {
@@ -105,8 +107,8 @@ func (app *App) findCommandName(args []string) (name string) {
 
 		// It is not an valid command name.
 		if false == app.IsCommand(name) {
-			Logf(VerbError, "the default command '%s' is invalid", defCmd)
-			return
+			Logf(VerbError, "the default command '<cyan>%s</>' is invalid", name)
+			return "" // invalid, return empty string.
 		}
 
 		return name
@@ -114,7 +116,7 @@ func (app *App) findCommandName(args []string) (name string) {
 
 	name = args[0]
 
-	// check is valid name string.
+	// check first arg is valid name string.
 	if isValidCmdName(name) {
 		realName := app.ResolveAlias(name)
 
@@ -122,6 +124,7 @@ func (app *App) findCommandName(args []string) (name string) {
 		if app.IsCommand(realName) {
 			app.args = args[1:] // update args.
 			app.inputName = name
+			Debugf("input command: '<cyan>%s</>', real command: '<mga>%s</>'", name, realName)
 		}
 
 		return realName
@@ -150,58 +153,30 @@ func (app *App) Run(args []string) (code int) {
 	Debugf("will begin run cli application. args: %v", args)
 
 	// parse global flags
-	if !app.parseGlobalOpts(args) {
-		return app.exitIfExitOnEnd(code)
+	if false == app.parseGlobalOpts(args) {
+		return app.exitOnEnd(code)
 	}
 
-	// find command name.
-	name := app.findCommandName(app.args)
-	// It is empty OR is help command name.
-	if name == "" || name == HelpCommand {
-		if len(app.args) == 0 { // like 'help'
-			app.showApplicationHelp()
-			return
-		}
+	Logf(VerbCrazy, "begin run console application, PID: %d", app.PID())
 
-		var cmds []string
-		if isValidCmdName(app.args[0]) {
-			cmds = []string{app.args[0]}
-		}
-
-		// like 'help COMMAND'
-		return app.showCommandHelp(cmds)
-	}
-
-	if code = app.prepareRun(); code != GOON {
-		return app.exitIfExitOnEnd(code)
+	var name string
+	code, name = app.prepareRun()
+	if code != GOON {
+		return app.exitOnEnd(code)
 	}
 
 	// trigger event
 	app.fireEvent(EvtAppPrepareAfter, app)
 
-	Logf(VerbCrazy, "begin run console application, process ID: %d", app.PID())
-
-	args = app.args
-	name = app.cmdAliases.ResolveAlias(app.inputName)
-
-	Debugf("input command: '<cyan>%s</>', real command: '<mga>%s</>', flags: %v", app.inputName, name, args)
-
-	// display unknown input command and similar commands tips
-	if !app.IsCommand(name) {
-		Logf(VerbDebug, "input the command is not an registered: %s", name)
-		app.showCommandTips(name)
-		return
-	}
-
 	// do run input command
-	code = app.doRun(name, args)
+	code = app.doRun(name, app.args)
 
 	Debugf("command '%s' run complete, exit with code: %d", name, code)
-	return app.exitIfExitOnEnd(code)
+	return app.exitOnEnd(code)
 }
 
-func (app *App) exitIfExitOnEnd(code int) int {
-	Debugf("application exit with code %d", code)
+func (app *App) exitOnEnd(code int) int {
+	Debugf("application exit with code: %d", code)
 
 	if app.ExitOnEnd {
 		app.Exit(code)
@@ -211,14 +186,12 @@ func (app *App) exitIfExitOnEnd(code int) int {
 
 func (app *App) doRun(name string, args []string) (code int) {
 	var err error
-	cmd := app.Command(name)
 
-	app.commandName = name
+	cmd := app.Command(name)
 	app.fireEvent(EvtAppBefore, cmd.Copy())
 
-	Logf(VerbDebug, "command '%s' raw flags: %v", name, args)
+	Debugf("will run command '%s' with args: %v", name, args)
 
-	// if Command.CustomFlags=true, will not run Flags.Parse()
 	// contains keywords "-h" OR "--help" on end
 	if cmd.hasHelpKeywords() {
 		Logf(VerbDebug, "contains help keywords in flags, render command help message")
@@ -226,7 +199,7 @@ func (app *App) doRun(name string, args []string) (code int) {
 		return
 	}
 
-	// parse options, don't contains command name.
+	// parse command options
 	args, err = cmd.parseOptions(args)
 	if err != nil {
 		// if is flag.ErrHelp error
@@ -238,7 +211,7 @@ func (app *App) doRun(name string, args []string) (code int) {
 		return ERR
 	}
 
-	Logf(VerbDebug, "args on parse end: %v", args)
+	Debugf("remain args on options parsed: %v", args)
 
 	// do execute command
 	if err := cmd.innerExecute(args, true); err != nil {
@@ -250,8 +223,19 @@ func (app *App) doRun(name string, args []string) (code int) {
 	return
 }
 
-func (app *App) runFunc() {
+func (app *App) doRunFunc(args []string) (code int) {
+	// app bind args TODO
+	// app.ParseArgs(args)
 
+	// do execute command
+	if err := app.Func(app, args); err != nil {
+		code = ERR
+		app.fireEvent(EvtAppError, err)
+	} else {
+		app.fireEvent(EvtAppAfter, nil)
+	}
+
+	return
 }
 
 // Exec running other command in current command

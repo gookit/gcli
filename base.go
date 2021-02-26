@@ -28,6 +28,8 @@ type commandBase struct {
 
 	// raw input command name
 	inputName string
+	// current command name
+	commandName string
 	// the max width for added command names. default set 12.
 	nameMaxWidth int
 	// the default command name.

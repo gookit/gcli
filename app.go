@@ -49,8 +49,6 @@ type App struct {
 	// rawFlagArgs []string
 	// clean os.args, not contains bin-name and command-name
 	cleanArgs []string
-	// current command name
-	commandName string
 }
 
 // NewApp create new app instance.

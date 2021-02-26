@@ -178,6 +178,12 @@ func (fs *Flags) RawArgs() []string {
 	return fs.fSet.Args()
 }
 
+// FSetArgs get all raw arguments. alias of the RawArgs()
+// if have been called parse, the return is remaining args.
+func (fs *Flags) FSetArgs() []string {
+	return fs.fSet.Args()
+}
+
 /***********************************************************************
  * Flags:
  * - binding option var
