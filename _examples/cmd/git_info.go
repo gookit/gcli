@@ -21,11 +21,11 @@ type GitInfoData struct {
 	ReleaseAt string `json:"releaseAt" description:"latest commit date"`
 }
 
-// GitCommand
-func GitCommand() *gcli.Command {
+// GitInfoCommand
+func GitInfoCommand() *gcli.Command {
 	cmd := gcli.Command{
-		Name:    "git:info",
-		Aliases: []string{"git-info"},
+		Name:    "info",
+		// Aliases: []string{"git-info"},
 		Desc:    "collect project latest commit info by git log command",
 
 		Func: gitExecute,

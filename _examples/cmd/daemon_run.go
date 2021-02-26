@@ -17,7 +17,8 @@ var bgrOpts = struct {
 
 func DaemonRunCommand() *gcli.Command {
 	c := &gcli.Command{
-		Name: "bg:run",
+		Name: "bgrun",
+		Aliases: []string{"bgr"},
 		Desc: "an example for background run program",
 		Func: handleDaemonRun,
 	}

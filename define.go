@@ -5,7 +5,7 @@ import (
 	"strconv"
 )
 
-// constants for error level 0 - 4
+// constants for error level 0 - 5
 const (
 	VerbQuiet uint = iota // don't report anything
 	VerbError             // reporting on error
@@ -147,7 +147,7 @@ func (s *Booleans) Set(value string) error {
 
 // EnumString The string flag list, implemented flag.Value interface
 type EnumString struct {
-	val string
+	val  string
 	enum []string
 }
 

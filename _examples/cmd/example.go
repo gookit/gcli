@@ -34,8 +34,8 @@ var exampleOpts = struct {
 func ExampleCommand() *gcli.Command {
 	cmd := &gcli.Command{
 		Func:    exampleExecute,
-		Name:    "module:example",
-		Aliases: []string{"module:exp", "exp", "ex"},
+		Name:    "example",
+		Aliases: []string{"module-exp", "exp", "ex"},
 		Desc:    "this is command description message",
 		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
 		Examples: `

@@ -109,6 +109,14 @@ func isValidCmdName(name string) bool {
 	return goodCmdName.MatchString(name)
 }
 
+func aliasNameCheck(name string) {
+	if goodCmdName.MatchString(name) {
+		return
+	}
+
+	panicf("alias name '%s' is invalid, must match: %s", name, regGoodCmdName)
+}
+
 // strictFormatArgs
 // TODO mode:
 //  POSIX '-ab' will split to '-a -b', '--o' -> '-o'

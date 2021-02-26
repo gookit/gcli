@@ -94,6 +94,7 @@ func TestCommand_Run(t *testing.T) {
 }
 
 var bf = new(bytes.Buffer)
+
 // l0: root command
 var r = &gcli.Command{
 	Name: "git",
@@ -114,8 +115,8 @@ var r = &gcli.Command{
 		},
 		// l1: sub command 2
 		{
-			Name: "remote",
-			Desc: "remote command for git",
+			Name:    "remote",
+			Desc:    "remote command for git",
 			Aliases: []string{"rmt"},
 			Func: func(c *gcli.Command, args []string) error {
 				dump.Println(c.Path())

@@ -114,7 +114,7 @@ func SetStrictMode(strict bool) {
 
 func bindingCommonGOpts(fs *Flags) {
 	// binding global options
-	fs.UintOpt(&gOpts.verbose, "verbose", "", gOpts.verbose, "Set error reporting level(quiet 0 - 4 debug)")
+	fs.UintOpt(&gOpts.verbose, "verbose", "", gOpts.verbose, "Set error reporting level(quiet 0 - 5 crazy)")
 	fs.BoolOpt(&gOpts.showHelp, "help", "h", false, "Display the help information")
 	fs.BoolOpt(&gOpts.NoColor, "no-color", "", gOpts.NoColor, "Disable color when outputting message")
 	fs.BoolOpt(&gOpts.noProgress, "no-progress", "", gOpts.noProgress, "Disable display progress message")

@@ -76,7 +76,7 @@ func (c core) innerHelpVars() map[string]string {
 }
 
 // SimplePrinter struct. for inject struct
-type SimplePrinter struct {}
+type SimplePrinter struct{}
 
 // Print message
 func (s SimplePrinter) Print(v ...interface{}) {

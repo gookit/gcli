@@ -33,8 +33,8 @@ func GenEmojiMapCommand() *gcli.Command {
 	gem := &genEmojiMap{}
 
 	return &gcli.Command{
-		Name:    "gen:emojis",
-		Aliases: []string{"gen:emoji", "gen:emj"},
+		Name:    "gen-emojis",
+		Aliases: []string{"gen-emj"},
 		// handler func
 		Func: gem.run,
 		// des

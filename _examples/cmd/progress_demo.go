@@ -22,7 +22,7 @@ func ProgressDemoCmd() *gcli.Command {
 	c := &gcli.Command{
 		Name:    "prog",
 		Desc:    "there are some progress bar run demos",
-		Aliases: []string{"prg:demo", "progress"},
+		Aliases: []string{"prg-demo", "progress"},
 		Func:    pd.Run,
 		Config: func(c *gcli.Command) {
 			c.IntOpt(&pd.maxSteps, "max-step", "", 100, "setting the max step value")
@@ -32,7 +32,7 @@ func ProgressDemoCmd() *gcli.Command {
 			// 	"progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
 			// 	true,
 			// )
-			c.Add(gcli.Argument{
+			c.BindArg(gcli.Argument{
 				Name: "name",
 				Desc: "progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
 

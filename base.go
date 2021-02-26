@@ -3,7 +3,7 @@ package gcli
 import (
 	"strings"
 
-	"github.com/gookit/goutil/maputil"
+	"github.com/gookit/goutil/structs"
 )
 
 // will inject to every Command
@@ -24,7 +24,7 @@ type commandBase struct {
 	// eg. {"test": 4, "example": 7}
 	cmdNames map[string]int
 	// sub command aliases map. {alias: name}
-	cmdAliases maputil.Aliases
+	cmdAliases structs.Aliases
 
 	// raw input command name
 	inputName string
@@ -54,7 +54,10 @@ func newCommandBase() commandBase {
 		commands: make(map[string]*Command),
 		// set an default value.
 		nameMaxWidth: 12,
-		cmdAliases:   make(maputil.Aliases),
+		// cmdAliases:   make(maputil.Aliases),
+		cmdAliases: structs.Aliases{
+			Checker: aliasNameCheck,
+		},
 	}
 }
 
@@ -212,6 +215,6 @@ func (b commandBase) CmdNameMap() map[string]int {
 }
 
 // CmdAliases get all aliases
-func (b commandBase) CmdAliases() maputil.Aliases {
+func (b commandBase) CmdAliases() structs.Aliases {
 	return b.cmdAliases
 }

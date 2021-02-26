@@ -18,7 +18,7 @@ func SpinnerDemoCmd() *gcli.Command {
 	return &gcli.Command{
 		Name:    "spinner",
 		Desc:    "there are some CLI spinner bar run demos",
-		Aliases: []string{"spr", "spr:demo"},
+		Aliases: []string{"spr", "spr-demo"},
 		Func:    sd.Run,
 		Config: func(c *gcli.Command) {
 			c.IntOpt(&sd.speed, "speed", "s", 100, "setting the spinner running speed")

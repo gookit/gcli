@@ -139,6 +139,11 @@ func (c *Command) Runnable() bool {
 	return c.Func != nil
 }
 
+// Add one or multi sub-command(s). alias of the AddSubs
+func (c *Command) Add(sub *Command, more ...*Command) {
+	c.AddSubs(sub, more...)
+}
+
 // AddSubs add one or multi sub-command(s)
 func (c *Command) AddSubs(sub *Command, more ...*Command) {
 	c.AddCommand(sub)

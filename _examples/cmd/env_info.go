@@ -20,7 +20,7 @@ var eiOpts = struct {
 // EnvInfoCommand
 func EnvInfoCommand() *gcli.Command {
 	cmd := gcli.Command{
-		Name:    "module:env",
+		Name:    "env",
 		Aliases: []string{"env-info", "ei"},
 		Desc:    "collect project info by git info",
 
