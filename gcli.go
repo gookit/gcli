@@ -9,6 +9,7 @@
 package gcli
 
 import (
+	"os"
 	"regexp"
 )
 
@@ -46,7 +47,8 @@ var (
 	// global options
 	gOpts = &GlobalOpts{
 		strictMode: true,
-		verbose:    VerbError,
+		// init error level.
+		verbose: VerbError,
 	}
 
 	// CLI create an default instance
@@ -64,6 +66,12 @@ func init() {
 	// if envutil.IsWin() {
 	// 	CLI.binName = strings.Replace(CLI.binName, workDir+"\\", "", 1)
 	// }
+
+	// set verbose from ENV var.
+	envVerb := os.Getenv("GCLI_VERBOSE")
+	if envVerb != "" {
+		gOpts.verbose = name2verbLevel(envVerb)
+	}
 }
 
 // InitStdApp create the default cli app.
@@ -78,13 +86,13 @@ func StdApp() *App {
 }
 
 // GOpts get the global options
-func GOpts() *GlobalOpts {
-	return gOpts
+func GOpts() GlobalOpts {
+	return *gOpts
 }
 
 // Verbose returns verbose level
-func Verbose() uint {
-	return gOpts.verbose
+func VerboseName() string {
+	return gOpts.verbose.String()
 }
 
 // SetDebugMode level
@@ -98,7 +106,7 @@ func SetQuietMode() {
 }
 
 // SetVerbose level
-func SetVerbose(verbose uint) {
+func SetVerbose(verbose verbLevel) {
 	gOpts.verbose = verbose
 }
 
@@ -114,7 +122,10 @@ func SetStrictMode(strict bool) {
 
 func bindingCommonGOpts(fs *Flags) {
 	// binding global options
-	fs.UintOpt(&gOpts.verbose, "verbose", "", gOpts.verbose, "Set error reporting level(quiet 0 - 5 crazy)")
+	// fs.UintOpt(&gOpts.verbose, "verbose", "", gOpts.verbose, "Set error reporting level(quiet 0 - 5 crazy)")
+	// up: allow use int and string.
+	fs.VarOpt(&gOpts.verbose, "verbose", "", "Set error reporting level(quiet 0 - 5 crazy)")
+
 	fs.BoolOpt(&gOpts.showHelp, "help", "h", false, "Display the help information")
 	fs.BoolOpt(&gOpts.NoColor, "no-color", "", gOpts.NoColor, "Disable color when outputting message")
 	fs.BoolOpt(&gOpts.noProgress, "no-progress", "", gOpts.noProgress, "Disable display progress message")

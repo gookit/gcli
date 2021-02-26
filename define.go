@@ -3,12 +3,52 @@ package gcli
 import (
 	"fmt"
 	"strconv"
+	"strings"
 )
 
-// constants for error level 0 - 5
+type verbLevel uint
+
+// Upper verbose level to string.
+func (vl verbLevel) Upper() string {
+	return strings.ToUpper(vl.String())
+}
+
+// String verbose level to string.
+func (vl verbLevel) String() string {
+	switch vl {
+	case VerbQuiet:
+		return "quiet"
+	case VerbError:
+		return "error"
+	case VerbWarn:
+		return "warn"
+	case VerbInfo:
+		return "info"
+	case VerbDebug:
+		return "debug"
+	case VerbCrazy:
+		return "crazy"
+	}
+	return "unknown"
+}
+
+// Set value from option binding.
+func (vl *verbLevel) Set(value string) error {
+	iv, err := strconv.Atoi(value)
+	if err == nil { // level value.
+		*vl = verbLevel(iv)
+		return nil
+	}
+
+	// level name.
+	*vl = name2verbLevel(value)
+	return nil
+}
+
+// constants for error level (quiet 0 - 5 crazy)
 const (
-	VerbQuiet uint = iota // don't report anything
-	VerbError             // reporting on error
+	VerbQuiet verbLevel = iota // don't report anything
+	VerbError                  // reporting on error, default level.
 	VerbWarn
 	VerbInfo
 	VerbDebug
@@ -35,7 +75,7 @@ const maxFunc = 64
 
 // GlobalOpts global flags
 type GlobalOpts struct {
-	verbose  uint // message report level
+	verbose  verbLevel // message report level
 	NoColor  bool
 	showVer  bool
 	showHelp bool

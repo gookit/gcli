@@ -14,7 +14,7 @@ import (
  * console log
  *************************************************************/
 
-var level2name = map[uint]string{
+var level2name = map[verbLevel]string{
 	VerbError: "ERROR",
 	VerbWarn:  "WARN",
 	VerbInfo:  "INFO",
@@ -22,7 +22,7 @@ var level2name = map[uint]string{
 	VerbCrazy: "CRAZY",
 }
 
-var level2color = map[uint]color.Color{
+var level2color = map[verbLevel]color.Color{
 	VerbError: color.FgRed,
 	VerbWarn:  color.FgYellow,
 	VerbInfo:  color.FgGreen,
@@ -36,22 +36,17 @@ func Debugf(format string, v ...interface{}) {
 }
 
 // Logf print log message
-func Logf(level uint, format string, v ...interface{}) {
+func Logf(level verbLevel, format string, v ...interface{}) {
 	logf(level, format, v...)
 }
 
 // print log message
-func logf(level uint, format string, v ...interface{}) {
+func logf(level verbLevel, format string, v ...interface{}) {
 	if gOpts.verbose < level {
 		return
 	}
 
 	var fnName string
-	name, has := level2name[level]
-	if !has {
-		name, level = "CRAZY", VerbCrazy
-	}
-
 	pc, fName, line, ok := runtime.Caller(2)
 	if !ok {
 		fnName, fName, line = "UNKNOWN", "???.go", 0
@@ -60,6 +55,7 @@ func logf(level uint, format string, v ...interface{}) {
 		fnName = runtime.FuncForPC(pc).Name()
 	}
 
+	name := level.Upper()
 	name = level2color[level].Render(name)
 	color.Printf("GCli: [%s] [%s(), %s:%d] %s\n", name, fnName, fName, line, fmt.Sprintf(format, v...))
 }
@@ -71,6 +67,26 @@ func defaultErrHandler(data ...interface{}) {
 			// fmt.Println(color.Red.Render("ERROR:"), err.Error())
 		}
 	}
+}
+
+func name2verbLevel(name string) verbLevel {
+	switch strings.ToLower(name) {
+	case "quiet":
+		return VerbQuiet
+	case "error":
+		return VerbError
+	case "warn":
+		return VerbWarn
+	case "info":
+		return VerbInfo
+	case "debug":
+		return VerbDebug
+	case "crazy":
+		return VerbCrazy
+	}
+
+	// default level
+	return VerbError
 }
 
 /*************************************************************

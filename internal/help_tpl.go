@@ -1,1 +1,3 @@
 package internal
+
+// var AppHelp

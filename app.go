@@ -120,9 +120,9 @@ func (app *App) bindingGlobalOpts() {
 	bindingCommonGOpts(gf)
 	// add more ...
 	gf.BoolOpt(&gOpts.showVer, "version", "V", false, "Display app version information")
-	// This is a internal command
+	// This is a internal option
 	gf.BoolVar(&gOpts.inCompletion, FlagMeta{
-		Name: "cmd-completion",
+		Name: "cmd-completion", // TODO rename to --in-completion
 		Desc: "generate completion scripts for bash/zsh",
 		// hidden it
 		Hidden: true,
@@ -139,6 +139,8 @@ func (app *App) initialize() {
 	if app.initialized {
 		return
 	}
+
+	Logf(VerbCrazy, "initialize the application")
 
 	// init some help tpl vars
 	app.core.AddVars(app.core.innerHelpVars())
@@ -226,11 +228,6 @@ func (app *App) addAliases(command string, aliases []string, sync bool) {
 	}
 }
 
-// Match command by path. eg. ["top", "sub"]
-// func (app *App) Match(names []string) *Command {
-// 	return app.commandBase.match(names)
-// }
-
 // On add hook handler for a hook event
 // func (app *App) BeforeInit(name string, handler HookFunc) {}
 
@@ -268,7 +265,7 @@ func (app *App) parseGlobalOpts(args []string) (ok bool) {
 		color.Enable = false
 	}
 
-	Debugf("global option parsed, verbose level is <mgb>%d</>", gOpts.verbose)
+	Debugf("global option parsed, verbose level: <mgb>%d</>(%s)", gOpts.verbose, gOpts.verbose.String())
 	app.args = app.GlobalFlags().FSetArgs()
 
 	// TODO show auto-completion for bash/zsh
@@ -507,7 +504,8 @@ func (app *App) fireEvent(event string, data interface{}) {
 // AppHelpTemplate help template for app(all commands)
 var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
 <comment>Usage:</>
-  {$binName} [Global Options...] <info>{command}</> [--option ...] [argument ...]
+  {$binName} [global Options...] <info>COMMAND</> [--option ...] [argument ...]
+  {$binName} [global Options...] <info>COMMAND</> [--option ...] <info>SUB-COMMAND</> [--option ...]  [argument ...]
 
 <comment>Global Options:</>
 {{.GOpts}}
