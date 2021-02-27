@@ -10,6 +10,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -65,7 +66,7 @@ type Command struct {
 	// module is the name for grouped commands
 	// subName is the name for grouped commands
 	// eg: "sys:info" -> module: "sys", subName: "info"
-	module, subName string
+	// module, subName string
 	// Examples some usage example display
 	Examples string
 	// Func is the command handler func. Func Runner
@@ -169,8 +170,10 @@ func (c *Command) AddCommand(sub *Command) {
 	// extend path names from parent
 	sub.pathNames = c.pathNames[0:]
 
+	// Logf(VerbCrazy, "add subcommand '%s' to the command '%s', aliases: %v", sub.Name, c.Name, sub.Aliases)
+
 	// do add
-	c.commandBase.addCommand(sub)
+	c.commandBase.addCommand(c.Name, sub)
 }
 
 // Match sub command by input names
@@ -197,20 +200,6 @@ func (c *Command) Match(names []string) *Command {
 // 	return c.Match(names)
 // }
 
-// init core
-func (c *Command) initCore(cmdName string) {
-	c.core.cmdLine = CLI
-
-	c.AddVars(c.innerHelpVars())
-	c.AddVars(map[string]string{
-		"cmd": cmdName,
-		// binName with command
-		"binWithCmd": c.binName + " " + cmdName,
-		// binFile with command
-		"fullCmd": c.binFile + " " + cmdName,
-	})
-}
-
 // initialize works for the command
 func (c *Command) initialize() {
 	if c.initialized {
@@ -220,15 +209,16 @@ func (c *Command) initialize() {
 	// check command name
 	cName := c.goodName()
 
-	// init core
-	// c.core.init(cName)
-	// c.core = newCore(cName)
-	c.initCore(cName)
+	Debugf("initialize the command '%s'", cName)
+
+	c.initialized = true
 	c.pathNames = append(c.pathNames, cName)
 
+	// init core
+	c.initCore(cName)
+
 	// init commandBase
-	c.commandBase = newCommandBase()
-	c.initialized = true
+	c.initCommandBase()
 
 	// load common subs
 	if len(c.Subs) > 0 {
@@ -267,30 +257,30 @@ func (c *Command) initialize() {
 	c.Fire(EvtCmdInit, nil)
 }
 
-// IsAlone running
-func (c *Command) IsAlone() bool {
-	return c.alone
+// init core
+func (c *Command) initCore(cName string) {
+	Logf(VerbCrazy, "init command c.core for the command: %s", cName)
+
+	c.core.cmdLine = CLI
+	c.AddVars(c.innerHelpVars())
+	c.AddVars(map[string]string{
+		"cmd": cName,
+		// binName with command
+		"binWithCmd": c.binName + " " + cName,
+		// binFile with command
+		"fullCmd": c.binFile + " " + cName,
+	})
 }
 
-// NotAlone running
-func (c *Command) NotAlone() bool {
-	return !c.alone
-}
+func (c *Command) initCommandBase() {
+	Logf(VerbCrazy, "init command c.commandBase for the command: %s", c.Name)
 
-// ID get command ID name.
-func (c *Command) goodName() string {
-	name := strings.Trim(strings.TrimSpace(c.Name), ": ")
-	if name == "" {
-		panicf("the command name can not be empty")
-	}
-
-	if !goodCmdName.MatchString(name) {
-		panicf("the command name '%s' is invalid, must match: %s", name, regGoodCmdName)
-	}
-
-	// update name
-	c.Name = name
-	return name
+	c.commandBase.cmdNames = make(map[string]int)
+	c.commandBase.commands = make(map[string]*Command)
+	// set an default value.
+	c.commandBase.nameMaxWidth = 12
+	// c.commandBase.cmdAliases = make(maputil.Aliases)
+	c.commandBase.cmdAliases = structs.NewAliases(aliasNameCheck)
 }
 
 /*************************************************************
@@ -458,7 +448,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 		return
 	}
 
-	Debugf("cmd: %s - remain args on options parsed: %v", c.Name, args)
+	Debugf("cmd: %s - remaining args on options parsed: %v", c.Name, args)
 
 	// find sub command
 	if len(args) > 0 {
@@ -526,7 +516,7 @@ func (c *Command) parseOptions(args []string) (ss []string, err error) {
 
 	// fix and compatible
 	// args = moveArgumentsToEnd(args)
-	Logf(VerbDebug, "option flags on after format: %v", args)
+	// Debugf("cmd: %s - option flags on after format: %v", c.Name, args)
 
 	// NOTICE: disable output internal error message on parse flags
 	// c.FSet().SetOutput(ioutil.Discard)
@@ -550,17 +540,15 @@ func (c *Command) doExecute(args []string) (err error) {
 	c.Fire(EvtCmdBefore, args)
 
 	// collect and binding named argument
+	Debugf("cmd: %s - collect and binding named argument", c.Name)
 	if err := c.ParseArgs(args); err != nil {
 		c.Fire(EvtCmdError, err)
+		Logf(VerbCrazy, "binding command '%s' arguments err: <red>%s</>", c.Name, err.Error())
 		return err
 	}
 
 	// do call command handler func
 	if c.Func == nil {
-		// if len(c.commands) > 0 {
-		// 	c.Infoln("please input ")
-		// }
-
 		Logf(VerbWarn, "the command '%s' no handler func to running", c.Name)
 	} else {
 		// err := c.Func.Run(c, args)
@@ -583,7 +571,7 @@ func (c *Command) doExecute(args []string) (err error) {
 var CmdHelpTemplate = `{{.Desc}}
 {{if .Cmd.NotAlone}}
 <comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.AliasesString}}</>){{end}}{{end}}
-<comment>Usage:</> {$binName} [Global Options...] {{if .Cmd.NotAlone}}<info>{{.Cmd.Name}}</> {{end}}[--option ...] [arguments ...]
+<comment>Usage:</> {$binName} [global options] {{if .Cmd.NotAlone}}<info>{{.Cmd.Path}}</> {{end}}[--option ...] [arguments ...]
 
 <comment>Global Options:</>
 {{.GOpts}}{{if .Options}}
@@ -602,7 +590,7 @@ var CmdHelpTemplate = `{{.Desc}}
 
 // ShowHelp show command help info
 func (c *Command) ShowHelp() {
-	Debugf("render command '%s' help information", c.Name)
+	Debugf("render the command '%s' help information", c.Name)
 
 	// custom help render func
 	if c.HelpRender != nil {
@@ -622,10 +610,10 @@ func (c *Command) ShowHelp() {
 
 	// render help message
 	s := helper.RenderText(CmdHelpTemplate, map[string]interface{}{
-		"Cmd": c,
+		"Cmd":  c,
 		"Subs": c.commands,
 		// global options
-		"GOpts": c.gFlags.String(),
+		"GOpts": c.GFlags().String(),
 		// parse options to string
 		"Options": c.Flags.String(),
 		// always upper first char
@@ -644,6 +632,49 @@ func (c *Command) ShowHelp() {
 /*************************************************************
  * helper methods
  *************************************************************/
+
+// GFlags get global flags
+func (c *Command) GFlags() *Flags {
+	// 如果先注册S子命令到一个命令A中，再将A注册到应用App。此时，S.gFlags 就是空的。
+	// If you first register the S subcommand to a command A, then register A to the application App.
+	// At this time, S.gFlags is empty.
+	if c.gFlags == nil {
+		if c.parent == nil {
+			return nil
+		}
+
+		// inherit from parent command.
+		c.core.gFlags = c.parent.GFlags()
+	}
+
+	return c.gFlags
+}
+
+// IsAlone running
+func (c *Command) IsAlone() bool {
+	return c.alone
+}
+
+// NotAlone running
+func (c *Command) NotAlone() bool {
+	return !c.alone
+}
+
+// ID get command ID name.
+func (c *Command) goodName() string {
+	name := strings.Trim(strings.TrimSpace(c.Name), ": ")
+	if name == "" {
+		panicf("the command name can not be empty")
+	}
+
+	if !goodCmdName.MatchString(name) {
+		panicf("the command name '%s' is invalid, must match: %s", name, regGoodCmdName)
+	}
+
+	// update name
+	c.Name = name
+	return name
+}
 
 // Fire event handler by name
 func (c *Command) Fire(event string, data interface{}) {

@@ -1,5 +1,5 @@
 package cmd
 
 func init() {
-	GitCmd.Add(GitInfoCommand(), GitPullMulti)
+	GitCmd.Add(GitInfo, GitPullMulti, GitRemote)
 }

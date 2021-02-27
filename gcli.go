@@ -70,7 +70,7 @@ func init() {
 	// set verbose from ENV var.
 	envVerb := os.Getenv("GCLI_VERBOSE")
 	if envVerb != "" {
-		gOpts.verbose = name2verbLevel(envVerb)
+		_= gOpts.verbose.Set(envVerb)
 	}
 }
 
@@ -91,8 +91,8 @@ func GOpts() GlobalOpts {
 }
 
 // Verbose returns verbose level
-func VerboseName() string {
-	return gOpts.verbose.String()
+func Verbose() VerbLevel {
+	return gOpts.verbose
 }
 
 // SetDebugMode level
@@ -106,7 +106,7 @@ func SetQuietMode() {
 }
 
 // SetVerbose level
-func SetVerbose(verbose verbLevel) {
+func SetVerbose(verbose VerbLevel) {
 	gOpts.verbose = verbose
 }
 

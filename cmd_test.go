@@ -103,7 +103,7 @@ var r = &gcli.Command{
 		// l1: sub command 1
 		{
 			Name: "add",
-			Desc: "the clone command for git",
+			Desc: "the add command for git",
 			Config: func(c *gcli.Command) {
 				c.AddArg("files", "added files", true)
 			},
@@ -115,6 +115,17 @@ var r = &gcli.Command{
 		},
 		// l1: sub command 2
 		{
+			Name: "pull",
+			Desc: "the pull command for git",
+			Aliases: []string{"pul"},
+			Func: func(c *gcli.Command, args []string) error {
+				bf.WriteString("command path: " + c.Path())
+				dump.Println(c.Name, args)
+				return nil
+			},
+		},
+		// l1: sub command 3
+		{
 			Name:    "remote",
 			Desc:    "remote command for git",
 			Aliases: []string{"rmt"},
@@ -123,7 +134,7 @@ var r = &gcli.Command{
 				return nil
 			},
 			Subs: []*gcli.Command{
-				// l2: sub command 3
+				// l2: sub command 4
 				{
 					Name: "add",
 					Desc: "add command for git remote",
@@ -137,10 +148,11 @@ var r = &gcli.Command{
 						return nil
 					},
 				},
-				// l2: sub command 4
+				// l2: sub command 5
 				{
 					Name: "set-url",
 					Desc: "set-url command for git remote",
+					Aliases: []string{"su"},
 					Func: func(c *gcli.Command, args []string) error {
 						bf.WriteString("command path: " + c.Path())
 						dump.Println(c.Path(), args)
@@ -219,6 +231,7 @@ func TestCommand_Run_moreLevelSub(t *testing.T) {
 
 	assert.NoError(t, err)
 	assert.True(t, r.IsAlias("rmt"))
+	assert.True(t, r.IsAlias("pul"))
 	assert.False(t, r.IsAlias("not-exist"))
 	assert.Equal(t, "remote", r.ResolveAlias("rmt"))
 	assert.Equal(t, "command path: git remote add", bf.String())

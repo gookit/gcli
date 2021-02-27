@@ -8,6 +8,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -68,7 +69,7 @@ type App struct {
 // 	})
 func NewApp(fn ...func(app *App)) *App {
 	app := &App{
-		Name: "GCli App",
+		Name: "GCliApp",
 		Desc: "This is my console application",
 		// set a default version
 		// Version: "1.0.0",
@@ -88,7 +89,9 @@ func NewApp(fn ...func(app *App)) *App {
 			TagName:     FlagTagName,
 		}),
 	}
+
 	// init commandBase
+	Logf(VerbCrazy, "create new commandBase on init application")
 	app.commandBase = newCommandBase()
 	// set a default version
 	app.Version = "1.0.0"
@@ -187,8 +190,10 @@ func (app *App) AddCommand(c *Command) {
 	// inherit global flags from application
 	c.core.gFlags = app.gFlags
 
-	// do add
-	app.commandBase.addCommand(c)
+	// Logf(VerbCrazy, "add command '%s' to the application. aliases: %v", c.Name, c.Aliases)
+
+	// do add command
+	app.commandBase.addCommand(app.Name, c)
 }
 
 // AddCommander to the application
@@ -347,13 +352,20 @@ func (app *App) findCommandName(args []string) (name string) {
 		// is valid command name.
 		if app.IsCommand(realName) {
 			app.inputName = name
-			Debugf("input command: '<cyan>%s</>', real command: '<mga>%s</>'", name, realName)
+			Debugf("input command: '<cyan>%s</>', real command: '<green>%s</>'", name, realName)
 		}
 
 		return realName
 	}
 
 	return ""
+}
+
+// RunLine manual run an command by command line string.
+// eg: app.RunLine("top --top-opt val0 sub --sub-opt val1 arg0")
+func (app *App) RunLine(argsLine string) int {
+	args := cliutil.ParseLine(argsLine)
+	return app.Run(args)
 }
 
 // Run running application
@@ -402,7 +414,7 @@ func (app *App) doRunCmd(name string, args []string) (code int) {
 	cmd := app.GetCommand(name)
 	app.fireEvent(EvtAppBefore, cmd.Copy())
 
-	Debugf("will run command '%s' with args: %v", name, args)
+	Debugf("will run app command '%s' with args: %v", name, args)
 
 	// contains keywords "-h" OR "--help" on end
 	// if cmd.hasHelpKeywords() {
@@ -450,17 +462,26 @@ func (app *App) exitOnEnd(code int) int {
 }
 
 // Exec running other command in current command
-func (app *App) Exec(name string, args []string) (err error) {
-	if !app.IsCommand(name) {
-		return fmt.Errorf("exec unknown command name '%s'", name)
+// name can be:
+// - top command name in the app. 'top'
+// - command path in the app. 'top sub'
+func (app *App) Exec(path string, args []string) error {
+	cmd := app.MatchByPath(path)
+	if cmd == nil {
+		return fmt.Errorf("exec unknown command: '%s'", path)
 	}
 
-	Debugf("manual exec the application command: %s", name)
-	cmd := app.commands[name]
+	Debugf("manual exec the application command: %s", path)
 
 	// parse flags and execute command
 	return cmd.innerExecute(args, false)
 }
+
+// ExecLine manual execute an command by command line string.
+// eg: app.ExecLine("top --top-opt val0 sub --sub-opt val1 arg0")
+// func (app *App) ExecLine(argsLine string) error {
+// 	args := cliutil.ParseLine(argsLine)
+// }
 
 /*************************************************************
  * helper methods
@@ -482,13 +503,13 @@ func (app *App) CommandName() string {
 
 // On add hook handler for a hook event
 func (app *App) On(name string, handler HookFunc) {
-	Logf(VerbDebug, "add application hook: %s", name)
+	Debugf("register application hook: %s", name)
 
 	app.core.On(name, handler)
 }
 
 func (app *App) fireEvent(event string, data interface{}) {
-	Logf(VerbDebug, "trigger the application event: <mga>%s</>", event)
+	Debugf("trigger the application event: <green>%s</>", event)
 
 	app.core.Fire(event, app, data)
 }

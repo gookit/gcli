@@ -24,7 +24,7 @@ type commandBase struct {
 	// eg. {"test": 4, "example": 7}
 	cmdNames map[string]int
 	// sub command aliases map. {alias: name}
-	cmdAliases structs.Aliases
+	cmdAliases *structs.Aliases
 
 	// raw input command name
 	inputName string
@@ -55,9 +55,7 @@ func newCommandBase() commandBase {
 		// set an default value.
 		nameMaxWidth: 12,
 		// cmdAliases:   make(maputil.Aliases),
-		cmdAliases: structs.Aliases{
-			Checker: aliasNameCheck,
-		},
+		cmdAliases: structs.NewAliases(aliasNameCheck),
 	}
 }
 
@@ -100,7 +98,7 @@ func (b commandBase) IsCommand(name string) bool {
 }
 
 // add Command to the group
-func (b commandBase) addCommand(c *Command) {
+func (b commandBase) addCommand(pName string, c *Command) {
 	// init command
 	c.initialize()
 
@@ -129,8 +127,8 @@ func (b commandBase) addCommand(c *Command) {
 	}
 
 	// add aliases for the command
+	Logf(VerbCrazy, "register command '%s'(parent: %s), aliases: %v", cName, pName, c.Aliases)
 	b.cmdAliases.AddAliases(c.Name, c.Aliases)
-	Logf(VerbDebug, "register a new CLI command: %s", cName)
 
 	// c.app = app
 	// inherit global flags from application
@@ -215,7 +213,12 @@ func (b commandBase) CmdNameMap() map[string]int {
 	return b.cmdNames
 }
 
-// CmdAliases get all aliases
-func (b commandBase) CmdAliases() structs.Aliases {
+// CmdAliases get cmd aliases
+func (b commandBase) CmdAliases() *structs.Aliases {
 	return b.cmdAliases
+}
+
+// AliasesMapping get cmd aliases mapping
+func (b commandBase) AliasesMapping() map[string]string {
+	return b.cmdAliases.Mapping()
 }

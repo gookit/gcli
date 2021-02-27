@@ -23,9 +23,28 @@ func TestVerbose(t *testing.T) {
 
 	gcli.SetVerbose(gcli.VerbInfo)
 	is.Equal(gcli.VerbInfo, gcli.Verbose())
+	is.Equal("info", gcli.Verbose().Name())
+	is.Equal("INFO", gcli.Verbose().Upper())
 
 	gcli.SetVerbose(old)
 	is.Equal(gcli.VerbError, gcli.Verbose())
+
+	verb := gcli.VerbLevel(23)
+	is.Equal("unknown", verb.Name())
+	err := verb.Set("2")
+	is.NoError(err)
+	is.Equal(gcli.VerbWarn, verb)
+	is.Equal("warn", verb.Name())
+
+	err = verb.Set("debug")
+	is.NoError(err)
+	is.Equal(gcli.VerbDebug, verb)
+	is.Equal("debug", verb.Name())
+
+	err = verb.Set("30")
+	is.NoError(err)
+	is.Equal(gcli.VerbCrazy, verb)
+	is.Equal("crazy", verb.Name())
 }
 
 func TestStrictMode(t *testing.T) {

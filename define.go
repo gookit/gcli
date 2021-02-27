@@ -6,20 +6,26 @@ import (
 	"strings"
 )
 
-type verbLevel uint
+// VerbLevel type.
+type VerbLevel uint
+
+// Int verbose level to int.
+func (vl VerbLevel) Int() int {
+	return int(vl)
+}
 
 // String verbose level to string.
-func (vl verbLevel) String() string {
+func (vl VerbLevel) String() string {
 	return fmt.Sprintf("%d=%s", vl, vl.Name())
 }
 
 // Upper verbose level to string.
-func (vl verbLevel) Upper() string {
+func (vl VerbLevel) Upper() string {
 	return strings.ToUpper(vl.Name())
 }
 
 // String verbose level to string.
-func (vl verbLevel) Name() string {
+func (vl VerbLevel) Name() string {
 	switch vl {
 	case VerbQuiet:
 		return "quiet"
@@ -38,21 +44,28 @@ func (vl verbLevel) Name() string {
 }
 
 // Set value from option binding.
-func (vl *verbLevel) Set(value string) error {
-	iv, err := strconv.Atoi(value)
-	if err == nil { // level value.
-		*vl = verbLevel(iv)
+func (vl *VerbLevel) Set(value string) error {
+	// int: level value.
+	if iv, err := strconv.Atoi(value); err == nil {
+		if iv > VerbCrazy.Int() {
+			*vl = VerbCrazy
+		} else if iv < 0 { // fallback to default level.
+			*vl = VerbError
+		} else { // 0 - 5
+			*vl = VerbLevel(iv)
+		}
+
 		return nil
 	}
 
-	// level name.
+	// string: level name.
 	*vl = name2verbLevel(value)
 	return nil
 }
 
 // constants for error level (quiet 0 - 5 crazy)
 const (
-	VerbQuiet verbLevel = iota // don't report anything
+	VerbQuiet VerbLevel = iota // don't report anything
 	VerbError                  // reporting on error, default level.
 	VerbWarn
 	VerbInfo
@@ -80,7 +93,7 @@ const maxFunc = 64
 
 // GlobalOpts global flags
 type GlobalOpts struct {
-	verbose  verbLevel // message report level
+	verbose  VerbLevel // message report level
 	NoColor  bool
 	showVer  bool
 	showHelp bool

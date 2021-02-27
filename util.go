@@ -14,7 +14,7 @@ import (
  * console log
  *************************************************************/
 
-var level2name = map[verbLevel]string{
+var level2name = map[VerbLevel]string{
 	VerbError: "ERROR",
 	VerbWarn:  "WARN",
 	VerbInfo:  "INFO",
@@ -22,7 +22,7 @@ var level2name = map[verbLevel]string{
 	VerbCrazy: "CRAZY",
 }
 
-var level2color = map[verbLevel]color.Color{
+var level2color = map[VerbLevel]color.Color{
 	VerbError: color.FgRed,
 	VerbWarn:  color.FgYellow,
 	VerbInfo:  color.FgGreen,
@@ -36,12 +36,12 @@ func Debugf(format string, v ...interface{}) {
 }
 
 // Logf print log message
-func Logf(level verbLevel, format string, v ...interface{}) {
+func Logf(level VerbLevel, format string, v ...interface{}) {
 	logf(level, format, v...)
 }
 
 // print log message
-func logf(level verbLevel, format string, v ...interface{}) {
+func logf(level VerbLevel, format string, v ...interface{}) {
 	if gOpts.verbose < level {
 		return
 	}
@@ -69,7 +69,7 @@ func defaultErrHandler(data ...interface{}) {
 	}
 }
 
-func name2verbLevel(name string) verbLevel {
+func name2verbLevel(name string) VerbLevel {
 	switch strings.ToLower(name) {
 	case "quiet":
 		return VerbQuiet
