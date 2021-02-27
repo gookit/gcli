@@ -265,7 +265,7 @@ func (app *App) parseGlobalOpts(args []string) (ok bool) {
 		color.Enable = false
 	}
 
-	Debugf("global option parsed, verbose level: <mgb>%d</>(%s)", gOpts.verbose, gOpts.verbose.String())
+	Debugf("global option parsed, verbose level: <mgb>%s</>", gOpts.verbose.String())
 	app.args = app.GlobalFlags().FSetArgs()
 
 	// TODO show auto-completion for bash/zsh
@@ -288,13 +288,8 @@ func (app *App) prepareRun() (code int, name string) {
 			return
 		}
 
-		var cmds []string
-		if isValidCmdName(app.args[0]) {
-			cmds = []string{app.args[0]}
-		}
-
 		// like 'help COMMAND'
-		code = app.showCommandHelp(cmds)
+		code = app.showCommandHelp(app.args)
 		return
 	}
 
@@ -346,11 +341,11 @@ func (app *App) findCommandName(args []string) (name string) {
 
 	// check first arg is valid name string.
 	if isValidCmdName(name) {
+		app.args = args[1:] // update args.
 		realName := app.ResolveAlias(name)
 
 		// is valid command name.
 		if app.IsCommand(realName) {
-			app.args = args[1:] // update args.
 			app.inputName = name
 			Debugf("input command: '<cyan>%s</>', real command: '<mga>%s</>'", name, realName)
 		}
@@ -404,7 +399,7 @@ func (app *App) Run(args []string) (code int) {
 }
 
 func (app *App) doRunCmd(name string, args []string) (code int) {
-	cmd := app.Command(name)
+	cmd := app.GetCommand(name)
 	app.fireEvent(EvtAppBefore, cmd.Copy())
 
 	Debugf("will run command '%s' with args: %v", name, args)
@@ -460,6 +455,7 @@ func (app *App) Exec(name string, args []string) (err error) {
 		return fmt.Errorf("exec unknown command name '%s'", name)
 	}
 
+	Debugf("manual exec the application command: %s", name)
 	cmd := app.commands[name]
 
 	// parse flags and execute command
@@ -501,23 +497,6 @@ func (app *App) fireEvent(event string, data interface{}) {
  * display app help
  *************************************************************/
 
-// AppHelpTemplate help template for app(all commands)
-var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
-<comment>Usage:</>
-  {$binName} [global Options...] <info>COMMAND</> [--option ...] [argument ...]
-  {$binName} [global Options...] <info>COMMAND</> [--option ...] <info>SUB-COMMAND</> [--option ...]  [argument ...]
-
-<comment>Global Options:</>
-{{.GOpts}}
-<comment>Available Commands:</>{{range $module, $cs := .Cs}}{{if $module}}
-<comment> {{ $module }}</>{{end}}{{ range $cs }}
-  <info>{{.Name | paddingName }}</> {{.Desc}}{{if .Aliases}} (alias: <cyan>{{ join .Aliases ","}}</>){{end}}{{end}}{{end}}
-
-  <info>{{ paddingName "help" }}</> Display help information
-
-Use "<cyan>{$binName} {COMMAND} -h</>" for more information about a command
-`
-
 // display app version info
 func (app *App) showVersionInfo() {
 	Debugf("print application version info")
@@ -545,14 +524,29 @@ func (app *App) showCommandTips(name string) {
 	color.Printf("\nUse <cyan>%s --help</> to see available commands\n", app.binName)
 }
 
-// display app help and list all commands
+// AppHelpTemplate help template for app(all commands)
+var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
+<comment>Usage:</>
+  {$binName} [global Options...] <info>COMMAND</> [--option ...] [argument ...]
+  {$binName} [global Options...] <info>COMMAND</> [--option ...] <info>SUB-COMMAND</> [--option ...]  [argument ...]
+
+<comment>Global Options:</>
+{{.GOpts}}
+<comment>Available Commands:</>{{range $cmdName, $c := .Cs}}
+  <info>{{$c.Name | paddingName }}</> {{$c.Desc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
+  <info>{{ paddingName "help" }}</> Display help information
+
+Use "<cyan>{$binName} {COMMAND} -h</>" for more information about a command
+`
+
+// display app help and list all commands. showCommandList()
 func (app *App) showApplicationHelp() {
-	Debugf("render application commands list")
+	Debugf("render application help and commands list")
 
 	// cmdHelpTemplate = color.ReplaceTag(cmdHelpTemplate)
 	// render help text template
 	s := helper.RenderText(AppHelpTemplate, map[string]interface{}{
-		"Cs":    app.moduleCommands,
+		"Cs":    app.commands,
 		"GOpts": app.gFlags.String(),
 		// app version
 		"Version": app.Version,
@@ -571,26 +565,32 @@ func (app *App) showApplicationHelp() {
 // showCommandHelp display help for an command
 func (app *App) showCommandHelp(list []string) (code int) {
 	binName := app.binName
-	if len(list) != 1 {
-		color.Error.Tips("Too many arguments given.\n\nUsage: %s help {COMMAND}", binName)
+	if len(list) == 0 {
+		color.Error.Tips("Too many arguments given.\n\nUsage: %s help COMMAND", binName)
 		return ERR
 	}
 
 	// get real name
 	name := app.cmdAliases.ResolveAlias(list[0])
 	if name == HelpCommand || name == "-h" {
+		Debugf("render help command information")
+
 		color.Println("Display help message for application or command.\n")
-		color.Printf("Usage:\n <cyan>%s {COMMAND} --help</> OR <cyan>%s help {COMMAND}</>\n", binName, binName)
+		color.Printf(`<yellow>Usage:</>
+  <cyan>%s COMMAND --help</>
+  <cyan>%s COMMAND SUB_COMMAND --help</>
+  <cyan>%s help COMMAND</>
+`, binName, binName, binName)
 		return
 	}
 
 	cmd, exist := app.commands[name]
 	if !exist {
-		color.Error.Prompt("Unknown command name '%s'. Run '<cyan>%s -h</>' see all commands", name, binName)
+		color.Error.Prompt("Unknown command name '%s'. Run '%s -h' see all commands", name, binName)
 		return ERR
 	}
 
-	// show help for the command.
+	// show help for the give command.
 	cmd.ShowHelp()
 	return
 }

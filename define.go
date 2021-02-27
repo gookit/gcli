@@ -8,13 +8,18 @@ import (
 
 type verbLevel uint
 
+// String verbose level to string.
+func (vl verbLevel) String() string {
+	return fmt.Sprintf("%d=%s", vl, vl.Name())
+}
+
 // Upper verbose level to string.
 func (vl verbLevel) Upper() string {
-	return strings.ToUpper(vl.String())
+	return strings.ToUpper(vl.Name())
 }
 
 // String verbose level to string.
-func (vl verbLevel) String() string {
+func (vl verbLevel) Name() string {
 	switch vl {
 	case VerbQuiet:
 		return "quiet"

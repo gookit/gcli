@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"text/template"
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/helper"
@@ -467,14 +468,33 @@ func (c *Command) innerDispatch(args []string) (err error) {
 		if name[0] != '-' {
 			name = c.ResolveAlias(name)
 
-			// name is an sub command name?
-			if c.IsCommand(name) {
-				sub := c.Command(args[0])
-
+			// is valid sub command
+			if sub, has := c.Command(name); has {
 				// loop find sub...command and run it.
 				return sub.innerDispatch(args[1:])
 			}
 		}
+	}
+
+	// defaultCommand is not empty.
+	name := c.defaultCommand
+	if name != "" {
+		// is valid sub command
+		if sub, has := c.Command(name); has {
+			Debugf("will run the default command '%s' of the '%s'", name, c.Name)
+
+			// run the default command
+			return sub.innerExecute(args, true)
+		}
+
+		return fmt.Errorf("the default command '%s' is invalid", name)
+	}
+
+	// not set command func and has sub commands.
+	if c.Func == nil && len(c.commands) > 0 {
+		Logf(VerbWarn, "cmd: %s - c.Func is empty, but has sub commands, will render help list", c.Name)
+		c.ShowHelp()
+		return err
 	}
 
 	// do execute command
@@ -537,6 +557,10 @@ func (c *Command) doExecute(args []string) (err error) {
 
 	// do call command handler func
 	if c.Func == nil {
+		// if len(c.commands) > 0 {
+		// 	c.Infoln("please input ")
+		// }
+
 		Logf(VerbWarn, "the command '%s' no handler func to running", c.Name)
 	} else {
 		// err := c.Func.Run(c, args)
@@ -567,6 +591,9 @@ var CmdHelpTemplate = `{{.Desc}}
 {{.Options}}{{end}}{{if .Cmd.Args}}
 <comment>Arguments:</>{{range $a := .Cmd.Args}}
   <info>{{$a.HelpName | printf "%-12s"}}</>{{$a.Desc | ucFirst}}{{if $a.Required}}<red>*</>{{end}}{{end}}
+{{end}}{{ if .Subs }}
+<comment>Sub Commands:</>{{range $n,$c := .Subs}}
+  <info>{{$c.Name | paddingName }}</> {{$c.Desc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
 {{end}}{{if .Cmd.Examples}}
 <comment>Examples:</>
 {{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}
@@ -575,6 +602,8 @@ var CmdHelpTemplate = `{{.Desc}}
 
 // ShowHelp show command help info
 func (c *Command) ShowHelp() {
+	Debugf("render command '%s' help information", c.Name)
+
 	// custom help render func
 	if c.HelpRender != nil {
 		c.HelpRender(c)
@@ -594,13 +623,18 @@ func (c *Command) ShowHelp() {
 	// render help message
 	s := helper.RenderText(CmdHelpTemplate, map[string]interface{}{
 		"Cmd": c,
+		"Subs": c.commands,
 		// global options
 		"GOpts": c.gFlags.String(),
 		// parse options to string
 		"Options": c.Flags.String(),
 		// always upper first char
 		"Desc": c.Desc,
-	}, nil)
+	}, template.FuncMap{
+		"paddingName": func(n string) string {
+			return strutil.PadRight(n, " ", c.nameMaxWidth)
+		},
+	})
 
 	// parse help vars then print help
 	color.Print(c.ReplaceVars(s))

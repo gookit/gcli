@@ -61,9 +61,15 @@ func newCommandBase() commandBase {
 	}
 }
 
-// Command get an command by name
-func (b commandBase) Command(name string) *Command {
+// GetCommand get an command by name
+func (b commandBase) GetCommand(name string) *Command {
 	return b.commands[name]
+}
+
+// Command get an command by name
+func (b commandBase) Command(name string) (c *Command, exist bool) {
+	c, exist = b.commands[name]
+	return
 }
 
 // IsAlias name check
@@ -170,11 +176,6 @@ func (b commandBase) MatchByPath(path string) *Command {
 	}
 
 	return b.Match(names)
-}
-
-// GetCommand get command by name. eg "sub"
-func (b commandBase) GetCommand(name string) *Command {
-	return b.commands[name]
 }
 
 // SetLogo text and color style
