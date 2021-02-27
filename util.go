@@ -198,6 +198,20 @@ func moveArgumentsToEnd(args []string) []string {
 	return append(args[argEnd:], args[0:argEnd]...)
 }
 
+func splitPath2names(path string) []string {
+	var names []string
+	path = strings.TrimSpace(path)
+	if path != "" {
+		if strings.ContainsRune(path, ' ') {
+			names = strings.Split(path, " ")
+		} else {
+			names = strings.Split(path, CommandSep)
+		}
+	}
+
+	return names
+}
+
 // split "ef" to ["e", "f"]
 func splitShortStr(str string) (ss []string) {
 	bs := []byte(str)

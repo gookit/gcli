@@ -43,7 +43,7 @@ func TestStdApp(t *testing.T) {
 
 	app := gcli.StdApp()
 	app.Config(func(a *gcli.App) {
-		a.Logo = gcli.Logo{
+		a.Logo = &gcli.Logo{
 			Text:  "logo1",
 			Style: "warn",
 		}
@@ -97,27 +97,27 @@ func TestApp_Add(t *testing.T) {
 		is.Equal("c2", c.Name)
 	}))
 	app.AddCommand(&gcli.Command{
-		Name:    "m1:c3",
+		Name:    "c3",
 		Desc:    "{$cmd} desc",
 		Aliases: []string{"alias1"},
 		Config: func(c *gcli.Command) {
-			is.Equal("m1:c3", c.Name)
+			is.Equal("c3", c.Name)
 		},
 	})
 
 	is.True(app.IsCommand("c1"))
 	is.True(app.IsCommand("c2"))
-	is.True(app.HasCommand("m1:c3"))
+	is.True(app.HasCommand("c3"))
 	is.Len(app.CmdNames(), 3)
 	is.Len(app.CmdNameMap(), 3)
 	is.NotEmpty(app.CommandNames())
 
-	c := gcli.NewCommand("mdl:test", "desc test2")
+	c := gcli.NewCommand("mdl-test", "desc test2")
 	app.AddCommand(c)
 
-	is.Equal("mdl", c.ParentName())
-	is.Equal("test", c.Name)
-	is.Equal("m1:c3", app.ResolveAlias("alias1"))
+	is.Equal("", c.ParentName())
+	is.Equal("mdl-test", c.Name)
+	is.Equal("c3", app.ResolveAlias("alias1"))
 	is.True(app.IsAlias("alias1"))
 }
 
@@ -170,6 +170,12 @@ func TestApp_AddAliases(t *testing.T) {
 func TestApp_Run(t *testing.T) {
 	is := assert.New(t)
 
+	app := gcli.NewApp(func(a *gcli.App) {
+		a.ExitOnEnd = false
+		a.Version = "1.3.9"
+	})
+	app.Run([]string{})
+
 	// disable color code, re-set output for test
 	buf := new(bytes.Buffer)
 	color.Disable()
@@ -181,20 +187,15 @@ func TestApp_Run(t *testing.T) {
 		gcli.SetVerbose(gcli.VerbError)
 	}()
 
-	app := gcli.NewApp(func(a *gcli.App) {
-		a.ExitOnEnd = false
-		a.Version = "1.3.9"
-	})
-
 	// run
-	code := app.Run([]string{"./myapp"})
+	code := app.Run([]string{})
 	str := buf.String()
 	buf.Reset()
 
 	is.Equal(0, code)
 	is.Contains(str, "1.3.9")
 	is.Contains(str, "Version: 1.3.9")
-	is.Contains(str, "This is my CLI application")
+	is.Contains(str, "This is my console application")
 	is.Contains(str, "Display help information")
 
 	var argStr, cmdRet string
@@ -213,7 +214,7 @@ func TestApp_Run(t *testing.T) {
 	})
 
 	// run an command
-	code = app.Run([]string{"./myapp", "test"})
+	code = app.Run([]string{"test"})
 	is.Equal(0, code)
 	is.Equal("", argStr)
 	is.Equal("test", cmdRet)
@@ -236,20 +237,22 @@ func TestApp_Run(t *testing.T) {
 func TestApp_showCommandHelp(t *testing.T) {
 	is := assert.New(t)
 
-	// disable color code, re-set output for test
-	buf := new(bytes.Buffer)
-	color.Disable()
-	color.SetOutput(buf)
-	defer color.ResetOptions()
-
 	app := gcli.NewApp(func(a *gcli.App) {
 		a.ExitOnEnd = false
 	})
 
 	app.AddCommand(gcli.NewCommand("test", "desc for test command"))
 
+	app.Run([]string{"help", "test"})
+
+	// disable color code, re-set output for test
+	buf := new(bytes.Buffer)
+	color.Disable()
+	color.SetOutput(buf)
+	defer color.ResetOptions()
+
 	// show command help
-	code := app.Run([]string{"./myapp", "help", "test"})
+	code := app.Run([]string{"help", "test"})
 	str := buf.String()
 	buf.Reset()
 	is.Equal(0, code)
@@ -257,21 +260,21 @@ func TestApp_showCommandHelp(t *testing.T) {
 	is.Contains(str, "Desc for test command")
 
 	// show command help: arg error
-	code = app.Run([]string{"./myapp", "help", "test", "more"})
+	code = app.Run([]string{"help", "test", "more"})
 	str = buf.String()
 	buf.Reset()
 	is.Equal(gcli.ERR, code)
 	is.Contains(str, "ERROR: Too many arguments given.")
 
 	// show command help for 'help'
-	code = app.Run([]string{"./myapp", "help", "help"})
+	code = app.Run([]string{"help", "help"})
 	str = buf.String()
 	buf.Reset()
 	is.Equal(gcli.OK, code)
 	is.Contains(str, "Display help message for application or command.")
 
 	// show command help: unknown command
-	code = app.Run([]string{"./myapp", "help", "not-exist"})
+	code = app.Run([]string{"help", "not-exist"})
 	str = buf.String()
 	buf.Reset()
 	is.Equal(gcli.ERR, code)
@@ -283,13 +286,10 @@ func TestApp_showVersion(t *testing.T) {
 		a.ExitOnEnd = false
 		a.Version = "1.3.9"
 		a.Desc = "application desc"
-		a.Logo = gcli.Logo{
-			Text:  "MY-LOGO",
-			Style: "info",
-		}
+		a.Logo.Text = "MY-LOGO"
 	})
 
-	app.Run([]string{"./myapp", "--version"})
+	app.Run([]string{"--version"})
 
 	// disable color code, re-set output for test
 	buf := new(bytes.Buffer)
@@ -297,7 +297,7 @@ func TestApp_showVersion(t *testing.T) {
 	color.SetOutput(buf)
 	defer color.ResetOptions()
 
-	app.Run([]string{"./myapp", "--version"})
+	app.Run([]string{"--version"})
 	str := buf.String()
 	buf.Reset()
 	assert.Contains(t, str, "Version: 1.3.9")
@@ -309,7 +309,7 @@ func TestApp_showCommandTips(t *testing.T) {
 	app := gcli.NewApp()
 
 	app.AddCommand(emptyCmd)
-	app.Run([]string{"./myapp", "emp"})
+	app.Run([]string{"emp"})
 
 	// disable color code, re-set output for test
 	buf := new(bytes.Buffer)
@@ -317,7 +317,7 @@ func TestApp_showCommandTips(t *testing.T) {
 	color.SetOutput(buf)
 	defer color.ResetOptions()
 
-	app.Run([]string{"./myapp", "emp"})
+	app.Run([]string{"emp"})
 	str := buf.String()
 	buf.Reset()
 	assert.Contains(t, str, "ERROR: unknown input command \"emp\"")

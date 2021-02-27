@@ -42,7 +42,6 @@ func (c HandlersChain) Last() RunnerFunc {
 	return nil
 }
 
-
 // Command a CLI command structure
 type Command struct {
 	// core is internal use
@@ -105,9 +104,6 @@ type Command struct {
 	// HelpRender custom render cmd help message
 	HelpRender func(c *Command)
 
-	// CustomFlags indicates that the command will do its own flag parsing.
-	// CustomFlags bool
-
 	// application
 	app *App
 	// mark is alone running.
@@ -136,6 +132,11 @@ func NewCommand(name, desc string, fn ...func(c *Command)) *Command {
 	// set name
 	c.Arguments.SetName(name)
 	return c
+}
+
+// Init command. only use for tests
+func (c *Command) Init() {
+	c.initialize()
 }
 
 // SetFunc Settings command handler func
@@ -199,15 +200,13 @@ func (c *Command) AddCommand(sub *Command) {
 	// extend path names from parent
 	sub.pathNames = c.pathNames[0:]
 
-	// Logf(VerbCrazy, "add subcommand '%s' to the command '%s', aliases: %v", sub.Name, c.Name, sub.Aliases)
-
 	// do add
 	c.commandBase.addCommand(c.Name, sub)
 }
 
 // Match sub command by input names
 func (c *Command) Match(names []string) *Command {
-	// must ensure is initialized
+	// ensure is initialized
 	c.initialize()
 
 	ln := len(names)
@@ -219,15 +218,9 @@ func (c *Command) Match(names []string) *Command {
 }
 
 // Match command by path. eg. "top:sub"
-// func (c *Command) MatchByPath(path string) *Command {
-// 	var names []string
-// 	path = strings.TrimSpace(path)
-// 	if path != "" {
-// 		names = strings.Split(path, CommandSep)
-// 	}
-//
-// 	return c.Match(names)
-// }
+func (c *Command) MatchByPath(path string) *Command {
+	return c.Match(splitPath2names(path))
+}
 
 // initialize works for the command
 func (c *Command) initialize() {

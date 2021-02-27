@@ -86,10 +86,12 @@ func NewApp(fn ...func(app *App)) *App {
 		// config
 		ExitOnEnd: true,
 		// group
-		moduleCommands: make(map[string]map[string]*Command),
+		// moduleCommands: make(map[string]map[string]*Command),
+		commandBase: newCommandBase(),
 	}
 
 	// internal core
+	Logf(VerbCrazy, "create new core on init application")
 	app.core = core{
 		cmdLine: CLI,
 		gFlags: NewFlags("app.GlobalOpts").WithOption(FlagsOption{
@@ -102,10 +104,8 @@ func NewApp(fn ...func(app *App)) *App {
 
 	// init commandBase
 	Logf(VerbCrazy, "create new commandBase on init application")
-	app.commandBase = newCommandBase()
 	// set a default version
 	app.Version = "1.0.0"
-	app.SetLogo("", "info")
 
 	if len(fn) > 0 {
 		fn[0](app)
@@ -173,11 +173,6 @@ func (app *App) initialize() {
  * register commands
  *************************************************************/
 
-// NewCommand create a new command
-// func (app *App) NewCommand(name, useFor string, config func(c *Command)) *Command {
-// 	return NewCommand(name, useFor, config)
-// }
-
 // Add add one or multi command(s)
 func (app *App) Add(c *Command, more ...*Command) {
 	app.AddCommand(c)
@@ -200,8 +195,6 @@ func (app *App) AddCommand(c *Command) {
 	// inherit global flags from application
 	c.core.gFlags = app.gFlags
 
-	// Logf(VerbCrazy, "add command '%s' to the application. aliases: %v", c.Name, c.Aliases)
-
 	// do add command
 	app.commandBase.addCommand(app.Name, c)
 }
@@ -222,10 +215,10 @@ func (app *App) AddAliases(command string, aliases ...string) {
 }
 
 // addAliases add alias names for a command
-func (app *App) addAliases(command string, aliases []string, sync bool) {
-	c, has := app.commands[command]
+func (app *App) addAliases(name string, aliases []string, sync bool) {
+	c, has := app.Command(name)
 	if !has {
-		panicf("The command '%s' is not exists", command)
+		panicf("The command '%s' is not exists", name)
 	}
 
 	// add alias
@@ -234,7 +227,7 @@ func (app *App) addAliases(command string, aliases []string, sync bool) {
 			panicf("The name '%s' has been used as an command name", alias)
 		}
 
-		app.cmdAliases.AddAlias(command, alias)
+		app.cmdAliases.AddAlias(name, alias)
 
 		// sync to Command
 		if sync {
@@ -567,7 +560,7 @@ var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
   <info>{{$c.Name | paddingName }}</> {{$c.Desc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
   <info>{{ paddingName "help" }}</> Display help information
 
-Use "<cyan>{$binName} {COMMAND} -h</>" for more information about a command
+Use "<cyan>{$binName} COMMAND -h</>" for more information about a command
 `
 
 // display app help and list all commands. showCommandList()
@@ -596,7 +589,8 @@ func (app *App) showApplicationHelp() {
 // showCommandHelp display help for an command
 func (app *App) showCommandHelp(list []string) (code int) {
 	binName := app.binName
-	if len(list) == 0 {
+	// if len(list) == 0 { TODO support multi level sub command?
+	if len(list) > 1 {
 		color.Error.Tips("Too many arguments given.\n\nUsage: %s help COMMAND", binName)
 		return ERR
 	}
@@ -610,12 +604,13 @@ func (app *App) showCommandHelp(list []string) (code int) {
 		color.Printf(`<yellow>Usage:</>
   <cyan>%s COMMAND --help</>
   <cyan>%s COMMAND SUB_COMMAND --help</>
+  <cyan>%s COMMAND SUB_COMMAND ... --help</>
   <cyan>%s help COMMAND</>
-`, binName, binName, binName)
+`, binName, binName, binName, binName)
 		return
 	}
 
-	cmd, exist := app.commands[name]
+	cmd, exist := app.Command(name)
 	if !exist {
 		color.Error.Prompt("Unknown command name '%s'. Run '%s -h' see all commands", name, binName)
 		return ERR

@@ -307,7 +307,7 @@ func (hv *HelpVars) ReplaceVars(input string) string {
 // will inject to every Command
 type commandBase struct {
 	// Logo ASCII logo setting
-	Logo Logo
+	Logo *Logo
 	// Version app version. like "1.0.1"
 	Version string
 
@@ -347,6 +347,8 @@ type commandBase struct {
 
 func newCommandBase() commandBase {
 	return commandBase{
+		Logo: &Logo{Style: "info"},
+		// init mapping
 		cmdNames: make(map[string]int),
 		// name2idx: make(map[string]int),
 		commands: make(map[string]*Command),
@@ -410,7 +412,7 @@ func (b commandBase) addCommand(pName string, c *Command) {
 	}
 
 	if c.IsDisabled() {
-		Logf(VerbDebug, "command '%s' has been disabled, skip add", cName)
+		Debugf("command '%s' has been disabled, skip add", cName)
 		return
 	}
 
@@ -461,17 +463,7 @@ func (b commandBase) Match(names []string) *Command {
 
 // Match command by path. eg. "top:sub" or "top sub"
 func (b commandBase) MatchByPath(path string) *Command {
-	var names []string
-	path = strings.TrimSpace(path)
-	if path != "" {
-		if strings.ContainsRune(path, ' ') {
-			names = strings.Split(path, " ")
-		} else {
-			names = strings.Split(path, CommandSep)
-		}
-	}
-
-	return b.Match(names)
+	return b.Match(splitPath2names(path))
 }
 
 // SetLogo text and color style
