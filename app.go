@@ -23,6 +23,16 @@ import (
 // type HookFunc func(obj interface{}, data interface{})
 type HookFunc func(obj ...interface{})
 
+// Commander interface definition
+type Commander interface {
+	// Creator for create new command
+	Creator() *Command
+	// Config bind Flags or Arguments for the command
+	Config(c *Command)
+	// Execute the command
+	Execute(c *Command, args []string) error
+}
+
 // Logo app logo, ASCII logo
 type Logo struct {
 	Text  string // ASCII logo string

@@ -14,6 +14,35 @@ import (
 	"github.com/gookit/goutil/strutil"
 )
 
+// Runner /Executor interface
+type Runner interface {
+	// Config(c *Command)
+	Run(c *Command, args []string) error
+}
+
+// RunnerFunc definition
+type RunnerFunc func(c *Command, args []string) error
+
+// Run implement the Runner interface
+func (f RunnerFunc) Run(c *Command, args []string) error {
+	return f(c, args)
+}
+
+const maxFunc = 64
+
+// HandlersChain middleware handlers chain definition
+type HandlersChain []RunnerFunc
+
+// Last returns the last handler in the chain. ie. the last handler is the main own.
+func (c HandlersChain) Last() RunnerFunc {
+	length := len(c)
+	if length > 0 {
+		return c[length-1]
+	}
+	return nil
+}
+
+
 // Command a CLI command structure
 type Command struct {
 	// core is internal use
