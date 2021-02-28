@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/dump"
 )
 
 var opts = struct {
@@ -12,34 +11,50 @@ var opts = struct {
 	list       bool
 	sample     bool
 }{}
+
+var l1sub1opts = struct {
+	aint int
+}{}
+var l2sub1opts = struct {
+	astr string
+}{}
 var cmd = gcli.Command{
 	Name:    "test",
 	Aliases: []string{"ts"},
 	Desc:    "this is a description <info>message</> for {$cmd}", // // {$cmd} will be replace to 'test'
 	Subs: []*gcli.Command{
 		{
-			Name: "sub1",
+			Name: "l1sub1",
 			Desc: "desc message",
 			Subs: []*gcli.Command{
 				{
-					Name: "sub11",
+					Name: "l2sub1",
 					Desc: "desc message",
+					Config: func(c *gcli.Command) {
+						c.StrVar(&l2sub1opts.astr, gcli.FlagMeta{
+							Name: "astr",
+							Desc: "desc for astr",
+						})
+					},
 				},
 				{
-					Name: "sub12",
+					Name: "l2sub2",
 					Desc: "desc message",
 				},
 			},
+			Config: func(c *gcli.Command) {
+				c.IntOpt(&l1sub1opts.aint, "aint", "", 2, "desc for aint")
+			},
 		},
 		{
-			Name: "sub2",
+			Name: "l1sub2",
 			Desc: "desc message",
 		},
 	},
 }
 
-// test run: go build ./_examples/mutlilevel && ./mutlilevel -h
-// test run: go run ./_examples/mutlilevel
+// test run: go build ./_examples/multilevel && ./multilevel -h
+// test run: go run ./_examples/multilevel
 func main() {
 	cmd.BoolOpt(&opts.visualMode, "visual", "v", false, "Prints the font name.")
 	cmd.StrOpt(&opts.fontName, "font", "", "", "Choose a font name. Default is a random font.")
@@ -47,11 +62,10 @@ func main() {
 	cmd.BoolOpt(&opts.sample, "sample", "", false, "Prints a sample with that font.")
 
 	cmd.Func = func(c *gcli.Command, args []string) error {
-		c.Infoln("hello, in the alone command\n")
+		c.Infoln("hello, in the alone command:", c.Name)
 
-		// fmt.Printf("%+v\n", cmd.Flags)
-		fmt.Printf("opts %+v\n", opts)
-		fmt.Printf("args is %v\n", args)
+		dump.Print(args)
+		dump.Print(opts)
 
 		return nil
 	}

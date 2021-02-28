@@ -237,29 +237,59 @@ func TestCommand_Run_moreLevelSub(t *testing.T) {
 	assert.Equal(t, "command path: git remote add", bf.String())
 }
 
-func TestCommand_ParseFlag(t *testing.T) {
+var int0 int
+var str0 string
+
+var c = gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
+	c.IntOpt(&int0, "int", "", 0, "int desc")
+	c.StrOpt(&str0, "str", "", "", "str desc")
+	c.AddArg("arg0", "arg0 desc")
+	c.AddArg("arg1", "arg1 desc")
+	c.Func = func(c *gcli.Command, args []string) error {
+		bf.Reset()
+		bf.WriteString("name=" + c.Name)
+		c.SetValue("name", c.Name)
+		c.SetValue("args", args)
+		dump.P(c.ID(), "command Func is exec")
+		return nil
+	}
+})
+
+func TestCommand_Run_emptyArgs(t *testing.T) {
 	is := assert.New(t)
 	gcli.SetCrazyMode()
 	defer gcli.ResetVerbose()
 
-	var int0 int
-	var str0 string
+	is.Equal("test", c.Name)
 
-	c := gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
-		c.IntOpt(&int0, "int", "", 0, "int desc")
-		c.StrOpt(&str0, "str", "", "", "str desc")
-		is.Equal("test", c.Name)
-		is.Equal("int desc", c.FlagMeta("int").Desc)
-	})
+	err := c.Run([]string{})
 
-	c.SetFunc(func(c *gcli.Command, args []string) error {
-		is.Equal("test", c.Name)
-		is.Equal([]string{"txt"}, args)
-		return nil
-	})
+	is.NoError(err)
+	is.Equal("name=test", bf.String())
+	is.Equal("int desc", c.FlagMeta("int").Desc)
+}
+
+func TestCommand_Run_parseHelp(t *testing.T) {
+	is := assert.New(t)
+
+	err := c.Run([]string{"-h"})
+	is.NoError(err)
+}
+
+func TestCommand_Run_parseOptions(t *testing.T) {
+	is := assert.New(t)
+	gcli.SetCrazyMode()
+	defer gcli.ResetVerbose()
+
+	is.Equal("test", c.Name)
+	is.Equal("int desc", c.FlagMeta("int").Desc)
 
 	err := c.Run([]string{"--int", "10", "--str=abc", "txt"})
+
 	is.NoError(err)
+	is.Equal("test", c.Value("name"))
+	is.Equal([]string{"txt"}, c.Value("args"))
+
 	is.Equal(10, int0)
 	is.Equal("abc", str0)
 	is.Equal([]string{"txt"}, c.RawArgs())

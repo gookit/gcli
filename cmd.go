@@ -192,6 +192,8 @@ func (c *Command) AddSubs(sub *Command, more ...*Command) {
 func (c *Command) AddCommand(sub *Command) {
 	// init command
 	sub.parent = c
+	// inherit standalone value
+	sub.standalone = c.standalone
 	// inherit global flags from application
 	sub.core.gFlags = c.gFlags
 
@@ -252,15 +254,16 @@ func (c *Command) initialize() {
 
 	// init for cmd Arguments
 	c.Arguments.SetName(cName)
-	c.Arguments.SetValidateNum(!c.standalone && gOpts.strictMode)
+	c.Arguments.SetValidateNum(gOpts.strictMode)
 
 	// init for cmd Flags
 	c.Flags.InitFlagSet(cName)
-	c.Flags.FSet().SetOutput(c.Flags.out)
-	c.Flags.FSet().Usage = func() { // call on exists "-h" "--help"
-		Logf(VerbDebug, "render help message on exists '-h|--help' or has unknown flag")
-		c.ShowHelp()
-	}
+	// c.Flags.SetOption(cName)
+	// c.Flags.FSet().SetOutput(c.Flags.out)
+	// c.Flags.FSet().Usage = func() { // call on exists "-h" "--help"
+	// 	Logf(VerbDebug, "render help on exists '-h|--help' or has unknown flag")
+	// 	c.ShowHelp()
+	// }
 
 	// format description
 	if len(c.Desc) > 0 {
@@ -306,67 +309,6 @@ func (c *Command) initCommandBase() {
 	c.commandBase.cmdAliases = structs.NewAliases(aliasNameCheck)
 }
 
-/*************************************************************
- * parent and subs
- *************************************************************/
-
-// Root get root command
-func (c *Command) Root() *Command {
-	if c.parent != nil {
-		return c.parent.Root()
-	}
-
-	return c
-}
-
-// IsRoot command
-func (c *Command) IsRoot() bool {
-	return c.parent == nil
-}
-
-// Parent get parent
-func (c *Command) Parent() *Command {
-	return c.parent
-}
-
-// SetParent set parent
-func (c *Command) SetParent(parent *Command) {
-	c.parent = parent
-}
-
-// Module name of the grouped command
-func (c *Command) ParentName() string {
-	if c.parent != nil {
-		return c.parent.Name
-	}
-
-	return ""
-}
-
-// Sub get sub command by name. eg "sub"
-func (c *Command) Sub(name string) *Command {
-	return c.GetCommand(name)
-}
-
-// SubCommand get sub command by name. eg "sub"
-func (c *Command) SubCommand(name string) *Command {
-	return c.GetCommand(name)
-}
-
-// IsSubCommand name check. alias of the HasCommand()
-func (c *Command) IsSubCommand(name string) bool {
-	return c.IsCommand(name)
-}
-
-// find sub command by name
-// func (c *Command) findSub(name string) *Command {
-// 	if index, ok := c.subName2index[name]; ok {
-// 		return c.Subs[index]
-// 	}
-//
-// 	return nil
-// }
-
 // Next TODO processing, run all middleware handlers
 func (c *Command) Next() {
 	c.middleIdx++
@@ -399,7 +341,7 @@ var errCallRunOnSub = errors.New("c.Run() cannot allow call at subcommand")
 //	cmd.MustRun([]string{"-a", ...})
 func (c *Command) MustRun(args []string) {
 	if err := c.Run(args); err != nil {
-		color.Error.Println("Run command error: %s", err.Error())
+		color.Error.Println("ERROR:", err.Error())
 		panic(err)
 	}
 }
@@ -456,18 +398,21 @@ func (c *Command) innerDispatch(args []string) (err error) {
 	if err != nil {
 		// ignore flag.ErrHelp error
 		if err == flag.ErrHelp {
-			err = nil
-			// TODO call show help on there
 			c.ShowHelp()
-			return
+			return nil
 		}
 
-		color.Error.Tips("Options parse error - %s", err.Error())
-		return
+		color.Error.Tips("option error - %s", err.Error())
+		return nil
 	}
 
 	// remaining args
 	if c.standalone {
+		if gOpts.showHelp {
+			c.ShowHelp()
+			return
+		}
+
 		c.Fire(EvtGOptionsParsed, args)
 	}
 
@@ -544,9 +489,11 @@ func (c *Command) parseOptions(args []string) (ss []string, err error) {
 
 	// NOTICE: disable output internal error message on parse flags
 	// c.FSet().SetOutput(ioutil.Discard)
+	Debugf("cmd: %s - will parse options by args: %v", c.Name, args)
 
 	// parse options, don't contains command name.
 	if err = c.Parse(args); err != nil {
+		Logf(VerbCrazy, "'%s' - parse options  err: <red>%s</>", c.Name, err.Error())
 		return
 	}
 
@@ -588,6 +535,67 @@ func (c *Command) doExecute(args []string) (err error) {
 }
 
 /*************************************************************
+ * parent and subs
+ *************************************************************/
+
+// Root get root command
+func (c *Command) Root() *Command {
+	if c.parent != nil {
+		return c.parent.Root()
+	}
+
+	return c
+}
+
+// IsRoot command
+func (c *Command) IsRoot() bool {
+	return c.parent == nil
+}
+
+// Parent get parent
+func (c *Command) Parent() *Command {
+	return c.parent
+}
+
+// SetParent set parent
+func (c *Command) SetParent(parent *Command) {
+	c.parent = parent
+}
+
+// Module name of the grouped command
+func (c *Command) ParentName() string {
+	if c.parent != nil {
+		return c.parent.Name
+	}
+
+	return ""
+}
+
+// Sub get sub command by name. eg "sub"
+func (c *Command) Sub(name string) *Command {
+	return c.GetCommand(name)
+}
+
+// SubCommand get sub command by name. eg "sub"
+func (c *Command) SubCommand(name string) *Command {
+	return c.GetCommand(name)
+}
+
+// IsSubCommand name check. alias of the HasCommand()
+func (c *Command) IsSubCommand(name string) bool {
+	return c.IsCommand(name)
+}
+
+// find sub command by name
+// func (c *Command) findSub(name string) *Command {
+// 	if index, ok := c.subName2index[name]; ok {
+// 		return c.Subs[index]
+// 	}
+//
+// 	return nil
+// }
+
+/*************************************************************
  * command help
  *************************************************************/
 
@@ -596,9 +604,9 @@ var CmdHelpTemplate = `{{.Desc}}
 {{if .Cmd.NotStandalone}}
 <comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.AliasesString}}</>){{end}}{{end}}
 <comment>Usage:</> {$binName} [global options] {{if .Cmd.NotStandalone}}<info>{{.Cmd.Path}}</> {{end}}[--option ...] [arguments ...]
-
+{{if .GOpts}}
 <comment>Global Options:</>
-{{.GOpts}}{{if .Options}}
+{{.GOpts}}{{end}}{{if .Options}}
 <comment>Options:</>
 {{.Options}}{{end}}{{if .Cmd.Args}}
 <comment>Arguments:</>{{range $a := .Cmd.Args}}
@@ -632,25 +640,32 @@ func (c *Command) ShowHelp() {
 		c.Help = strings.Join([]string{strings.TrimSpace(c.Help), "\n"}, "")
 	}
 
-	// render help message
-	s := helper.RenderText(CmdHelpTemplate, map[string]interface{}{
+	vars := map[string]interface{}{
 		"Cmd":  c,
 		"Subs": c.commands,
 		// global options
-		"GOpts": c.GFlags().String(),
+		// - on standalone, will not init c.core.gFlags
+		"GOpts": nil,
 		// parse options to string
 		"Options": c.Flags.String(),
 		// always upper first char
 		"Desc": c.Desc,
-	}, template.FuncMap{
+	}
+
+	if c.NotStandalone() {
+		vars["GOpts"] = c.GFlags().String()
+	}
+
+	// render help message
+	str := helper.RenderText(CmdHelpTemplate, vars, template.FuncMap{
 		"paddingName": func(n string) string {
 			return strutil.PadRight(n, " ", c.nameMaxWidth)
 		},
 	})
 
-	// parse help vars then print help
-	color.Print(c.ReplaceVars(s))
+	// parse gcli help vars then print help
 	// fmt.Printf("%#v\n", s)
+	color.Print(c.ReplaceVars(str))
 }
 
 /*************************************************************
@@ -702,14 +717,14 @@ func (c *Command) goodName() string {
 
 // Fire event handler by name
 func (c *Command) Fire(event string, data ...interface{}) {
-	Debugf("command '%s' trigger the event: <mga>%s</>", c.Name, event)
+	Debugf("cmd: %s - trigger the event: <mga>%s</>", c.Name, event)
 
 	c.Hooks.Fire(event, c, data)
 }
 
 // On add hook handler for a hook event
 func (c *Command) On(name string, handler HookFunc) {
-	Debugf("command '%s' add hook: %s", c.Name, name)
+	Debugf("cmd: %s - register hook: %s", c.Name, name)
 
 	c.Hooks.On(name, handler)
 }

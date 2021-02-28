@@ -365,45 +365,45 @@ func newCommandBase() commandBase {
 }
 
 // GetCommand get an command by name
-func (b commandBase) GetCommand(name string) *Command {
+func (b *commandBase) GetCommand(name string) *Command {
 	return b.commands[name]
 }
 
 // Command get an command by name
-func (b commandBase) Command(name string) (c *Command, exist bool) {
+func (b *commandBase) Command(name string) (c *Command, exist bool) {
 	c, exist = b.commands[name]
 	return
 }
 
 // IsAlias name check
-func (b commandBase) IsAlias(alias string) bool {
+func (b *commandBase) IsAlias(alias string) bool {
 	return b.cmdAliases.HasAlias(alias)
 }
 
 // ResolveAlias get real command name by alias
-func (b commandBase) ResolveAlias(alias string) string {
+func (b *commandBase) ResolveAlias(alias string) string {
 	return b.cmdAliases.ResolveAlias(alias)
 }
 
 // SetDefaultCommand set default sub-command name
-func (b commandBase) SetDefaultCommand(name string) {
+func (b *commandBase) SetDefaultCommand(name string) {
 	b.defaultCommand = name
 }
 
 // HasCommand name check
-func (b commandBase) HasCommand(name string) bool {
+func (b *commandBase) HasCommand(name string) bool {
 	_, has := b.cmdNames[name]
 	return has
 }
 
 // IsCommand name check. alias of the HasCommand()
-func (b commandBase) IsCommand(name string) bool {
+func (b *commandBase) IsCommand(name string) bool {
 	_, has := b.cmdNames[name]
 	return has
 }
 
 // add Command to the group
-func (b commandBase) addCommand(pName string, c *Command) {
+func (b *commandBase) addCommand(pName string, c *Command) {
 	// init command
 	c.initialize()
 
@@ -443,7 +443,7 @@ func (b commandBase) addCommand(pName string, c *Command) {
 }
 
 // Match command by path names. eg. ["top", "sub"]
-func (b commandBase) Match(names []string) *Command {
+func (b *commandBase) Match(names []string) *Command {
 	ln := len(names)
 	if ln == 0 {
 		panic("the command names is required")
@@ -467,12 +467,12 @@ func (b commandBase) Match(names []string) *Command {
 }
 
 // Match command by path. eg. "top:sub" or "top sub"
-func (b commandBase) MatchByPath(path string) *Command {
+func (b *commandBase) MatchByPath(path string) *Command {
 	return b.Match(splitPath2names(path))
 }
 
 // SetLogo text and color style
-func (b commandBase) SetLogo(logo string, style ...string) {
+func (b *commandBase) SetLogo(logo string, style ...string) {
 	b.Logo.Text = logo
 	if len(style) > 0 {
 		b.Logo.Style = style[0]
@@ -480,22 +480,22 @@ func (b commandBase) SetLogo(logo string, style ...string) {
 }
 
 // AddError to the application
-func (b commandBase) AddError(err error) {
+func (b *commandBase) AddError(err error) {
 	b.errors = append(b.errors, err)
 }
 
 // Commands get all commands
-func (b commandBase) Commands() map[string]*Command {
+func (b *commandBase) Commands() map[string]*Command {
 	return b.commands
 }
 
 // CmdNames get all command names
-func (b commandBase) CmdNames() []string {
+func (b *commandBase) CmdNames() []string {
 	return b.CommandNames()
 }
 
 // CommandNames get all command names
-func (b commandBase) CommandNames() []string {
+func (b *commandBase) CommandNames() []string {
 	var ss []string
 	for n := range b.cmdNames {
 		ss = append(ss, n)
@@ -504,16 +504,39 @@ func (b commandBase) CommandNames() []string {
 }
 
 // CmdNameMap get all command names
-func (b commandBase) CmdNameMap() map[string]int {
+func (b *commandBase) CmdNameMap() map[string]int {
 	return b.cmdNames
 }
 
 // CmdAliases get cmd aliases
-func (b commandBase) CmdAliases() *structs.Aliases {
+func (b *commandBase) CmdAliases() *structs.Aliases {
 	return b.cmdAliases
 }
 
 // AliasesMapping get cmd aliases mapping
-func (b commandBase) AliasesMapping() map[string]string {
+func (b *commandBase) AliasesMapping() map[string]string {
 	return b.cmdAliases.Mapping()
+}
+
+// Data get
+func (b *commandBase) Data() map[string]interface{} {
+	return b.data
+}
+
+// SetData to cmd
+func (b *commandBase) SetData(data map[string]interface{}) {
+	b.data = data
+}
+
+// Value get from b.data
+func (b *commandBase) Value(key string) interface{} {
+	return b.data[key]
+}
+
+// SetValue to b.data
+func (b *commandBase) SetValue(key string, val interface{}) {
+	if b.data == nil {
+		b.data = make(map[string]interface{})
+	}
+	b.data[key] = val
 }

@@ -424,13 +424,6 @@ func (app *App) doRunCmd(name string, args []string) (code int) {
 
 	Debugf("will run app command '%s' with args: %v", name, args)
 
-	// contains keywords "-h" OR "--help" on end
-	// if cmd.hasHelpKeywords() {
-	// 	Logf(VerbDebug, "contains help keywords in flags, render command help message")
-	// 	cmd.ShowHelp()
-	// 	return
-	// }
-
 	// parse command options
 	// args, err = cmd.parseOptions(args)
 
