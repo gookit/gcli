@@ -143,6 +143,12 @@ func (h *Hooks) Fire(event string, data ...interface{}) {
 	}
 }
 
+// HasHook register
+func (h *Hooks) HasHook(event string) bool {
+	_, ok := h.hooks[event]
+	return ok
+}
+
 // ClearHooks clear hooks data
 func (h *Hooks) ClearHooks() {
 	h.hooks = nil

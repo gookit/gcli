@@ -158,12 +158,13 @@ func (app *App) initialize() {
 	// init some help tpl vars
 	app.core.AddVars(app.core.innerHelpVars())
 
-	// binding GOptions
+	// binding global options
 	app.bindingGlobalOpts()
-	// parseGlobalOpts()
 
 	// add default error handler.
-	app.core.AddOn(EvtAppError, defaultErrHandler)
+	if !app.HasHook(EvtAppError) {
+		app.On(EvtAppError, defaultErrHandler)
+	}
 
 	app.fireEvent(EvtAppInit, nil)
 	app.initialized = true

@@ -25,8 +25,8 @@ func TestNewCommand(t *testing.T) {
 
 	err := c.Run(simpleArgs)
 	is.NoError(err)
-	is.True(c.IsAlone())
-	is.False(c.NotAlone())
+	is.True(c.IsStandalone())
+	is.False(c.NotStandalone())
 
 	is.False(c.IsDisabled())
 	c.Disable()
@@ -78,8 +78,8 @@ func TestCommand_Run(t *testing.T) {
 	is.NotEmpty(c)
 	err := c.Run(simpleArgs)
 	is.NoError(err)
-	is.True(c.IsAlone())
-	is.False(c.NotAlone())
+	is.True(c.IsStandalone())
+	is.False(c.NotStandalone())
 
 	is.Equal("alias1", c.AliasesString(""))
 

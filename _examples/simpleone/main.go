@@ -1,9 +1,8 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/dump"
 )
 
 var opts = struct {
@@ -28,11 +27,10 @@ func main() {
 	cmd.BoolOpt(&opts.sample, "sample", "", false, "Prints a sample with that font.")
 
 	cmd.Func = func(c *gcli.Command, args []string) error {
-		c.Infoln("hello, in the alone command")
+		c.Infoln("hello, in the alone command:", c.Name)
 
-		// fmt.Printf("%+v\n", cmd.Flags)
-		fmt.Printf("opts %+v\n", opts)
-		fmt.Printf("args is %v\n", args)
+		dump.Print(args)
+		dump.Print(opts)
 
 		return nil
 	}

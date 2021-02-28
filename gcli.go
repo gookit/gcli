@@ -52,6 +52,9 @@ const (
 	EvtAppError  = "app.run.error"
 
 	EvtCmdInit   = "cmd.init"
+
+	EvtCmdOptParsed   = "cmd.opts.parsed"
+
 	EvtCmdBefore = "cmd.run.before"
 	EvtCmdAfter  = "cmd.run.after"
 	EvtCmdError  = "cmd.run.error"

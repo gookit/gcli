@@ -89,6 +89,7 @@ type Command struct {
 	parent *Command
 
 	// Subs sub commands of the Command
+	// NOTICE: if command has been initialized, adding through this field is invalid
 	Subs []*Command
 
 	// module is the name for grouped commands
@@ -104,12 +105,12 @@ type Command struct {
 	// HelpRender custom render cmd help message
 	HelpRender func(c *Command)
 
-	// application
+	// command is inject to the App
 	app *App
-	// mark is alone running.
-	alone bool
 	// mark is disabled. if true will skip register to cli-app.
 	disabled bool
+	// command is standalone running.
+	standalone bool
 }
 
 // NewCommand create a new command instance.
@@ -251,7 +252,7 @@ func (c *Command) initialize() {
 
 	// init for cmd Arguments
 	c.Arguments.SetName(cName)
-	c.Arguments.SetValidateNum(!c.alone && gOpts.strictMode)
+	c.Arguments.SetValidateNum(!c.standalone && gOpts.strictMode)
 
 	// init for cmd Flags
 	c.Flags.InitFlagSet(cName)
@@ -382,12 +383,20 @@ func (c *Command) Next() {
 }
 
 /*************************************************************
- * alone running
+ * standalone running
  *************************************************************/
 
-var errCallRun = errors.New("c.Run() method can only be called in standalone mode")
+var errCallRunOnApp = errors.New("c.Run() method can only be called in standalone mode")
+var errCallRunOnSub = errors.New("c.Run() cannot allow call at subcommand")
 
 // MustRun Alone the current command, will panic on error
+//
+// Usage:
+//	// run with os.Args
+//	cmd.MustRun(nil)
+//	cmd.MustRun(os.Args[1:])
+//	// custom args
+//	cmd.MustRun([]string{"-a", ...})
 func (c *Command) MustRun(args []string) {
 	if err := c.Run(args); err != nil {
 		color.Error.Println("Run command error: %s", err.Error())
@@ -396,63 +405,44 @@ func (c *Command) MustRun(args []string) {
 }
 
 // Run standalone running the command
+//
+// Usage:
+//	// run with os.Args
+//	cmd.Run(nil)
+//	cmd.Run(os.Args[1:])
+//	// custom args
+//	cmd.Run([]string{"-a", ...})
 func (c *Command) Run(args []string) (err error) {
-	// - Running in application.
 	if c.app != nil {
-		return errCallRun
+		return errCallRunOnApp
 	}
 
-	// - Alone running command
+	if c.parent != nil {
+		return errCallRunOnSub
+	}
 
-	// mark is alone
-	c.alone = true
-	// only init global flags on alone run.
-	c.core.gFlags = NewFlags(c.Name + ".GOptions").WithOption(FlagsOption{
-		Alignment: AlignLeft,
-	})
-
-	// binding global options
-	bindingCommonGOpts(c.gFlags)
-
-	// init the command
-	c.initialize()
-
-	// add default error handler.
-	c.AddOn(EvtCmdError, defaultErrHandler)
+	// mark is standalone
+	c.standalone = true
 
 	// if not set input args
 	if args == nil {
 		args = os.Args[1:]
 	}
 
-	// parse global options
-	if false == c.parseGlobalOpts(args) {
-		return
+	// init the command
+	c.initialize()
+
+	// add default error handler.
+	if !c.HasHook(EvtCmdError) {
+		c.On(EvtCmdError, defaultErrHandler)
 	}
 
-	// remaining args
-	args = c.gFlags.RawArgs()
-	c.Fire(EvtGOptionsParsed, args)
+	// binding global options
+	Debugf("global options will binding to c.Flags on standalone mode")
+	bindingCommonGOpts(&c.Flags)
 
 	// dispatch and parse flags and execute command
 	return c.innerDispatch(args)
-	// parse flags and execute command
-	// return c.innerExecute(args, true)
-}
-
-func (c *Command) parseGlobalOpts(args []string) (ok bool)  {
-	// parse global options
-	Debugf("parse global options on standalone run, will ignore error")
-
-	err := c.core.doParseGOpts(args)
-	if err != nil { // ignore error
-		// color.Error.Tips(err.Error())
-		return true
-	}
-
-	// TODO do something
-
-	return
 }
 
 /*************************************************************
@@ -468,7 +458,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 		if err == flag.ErrHelp {
 			err = nil
 			// TODO call show help on there
-			// c.ShowHelp()
+			c.ShowHelp()
 			return
 		}
 
@@ -476,6 +466,12 @@ func (c *Command) innerDispatch(args []string) (err error) {
 		return
 	}
 
+	// remaining args
+	if c.standalone {
+		c.Fire(EvtGOptionsParsed, args)
+	}
+
+	c.Fire(EvtCmdOptParsed, c.Name, args)
 	Debugf("cmd: %s - remaining args on options parsed: %v", c.Name, args)
 
 	// find sub command
@@ -597,9 +593,9 @@ func (c *Command) doExecute(args []string) (err error) {
 
 // CmdHelpTemplate help template for a command
 var CmdHelpTemplate = `{{.Desc}}
-{{if .Cmd.NotAlone}}
+{{if .Cmd.NotStandalone}}
 <comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.AliasesString}}</>){{end}}{{end}}
-<comment>Usage:</> {$binName} [global options] {{if .Cmd.NotAlone}}<info>{{.Cmd.Path}}</> {{end}}[--option ...] [arguments ...]
+<comment>Usage:</> {$binName} [global options] {{if .Cmd.NotStandalone}}<info>{{.Cmd.Path}}</> {{end}}[--option ...] [arguments ...]
 
 <comment>Global Options:</>
 {{.GOpts}}{{if .Options}}
@@ -678,14 +674,14 @@ func (c *Command) GFlags() *Flags {
 	return c.gFlags
 }
 
-// IsAlone running
-func (c *Command) IsAlone() bool {
-	return c.alone
+// IsStandalone running
+func (c *Command) IsStandalone() bool {
+	return c.standalone
 }
 
-// NotAlone running
-func (c *Command) NotAlone() bool {
-	return !c.alone
+// NotStandalone running
+func (c *Command) NotStandalone() bool {
+	return !c.standalone
 }
 
 // ID get command ID name.
@@ -705,7 +701,7 @@ func (c *Command) goodName() string {
 }
 
 // Fire event handler by name
-func (c *Command) Fire(event string, data interface{}) {
+func (c *Command) Fire(event string, data ...interface{}) {
 	Debugf("command '%s' trigger the event: <mga>%s</>", c.Name, event)
 
 	c.Hooks.Fire(event, c, data)
