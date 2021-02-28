@@ -86,7 +86,7 @@ func name2verbLevel(name string) VerbLevel {
 	}
 
 	// default level
-	return VerbError
+	return DefaultVerb
 }
 
 /*************************************************************

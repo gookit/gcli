@@ -41,19 +41,18 @@ type core struct {
 // 	})
 // }
 
-func (c core) parseGlobalOpts(args []string) (ok bool) {
+func (c core) doParseGOpts(args []string) (err error) {
 	if c.gFlags == nil { // skip on nil
-		return true
-	}
-
-	// parse global options
-	err := c.gFlags.Parse(args)
-	if err != nil {
-		color.Error.Tips(err.Error())
 		return
 	}
 
-	return true
+	// parse global options
+	err = c.gFlags.Parse(args)
+	if err != nil {
+		Logf(VerbWarn, "parse global options err: <red>%s</>", err.Error())
+	}
+
+	return
 }
 
 // GlobalFlags get the app GlobalFlags

@@ -239,6 +239,8 @@ func TestCommand_Run_moreLevelSub(t *testing.T) {
 
 func TestCommand_ParseFlag(t *testing.T) {
 	is := assert.New(t)
+	gcli.SetCrazyMode()
+	defer gcli.ResetVerbose()
 
 	var int0 int
 	var str0 string

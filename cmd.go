@@ -395,7 +395,7 @@ func (c *Command) MustRun(args []string) {
 	}
 }
 
-// Run Alone running current command
+// Run standalone running the command
 func (c *Command) Run(args []string) (err error) {
 	// - Running in application.
 	if c.app != nil {
@@ -407,7 +407,7 @@ func (c *Command) Run(args []string) (err error) {
 	// mark is alone
 	c.alone = true
 	// only init global flags on alone run.
-	c.core.gFlags = NewFlags(c.Name + ".GlobalOpts").WithOption(FlagsOption{
+	c.core.gFlags = NewFlags(c.Name + ".GOptions").WithOption(FlagsOption{
 		Alignment: AlignLeft,
 	})
 
@@ -426,26 +426,33 @@ func (c *Command) Run(args []string) (err error) {
 	}
 
 	// parse global options
-	if false == c.core.parseGlobalOpts(args) {
+	if false == c.parseGlobalOpts(args) {
 		return
 	}
 
-	c.Fire(EvtGlobalOptionParsed, nil)
-
 	// remaining args
-	// args = gf.fSet.Args()
 	args = c.gFlags.RawArgs()
-
-	// contains keywords "-h" OR "--help" on end
-	// if c.hasHelpKeywords() {
-	// 	c.ShowHelp()
-	// 	return
-	// }
+	c.Fire(EvtGOptionsParsed, args)
 
 	// dispatch and parse flags and execute command
 	return c.innerDispatch(args)
 	// parse flags and execute command
 	// return c.innerExecute(args, true)
+}
+
+func (c *Command) parseGlobalOpts(args []string) (ok bool)  {
+	// parse global options
+	Debugf("parse global options on standalone run, will ignore error")
+
+	err := c.core.doParseGOpts(args)
+	if err != nil { // ignore error
+		// color.Error.Tips(err.Error())
+		return true
+	}
+
+	// TODO do something
+
+	return
 }
 
 /*************************************************************

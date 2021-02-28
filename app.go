@@ -94,7 +94,7 @@ func NewApp(fn ...func(app *App)) *App {
 	Logf(VerbCrazy, "create new core on init application")
 	app.core = core{
 		cmdLine: CLI,
-		gFlags: NewFlags("app.GlobalOpts").WithOption(FlagsOption{
+		gFlags: NewFlags("app.GOptions").WithOption(FlagsOption{
 			WithoutType: true,
 			NameDescOL:  true,
 			Alignment:   AlignLeft,
@@ -158,7 +158,7 @@ func (app *App) initialize() {
 	// init some help tpl vars
 	app.core.AddVars(app.core.innerHelpVars())
 
-	// binding GlobalOpts
+	// binding GOptions
 	app.bindingGlobalOpts()
 	// parseGlobalOpts()
 
@@ -253,11 +253,14 @@ func (app *App) parseGlobalOpts(args []string) (ok bool) {
 	Logf(VerbDebug, "will begin parse global options")
 
 	// parse global options
-	if !app.core.parseGlobalOpts(args) { // has error.
+	err := app.core.doParseGOpts(args)
+	if err != nil { // has error.
+		color.Error.Tips(err.Error())
 		return
 	}
 
-	app.fireEvent(EvtGlobalOptionParsed, nil)
+	app.args = app.gFlags.FSetArgs()
+	app.fireEvent(EvtGOptionsParsed, app.args)
 
 	// check global options
 	if gOpts.showHelp {
@@ -276,7 +279,6 @@ func (app *App) parseGlobalOpts(args []string) (ok bool) {
 	}
 
 	Debugf("global option parsed, verbose level: <mgb>%s</>", gOpts.verbose.String())
-	app.args = app.gFlags.FSetArgs()
 
 	// TODO show auto-completion for bash/zsh
 	if gOpts.inCompletion {

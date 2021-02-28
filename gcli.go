@@ -58,34 +58,15 @@ const (
 
 	EvtAppPrepareAfter = "app.prepare.after"
 
-	EvtGlobalOptionParsed = "gcli.global.opts.parsed"
+	EvtGOptionsParsed = "gcli.gopts.parsed"
 	// EvtStop   = "stop"
 )
-
-// GlobalOpts global flags
-type GlobalOpts struct {
-	verbose  VerbLevel // message report level
-	NoColor  bool
-	showVer  bool
-	showHelp bool
-	// dont display progress
-	noProgress bool
-	// close interactive confirm
-	noInteractive bool
-	// StrictMode use strict mode for parse flags
-	// If True(default):
-	// 	- short opt must be begin "-", long opt must be begin "--"
-	//	- will convert like "-ab" to "-a -b"
-	// 	- will check invalid arguments, like to many arguments
-	strictMode bool
-	// command auto completion mode.
-	// eg "./cli --cmd-completion [COMMAND --OPT ARG]"
-	inCompletion bool
-}
 
 var (
 	// Version the gCli version
 	Version = "3.0.0"
+	// DefaultVerb the default verbose level
+	DefaultVerb = VerbError
 
 	// stdApp store default application instance
 	stdApp *App
@@ -97,10 +78,10 @@ var (
 	goodCmdName = regexp.MustCompile(regGoodCmdName)
 
 	// global options
-	gOpts = &GlobalOpts{
+	gOpts = &GOptions{
 		strictMode: true,
 		// init error level.
-		verbose: VerbError,
+		verbose: DefaultVerb,
 	}
 
 	// CLI create an default instance
@@ -138,13 +119,18 @@ func StdApp() *App {
 }
 
 // GOpts get the global options
-func GOpts() GlobalOpts {
+func GOpts() GOptions {
 	return *gOpts
 }
 
 // Verbose returns verbose level
 func Verbose() VerbLevel {
 	return gOpts.verbose
+}
+
+// SetCrazyMode level
+func SetCrazyMode() {
+	gOpts.verbose = VerbCrazy
 }
 
 // SetDebugMode level
@@ -155,6 +141,11 @@ func SetDebugMode() {
 // SetQuietMode level
 func SetQuietMode() {
 	gOpts.verbose = VerbQuiet
+}
+
+// ResetVerbose level
+func ResetVerbose() {
+	gOpts.verbose = DefaultVerb
 }
 
 // SetVerbose level
@@ -182,6 +173,46 @@ func bindingCommonGOpts(fs *Flags) {
 	fs.BoolOpt(&gOpts.NoColor, "no-color", "", gOpts.NoColor, "Disable color when outputting message")
 	fs.BoolOpt(&gOpts.noProgress, "no-progress", "", gOpts.noProgress, "Disable display progress message")
 	fs.BoolOpt(&gOpts.noInteractive, "no-interactive", "", gOpts.noInteractive, "Disable interactive confirmation operations")
+}
+
+/*************************************************************************
+ * global options
+ *************************************************************************/
+
+// GOptions global flag options
+type GOptions struct {
+	NoColor  bool
+	verbose  VerbLevel // message report level
+	showVer  bool
+	showHelp bool
+	// dont display progress
+	noProgress bool
+	// close interactive confirm
+	noInteractive bool
+	// StrictMode use strict mode for parse flags
+	// If True(default):
+	// 	- short opt must be begin "-", long opt must be begin "--"
+	//	- will convert like "-ab" to "-a -b"
+	// 	- will check invalid arguments, like to many arguments
+	strictMode bool
+	// command auto completion mode.
+	// eg "./cli --cmd-completion [COMMAND --OPT ARG]"
+	inCompletion bool
+}
+
+// Verbose value
+func (g *GOptions) Verbose() VerbLevel {
+	return g.verbose
+}
+
+// NoInteractive value
+func (g *GOptions) NoInteractive() bool {
+	return g.noInteractive
+}
+
+// NoProgress value
+func (g *GOptions) NoProgress() bool {
+	return g.noProgress
 }
 
 /*************************************************************************
@@ -232,7 +263,7 @@ func (vl *VerbLevel) Set(value string) error {
 		if iv > VerbCrazy.Int() {
 			*vl = VerbCrazy
 		} else if iv < 0 { // fallback to default level.
-			*vl = VerbError
+			*vl = DefaultVerb
 		} else { // 0 - 5
 			*vl = VerbLevel(iv)
 		}
