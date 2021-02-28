@@ -307,6 +307,7 @@ func TestApp_showVersion(t *testing.T) {
 
 func TestApp_showCommandTips(t *testing.T) {
 	app := gcli.NewApp()
+	app.ExitOnEnd = false
 
 	app.AddCommand(emptyCmd)
 	app.Run([]string{"emp"})

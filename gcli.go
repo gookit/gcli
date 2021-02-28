@@ -57,6 +57,8 @@ const (
 	EvtCmdError  = "cmd.run.error"
 
 	EvtAppPrepareAfter = "app.prepare.after"
+
+	EvtGlobalOptionParsed = "gcli.global.opts.parsed"
 	// EvtStop   = "stop"
 )
 

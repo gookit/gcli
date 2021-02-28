@@ -257,6 +257,8 @@ func (app *App) parseGlobalOpts(args []string) (ok bool) {
 		return
 	}
 
+	app.fireEvent(EvtGlobalOptionParsed, nil)
+
 	// check global options
 	if gOpts.showHelp {
 		app.showApplicationHelp()
@@ -274,7 +276,7 @@ func (app *App) parseGlobalOpts(args []string) (ok bool) {
 	}
 
 	Debugf("global option parsed, verbose level: <mgb>%s</>", gOpts.verbose.String())
-	app.args = app.GlobalFlags().FSetArgs()
+	app.args = app.gFlags.FSetArgs()
 
 	// TODO show auto-completion for bash/zsh
 	if gOpts.inCompletion {

@@ -426,16 +426,15 @@ func (c *Command) Run(args []string) (err error) {
 	}
 
 	// parse global options
-	gf := c.GlobalFlags()
-	err = gf.Parse(args)
-	if err != nil {
-		color.Error.Tips(err.Error())
+	if false == c.core.parseGlobalOpts(args) {
 		return
 	}
 
+	c.Fire(EvtGlobalOptionParsed, nil)
+
 	// remaining args
 	// args = gf.fSet.Args()
-	args = gf.RawArgs()
+	args = c.gFlags.RawArgs()
 
 	// contains keywords "-h" OR "--help" on end
 	// if c.hasHelpKeywords() {
