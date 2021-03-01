@@ -4,7 +4,7 @@ go 1.12
 
 require (
 	github.com/fsnotify/fsnotify v1.4.9
-	github.com/gookit/color v1.3.7
+	github.com/gookit/color v1.3.8
 	github.com/gookit/goutil v0.3.8
 	github.com/stretchr/testify v1.6.1
 	golang.org/x/crypto v0.0.0-20201221181555-eec23a3978ad
