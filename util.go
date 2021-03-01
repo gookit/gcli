@@ -14,14 +14,6 @@ import (
  * console log
  *************************************************************/
 
-var level2name = map[VerbLevel]string{
-	VerbError: "ERROR",
-	VerbWarn:  "WARN",
-	VerbInfo:  "INFO",
-	VerbDebug: "DEBUG",
-	VerbCrazy: "CRAZY",
-}
-
 var level2color = map[VerbLevel]color.Color{
 	VerbError: color.FgRed,
 	VerbWarn:  color.FgYellow,
@@ -110,6 +102,30 @@ func Printf(format string, args ...interface{}) {
 
 func panicf(format string, v ...interface{}) {
 	panic(fmt.Sprintf("GCli: "+format, v...))
+}
+
+// parse tag value. eg: "name=int0;shorts=i;required=true;desc=int option message"
+func parseTagValue(name, str string) (mp map[string]string) {
+	ss := strutil.Split(str, ";")
+	if len(ss) == 0 {
+		return
+	}
+
+	mp = make(map[string]string, len(flagTagKeys))
+	for _, s := range ss {
+		if strings.ContainsRune(s, '=') == false {
+			panicf("parse tag error on field '%s': item must match `KEY=VAL`", name)
+		}
+
+		kvNodes := strings.SplitN(s, "=", 2)
+		key, val := kvNodes[0], kvNodes[1]
+		if !flagTagKeys.Has(key) {
+			panicf("parse tag error on field '%s': invalid key name '%s'", name, key)
+		}
+
+		mp[key] = val
+	}
+	return
 }
 
 // func exitWithMsg(format string, v ...interface{}) {
@@ -213,10 +229,17 @@ func splitPath2names(path string) []string {
 }
 
 // split "ef" to ["e", "f"]
-func splitShortStr(str string) (ss []string) {
+// split "e,f" to ["e", "f"]
+func splitShortcut(str string) (ss []string) {
 	bs := []byte(str)
+	if len(bs) == 0 {
+		return
+	}
 
 	for _, b := range bs {
+		// if b == ',' {
+		// 	continue
+		// }
 		if strutil.IsAlphabet(b) {
 			ss = append(ss, string(b))
 		}
@@ -224,7 +247,7 @@ func splitShortStr(str string) (ss []string) {
 	return
 }
 
-func shorts2str(ss []string) string {
+func shorts2string(ss []string) string {
 	var newSs []string
 	for _, s := range ss {
 		newSs = append(newSs, "-"+s)

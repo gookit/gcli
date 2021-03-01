@@ -36,7 +36,7 @@ func main() {
 	var customGOpt string
 	app.GOptsBinder = func(gf *gcli.Flags) {
 		// gcli.Logf(gcli.VerbInfo, "custom add and global option flag")
-		gf.StrVar(&customGOpt, gcli.FlagMeta{Name: "custom", Desc: "desc message for the option"})
+		gf.StrVar(&customGOpt, &gcli.FlagMeta{Name: "custom", Desc: "desc message for the option"})
 	}
 
 	// app.Strict = true

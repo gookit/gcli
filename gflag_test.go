@@ -47,14 +47,17 @@ func TestFlags_BoolOpt(t *testing.T) {
 	fs := gcli.NewFlags("testFlags")
 
 	var b1, b2 bool
+	b0 := fs.Bool("bl0", "", false, "desc0")
 	fs.BoolOpt(&b1, "bl1", "ab", false, "desc1")
-	fs.BoolVar(&b2, gcli.FlagMeta{
+	fs.BoolVar(&b2, &gcli.FlagMeta{
 		Name: "bl2",
 		Desc: "desc2",
 	})
 
+	assert.False(t, *b0)
 	assert.False(t, b1)
-	assert.NoError(t, fs.Parse([]string{"-a", "--bl2"}))
+	assert.NoError(t, fs.Parse([]string{"--bl0", "-a", "--bl2"}))
+	assert.True(t, *b0)
 	assert.True(t, b1)
 }
 
@@ -63,7 +66,7 @@ func TestFlags_StrOpt(t *testing.T) {
 	assert.Len(t, fs.Metas(), 0)
 
 	var str string
-	fs.StrVar(&str, gcli.FlagMeta{
+	fs.StrVar(&str, &gcli.FlagMeta{
 		Name: "test",
 		Desc: "test desc",
 	})
@@ -99,7 +102,7 @@ func TestFlags_Float64Opt(t *testing.T) {
 
 	var f1, f2 float64
 	fs.Float64Opt(&f1, "f1", "ab", 0, "desc1")
-	fs.Float64Var(&f2, gcli.FlagMeta{
+	fs.Float64Var(&f2, &gcli.FlagMeta{
 		Name:   "f2",
 		Desc:   "desc2",
 		DefVal: 3.14,
@@ -117,7 +120,7 @@ func TestFlags_IntOpt(t *testing.T) {
 
 	var int1, int2 int
 	fs.IntOpt(&int1, "int1", "ab", 0, "desc1")
-	fs.IntVar(&int2, gcli.FlagMeta{
+	fs.IntVar(&int2, &gcli.FlagMeta{
 		Name:   "int2",
 		Desc:   "desc2",
 		DefVal: 314,
@@ -135,7 +138,7 @@ func TestFlags_Int64Opt(t *testing.T) {
 
 	var int1, int2 int64
 	fs.Int64Opt(&int1, "int1", "ab", 0, "desc1")
-	fs.Int64Var(&int2, gcli.FlagMeta{
+	fs.Int64Var(&int2, &gcli.FlagMeta{
 		Name:   "int2",
 		Desc:   "desc2",
 		DefVal: 314,
@@ -153,7 +156,7 @@ func TestFlags_UintOpt(t *testing.T) {
 
 	var int1, int2 uint
 	fs.UintOpt(&int1, "int1", "ab", 0, "desc1")
-	fs.UintVar(&int2, gcli.FlagMeta{
+	fs.UintVar(&int2, &gcli.FlagMeta{
 		Name:   "c",
 		Desc:   "desc2",
 		DefVal: 314,
@@ -171,7 +174,7 @@ func TestFlags_Uint64Opt(t *testing.T) {
 
 	var uint1, uint2 uint64
 	fs.Uint64Opt(&uint1, "uint1", "ab", 0, "desc1")
-	fs.Uint64Var(&uint2, gcli.FlagMeta{
+	fs.Uint64Var(&uint2, &gcli.FlagMeta{
 		Name:   "uint2",
 		Desc:   "desc2",
 		DefVal: 314,
@@ -193,7 +196,7 @@ func TestFlags_VarOpt(t *testing.T) {
 	fs := gcli.NewFlags("testFlags")
 
 	var ints gcli.Ints
-	fs.Var(&ints, gcli.FlagMeta{Name: "ints", Desc: "desc"})
+	fs.Var(&ints, &gcli.FlagMeta{Name: "ints", Desc: "desc"})
 	assert.NoError(t, fs.Parse([]string{"--ints", "123", "--ints", "163"}))
 
 	assert.Len(t, ints, 2)
@@ -239,7 +242,7 @@ func TestFlags_CheckShorts(t *testing.T) {
 		var fv float64
 		fs := gcli.NewFlags()
 
-		// "+" has been filtered by func: splitShortStr()
+		// "+" has been filtered by func: splitShortcut()
 		fs.Float64Opt(&fv, "float", "+", 0, "desc")
 
 		fm := fs.FlagMeta("float")
@@ -249,7 +252,7 @@ func TestFlags_CheckShorts(t *testing.T) {
 	assert.PanicsWithValue(t, "GCli: short name only allow: A-Za-z given: '+'", func() {
 		var fv float64
 		fs := gcli.NewFlags()
-		fs.Float64Var(&fv, gcli.FlagMeta{
+		fs.Float64Var(&fv, &gcli.FlagMeta{
 			Name:   "float",
 			Shorts: []string{"+"},
 		})
@@ -258,7 +261,7 @@ func TestFlags_CheckShorts(t *testing.T) {
 	assert.PanicsWithValue(t, "GCli: short name 'a' has been used as the current option name", func() {
 		var i int
 		fs := gcli.NewFlags()
-		fs.IntVar(&i, gcli.FlagMeta{Name: "a", Shorts: []string{"a"}})
+		fs.IntVar(&i, &gcli.FlagMeta{Name: "a", Shorts: []string{"a"}})
 	})
 
 	assert.PanicsWithValue(t, "GCli: short name 's' has been used as an option name", func() {
@@ -285,9 +288,7 @@ func TestFlags_Run(t *testing.T) {
 	is := assert.New(t)
 
 	fg := gcli.NewFlags("test", "desc message")
-	fg.ExitFunc = func(code int) {
-		// ...
-	}
+	fg.ExitFunc = func(code int) {}
 
 	fg.IntOpt(&flagOpts.intv, "intv", "i", 0, "desc message for intv")
 	fg.StrOpt(&flagOpts.strv, "strv", "s", "", "desc message for strv")
@@ -305,7 +306,7 @@ func TestFlags_Parse(t *testing.T) {
 	var str string
 
 	gf := gcli.NewFlags("test")
-	gf.StrVar(&str, gcli.FlagMeta{
+	gf.StrVar(&str, &gcli.FlagMeta{
 		Name:     "opt1",
 		Required: true,
 		Validator: func(val string) error {
@@ -336,9 +337,15 @@ func TestFlags_FromStruct(t *testing.T) {
 	gf := gcli.NewFlags("test")
 
 	type userOpts struct {
-		Opt1 string `flag:"name=opt;shorts=oh;required=true;desc=message"`
-		// the option Opt2
-		Opt2 string `flag:"name=opt2;required=true;desc=message"`
+		Int int `flag:"name=int0;shorts=i;required=true;desc=int option message"`
+		Bol bool `flag:"name=bol;shorts=b;desc=bool option message"`
+		Str1 string `flag:"name=str1;shorts=o,h;required=true;desc=str1 message"`
+		// use ptr
+		Str2 *string `flag:"name=str2;required=true;desc=str2 message"`
+		// custom type and implement flag.Value
+		Verb0 gcli.VerbLevel `flag:"name=verb0;shorts=V;desc=verb0 message"`
+		// use ptr
+		Verb1 *gcli.VerbLevel `flag:"name=verb1;desc=verb1 message"`
 	}
 
 	err := gf.FromStruct(&userOpts{})
@@ -355,8 +362,8 @@ func TestFlags_PrintHelpPanel(t *testing.T) {
 		opt3 string
 	}{}
 
-	fs.IntVar(&testOpts.opt1, gcli.FlagMeta{Name: "opt1"})
-	fs.StrVar(&testOpts.opt3, gcli.FlagMeta{
+	fs.IntVar(&testOpts.opt1, &gcli.FlagMeta{Name: "opt1"})
+	fs.StrVar(&testOpts.opt3, &gcli.FlagMeta{
 		Name: "test",
 		Desc: "test desc",
 		//

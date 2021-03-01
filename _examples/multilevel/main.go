@@ -31,7 +31,7 @@ var cmd = gcli.Command{
 					Name: "l2sub1",
 					Desc: "desc message",
 					Config: func(c *gcli.Command) {
-						c.StrVar(&l2sub1opts.astr, gcli.FlagMeta{
+						c.StrVar(&l2sub1opts.astr, &gcli.FlagMeta{
 							Name: "astr",
 							Desc: "desc for astr",
 						})

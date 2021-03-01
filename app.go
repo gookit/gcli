@@ -94,11 +94,10 @@ func NewApp(fn ...func(app *App)) *App {
 	Logf(VerbCrazy, "create new core on init application")
 	app.core = core{
 		cmdLine: CLI,
-		gFlags: NewFlags("app.GOptions").WithOption(FlagsOption{
-			WithoutType: true,
-			NameDescOL:  true,
-			Alignment:   AlignLeft,
-			TagName:     FlagTagName,
+		gFlags: NewFlags("app.GOptions").WithOptions(func(opt *FlagsOption) {
+			opt.WithoutType = true
+			opt.NameDescOL = true
+			opt.Alignment = AlignLeft
 		}),
 	}
 
