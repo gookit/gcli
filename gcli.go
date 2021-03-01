@@ -66,43 +66,25 @@ const (
 )
 
 var (
-	// Version the gCli version
-	Version = "3.0.0"
+	// CLI create an default instance
+	CLI = newCmdLine()
 	// DefaultVerb the default verbose level
 	DefaultVerb = VerbError
+	// global options
+	gOpts = newDefaultGOptions()
+	// Version the gcli version
+	version = "3.0.0"
+	// CommitID the gcli last commit ID
+	commitID = "z20210214"
 
-	// stdApp store default application instance
-	stdApp *App
-	// an empty argument
-	emptyArg = &Argument{}
 	// good name for option and argument
 	goodName = regexp.MustCompile(regGoodName)
 	// match an good command name
 	goodCmdName = regexp.MustCompile(regGoodCmdName)
-
-	// global options
-	gOpts = &GOptions{
-		strictMode: true,
-		// init error level.
-		verbose: DefaultVerb,
-	}
-
-	// CLI create an default instance
-	CLI = newCmdLine()
 )
 
 // init
 func init() {
-	// don't display date on print log
-	// log.SetFlags(0)
-	// workDir, _ := os.Getwd()
-	// CLI.workDir = workDir
-
-	// // binName will contains work dir path on windows
-	// if envutil.IsWin() {
-	// 	CLI.binName = strings.Replace(CLI.binName, workDir+"\\", "", 1)
-	// }
-
 	// set verbose from ENV var.
 	envVerb := os.Getenv("GCLI_VERBOSE")
 	if envVerb != "" {
@@ -110,50 +92,54 @@ func init() {
 	}
 }
 
-// InitStdApp create the default cli app.
-func InitStdApp(fn ...func(a *App)) *App {
-	stdApp = NewApp(fn...)
-	return stdApp
-}
-
-// StdApp get the default std app
-func StdApp() *App {
-	return stdApp
-}
-
 // GOpts get the global options
-func GOpts() GOptions {
-	return *gOpts
+func GOpts() *GOptions {
+	return gOpts
+}
+
+// ResetGOpts instance
+func ResetGOpts() {
+	gOpts = newDefaultGOptions()
+}
+
+// Version of the gcli
+func Version() string {
+	return version
+}
+
+// CommitID of the gcli
+func CommitID() string {
+	return commitID
 }
 
 // Verbose returns verbose level
 func Verbose() VerbLevel {
-	return gOpts.verbose
+	return gOpts.Verbose()
 }
 
 // SetCrazyMode level
 func SetCrazyMode() {
-	gOpts.verbose = VerbCrazy
+	gOpts.SetVerbose(VerbCrazy)
 }
 
 // SetDebugMode level
 func SetDebugMode() {
-	gOpts.verbose = VerbDebug
+	gOpts.SetVerbose(VerbDebug)
 }
 
 // SetQuietMode level
 func SetQuietMode() {
-	gOpts.verbose = VerbQuiet
-}
-
-// ResetVerbose level
-func ResetVerbose() {
-	gOpts.verbose = DefaultVerb
+	gOpts.SetVerbose(VerbQuiet)
 }
 
 // SetVerbose level
 func SetVerbose(verbose VerbLevel) {
-	gOpts.verbose = verbose
+	gOpts.SetVerbose(verbose)
+}
+
+// ResetVerbose level
+func ResetVerbose() {
+	gOpts.SetVerbose(DefaultVerb)
 }
 
 // StrictMode get is strict mode
@@ -163,12 +149,11 @@ func StrictMode() bool {
 
 // SetStrictMode for parse flags
 func SetStrictMode(strict bool) {
-	gOpts.strictMode = strict
+	gOpts.SetStrictMode(strict)
 }
 
+// binding global options
 func bindingCommonGOpts(fs *Flags) {
-	// binding global options
-	// fs.UintOpt(&gOpts.verbose, "verbose", "", gOpts.verbose, "Set error reporting level(quiet 0 - 5 crazy)")
 	// up: allow use int and string.
 	fs.VarOpt(&gOpts.verbose, "verbose", "", "Set error reporting level(quiet 0 - 5 crazy)")
 
@@ -192,6 +177,7 @@ type GOptions struct {
 	noProgress bool
 	// close interactive confirm
 	noInteractive bool
+	// TODO auto format shorts `-a` to POSIX or UNIX style.
 	// StrictMode use strict mode for parse flags
 	// If True(default):
 	// 	- short opt must be begin "-", long opt must be begin "--"
@@ -203,9 +189,27 @@ type GOptions struct {
 	inCompletion bool
 }
 
+func newDefaultGOptions() *GOptions {
+	return &GOptions{
+		strictMode: true,
+		// init error level.
+		verbose: DefaultVerb,
+	}
+}
+
 // Verbose value
 func (g *GOptions) Verbose() VerbLevel {
 	return g.verbose
+}
+
+// SetVerbose value
+func (g *GOptions) SetVerbose(verbose VerbLevel) {
+	g.verbose = verbose
+}
+
+// SetStrictMode option
+func (g *GOptions) SetStrictMode(strictMode bool) {
+	g.strictMode = strictMode
 }
 
 // NoInteractive value
@@ -216,6 +220,16 @@ func (g *GOptions) NoInteractive() bool {
 // NoProgress value
 func (g *GOptions) NoProgress() bool {
 	return g.noProgress
+}
+
+func (g *GOptions) bindingFlags(fs *Flags) {
+	// up: allow use int and string.
+	fs.VarOpt(&g.verbose, "verbose", "", "Set error reporting level(quiet 0 - 5 crazy)")
+
+	fs.BoolOpt(&g.showHelp, "help", "h", false, "Display the help information")
+	fs.BoolOpt(&g.NoColor, "no-color", "", g.NoColor, "Disable color when outputting message")
+	fs.BoolOpt(&g.noProgress, "no-progress", "", g.noProgress, "Disable display progress message")
+	fs.BoolOpt(&g.noInteractive, "no-interactive", "", g.noInteractive, "Disable interactive confirmation operations")
 }
 
 /*************************************************************************

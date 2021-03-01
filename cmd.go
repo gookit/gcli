@@ -111,6 +111,8 @@ type Command struct {
 	disabled bool
 	// command is standalone running.
 	standalone bool
+	// global option binding on standalone.
+	goptBounded bool
 }
 
 // NewCommand create a new command instance.
@@ -268,7 +270,6 @@ func (c *Command) initialize() {
 	// format description
 	if len(c.Desc) > 0 {
 		c.Desc = strutil.UpperFirst(c.Desc)
-
 		// contains help var "{$cmd}". replace on here is for 'app help'
 		if strings.Contains(c.Desc, "{$cmd}") {
 			c.Desc = strings.Replace(c.Desc, "{$cmd}", c.Name, -1)
@@ -380,8 +381,12 @@ func (c *Command) Run(args []string) (err error) {
 	}
 
 	// binding global options
-	Debugf("global options will binding to c.Flags on standalone mode")
-	bindingCommonGOpts(&c.Flags)
+	if !c.goptBounded {
+		c.goptBounded = true
+		Debugf("global options will binding to c.Flags on standalone mode")
+		// bindingCommonGOpts(&c.Flags)
+		gOpts.bindingFlags(&c.Flags)
+	}
 
 	// dispatch and parse flags and execute command
 	return c.innerDispatch(args)
@@ -440,7 +445,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 	if name != "" {
 		// is valid sub command
 		if sub, has := c.Command(name); has {
-			Debugf("will run the default command '%s' of the '%s'", name, c.Name)
+			Debugf("cmd: %s - will run the default command '%s'", c.Name, name)
 
 			// run the default command
 			return sub.innerExecute(args, true)
@@ -603,7 +608,9 @@ func (c *Command) IsSubCommand(name string) bool {
 var CmdHelpTemplate = `{{.Desc}}
 {{if .Cmd.NotStandalone}}
 <comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.AliasesString}}</>){{end}}{{end}}
-<comment>Usage:</> {$binName} [global options] {{if .Cmd.NotStandalone}}<info>{{.Cmd.Path}}</> {{end}}[--option ...] [arguments ...]
+<comment>Usage:</>
+  {$binName} [global options] {{if .Cmd.NotStandalone}}<info>{{.Cmd.Path}}</> {{end}}[--options ...] [arguments ...]{{ if .Subs }}
+  {$binName} [global options] {{if .Cmd.NotStandalone}}<info>{{.Cmd.Path}}</> {{end}} <info>SUBCOMMAND</> [--options ...] [arguments ...]{{end}}
 {{if .GOpts}}
 <comment>Global Options:</>
 {{.GOpts}}{{end}}{{if .Options}}

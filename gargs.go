@@ -10,6 +10,9 @@ import (
  * Arguments definition
  *************************************************************/
 
+// an empty argument
+var emptyArg = &Argument{}
+
 // Arguments definition
 type Arguments struct {
 	// Inherited from Command

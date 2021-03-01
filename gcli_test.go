@@ -8,6 +8,12 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestGcliBasic(t *testing.T) {
+	is := assert.New(t)
+	is.NotEmpty(gcli.Version())
+	is.NotEmpty(gcli.CommitID())
+}
+
 func TestVerbose(t *testing.T) {
 	is := assert.New(t)
 

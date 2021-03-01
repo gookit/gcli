@@ -130,7 +130,8 @@ func (app *App) bindingGlobalOpts() {
 	gf := app.GlobalFlags()
 
 	// binding global options
-	bindingCommonGOpts(gf)
+	// bindingCommonGOpts(gf)
+	gOpts.bindingFlags(gf)
 	// add more ...
 	gf.BoolOpt(&gOpts.showVer, "version", "V", false, "Display app version information")
 	// This is a internal option
@@ -549,8 +550,8 @@ func (app *App) showCommandTips(name string) {
 // AppHelpTemplate help template for app(all commands)
 var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
 <comment>Usage:</>
-  {$binName} [global Options...] <info>COMMAND</> [--option ...] [argument ...]
-  {$binName} [global Options...] <info>COMMAND</> [--option ...] <info>SUB-COMMAND</> [--option ...]  [argument ...]
+  {$binName} [global Options...] <info>COMMAND</> [--options ...] [argument ...]
+  {$binName} [global Options...] <info>COMMAND</> [--options ...] <info>SUBCOMMAND</> [--option ...]  [argument ...]
 
 <comment>Global Options:</>
 {{.GOpts}}
@@ -601,8 +602,8 @@ func (app *App) showCommandHelp(list []string) (code int) {
 		color.Println("Display help message for application or command.\n")
 		color.Printf(`<yellow>Usage:</>
   <cyan>%s COMMAND --help</>
-  <cyan>%s COMMAND SUB_COMMAND --help</>
-  <cyan>%s COMMAND SUB_COMMAND ... --help</>
+  <cyan>%s COMMAND SUBCOMMAND --help</>
+  <cyan>%s COMMAND SUBCOMMAND ... --help</>
   <cyan>%s help COMMAND</>
 `, binName, binName, binName, binName)
 		return

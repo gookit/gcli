@@ -34,37 +34,6 @@ var (
 	}
 )
 
-func TestStdApp(t *testing.T) {
-	is := assert.New(t)
-
-	gcli.InitStdApp(func(a *gcli.App) {
-		a.Name = "test-name"
-	})
-
-	app := gcli.StdApp()
-	app.Config(func(a *gcli.App) {
-		a.Logo = &gcli.Logo{
-			Text:  "logo1",
-			Style: "warn",
-		}
-	})
-
-	is.Equal("test-name", app.Name)
-	is.Empty(app.Commands())
-	is.Equal("logo1", app.Logo.Text)
-	is.Equal("warn", app.Logo.Style)
-
-	app.SetLogo("logo2", "info")
-	is.Equal("logo2", app.Logo.Text)
-	is.Equal("info", app.Logo.Style)
-
-	app.ExitFunc = func(i int) {
-		is.Equal(255, i)
-	}
-	app.Exit(255)
-
-}
-
 func TestApp_MatchByPath(t *testing.T) {
 	// is := assert.New(t)
 	app := gcli.NewApp(func(a *gcli.App) {

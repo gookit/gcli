@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
 	"github.com/stretchr/testify/assert"
@@ -23,7 +24,7 @@ func TestNewCommand(t *testing.T) {
 	is.False(c.Runnable())
 	is.Nil(c.App())
 
-	err := c.Run(simpleArgs)
+	err := c.Run([]string{})
 	is.NoError(err)
 	is.True(c.IsStandalone())
 	is.False(c.NotStandalone())
@@ -45,7 +46,9 @@ func TestNewCommand(t *testing.T) {
 func TestCommand_Errorf(t *testing.T) {
 	is := assert.New(t)
 
-	c := gcli.NewCommand("test", "desc test", nil)
+	c := gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
+		c.AddArg("arg0", "desc message")
+	})
 	c.SetFunc(func(c *gcli.Command, args []string) error {
 		is.Equal([]string{"hi"}, args)
 		return c.Errorf("error message")
@@ -76,7 +79,7 @@ func TestCommand_Run(t *testing.T) {
 	})
 
 	is.NotEmpty(c)
-	err := c.Run(simpleArgs)
+	err := c.Run([]string{})
 	is.NoError(err)
 	is.True(c.IsStandalone())
 	is.False(c.NotStandalone())
@@ -240,13 +243,12 @@ func TestCommand_Run_moreLevelSub(t *testing.T) {
 var int0 int
 var str0 string
 
-var c = gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
+var c0 = gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
 	c.IntOpt(&int0, "int", "", 0, "int desc")
 	c.StrOpt(&str0, "str", "", "", "str desc")
 	c.AddArg("arg0", "arg0 desc")
 	c.AddArg("arg1", "arg1 desc")
 	c.Func = func(c *gcli.Command, args []string) error {
-		bf.Reset()
 		bf.WriteString("name=" + c.Name)
 		c.SetValue("name", c.Name)
 		c.SetValue("args", args)
@@ -256,44 +258,65 @@ var c = gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
 })
 
 func TestCommand_Run_emptyArgs(t *testing.T) {
+	bf.Reset()
 	is := assert.New(t)
+
 	gcli.SetCrazyMode()
 	defer gcli.ResetVerbose()
 
-	is.Equal("test", c.Name)
+	is.Equal("test", c0.Name)
 
-	err := c.Run([]string{})
+	err := c0.Run([]string{})
 
 	is.NoError(err)
 	is.Equal("name=test", bf.String())
-	is.Equal("int desc", c.FlagMeta("int").Desc)
+	is.Equal("int desc", c0.FlagMeta("int").Desc)
+	is.NotEmpty(c0.Args())
+	is.Equal("arg0", c0.Arg("arg0").Name)
 }
 
 func TestCommand_Run_parseHelp(t *testing.T) {
+	bf.Reset()
 	is := assert.New(t)
 
-	err := c.Run([]string{"-h"})
+	err := c0.Run([]string{"-h"})
 	is.NoError(err)
+
+	// no color
+	color.Disable()
+	color.SetOutput(bf)
+	defer color.ResetOptions()
+
+	err = c0.Run([]string{"--help"})
+	str := bf.String()
+	is.Contains(str, "Int desc")
+	is.Contains(str, "--str string")
+	is.Contains(str, "Str desc")
+	is.Contains(str, "Display the help information")
+	is.Contains(str, "arg0        Arg0 desc")
+	is.Contains(str, "arg1        Arg1 desc")
 }
 
 func TestCommand_Run_parseOptions(t *testing.T) {
+	bf.Reset()
 	is := assert.New(t)
-	gcli.SetCrazyMode()
+
+	gcli.ResetGOpts()
+	gcli.SetDebugMode()
 	defer gcli.ResetVerbose()
 
-	is.Equal("test", c.Name)
-	is.Equal("int desc", c.FlagMeta("int").Desc)
+	is.Equal("test", c0.Name)
 
-	err := c.Run([]string{"--int", "10", "--str=abc", "txt"})
+	err := c0.Run([]string{"--int", "10", "--str=abc", "txt"})
 
 	is.NoError(err)
-	is.Equal("test", c.Value("name"))
-	is.Equal([]string{"txt"}, c.Value("args"))
+	is.Equal("test", c0.Value("name"))
+	is.Equal([]string{"txt"}, c0.Value("args"))
 
 	is.Equal(10, int0)
 	is.Equal("abc", str0)
-	is.Equal([]string{"txt"}, c.RawArgs())
-	is.Equal("txt", c.RawArg(0))
+	is.Equal([]string{"txt"}, c0.FSetArgs())
+	is.Equal("txt", c0.RawArg(0))
 
 	// var str0 string
 	co := struct {
@@ -301,21 +324,22 @@ func TestCommand_Run_parseOptions(t *testing.T) {
 		overwrite bool
 	}{}
 
-	c = gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
-		is.Equal("test", c.Name)
+	c1 := gcli.NewCommand("test1", "desc test", func(c *gcli.Command) {
 		c.IntOpt(&int0, "int", "", 0, "desc")
 		c.IntOpt(&co.maxSteps, "max-step", "", 0, "setting the max step value")
+		c.AddArg("arg0", "arg0 desc")
 	})
-	c.SetFunc(func(c *gcli.Command, args []string) error {
+	c1.SetFunc(func(c *gcli.Command, args []string) error {
 		is.Equal("[txt]", fmt.Sprint(args))
 		return nil
 	})
 
-	err = c.Run([]string{"--int", "10", "--max-step=100", "txt"})
+	is.Equal("test1", c1.Name)
+	err = c1.Run([]string{"--int", "10", "--max-step=100", "txt"})
 	is.NoError(err)
 	is.Equal(10, int0)
 	is.Equal(100, co.maxSteps)
-	is.Equal("[txt]", fmt.Sprint(c.RawArgs()))
+	is.Equal("[txt]", fmt.Sprint(c0.RawArgs()))
 }
 
 func TestInts(t *testing.T) {
