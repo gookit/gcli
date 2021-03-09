@@ -134,7 +134,7 @@ func (app *App) bindingGlobalOpts() {
 	// add more ...
 	gf.BoolOpt(&gOpts.showVer, "version", "V", false, "Display app version information")
 	// This is a internal option
-	gf.BoolVar(&gOpts.inCompletion, FlagMeta{
+	gf.BoolVar(&gOpts.inCompletion, &FlagMeta{
 		Name: "cmd-completion", // TODO rename to --in-completion
 		Desc: "generate completion scripts for bash/zsh",
 		// hidden it

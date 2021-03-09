@@ -27,7 +27,7 @@ func ProgressDemoCmd() *gcli.Command {
 		Config: func(c *gcli.Command) {
 			c.IntOpt(&pd.maxSteps, "max-step", "", 100, "setting the max step value")
 			c.BoolOpt(&pd.overwrite, "overwrite", "o", true, "setting overwrite progress bar line")
-			c.BoolVar(&pd.random, gcli.FlagMeta{Name: "random", Desc: "use random style for progress bar"})
+			c.BoolVar(&pd.random, &gcli.FlagMeta{Name: "random", Desc: "use random style for progress bar"})
 			// c.AddArg("name",
 			// 	"progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
 			// 	true,

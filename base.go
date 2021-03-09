@@ -168,6 +168,8 @@ type cmdLine struct {
 	workDir string
 	// bin script file, by `os.Args[0]`. eg "./path/to/cliapp"
 	binFile string
+	// bin script dir path. eg "./path/to"
+	binDir string
 	// bin script filename. eg "cliapp"
 	binName string
 	// os.Args to string, but no binName.
@@ -188,6 +190,7 @@ func newCmdLine() *cmdLine {
 		// more info
 		osName:  runtime.GOOS,
 		workDir: workDir,
+		binDir: filepath.Dir(binFile),
 		binFile: binFile,
 		binName: filepath.Base(binFile),
 		argLine: strings.Join(os.Args[1:], " "),

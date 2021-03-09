@@ -110,13 +110,13 @@ var flagValueType = reflect.TypeOf(new(flag.Value)).Elem()
 
 // FromStruct from struct tag binding options
 func (fs *Flags) FromStruct(s interface{}) error {
-	rv := reflect.ValueOf(s)
-	if rv.Kind() == reflect.Ptr && !rv.IsNil() {
-		rv = rv.Elem()
+	v := reflect.ValueOf(s)
+	if v.Kind() == reflect.Ptr && !v.IsNil() {
+		v = v.Elem()
 	}
 
-	rt := rv.Type()
-	if rt.Kind() != reflect.Struct {
+	t := v.Type()
+	if t.Kind() != reflect.Struct {
 		return errNotAnStruct
 	}
 
@@ -125,12 +125,11 @@ func (fs *Flags) FromStruct(s interface{}) error {
 		tagName = FlagTagName
 	}
 
-	for i := 0; i < rt.NumField(); i++ {
-		sf := rt.Field(i)
-		ft := rt.Field(i).Type
-
-		// skip don't exported field
+	for i := 0; i < t.NumField(); i++ {
+		sf := t.Field(i)
 		name := sf.Name
+
+		// skip cannot exported field
 		if name[0] >= 'a' && name[0] <= 'z' {
 			continue
 		}
@@ -141,30 +140,36 @@ func (fs *Flags) FromStruct(s interface{}) error {
 			continue
 		}
 
-
-		// is pointer
-		// var isPtr bool
-		fv := rv.Field(i)
-		if ft.Kind() == reflect.Ptr {
-			// isPtr = true
-			ft = ft.Elem()
-			fv = fv.Elem()
-		}
-
+		fv := v.Field(i)
+		ft := t.Field(i).Type
 		if !fv.CanInterface() {
 			continue
 		}
 
+		// is pointer
+		// var isPtr bool
+		var isNilPtr bool
+		if ft.Kind() == reflect.Ptr {
+			// isPtr = true
+			if fv.IsNil() {
+				return fmt.Errorf("field: %s - nil pointer dereference", name)
+			}
+
+			ft = ft.Elem()
+			fv = fv.Elem()
+		}
+
 		mp := parseTagValue(name, str)
 
-		// for create meta
+		// for create flag meta
+		defVal := mp["default"]
 		shorts := splitShortcut(mp["shorts"])
 		optName, has := mp["name"]
 		if !has { // use field as option name.
 			optName = strutil.SnakeCase(name, "-")
 		}
 
-		meta := newFlagMeta(optName, mp["desc"], nil, shorts)
+		meta := newFlagMeta(optName, mp["desc"], defVal, shorts)
 		if must, has := mp["required"]; has {
 			meta.Required = strutil.MustBool(must)
 		}
@@ -176,7 +181,7 @@ func (fs *Flags) FromStruct(s interface{}) error {
 			continue
 		}
 
-		// get ptr addr
+		// get field ptr addr
 		ptr := unsafe.Pointer(fv.UnsafeAddr())
 		switch ft.Kind() {
 		case reflect.Bool:
@@ -187,7 +192,14 @@ func (fs *Flags) FromStruct(s interface{}) error {
 			// 	fs.BoolVar((*bool)(ptr), *meta)
 			// }
 		case reflect.Int:
-			fs.IntVar((*int)(ptr), meta)
+			// fs.IntVar((*int)(ptr), meta)
+			if isNilPtr {
+				fv.SetInt(0)
+				newPtr := unsafe.Pointer(fv.UnsafeAddr())
+				fs.IntVar((*int)(newPtr), meta)
+			} else {
+				fs.IntVar((*int)(ptr), meta)
+			}
 		case reflect.Int64:
 			fs.Int64Var((*int64)(ptr), meta)
 		case reflect.Uint:
@@ -198,6 +210,8 @@ func (fs *Flags) FromStruct(s interface{}) error {
 			fs.Float64Var((*float64)(ptr), meta)
 		case reflect.String:
 			fs.StrVar((*string)(ptr), meta)
+		default:
+			return fmt.Errorf("field: %s - invalid type for binding flag", name)
 		}
 	}
 	return nil
@@ -399,6 +413,21 @@ func (fs *Flags) strOpt(p *string, meta *FlagMeta) {
 }
 
 // --- intX option
+
+// Int binding an int option flag, return pointer
+func (fs *Flags) Int(name, shorts string, defValue int, desc string) *int {
+	meta := newFlagMeta(name, desc, defValue, splitShortcut(shorts))
+	name = fs.checkFlagInfo(meta)
+
+	// binding option to flag.FlagSet
+	p := fs.fSet.Int(name, defValue, meta.Desc)
+
+	// binding all short name options to flag.FlagSet
+	for _, s := range meta.Shorts {
+		fs.fSet.IntVar(p, s, defValue, "") // dont add description for short name
+	}
+	return p
+}
 
 // IntVar binding an int option flag
 func (fs *Flags) IntVar(p *int, meta *FlagMeta) {

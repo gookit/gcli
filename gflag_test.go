@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/dump"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -146,9 +147,9 @@ func TestFlags_Int64Opt(t *testing.T) {
 
 	assert.Equal(t, int64(0), int1)
 	assert.Equal(t, int64(314), int2)
-	assert.NoError(t, fs.Parse([]string{"-a", "123", "--int2", "163"}))
-	assert.Equal(t, int64(123), int1)
-	assert.Equal(t, int64(163), int2)
+	assert.NoError(t, fs.Parse([]string{"-a", "12", "--int2", "16"}))
+	assert.Equal(t, int64(12), int1)
+	assert.Equal(t, int64(16), int2)
 }
 
 func TestFlags_UintOpt(t *testing.T) {
@@ -164,9 +165,9 @@ func TestFlags_UintOpt(t *testing.T) {
 
 	assert.Equal(t, uint(0), int1)
 	assert.Equal(t, uint(314), int2)
-	assert.NoError(t, fs.Parse([]string{"-a", "123", "-c", "163"}))
-	assert.Equal(t, uint(123), int1)
-	assert.Equal(t, uint(163), int2)
+	assert.NoError(t, fs.Parse([]string{"-a", "12", "-c", "16"}))
+	assert.Equal(t, uint(12), int1)
+	assert.Equal(t, uint(16), int2)
 }
 
 func TestFlags_Uint64Opt(t *testing.T) {
@@ -187,9 +188,9 @@ func TestFlags_Uint64Opt(t *testing.T) {
 
 	assert.Equal(t, uint64(0), uint1)
 	assert.Equal(t, uint64(314), uint2)
-	assert.NoError(t, fs.Parse([]string{"-a", "123", "--uint2", "163"}))
-	assert.Equal(t, uint64(123), uint1)
-	assert.Equal(t, uint64(163), uint2)
+	assert.NoError(t, fs.Parse([]string{"-a", "12", "--uint2", "16"}))
+	assert.Equal(t, uint64(12), uint1)
+	assert.Equal(t, uint64(16), uint2)
 }
 
 func TestFlags_VarOpt(t *testing.T) {
@@ -197,10 +198,10 @@ func TestFlags_VarOpt(t *testing.T) {
 
 	var ints gcli.Ints
 	fs.Var(&ints, &gcli.FlagMeta{Name: "ints", Desc: "desc"})
-	assert.NoError(t, fs.Parse([]string{"--ints", "123", "--ints", "163"}))
+	assert.NoError(t, fs.Parse([]string{"--ints", "12", "--ints", "16"}))
 
 	assert.Len(t, ints, 2)
-	assert.Equal(t, "[123 163]", ints.String())
+	assert.Equal(t, "[12 16]", ints.String())
 
 	var ss gcli.Strings
 	fs.VarOpt(&ss, "names", "ns", "desc")
@@ -333,9 +334,90 @@ func TestFlags_Parse(t *testing.T) {
 	assert.Equal(t, "value", str)
 }
 
-func TestFlags_FromStruct(t *testing.T) {
-	gf := gcli.NewFlags("test")
+func TestFlags_Int_bindingNilPtr(t *testing.T) {
+	type userOpts struct {
+		Int *int
+	}
 
+	opt := userOpts{}
+	dump.P(opt)
+
+	// must init for an ptr value.
+	assert.Panics(t, func() {
+		fs := gcli.NewFlags("test")
+		fs.IntOpt(opt.Int, "int", "i", 20, "")
+	})
+
+	aint := 23
+	opt = userOpts{Int: &aint}
+	dump.P(opt)
+	fs := gcli.NewFlags("test")
+	fs.IntOpt(opt.Int, "int", "i", 20, "")
+	fs.PrintHelpPanel()
+}
+
+func TestFlags_FromStruct_simple(t *testing.T) {
+	fs := gcli.NewFlags("test")
+
+	type userOpts0 struct {
+		Int int `flag:"name=int0;shorts=i;required=true;desc=int option message"`
+		Bol bool `flag:"name=bol;shorts=b;default=true;desc=bool option message"`
+		Str string `flag:"name=str1;shorts=o,h;required=true;desc=str1 message"`
+	}
+
+	opt := &userOpts0{}
+	assert.False(t, opt.Bol)
+	assert.Equal(t, 0, opt.Int)
+	assert.Equal(t, "", opt.Str)
+
+	err := fs.FromStruct(opt)
+	assert.NoError(t, err)
+	assert.True(t, opt.Bol)
+	assert.True(t, fs.HasFlagMeta("bol"))
+
+	fs.PrintHelpPanel()
+
+	err = fs.Parse([]string{"--int0", "13", "--str1", "xyz"})
+	assert.NoError(t, err)
+
+	assert.Equal(t, 13, opt.Int)
+	assert.Equal(t, "xyz", opt.Str)
+}
+
+func TestFlags_FromStruct_ptrField(t *testing.T) {
+	type userOpts struct {
+		Int *int `flag:"shorts=i;default=13;desc=int option message"`
+		Str *string `flag:"name=str2;required=true;desc=str2 message"`
+	}
+
+	opt := &userOpts{}
+	dump.P(opt)
+
+	fs := gcli.NewFlags("test1")
+	opt = &userOpts{}
+	err := fs.FromStruct(opt)
+	assert.Error(t, err)
+	assert.Equal(t, "field: Int - nil pointer dereference", err.Error())
+
+	aint := 23
+	astr := "xyz"
+	opt = &userOpts{Int: &aint, Str: &astr}
+	dump.P(opt)
+	assert.Equal(t, 23, *opt.Int)
+	assert.Equal(t, "xyz", *opt.Str)
+
+	fs = gcli.NewFlags("test1")
+	err = fs.FromStruct(opt)
+	assert.NoError(t, err)
+	assert.Equal(t, 13, *(opt.Int))
+	// assert.Equal(t, "", *opt.Str)
+
+	dump.P(opt)
+	fmt.Println("Flag Help:")
+	fs.PrintHelpPanel()
+}
+
+func TestFlags_FromStruct(t *testing.T) {
 	type userOpts struct {
 		Int int `flag:"name=int0;shorts=i;required=true;desc=int option message"`
 		Bol bool `flag:"name=bol;shorts=b;desc=bool option message"`
@@ -348,9 +430,20 @@ func TestFlags_FromStruct(t *testing.T) {
 		Verb1 *gcli.VerbLevel `flag:"name=verb1;desc=verb1 message"`
 	}
 
-	err := gf.FromStruct(&userOpts{})
-
+	astr := "xyz"
+	verb := gcli.VerbWarn
+	fs := gcli.NewFlags("test")
+	err := fs.FromStruct(&userOpts{
+		Str2: &astr,
+		Verb1: &verb,
+	})
 	assert.NoError(t, err)
+
+	help := fs.String()
+	assert.Contains(t, help, "-o, -h, --str1")
+
+	fmt.Println("Flag Help:")
+	fs.PrintHelpPanel()
 }
 
 func TestFlags_PrintHelpPanel(t *testing.T) {
@@ -366,7 +459,7 @@ func TestFlags_PrintHelpPanel(t *testing.T) {
 	fs.StrVar(&testOpts.opt3, &gcli.FlagMeta{
 		Name: "test",
 		Desc: "test desc",
-		//
+		// required
 		Required: true,
 	})
 	fs.BoolOpt(&testOpts.opt2, "bol", "ab", false, "opt2 desc")
