@@ -70,6 +70,33 @@ func TestCommand_Errorf(t *testing.T) {
 func TestCommand_Run(t *testing.T) {
 	is := assert.New(t)
 
+	// use struct
+	c := &gcli.Command{
+		Name: "test",
+		Desc: "test desc",
+		Config: func(c *gcli.Command) {
+			is.Equal("test", c.Name)
+			c.Aliases = []string{"alias1"}
+		},
+		Func: func(c *gcli.Command, args []string) error {
+			return nil
+		},
+	}
+
+	err := c.Run([]string{})
+	is.NoError(err)
+	is.True(c.IsStandalone())
+	is.False(c.NotStandalone())
+	is.Equal("alias1", c.AliasesString(""))
+
+	err = c.Run([]string{"-h"})
+	is.NoError(err)
+	is.Equal("alias1", c.AliasesString(""))
+}
+
+func TestNewCommand_Run(t *testing.T) {
+	is := assert.New(t)
+
 	c := gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
 		is.Equal("test", c.Name)
 		c.Aliases = []string{"alias1"}
@@ -90,10 +117,12 @@ func TestCommand_Run(t *testing.T) {
 	is.NoError(err)
 	is.Equal("alias1", c.AliasesString(""))
 
+	// error run on app
 	g := gcli.NewApp()
 	g.AddCommand(c)
 	err = c.Run(simpleArgs)
 	is.Error(err)
+
 }
 
 var bf = new(bytes.Buffer)

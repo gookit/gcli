@@ -136,7 +136,7 @@ func TestApp_AddAliases(t *testing.T) {
 	})
 }
 
-func TestApp_Run(t *testing.T) {
+func TestApp_Run_noCommands(t *testing.T) {
 	is := assert.New(t)
 
 	app := gcli.NewApp(func(a *gcli.App) {
@@ -167,13 +167,24 @@ func TestApp_Run(t *testing.T) {
 	is.Contains(str, "This is my console application")
 	is.Contains(str, "Display help information")
 
+	err := app.Exec("not-exists", []string{})
+	is.Error(err)
+}
+
+func TestApp_Run_command_withArguments(t *testing.T) {
+	is := assert.New(t)
+	app := gcli.NewApp(func(a *gcli.App) {
+		a.ExitOnEnd = false
+	})
+
+	// run with command
 	var argStr, cmdRet string
 	app.Add(&gcli.Command{
 		Name: "test",
 		Desc: "desc for test command",
 		Config: func(c *gcli.Command) {
 			c.AddArg("arg0", "desc")
-			c.BindArg(gcli.Argument{Name: "arg1", Desc: "desc1"})
+			c.BindArg(&gcli.Argument{Name: "arg1", Desc: "desc1"})
 		},
 		Func: func(c *gcli.Command, args []string) error {
 			cmdRet = c.Name
@@ -183,7 +194,7 @@ func TestApp_Run(t *testing.T) {
 	})
 
 	// run an command
-	code = app.Run([]string{"test"})
+	code := app.Run([]string{"test"})
 	is.Equal(0, code)
 	is.Equal("", argStr)
 	is.Equal("test", cmdRet)
@@ -192,15 +203,64 @@ func TestApp_Run(t *testing.T) {
 	argStr = ""
 	cmdRet = ""
 
-	err := app.Exec("not-exists", []string{})
-	is.Error(err)
-	err = app.Exec("test", []string{"val0", "val1"})
+	err := app.Exec("test", []string{"val0", "val1"})
 	is.NoError(err)
 	is.Equal("test", cmdRet)
 	is.Equal("val0,val1", argStr)
 
+	err = app.Exec("not-exists", []string{})
+	is.Error(err)
+	is.Equal("exec unknown command: 'not-exists'", err.Error())
 	// other
 	// app.AddError(fmt.Errorf("test error"))
+}
+
+func TestApp_Run_command_withOptions(t *testing.T) {
+	is := assert.New(t)
+	app := gcli.NewApp(gcli.NotExitOnEnd())
+
+	// run with command
+	var optStr, cmdRet string
+	var opt1 string
+
+	app.Add(&gcli.Command{
+		Name: "test",
+		Desc: "desc for test command",
+		Config: func(c *gcli.Command) {
+			c.AddArg("arg0", "desc")
+			c.BindArg(&gcli.Argument{Name: "arg1", Desc: "desc1"})
+			c.StrOpt(&opt1, "opt1", "o", "", "opt desc")
+		},
+		Func: func(c *gcli.Command, args []string) error {
+			cmdRet = c.Name
+			optStr = strings.Join(args, ",")
+			return nil
+		},
+	})
+
+	// run command
+	code := app.Run([]string{"test"})
+	is.Equal(0, code)
+	is.Equal("", optStr)
+	is.Equal("test", cmdRet)
+	is.Equal("test", app.CommandName())
+
+	// help option
+	app.Run([]string{"test", "-h"})
+
+	// disable color code, reset output for test
+	buf := new(bytes.Buffer)
+	color.Disable()
+	color.SetOutput(buf)
+	gcli.SetVerbose(gcli.VerbCrazy)
+
+	defer func() {
+		color.ResetOptions()
+		gcli.SetVerbose(gcli.VerbError)
+	}()
+
+	app.Run([]string{"test", "-h"})
+	is.Contains(buf.String(), "-o, --opt1 string")
 }
 
 func TestApp_showCommandHelp(t *testing.T) {

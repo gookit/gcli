@@ -106,8 +106,8 @@ func (ags *Arguments) AddArg(name, desc string, requiredAndIsArray ...bool) *Arg
 }
 
 // BindArg alias of the AddArgument()
-func (ags *Arguments) BindArg(arg Argument) *Argument {
-	return ags.AddArgument(&arg)
+func (ags *Arguments) BindArg(arg *Argument) *Argument {
+	return ags.AddArgument(arg)
 }
 
 // AddArgument binding an named argument for the command.

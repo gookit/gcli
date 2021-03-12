@@ -148,7 +148,7 @@ func (fs *Flags) FromStruct(s interface{}) error {
 
 		// is pointer
 		// var isPtr bool
-		var isNilPtr bool
+		// var isNilPtr bool
 		if ft.Kind() == reflect.Ptr {
 			// isPtr = true
 			if fv.IsNil() {
@@ -186,20 +186,15 @@ func (fs *Flags) FromStruct(s interface{}) error {
 		switch ft.Kind() {
 		case reflect.Bool:
 			fs.BoolVar((*bool)(ptr), meta)
-			// if isPtr {
-			// 	fs.BoolVar((*bool)(ptr), *meta)
-			// } else {
-			// 	fs.BoolVar((*bool)(ptr), *meta)
-			// }
 		case reflect.Int:
-			// fs.IntVar((*int)(ptr), meta)
-			if isNilPtr {
-				fv.SetInt(0)
-				newPtr := unsafe.Pointer(fv.UnsafeAddr())
-				fs.IntVar((*int)(newPtr), meta)
-			} else {
-				fs.IntVar((*int)(ptr), meta)
-			}
+			fs.IntVar((*int)(ptr), meta)
+			// if isNilPtr {
+			// 	fv.SetInt(0)
+			// 	newPtr := unsafe.Pointer(fv.UnsafeAddr())
+			// 	fs.IntVar((*int)(newPtr), meta)
+			// } else {
+			// 	fs.IntVar((*int)(ptr), meta)
+			// }
 		case reflect.Int64:
 			fs.Int64Var((*int64)(ptr), meta)
 		case reflect.Uint:
@@ -215,6 +210,11 @@ func (fs *Flags) FromStruct(s interface{}) error {
 		}
 	}
 	return nil
+}
+
+// SetOptions for the object.
+func (fs *Flags) SetOptions(opt *FlagsOption) {
+	fs.opt = opt
 }
 
 // WithOptions for the object.
@@ -388,6 +388,21 @@ func (fs *Flags) float64Opt(p *float64, meta *FlagMeta) {
 
 // --- string option
 
+// Str binding an string option flag, return pointer
+func (fs *Flags) Str(name, shorts string, defValue, desc string) *string {
+	meta := newFlagMeta(name, desc, defValue, splitShortcut(shorts))
+	name = fs.checkFlagInfo(meta)
+
+	// binding option to flag.FlagSet
+	p := fs.fSet.String(name, defValue, meta.Desc)
+
+	// binding all short name options to flag.FlagSet
+	for _, s := range meta.Shorts {
+		fs.fSet.StringVar(p, s, defValue, "") // dont add description for short name
+	}
+	return p
+}
+
 // StrVar binding an string option flag
 func (fs *Flags) StrVar(p *string, meta *FlagMeta) {
 	fs.strOpt(p, meta)
@@ -452,7 +467,22 @@ func (fs *Flags) intOpt(p *int, meta *FlagMeta) {
 	}
 }
 
-// Int64Var binding an uint option flag
+// Str binding an int64 option flag, return pointer
+func (fs *Flags) Int64(name, shorts string, defValue int64, desc string) *int64 {
+	meta := newFlagMeta(name, desc, defValue, splitShortcut(shorts))
+	name = fs.checkFlagInfo(meta)
+
+	// binding option to flag.FlagSet
+	p := fs.fSet.Int64(name, defValue, meta.Desc)
+
+	// binding all short name options to flag.FlagSet
+	for _, s := range meta.Shorts {
+		fs.fSet.Int64Var(p, s, defValue, "") // dont add description for short name
+	}
+	return p
+}
+
+// Int64Var binding an int64 option flag
 func (fs *Flags) Int64Var(p *int64, meta *FlagMeta) {
 	fs.int64Opt(p, meta)
 }
@@ -477,6 +507,21 @@ func (fs *Flags) int64Opt(p *int64, meta *FlagMeta) {
 
 // --- uintX option
 
+// Uint binding an int option flag, return pointer
+func (fs *Flags) Uint(name, shorts string, defValue uint, desc string) *uint {
+	meta := newFlagMeta(name, desc, defValue, splitShortcut(shorts))
+	name = fs.checkFlagInfo(meta)
+
+	// binding option to flag.FlagSet
+	p := fs.fSet.Uint(name, defValue, meta.Desc)
+
+	// binding all short name options to flag.FlagSet
+	for _, s := range meta.Shorts {
+		fs.fSet.UintVar(p, s, defValue, "") // dont add description for short name
+	}
+	return p
+}
+
 // UintVar binding an uint option flag
 func (fs *Flags) UintVar(p *uint, meta *FlagMeta) {
 	fs.uintOpt(p, meta)
@@ -498,6 +543,21 @@ func (fs *Flags) uintOpt(p *uint, meta *FlagMeta) {
 	for _, s := range meta.Shorts {
 		fs.fSet.UintVar(p, s, uint(defValue), "") // dont add description for short name
 	}
+}
+
+// Uint binding an int option flag, return pointer
+func (fs *Flags) Uint64(name, shorts string, defValue uint64, desc string) *uint64 {
+	meta := newFlagMeta(name, desc, defValue, splitShortcut(shorts))
+	name = fs.checkFlagInfo(meta)
+
+	// binding option to flag.FlagSet
+	p := fs.fSet.Uint64(name, defValue, meta.Desc)
+
+	// binding all short name options to flag.FlagSet
+	for _, s := range meta.Shorts {
+		fs.fSet.Uint64Var(p, s, defValue, "") // dont add description for short name
+	}
+	return p
 }
 
 // Uint64Var binding an uint option flag

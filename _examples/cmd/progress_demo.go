@@ -32,7 +32,7 @@ func ProgressDemoCmd() *gcli.Command {
 			// 	"progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
 			// 	true,
 			// )
-			c.BindArg(gcli.Argument{
+			c.BindArg(&gcli.Argument{
 				Name: "name",
 				Desc: "progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
 

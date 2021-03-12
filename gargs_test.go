@@ -58,7 +58,7 @@ func TestArguments_BindArg(t *testing.T) {
 	is := assert.New(t)
 	ags := gcli.Arguments{}
 
-	ags.BindArg(gcli.Argument{Name: "ag0"})
+	ags.BindArg(&gcli.Argument{Name: "ag0"})
 	is.True(ags.HasArg("ag0"))
 }
 

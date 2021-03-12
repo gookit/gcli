@@ -77,7 +77,7 @@ type App struct {
 // 		// do something before init ....
 // 		a.Hooks[gcli.EvtInit] = func () {}
 // 	})
-func NewApp(fn ...func(app *App)) *App {
+func NewApp(fns ...func(app *App)) *App {
 	app := &App{
 		Name: "GCliApp",
 		Desc: "This is my console application",
@@ -106,11 +106,20 @@ func NewApp(fn ...func(app *App)) *App {
 	// set a default version
 	app.Version = "1.0.0"
 
-	if len(fn) > 0 {
-		fn[0](app)
+	if len(fns) > 0 {
+		for _, fn := range fns {
+			fn(app)
+		}
 	}
 
 	return app
+}
+
+// NotExitOnEnd for app
+func NotExitOnEnd() func(*App) {
+	return func(app *App) {
+		app.ExitOnEnd = false
+	}
 }
 
 // Config the application.
@@ -549,8 +558,8 @@ func (app *App) showCommandTips(name string) {
 // AppHelpTemplate help template for app(all commands)
 var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
 <comment>Usage:</>
-  {$binName} [global Options...] <info>COMMAND</> [--options ...] [argument ...]
-  {$binName} [global Options...] <info>COMMAND</> [--options ...] <info>SUBCOMMAND</> [--option ...]  [argument ...]
+  {$binName} [global Options...] <info>COMMAND</> [--options ...] [arguments ...]
+  {$binName} [global Options...] <info>COMMAND</> [--options ...] <info>SUBCOMMAND</> [--options ...]  [arguments ...]
 
 <comment>Global Options:</>
 {{.GOpts}}
