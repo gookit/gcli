@@ -5,7 +5,7 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/sysutil"
 )
 
@@ -21,21 +21,17 @@ type GitInfoData struct {
 	ReleaseAt string `json:"releaseAt" description:"latest commit date"`
 }
 
-// GitCommand
-func GitCommand() *gcli.Command {
-	cmd := gcli.Command{
-		Name:    "git:info",
-		Aliases: []string{"git-info"},
-		UseFor:  "collect project latest commit info by git log command",
-
-		Func: gitExecute,
-	}
-
-	cmd.IntOpt(&gitOpts.id, "id", "", 0, "the id option")
-	cmd.StrOpt(&gitOpts.c, "c", "", "", "the config option")
-	cmd.StrOpt(&gitOpts.dir, "dir", "d", "", "the dir option")
-
-	return &cmd
+// GitInfo git info command
+var GitInfo = &gcli.Command{
+	Name: "info",
+	// Aliases: []string{"git-info"},
+	Desc: "collect project latest commit info by git log command",
+	Config: func(c *gcli.Command) {
+		c.IntOpt(&gitOpts.id, "id", "", 0, "the id option")
+		c.StrOpt(&gitOpts.c, "c", "", "", "the config option")
+		c.StrOpt(&gitOpts.dir, "dir", "d", "", "the dir option")
+	},
+	Func: gitExecute,
 }
 
 // arg test:

@@ -11,7 +11,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gookit/gcli/v2/progress"
+	"github.com/gookit/gcli/v3/progress"
 	"github.com/gookit/goutil/fmtutil"
 )
 

@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
 )
 
@@ -34,9 +34,9 @@ var exampleOpts = struct {
 func ExampleCommand() *gcli.Command {
 	cmd := &gcli.Command{
 		Func:    exampleExecute,
-		Name:    "module:example",
-		Aliases: []string{"module:exp", "exp", "ex"},
-		UseFor:  "this is command description message",
+		Name:    "example",
+		Aliases: []string{"module-exp", "exp", "ex"},
+		Desc:    "this is command description message",
 		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
 		Examples: `
   {$binName} {$cmd} --id 12 -c val ag0 ag1

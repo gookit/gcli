@@ -5,8 +5,8 @@ import (
 	"time"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
-	"github.com/gookit/gcli/v2/progress"
+	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/progress"
 )
 
 type progressDemo struct {
@@ -21,18 +21,18 @@ var pd = &progressDemo{}
 func ProgressDemoCmd() *gcli.Command {
 	c := &gcli.Command{
 		Name:    "prog",
-		UseFor:  "there are some progress bar run demos",
-		Aliases: []string{"prg:demo", "progress"},
+		Desc:    "there are some progress bar run demos",
+		Aliases: []string{"prg-demo", "progress"},
 		Func:    pd.Run,
 		Config: func(c *gcli.Command) {
 			c.IntOpt(&pd.maxSteps, "max-step", "", 100, "setting the max step value")
 			c.BoolOpt(&pd.overwrite, "overwrite", "o", true, "setting overwrite progress bar line")
-			c.BoolVar(&pd.random, gcli.FlagMeta{Name: "random", Desc: "use random style for progress bar"})
+			c.BoolVar(&pd.random, &gcli.FlagMeta{Name: "random", Desc: "use random style for progress bar"})
 			// c.AddArg("name",
 			// 	"progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
 			// 	true,
 			// )
-			c.Add(gcli.Argument{
+			c.BindArg(&gcli.Argument{
 				Name: "name",
 				Desc: "progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
 

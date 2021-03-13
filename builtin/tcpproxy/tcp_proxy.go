@@ -3,7 +3,7 @@ package tcpproxy
 import (
 	"sync"
 
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 )
 
 // TCPProxy definition.
@@ -32,7 +32,7 @@ func TCPProxyCommand() *gcli.Command {
 		Func: runServer,
 		Name: "watch",
 
-		UseFor: "file system change notification",
+		Desc: "file system change notification",
 
 		Aliases: []string{"fwatch", "fswatch"},
 		Examples: `watch a dir:

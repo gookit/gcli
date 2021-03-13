@@ -11,7 +11,7 @@ import (
 	"net/http/httputil"
 	"net/url"
 
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 )
 
 type reverseProxy struct {
@@ -34,9 +34,9 @@ var dnsServers = []string{
 // ReverseProxyCommand create command
 func ReverseProxyCommand() *gcli.Command {
 	c := &gcli.Command{
-		Name:   "proxy",
-		Func:   rp.Run,
-		UseFor: "start a reverse proxy http server",
+		Name: "proxy",
+		Func: rp.Run,
+		Desc: "start a reverse proxy http server",
 	}
 
 	c.StrOpt(

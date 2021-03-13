@@ -3,8 +3,8 @@ package cmd
 import (
 	"time"
 
-	"github.com/gookit/gcli/v2"
-	"github.com/gookit/gcli/v2/progress"
+	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/progress"
 )
 
 type spinnerDemo struct {
@@ -17,8 +17,8 @@ func SpinnerDemoCmd() *gcli.Command {
 
 	return &gcli.Command{
 		Name:    "spinner",
-		UseFor:  "there are some CLI spinner bar run demos",
-		Aliases: []string{"spr", "spr:demo"},
+		Desc:    "there are some CLI spinner bar run demos",
+		Aliases: []string{"spr", "spr-demo"},
 		Func:    sd.Run,
 		Config: func(c *gcli.Command) {
 			c.IntOpt(&sd.speed, "speed", "s", 100, "setting the spinner running speed")

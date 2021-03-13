@@ -5,9 +5,9 @@ import (
 	"os/exec"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
-	"github.com/gookit/gcli/v2/interact"
-	"github.com/gookit/gcli/v2/show/emoji"
+	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/interact"
+	"github.com/gookit/gcli/v3/show/emoji"
 )
 
 // InteractDemoCommand create
@@ -16,7 +16,7 @@ func InteractDemoCommand() *gcli.Command {
 		Name:    "interact",
 		Func:    interactDemo,
 		Aliases: []string{"itt"},
-		UseFor:  "the command will show some interactive methods",
+		Desc:    "the command will show some interactive methods",
 		Examples: `{$fullCmd} confirm
   {$fullCmd} select
 `,

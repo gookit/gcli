@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 )
 
 var colorOpts = struct {
@@ -17,7 +17,7 @@ var colorOpts = struct {
 func ColorCommand() *gcli.Command {
 	cmd := gcli.Command{
 		Name:     "color",
-		UseFor:   "this is a example for cli color usage",
+		Desc:     "this is a example for cli color usage",
 		Aliases:  []string{"clr", "colors"},
 		Func:     colorUsage,
 		Examples: "{$binName} {$cmd} --id 12 -c val ag0 ag1",

@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/fsutil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil"
@@ -16,9 +16,9 @@ import (
 
 // GitPullMulti use git pull for update multi project
 var GitPullMulti = &gcli.Command{
-	Name:    "git:pull",
-	UseFor:  "use git pull for update multi project",
-	Aliases: []string{"git-pull"},
+	Name:    "pull",
+	Desc:    "use git pull for update multi project",
+	Aliases: []string{"pul"},
 	Config: func(c *gcli.Command) {
 		c.AddArg(
 			"basePath",

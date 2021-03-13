@@ -7,7 +7,7 @@ import (
 	"os"
 	"time"
 
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 )
 
 type genEmojiMap struct {
@@ -33,12 +33,12 @@ func GenEmojiMapCommand() *gcli.Command {
 	gem := &genEmojiMap{}
 
 	return &gcli.Command{
-		Name:    "gen:emojis",
-		Aliases: []string{"gen:emoji", "gen:emj"},
+		Name:    "gen-emojis",
+		Aliases: []string{"gen-emj"},
 		// handler func
 		Func: gem.run,
 		// des
-		UseFor: "fetch emoji codes form data source url, then generate a go file.",
+		Desc: "fetch emoji codes form data source url, then generate a go file.",
 		// config options
 		Config: func(c *gcli.Command) {
 			gem.c = c

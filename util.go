@@ -14,15 +14,7 @@ import (
  * console log
  *************************************************************/
 
-var level2name = map[uint]string{
-	VerbError: "ERROR",
-	VerbWarn:  "WARN",
-	VerbInfo:  "INFO",
-	VerbDebug: "DEBUG",
-	VerbCrazy: "CRAZY",
-}
-
-var level2color = map[uint]color.Color{
+var level2color = map[VerbLevel]color.Color{
 	VerbError: color.FgRed,
 	VerbWarn:  color.FgYellow,
 	VerbInfo:  color.FgGreen,
@@ -36,22 +28,17 @@ func Debugf(format string, v ...interface{}) {
 }
 
 // Logf print log message
-func Logf(level uint, format string, v ...interface{}) {
+func Logf(level VerbLevel, format string, v ...interface{}) {
 	logf(level, format, v...)
 }
 
 // print log message
-func logf(level uint, format string, v ...interface{}) {
+func logf(level VerbLevel, format string, v ...interface{}) {
 	if gOpts.verbose < level {
 		return
 	}
 
 	var fnName string
-	name, has := level2name[level]
-	if !has {
-		name, level = "CRAZY", VerbCrazy
-	}
-
 	pc, fName, line, ok := runtime.Caller(2)
 	if !ok {
 		fnName, fName, line = "UNKNOWN", "???.go", 0
@@ -60,6 +47,7 @@ func logf(level uint, format string, v ...interface{}) {
 		fnName = runtime.FuncForPC(pc).Name()
 	}
 
+	name := level.Upper()
 	name = level2color[level].Render(name)
 	color.Printf("GCli: [%s] [%s(), %s:%d] %s\n", name, fnName, fName, line, fmt.Sprintf(format, v...))
 }
@@ -71,6 +59,26 @@ func defaultErrHandler(data ...interface{}) {
 			// fmt.Println(color.Red.Render("ERROR:"), err.Error())
 		}
 	}
+}
+
+func name2verbLevel(name string) VerbLevel {
+	switch strings.ToLower(name) {
+	case "quiet":
+		return VerbQuiet
+	case "error":
+		return VerbError
+	case "warn":
+		return VerbWarn
+	case "info":
+		return VerbInfo
+	case "debug":
+		return VerbDebug
+	case "crazy":
+		return VerbCrazy
+	}
+
+	// default level
+	return DefaultVerb
 }
 
 /*************************************************************
@@ -96,12 +104,55 @@ func panicf(format string, v ...interface{}) {
 	panic(fmt.Sprintf("GCli: "+format, v...))
 }
 
+// parse tag value. eg: "name=int0;shorts=i;required=true;desc=int option message"
+func parseTagValue(name, str string) (mp map[string]string) {
+	ss := strutil.Split(str, ";")
+	if len(ss) == 0 {
+		return
+	}
+
+	mp = make(map[string]string, len(flagTagKeys))
+	for _, s := range ss {
+		if strings.ContainsRune(s, '=') == false {
+			panicf("parse tag error on field '%s': item must match `KEY=VAL`", name)
+		}
+
+		kvNodes := strings.SplitN(s, "=", 2)
+		key, val := kvNodes[0], kvNodes[1]
+		if !flagTagKeys.Has(key) {
+			panicf("parse tag error on field '%s': invalid key name '%s'", name, key)
+		}
+
+		mp[key] = val
+	}
+	return
+}
+
 // func exitWithMsg(format string, v ...interface{}) {
 // 	fmt.Printf(format, v...)
 // 	Exit(0)
 // }
 
-// strictFormatArgs '-ab' will split to '-a -b', '--o' -> '-o'
+func isValidCmdName(name string) bool {
+	if name[0] == '-' { // is option name.
+		return false
+	}
+
+	return goodCmdName.MatchString(name)
+}
+
+func aliasNameCheck(name string) {
+	if goodCmdName.MatchString(name) {
+		return
+	}
+
+	panicf("alias name '%s' is invalid, must match: %s", name, regGoodCmdName)
+}
+
+// strictFormatArgs
+// TODO mode:
+//  POSIX '-ab' will split to '-a -b', '--o' -> '-o'
+//  UNIX '-ab' will split to '-a b'
 func strictFormatArgs(args []string) (fmtArgs []string) {
 	if len(args) == 0 {
 		return args
@@ -163,11 +214,32 @@ func moveArgumentsToEnd(args []string) []string {
 	return append(args[argEnd:], args[0:argEnd]...)
 }
 
+func splitPath2names(path string) []string {
+	var names []string
+	path = strings.TrimSpace(path)
+	if path != "" {
+		if strings.ContainsRune(path, ' ') {
+			names = strings.Split(path, " ")
+		} else {
+			names = strings.Split(path, CommandSep)
+		}
+	}
+
+	return names
+}
+
 // split "ef" to ["e", "f"]
-func splitShortStr(str string) (ss []string) {
+// split "e,f" to ["e", "f"]
+func splitShortcut(str string) (ss []string) {
 	bs := []byte(str)
+	if len(bs) == 0 {
+		return
+	}
 
 	for _, b := range bs {
+		// if b == ',' {
+		// 	continue
+		// }
 		if strutil.IsAlphabet(b) {
 			ss = append(ss, string(b))
 		}
@@ -175,7 +247,7 @@ func splitShortStr(str string) (ss []string) {
 	return
 }
 
-func shorts2str(ss []string) string {
+func shorts2string(ss []string) string {
 	var newSs []string
 	for _, s := range ss {
 		newSs = append(newSs, "-"+s)

@@ -8,7 +8,7 @@ import (
 	"time"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v2"
+	"github.com/gookit/gcli/v3"
 )
 
 var bgrOpts = struct {
@@ -17,9 +17,10 @@ var bgrOpts = struct {
 
 func DaemonRunCommand() *gcli.Command {
 	c := &gcli.Command{
-		Name:   "bg:run",
-		UseFor: "an example for background run program",
-		Func:   handleDaemonRun,
+		Name: "bgrun",
+		Aliases: []string{"bgr"},
+		Desc: "an example for background run program",
+		Func: handleDaemonRun,
 	}
 
 	c.BoolOpt(&bgrOpts.deamon, "daemon", "d", false, "want background run")

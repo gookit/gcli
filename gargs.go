@@ -10,6 +10,9 @@ import (
  * Arguments definition
  *************************************************************/
 
+// an empty argument
+var emptyArg = &Argument{}
+
 // Arguments definition
 type Arguments struct {
 	// Inherited from Command
@@ -102,14 +105,9 @@ func (ags *Arguments) AddArg(name, desc string, requiredAndIsArray ...bool) *Arg
 	return ags.AddArgument(newArg)
 }
 
-// Add alias of the AddArgument()
-func (ags *Arguments) Add(arg Argument) *Argument {
-	return ags.AddArgument(&arg)
-}
-
 // BindArg alias of the AddArgument()
-func (ags *Arguments) BindArg(arg Argument) *Argument {
-	return ags.AddArgument(&arg)
+func (ags *Arguments) BindArg(arg *Argument) *Argument {
+	return ags.AddArgument(arg)
 }
 
 // AddArgument binding an named argument for the command.
