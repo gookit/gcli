@@ -291,6 +291,10 @@ func (c *Command) initCore(cName string) {
 	Logf(VerbCrazy, "init command c.core for the command: %s", cName)
 
 	c.core.cmdLine = CLI
+	if c.core.Hooks == nil {
+		c.core.Hooks = &Hooks{}
+	}
+
 	c.AddVars(c.innerHelpVars())
 	c.AddVars(map[string]string{
 		"cmd": cName,
@@ -515,8 +519,6 @@ func (c *Command) prepare(_ []string) (status int, err error) {
 
 // do execute the command
 func (c *Command) doExecute(args []string) (err error) {
-	c.Fire(EvtCmdBefore, args)
-
 	// collect and binding named argument
 	Debugf("cmd: %s - collect and binding named argument", c.Name)
 	if err := c.ParseArgs(args); err != nil {
@@ -524,6 +526,8 @@ func (c *Command) doExecute(args []string) (err error) {
 		Logf(VerbCrazy, "binding command '%s' arguments err: <red>%s</>", c.Name, err.Error())
 		return err
 	}
+
+	c.Fire(EvtCmdBefore, args)
 
 	// do call command handler func
 	if c.Func == nil {
@@ -611,8 +615,8 @@ var CmdHelpTemplate = `{{.Desc}}
 {{if .Cmd.NotStandalone}}
 <comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.AliasesString}}</>){{end}}{{end}}
 <comment>Usage:</>
-  {$binName} [global options] {{if .Cmd.NotStandalone}}<info>{{.Cmd.Path}}</> {{end}}[--options ...] [arguments ...]{{ if .Subs }}
-  {$binName} [global options] {{if .Cmd.NotStandalone}}<info>{{.Cmd.Path}}</> {{end}} <info>SUBCOMMAND</> [--options ...] [arguments ...]{{end}}
+  {$binName} [global options] {{if .Cmd.NotStandalone}}<cyan>{{.Cmd.Path}}</> {{end}}[--options ...] [arguments ...]{{ if .Subs }}
+  {$binName} [global options] {{if .Cmd.NotStandalone}}<cyan>{{.Cmd.Path}}</> {{end}}<cyan>SUBCOMMAND</> [--options ...] [arguments ...]{{end}}
 {{if .GOpts}}
 <comment>Global Options:</>
 {{.GOpts}}{{end}}{{if .Options}}
@@ -733,7 +737,7 @@ func (c *Command) Fire(event string, data ...interface{}) {
 
 // On add hook handler for a hook event
 func (c *Command) On(name string, handler HookFunc) {
-	Debugf("cmd: %s - register hook: %s", c.Name, name)
+	Debugf("cmd: %s - register hook: <cyan>%s</>", c.Name, name)
 
 	c.Hooks.On(name, handler)
 }

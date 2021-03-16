@@ -94,6 +94,8 @@ func NewApp(fns ...func(app *App)) *App {
 	Logf(VerbCrazy, "create new core on init application")
 	app.core = core{
 		cmdLine: CLI,
+		// init
+		Hooks: &Hooks{},
 		gFlags: NewFlags("app.GOptions").WithOptions(func(opt *FlagsOption) {
 			opt.WithoutType = true
 			opt.NameDescOL = true
@@ -164,7 +166,10 @@ func (app *App) initialize() {
 
 	Logf(VerbCrazy, "initialize the application")
 
-	// init some help tpl vars
+	// init some vars
+	if app.core.Hooks == nil {
+		app.core.Hooks = &Hooks{}
+	}
 	app.core.AddVars(app.core.innerHelpVars())
 
 	// binding global options
@@ -558,8 +563,8 @@ func (app *App) showCommandTips(name string) {
 // AppHelpTemplate help template for app(all commands)
 var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
 <comment>Usage:</>
-  {$binName} [global Options...] <info>COMMAND</> [--options ...] [arguments ...]
-  {$binName} [global Options...] <info>COMMAND</> [--options ...] <info>SUBCOMMAND</> [--options ...]  [arguments ...]
+  {$binName} [global options...] <info>COMMAND</> [--options ...] [arguments ...]
+  {$binName} [global options...] <info>COMMAND</> [--options ...] <info>SUBCOMMAND</> [--options ...] [arguments ...]
 
 <comment>Global Options:</>
 {{.GOpts}}

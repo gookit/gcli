@@ -228,23 +228,27 @@ func NewArgument(name, desc string, requiredAndIsArray ...bool) *Argument {
 		Name: name,
 		Desc: desc,
 		// other options
-		ShowName: name,
+		// ShowName: name,
 		Required: required,
 		IsArray:  isArray,
 	}
 }
 
 func (a *Argument) goodArgument() string {
-	a.Name = strings.TrimSpace(a.Name)
-	if a.Name == "" {
+	name := strings.TrimSpace(a.Name)
+	if name == "" {
 		panicf("the command argument name cannot be empty")
 	}
 
-	if !goodName.MatchString(a.Name) {
-		panicf("the command argument name '%s' is invalid, must match: %s", a.Name, regGoodName)
+	if !goodName.MatchString(name) {
+		panicf("the command argument name '%s' is invalid, must match: %s", name, regGoodName)
 	}
 
-	return a.Name
+	a.Name = name
+	if a.ShowName == "" {
+		a.ShowName = name
+	}
+	return name
 }
 
 // HelpName for render help message

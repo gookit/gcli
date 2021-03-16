@@ -610,6 +610,18 @@ func (fs *Flags) varOpt(p flag.Value, meta *FlagMeta) {
 	}
 }
 
+// Required flag option name(s)
+func (fs *Flags) Required(names ...string) {
+	for _, name := range names {
+		meta, ok := fs.metas[name]
+		if !ok {
+			panicf("undefined option flag '%s'", name)
+		}
+
+		meta.Required = true
+	}
+}
+
 // check flag option name and short-names
 func (fs *Flags) checkFlagInfo(meta *FlagMeta) string {
 	// NOTICE: must init some required fields
@@ -955,6 +967,8 @@ type FlagMeta struct {
 	// varPtr interface{}
 	// name and description
 	Name, Desc string
+	// Alias of the name. isn't shorts. eg: name='dry-run' alias='dr' TODO
+	Alias string
 	// default value for the flag option
 	DefVal interface{}
 	// wrapped the default value

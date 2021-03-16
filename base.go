@@ -20,7 +20,7 @@ type core struct {
 	// HelpVars help template vars.
 	HelpVars
 	// Hooks manage. allowed hooks: "init", "before", "after", "error"
-	Hooks
+	*Hooks
 	// global options flag set
 	gFlags *Flags
 	// GOptsBinder you can custom binding global options
