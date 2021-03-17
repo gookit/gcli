@@ -5,7 +5,6 @@ import (
 	"flag"
 	"fmt"
 	"os"
-	"regexp"
 	"strings"
 	"text/template"
 
@@ -627,7 +626,7 @@ var CmdHelpTemplate = `{{.Desc}}
   <info>{{$a.HelpName | printf "%-12s"}}</>{{$a.Desc | ucFirst}}{{if $a.Required}}<red>*</>{{end}}{{end}}
 {{end}}{{ if .Subs }}
 <comment>Sub Commands:</>{{range $n,$c := .Subs}}
-  <info>{{$c.Name | paddingName }}</> {{$c.Desc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
+  <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
 {{end}}{{if .Cmd.Examples}}
 <comment>Examples:</>
 {{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}
@@ -788,9 +787,6 @@ func (c *Command) AliasesString(sep ...string) string {
 
 	return strings.Join(c.Aliases, s)
 }
-
-// regex: "`\w+`"
-var codeReg = regexp.MustCompile("`" + `\w+` + "`")
 
 // HelpDesc format desc string for render help
 func (c *Command) HelpDesc() (desc string) {

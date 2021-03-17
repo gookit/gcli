@@ -3,6 +3,7 @@ package gcli
 import (
 	"fmt"
 	"path"
+	"regexp"
 	"runtime"
 	"strings"
 
@@ -256,6 +257,9 @@ func shorts2string(ss []string) string {
 	// eg: "-t, -o"
 	return strings.Join(newSs, ", ")
 }
+
+// regex: "`[\w ]+`"
+var codeReg = regexp.MustCompile("`" + `[\w ]+` + "`")
 
 // convert "`keywords`" to "<mga>keywords</>"
 func wrapColor2string(s string) string {

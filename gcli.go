@@ -51,9 +51,10 @@ const (
 	EvtAppAfter  = "app.run.after"
 	EvtAppError  = "app.run.error"
 
-	EvtCmdInit   = "cmd.init"
+	EvtCmdInit = "cmd.init"
 
-	EvtCmdOptParsed   = "cmd.opts.parsed"
+	EvtCmdNotFound  = "cmd.not.found"
+	EvtCmdOptParsed = "cmd.opts.parsed"
 
 	EvtCmdBefore = "cmd.run.before"
 	EvtCmdAfter  = "cmd.run.after"
@@ -88,7 +89,7 @@ func init() {
 	// set verbose from ENV var.
 	envVerb := os.Getenv("GCLI_VERBOSE")
 	if envVerb != "" {
-		_= gOpts.verbose.Set(envVerb)
+		_ = gOpts.verbose.Set(envVerb)
 	}
 }
 
