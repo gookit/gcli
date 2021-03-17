@@ -569,7 +569,7 @@ var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
 <comment>Global Options:</>
 {{.GOpts}}
 <comment>Available Commands:</>{{range $cmdName, $c := .Cs}}
-  <info>{{$c.Name | paddingName }}</> {{$c.Desc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
+  <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
   <info>{{ paddingName "help" }}</> Display help information
 
 Use "<cyan>{$binName} COMMAND -h</>" for more information about a command

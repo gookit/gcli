@@ -256,3 +256,15 @@ func shorts2string(ss []string) string {
 	// eg: "-t, -o"
 	return strings.Join(newSs, ", ")
 }
+
+// convert "`keywords`" to "<mga>keywords</>"
+func wrapColor2string(s string) string {
+	if strings.ContainsRune(s, '`') {
+		s = codeReg.ReplaceAllStringFunc(s, func(code string) string {
+			code = strings.Trim(code, "`")
+			return color.WrapTag(code, "mga")
+		})
+	}
+
+	return s
+}

@@ -5,6 +5,7 @@ import (
 	"flag"
 	"fmt"
 	"os"
+	"regexp"
 	"strings"
 	"text/template"
 
@@ -662,7 +663,7 @@ func (c *Command) ShowHelp() {
 		// parse options to string
 		"Options": c.Flags.String(),
 		// always upper first char
-		"Desc": c.Desc,
+		"Desc": c.HelpDesc(),
 	}
 
 	if c.NotStandalone() {
@@ -786,6 +787,25 @@ func (c *Command) AliasesString(sep ...string) string {
 	}
 
 	return strings.Join(c.Aliases, s)
+}
+
+// regex: "`\w+`"
+var codeReg = regexp.MustCompile("`" + `\w+` + "`")
+
+// HelpDesc format desc string for render help
+func (c *Command) HelpDesc() (desc string) {
+	if len(c.Desc) == 0 {
+		return
+	}
+
+	// dump.P(desc)
+	desc = strutil.UpperFirst(c.Desc)
+	// contains help var "{$cmd}". replace on here is for 'app help'
+	if strings.Contains(desc, "{$cmd}") {
+		desc = strings.Replace(desc, "{$cmd}", color.WrapTag(c.Name, "mga"), -1)
+	}
+
+	return wrapColor2string(desc)
 }
 
 // Logf print log message
