@@ -4,6 +4,8 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/_examples/cmd"
+	"github.com/gookit/gcli/v3/builtin"
+
 	// "github.com/gookit/gcli/v3/builtin/filewatcher"
 	// "github.com/gookit/gcli/v3/builtin/reverseproxy"
 )
@@ -40,16 +42,20 @@ func main() {
 	}
 
 	// app.Strict = true
-
 	app.Add(cmd.GitCmd)
 
-	// app.Add(cmd.ExampleCommand())
-	// app.Add(cmd.DaemonRunCommand())
-	// app.Add(cmd.EnvInfoCommand())
-	// app.Add(cmd.ColorCommand(), cmd.EmojiDemoCmd())
-	// app.Add(cmd.ShowDemoCommand(), cmd.ProgressDemoCmd(), cmd.SpinnerDemoCmd(), cmd.InteractDemoCommand())
-	// app.Add(builtin.GenEmojiMapCommand())
-	// app.Add(builtin.GenAutoComplete())
+	app.Add(cmd.ExampleCommand())
+	app.Add(cmd.DaemonRunCommand())
+	app.Add(cmd.EnvInfoCommand())
+	app.Add(cmd.ColorCommand(), cmd.EmojiDemoCmd())
+	app.Add(
+		cmd.ShowDemoCommand(),
+		cmd.ProgressDemoCmd(),
+		cmd.SpinnerDemoCmd(),
+		cmd.InteractDemoCommand(),
+	)
+	app.Add(builtin.GenEmojiMapCommand())
+	app.Add(builtin.GenAutoComplete())
 
 	// app.Add(filewatcher.FileWatcher(nil))
 	// app.Add(reverseproxy.ReverseProxyCommand())
