@@ -23,14 +23,17 @@ A simple-to-use command line application, written using golang.
 
 - Simple to use
 - Support for adding multiple commands and supporting command **aliases**
-- `option/flag` Support option binding `--long`, support for adding short options(`-s`)
+- Support binding command options from structure
+    - example `flag:"name=int0;shorts=i;required=true;desc=int option message"`
+- Support for adding multi-level commands, each level of command supports binding its own options
+- `option/flag` - support option binding `--long`, support for adding short options(`-s`)
   - POSIX-style short flag combining (`-a -b` = `-ab`)
   - Support setting `Required`, indicating a required option parameter
   - Support setting `Validator`, which can customize the validation input parameters
-- `argument` Support binding argument to specify name
+- `argument` - support binding argument to specify name
   - Support `required`, optional, `array` settings
   - It will be automatically detected and collected when the command is run.
-- `colorable` Supports rich color output. provide by [gookit/color](https://github.com/gookit/color)
+- `colorable` - supports rich color output. provide by [gookit/color](https://github.com/gookit/color)
   - Supports html tab-style color rendering, compatible with Windows
   - Built-in `info, error, success, danger` and other styles, can be used directly
 - `interact` Built-in user interaction methods: `ReadLine`, `Confirm`, `Select`, `MultiSelect` ...
@@ -66,14 +69,14 @@ import (
 func main() {
     app := gcli.NewApp()
     app.Version = "1.0.3"
-    app.Description = "this is my cli application"
+    app.Desc = "this is my cli application"
     // app.SetVerbose(gcli.VerbDebug)
 
     app.Add(cmd.ExampleCommand())
     app.Add(&gcli.Command{
         Name: "demo",
         // allow color tag and {$cmd} will be replace to 'demo'
-        UseFor: "this is a description <info>message</> for {$cmd}", 
+        Desc: "this is a description <info>message</> for {$cmd}", 
         Aliases: []string{"dm"},
         Func: func (cmd *gcli.Command, args []string) error {
             gcli.Print("hello, in the demo command\n")
@@ -194,7 +197,7 @@ Preview:
 app.Add(&gcli.Command{
     Name: "demo",
     // allow color tag and {$cmd} will be replace to 'demo'
-    UseFor: "this is a description <info>message</> for command {$cmd}", 
+    Desc: "this is a description <info>message</> for command {$cmd}", 
     Aliases: []string{"dm"},
     Func: func (cmd *gcli.Command, args []string) error {
         gcli.Print("hello, in the demo command\n")
@@ -229,7 +232,7 @@ var exampleOpts = struct {
 // ExampleCommand command definition
 var ExampleCommand = &gcli.Command{
 	Name:        "example",
-	UseFor: "this is a description message",
+	Desc: "this is a description message",
 	Aliases:     []string{"exp", "ex"}, // 命令别名
 	// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
 	Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1

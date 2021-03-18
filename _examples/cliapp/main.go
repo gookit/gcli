@@ -18,7 +18,7 @@ import (
 // 	go build ./_examples/cliapp && ./cliapp
 func main() {
 	app := gcli.NewApp(func(app *gcli.App) {
-		app.Version = "1.0.6"
+		app.Version = "3.0.0"
 		app.Desc = "this is my cli application"
 		app.On(gcli.EvtAppInit, func(data ...interface{}) {
 			// do something...

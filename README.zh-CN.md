@@ -21,8 +21,11 @@ The english introduction please ses **[README](README.md)**
 
 ## 功能特色
 
-- 使用简单方便，轻量级，功能丰富
+- 使用简单方便，功能丰富
 - 支持添加多个命令，并且支持给命令添加别名
+- 支持从结构体绑定命令选项
+  - 示例 `flag:"name=int0;shorts=i;required=true;desc=int option message"`
+- 支持添加多级命令，每级命令均支持绑定自己的选项
 - `option/flag` 快速方便的添加选项绑定(`--long`)，支持添加多个短选项（eg: `-s`）
   - 选项支持设置 `Required`，表明为必须的选项参数
   - 选项支持设置 `Validator`，可以自定义验证输入参数
@@ -68,14 +71,14 @@ import (
 func main() {
     app := gcli.NewApp()
     app.Version = "1.0.3"
-    app.Description = "this is my cli application"
+    app.Desc = "this is my cli application"
     // app.SetVerbose(gcli.VerbDebug)
 
     app.Add(cmd.ExampleCommand())
     app.Add(&gcli.Command{
         Name: "demo",
         // allow color tag and {$cmd} will be replace to 'demo'
-        UseFor: "this is a description <info>message</> for command", 
+        Desc: "this is a description <info>message</> for command", 
         Aliases: []string{"dm"},
         Func: func (cmd *gcli.Command, args []string) error {
             gcli.Println("hello, in the demo command")
@@ -205,7 +208,7 @@ OK, auto-complete file generate successful
 app.Add(&gcli.Command{
     Name: "demo",
     // allow color tag and {$cmd} will be replace to 'demo'
-    UseFor: "this is a description <info>message</> for command", 
+    Desc: "this is a description <info>message</> for command", 
     Aliases: []string{"dm"},
     Func: func (cmd *gcli.Command, args []string) error {
         gcli.Print("hello, in the demo command\n")
@@ -240,7 +243,7 @@ var exampleOpts = struct {
 // ExampleCommand command definition
 var ExampleCommand = &gcli.Command{
 	Name:        "example",
-	UseFor: "this is a description message",
+	Desc: "this is a description message",
 	Aliases:     []string{"exp", "ex"}, // 命令别名
 	// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
 	Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1
@@ -402,7 +405,7 @@ cmd.BindArg("arrArg", gcli.Argument{
 ```go
 var MyCommand = &gcli.Command{
     Name: "example",
-    UseFor: "this is an example command",
+    Desc: "this is an example command",
     Config: func(c *gcli.Command) {
         cmd.BindArg("arg0", gcli.Argument{
             Name: "ag0",
