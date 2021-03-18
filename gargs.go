@@ -234,6 +234,12 @@ func NewArgument(name, desc string, requiredAndIsArray ...bool) *Argument {
 	}
 }
 
+// Init the argument
+func (a *Argument) Init() *Argument {
+	a.goodArgument()
+	return a
+}
+
 func (a *Argument) goodArgument() string {
 	name := strings.TrimSpace(a.Name)
 	if name == "" {
@@ -260,8 +266,8 @@ func (a *Argument) HelpName() string {
 	return a.ShowName
 }
 
-// Config the argument
-func (a *Argument) WithConfig(fn func(arg *Argument)) *Argument {
+// With an func for config the argument
+func (a *Argument) With(fn func(arg *Argument)) *Argument {
 	if fn != nil {
 		fn(a)
 	}

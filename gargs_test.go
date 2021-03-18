@@ -116,6 +116,7 @@ func TestArgument(t *testing.T) {
 
 	// required and is-array
 	arg = gcli.NewArgument("arg1", "arg desc", true, true)
+	arg.Init()
 	is.True(arg.IsArray)
 	is.True(arg.Required)
 	is.Equal("arg1...", arg.HelpName())
@@ -138,8 +139,9 @@ var str2int = func(val interface{}) (interface{}, error) {
 }
 
 func TestArgument_WithConfig(t *testing.T) {
-	arg := gcli.NewArgument("arg0", "arg desc").WithConfig(func(arg *gcli.Argument) {
+	arg := gcli.NewArgument("arg0", "arg desc").With(func(arg *gcli.Argument) {
 		arg.Value = 23
+		arg.Init()
 	})
 
 	assert.Equal(t, 23, arg.Value)
