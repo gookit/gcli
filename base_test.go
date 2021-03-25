@@ -8,6 +8,7 @@ import (
 
 func TestApp_On(t *testing.T) {
 	cli := gcli.New()
+	cli.ExitOnEnd = false
 
 	args := []string{"top", "sub"}
 	cli.Run(args)

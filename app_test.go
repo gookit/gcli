@@ -43,7 +43,7 @@ var (
 					Name: "sub1",
 					Desc: "desc for top1.sub1",
 					Func: func(c *gcli.Command, args []string) error {
-						c.SetValue("msg", c.App().Value("top1.sub1"))
+						c.SetValue("msg", c.App().Value("top1:sub1"))
 						return nil
 					},
 				},

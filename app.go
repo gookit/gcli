@@ -403,6 +403,7 @@ func (app *App) findCommandName() (name string) {
 		if app.IsCommand(realName) {
 			app.inputName = name
 			Debugf("the alias name: '<cyan>%s</>', real command: '<green>%s</>'", name, realName)
+			return realName
 		}
 
 		// not exists
