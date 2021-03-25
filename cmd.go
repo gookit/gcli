@@ -194,6 +194,7 @@ func (c *Command) AddSubs(sub *Command, more ...*Command) {
 // AddCommand add a sub command
 func (c *Command) AddCommand(sub *Command) {
 	// init command
+	sub.app = c.app
 	sub.parent = c
 	// inherit standalone value
 	sub.standalone = c.standalone

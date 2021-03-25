@@ -69,6 +69,11 @@ type App struct {
 	cleanArgs []string
 }
 
+// New alias of the NewApp()
+func New(fns ...func(app *App)) *App {
+	return NewApp(fns...)
+}
+
 // NewApp create new app instance.
 // Usage:
 // 	NewApp()
@@ -113,7 +118,6 @@ func NewApp(fns ...func(app *App)) *App {
 			fn(app)
 		}
 	}
-
 	return app
 }
 
@@ -225,15 +229,10 @@ func (app *App) AddCommander(cmder Commander) {
 }
 
 // AddAliases add alias names for a command
-func (app *App) AddAliases(command string, aliases ...string) {
-	app.addAliases(command, aliases, true)
-}
-
-// addAliases add alias names for a command
-func (app *App) addAliases(name string, aliases []string, sync bool) {
-	c, has := app.Command(name)
-	if !has {
-		panicf("The command '%s' is not exists", name)
+func (app *App) AddAliases(name string, aliases ...string) {
+	c := app.FindByPath(name)
+	if c == nil {
+		panicf("the command '%s' is not exists", name)
 	}
 
 	// add alias
@@ -243,11 +242,6 @@ func (app *App) addAliases(name string, aliases []string, sync bool) {
 		}
 
 		app.cmdAliases.AddAlias(name, alias)
-
-		// sync to Command
-		if sync {
-			c.Aliases = append(c.Aliases, alias)
-		}
 	}
 }
 
@@ -307,7 +301,7 @@ func (app *App) parseGlobalOpts(args []string) (ok bool) {
 // prepare to running, parse args, get command name and command args
 func (app *App) prepareRun() (code int, name string) {
 	// find command name.
-	name = app.findCommandName(app.args)
+	name = app.findCommandName()
 	// is help command name.
 	if name == HelpCommand {
 		if len(app.args) == 0 { // like 'help'
@@ -332,7 +326,7 @@ func (app *App) prepareRun() (code int, name string) {
 		return
 	}
 
-	// is not exist name.
+	// name is not empty, but is not command.
 	if app.inputName == "" {
 		Logf(VerbDebug, "input the command is not an registered: %s", name)
 		// display unknown input command and similar commands tips
@@ -345,12 +339,11 @@ func (app *App) prepareRun() (code int, name string) {
 	return GOON, name
 }
 
-func (app *App) findCommandName(args []string) (name string) {
+func (app *App) findCommandName() (name string) {
+	args := app.args
 	// not input command, will try run app.defaultCommand
 	if len(args) == 0 {
 		name = app.defaultCommand
-
-		// It is empty
 		if name == "" {
 			return
 		}
@@ -360,30 +353,67 @@ func (app *App) findCommandName(args []string) (name string) {
 			Logf(VerbError, "the default command '<cyan>%s</>' is invalid", name)
 			return "" // invalid, return empty string.
 		}
-
 		return name
 	}
 
 	name = args[0]
+	// is empty string or is an option
+	if name == "" || name[0] == '-' {
+		 return ""
+	}
 
-	// check first arg is valid name string.
+	Debugf("the raw input command name(args[0]) is '%s'", name)
+	if c := app.MatchByPath(name); c != nil {
+		// is command id. eg: "top:sub"
+		if strings.ContainsRune(name, ':') {
+			nodes := splitPath2names(name)
+			name = nodes[0]
+
+			app.args = append(nodes[1:], args[1:]...) // update app.args
+			Debugf("input is an command ID, expand it. now, command '%s', args: %v", name, app.args)
+		} else {
+			app.args = args[1:] // update app.args
+		}
+
+		app.inputName = name
+		Debugf("input command: '<cyan>%s</>', real command: '<green>%s</>'", args[0], name)
+		return name
+	}
+
+	// is valid name string.
 	if isValidCmdName(name) {
-		app.args = args[1:] // update args.
 		realName := app.ResolveAlias(name)
+		// is command id. eg: "top:sub"
+		if strings.ContainsRune(realName, ':') {
+			nodes := splitPath2names(realName)
+
+			bakName := realName
+			realName = nodes[0]
+			app.args = append(nodes[1:], args[1:]...)  // update app.args
+			Debugf("the '%s' is an command ID, expand it, command '%s', args: %v",
+				bakName,
+				realName,
+				app.args,
+			)
+		} else {
+			app.args = args[1:] // update app.args
+		}
 
 		// is valid command name.
 		if app.IsCommand(realName) {
 			app.inputName = name
-			Debugf("input command: '<cyan>%s</>', real command: '<green>%s</>'", name, realName)
+			Debugf("the alias name: '<cyan>%s</>', real command: '<green>%s</>'", name, realName)
 		}
 
-		return realName
+		// not exists
+		return name
 	}
 
 	return ""
 }
 
 // RunLine manual run an command by command line string.
+//
 // eg: app.RunLine("top --top-opt val0 sub --sub-opt val1 arg0")
 func (app *App) RunLine(argsLine string) int {
 	args := cliutil.ParseLine(argsLine)
@@ -469,6 +499,14 @@ func (app *App) doRunFunc(args []string) (code int) {
 
 func (app *App) exitOnEnd(code int) int {
 	Debugf("application exit with code: %d", code)
+	// if IsGteVerbose(VerbDebug) {
+	// 	app.Infoln("[DEBUG] The Runtime Call Stacks:")
+
+		// bts := goutil.GetCallStacks(true)
+		// app.Println(string(bts), len(bts))
+		// cs := goutil.GetCallersInfo(2, 10)
+		// app.Println(strings.Join(cs, "\n"), len(cs))
+	// }
 
 	if app.ExitOnEnd {
 		app.Exit(code)

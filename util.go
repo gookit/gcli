@@ -134,12 +134,40 @@ func parseTagValue(name, str string) (mp map[string]string) {
 // 	Exit(0)
 // }
 
+const (
+	// match an good option, argument name
+	regGoodName = `^[a-zA-Z][\w-]*$`
+	// match an good command name
+	regGoodCmdName = `^[a-zA-Z][\w-]*$`
+	// match command id. eg: "self:init"
+	regGoodCmdId = `^[a-zA-Z][\w:-]*$`
+	// match command path. eg: "self init"
+	// regGoodCmdPath = `^[a-zA-Z][\w -]*$`
+)
+
+var (
+	// good name for option and argument
+	goodName = regexp.MustCompile(regGoodName)
+	// match an good command name
+	goodCmdId = regexp.MustCompile(regGoodCmdId)
+	// match an good command name
+	goodCmdName = regexp.MustCompile(regGoodCmdName)
+)
+
 func isValidCmdName(name string) bool {
 	if name[0] == '-' { // is option name.
 		return false
 	}
 
 	return goodCmdName.MatchString(name)
+}
+
+func isValidCmdId(name string) bool {
+	if name[0] == '-' { // is option name.
+		return false
+	}
+
+	return goodCmdId.MatchString(name)
 }
 
 func aliasNameCheck(name string) {
@@ -219,10 +247,12 @@ func splitPath2names(path string) []string {
 	var names []string
 	path = strings.TrimSpace(path)
 	if path != "" {
-		if strings.ContainsRune(path, ' ') {
-			names = strings.Split(path, " ")
-		} else {
+		if strings.ContainsRune(path, ':') { // command ID
 			names = strings.Split(path, CommandSep)
+		} else if strings.ContainsRune(path, ' ') { // command path
+			names = strings.Split(path, " ")
+		} else  {
+			names = []string{path}
 		}
 	}
 

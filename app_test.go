@@ -32,14 +32,33 @@ var (
 			return nil
 		},
 	}
+
+	appWithMl = gcli.New(func(app *gcli.App) {
+		app.ExitOnEnd = false
+		app.Add(&gcli.Command{
+			Name: "top1",
+			Desc: "desc for top1",
+			Subs: []*gcli.Command{
+				{
+					Name: "sub1",
+					Desc: "desc for top1.sub1",
+					Func: func(c *gcli.Command, args []string) error {
+						c.SetValue("msg", c.App().Value("top1.sub1"))
+						return nil
+					},
+				},
+			},
+		})
+		app.Add(&gcli.Command{
+			Name: "top2",
+			Desc: "desc for top2",
+		})
+	})
 )
 
 func TestApp_MatchByPath(t *testing.T) {
 	// is := assert.New(t)
-	app := gcli.NewApp(func(a *gcli.App) {
-
-	})
-
+	app := gcli.NewApp()
 	app.Add(
 		gcli.NewCommand("cmd1", "desc"),
 		gcli.NewCommand("cmd2", "desc2"),
@@ -54,6 +73,9 @@ func TestApp_MatchByPath(t *testing.T) {
 	assert.NotNil(t, c)
 	assert.Equal(t, "sub", c.Name)
 	assert.Equal(t, "simple", c.ParentName())
+
+	c = appWithMl.FindByPath("top1:sub1")
+	assert.Equal(t, "sub1", c.Name)
 }
 
 func TestApp_Add(t *testing.T) {
@@ -261,6 +283,42 @@ func TestApp_Run_command_withOptions(t *testing.T) {
 
 	app.Run([]string{"test", "-h"})
 	is.Contains(buf.String(), "-o, --opt1 string")
+}
+
+func TestApp_Run_subcommand(t *testing.T) {
+	is := assert.New(t)
+	id := "top1:sub1"
+
+	appWithMl.SetValue(id, "TestApp_Run_subcommand")
+	appWithMl.Run([]string{"top1", "sub1"})
+
+	c := appWithMl.FindCommand(id)
+	is.NotEmpty(c)
+	is.Equal("TestApp_Run_subcommand", c.Value("msg"))
+}
+
+func TestApp_Run_by_cmd_ID(t *testing.T) {
+	is := assert.New(t)
+
+	appWithMl.SetValue("top1:sub1", "TestApp_Run_by_cmd_ID")
+	appWithMl.Run([]string{"top1:sub1"})
+
+	c := appWithMl.FindCommand("top1:sub1")
+	is.NotEmpty(c)
+	is.Equal("TestApp_Run_by_cmd_ID", c.Value("msg"))
+}
+
+func TestApp_AddAliases_and_run(t *testing.T) {
+	is := assert.New(t)
+	id := "top1:sub1"
+
+	appWithMl.AddAliases(id, "ts1")
+	appWithMl.SetValue(id, "TestApp_AddAliases_and_run")
+	appWithMl.Run([]string{"ts1"})
+
+	c := appWithMl.FindCommand(id)
+	is.NotEmpty(c)
+	is.Equal("TestApp_AddAliases_and_run", c.Value("msg"))
 }
 
 func TestApp_showCommandHelp(t *testing.T) {

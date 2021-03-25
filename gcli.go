@@ -11,7 +11,6 @@ package gcli
 import (
 	"fmt"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
 )
@@ -27,11 +26,6 @@ const (
 	CommandSep = ":"
 	// HelpCommand name
 	HelpCommand = "help"
-	// match an good option, argument name
-	regGoodName = `^[a-zA-Z][\w-]*$`
-	// match an good command name
-	// regGoodCmdName = `^[a-zA-Z][\w:-]*$`
-	regGoodCmdName = `^[a-zA-Z][\w-]*$`
 )
 
 // constants for error level (quiet 0 - 5 crazy)
@@ -77,11 +71,6 @@ var (
 	version = "3.0.0"
 	// CommitID the gcli last commit ID
 	commitID = "z20210214"
-
-	// good name for option and argument
-	goodName = regexp.MustCompile(regGoodName)
-	// match an good command name
-	goodCmdName = regexp.MustCompile(regGoodCmdName)
 )
 
 // init
@@ -151,6 +140,11 @@ func StrictMode() bool {
 // SetStrictMode for parse flags
 func SetStrictMode(strict bool) {
 	gOpts.SetStrictMode(strict)
+}
+
+// IsGtVerbose get is strict mode
+func IsGteVerbose(verb VerbLevel) bool {
+	return gOpts.verbose >= verb
 }
 
 // binding global options

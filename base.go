@@ -16,13 +16,13 @@ import (
 // core definition TODO rename to context ??
 type core struct {
 	*cmdLine
-	SimplePrinter
-	// HelpVars help template vars.
-	HelpVars
 	// Hooks manage. allowed hooks: "init", "before", "after", "error"
 	*Hooks
+	// HelpVars help template vars.
+	HelpVars
 	// global options flag set
 	gFlags *Flags
+	SimplePrinter
 	// GOptsBinder you can custom binding global options
 	GOptsBinder func(gf *Flags)
 }
@@ -190,7 +190,7 @@ func newCmdLine() *cmdLine {
 		// more info
 		osName:  runtime.GOOS,
 		workDir: workDir,
-		binDir: filepath.Dir(binFile),
+		binDir:  filepath.Dir(binFile),
 		binFile: binFile,
 		binName: filepath.Base(binFile),
 		argLine: strings.Join(os.Args[1:], " "),
@@ -469,7 +469,17 @@ func (b *commandBase) Match(names []string) *Command {
 	return c
 }
 
-// Match command by path. eg. "top:sub" or "top sub"
+// FindCommand command by path. eg. "top:sub" or "top sub"
+func (b *commandBase) FindCommand(path string) *Command {
+	return b.Match(splitPath2names(path))
+}
+
+// FindByPath command by path. eg. "top:sub" or "top sub"
+func (b *commandBase) FindByPath(path string) *Command {
+	return b.Match(splitPath2names(path))
+}
+
+// MatchByPath command by path. eg. "top:sub" or "top sub"
 func (b *commandBase) MatchByPath(path string) *Command {
 	return b.Match(splitPath2names(path))
 }
