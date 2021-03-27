@@ -53,13 +53,15 @@ func logf(level VerbLevel, format string, v ...interface{}) {
 	color.Printf("GCli: [%s] [%s(), %s:%d] %s\n", name, fnName, fName, line, fmt.Sprintf(format, v...))
 }
 
-func defaultErrHandler(data ...interface{}) {
+func defaultErrHandler(data ...interface{}) bool {
 	if len(data) == 2 && data[1] != nil {
 		if err, ok := data[1].(error); ok {
 			color.Error.Tips(err.Error())
 			// fmt.Println(color.Red.Render("ERROR:"), err.Error())
 		}
 	}
+
+	return true
 }
 
 func name2verbLevel(name string) VerbLevel {
@@ -251,7 +253,7 @@ func splitPath2names(path string) []string {
 			names = strings.Split(path, CommandSep)
 		} else if strings.ContainsRune(path, ' ') { // command path
 			names = strings.Split(path, " ")
-		} else  {
+		} else {
 			names = []string{path}
 		}
 	}

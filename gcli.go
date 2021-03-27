@@ -158,6 +158,13 @@ func bindingCommonGOpts(fs *Flags) {
 	fs.BoolOpt(&gOpts.noInteractive, "no-interactive", "", gOpts.noInteractive, "Disable interactive confirmation operations")
 }
 
+// Commander interface
+type Commander interface {
+	// Run([]string) int
+	Value(string) interface{}
+	SetValue(string, interface{})
+}
+
 /*************************************************************************
  * global options
  *************************************************************************/

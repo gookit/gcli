@@ -360,8 +360,8 @@ func TestFlags_FromStruct_simple(t *testing.T) {
 	fs := gcli.NewFlags("test")
 
 	type userOpts0 struct {
-		Int int `flag:"name=int0;shorts=i;required=true;desc=int option message"`
-		Bol bool `flag:"name=bol;shorts=b;default=true;desc=bool option message"`
+		Int int    `flag:"name=int0;shorts=i;required=true;desc=int option message"`
+		Bol bool   `flag:"name=bol;shorts=b;default=true;desc=bool option message"`
 		Str string `flag:"name=str1;shorts=o,h;required=true;desc=str1 message"`
 	}
 
@@ -386,7 +386,7 @@ func TestFlags_FromStruct_simple(t *testing.T) {
 
 func TestFlags_FromStruct_ptrField(t *testing.T) {
 	type userOpts struct {
-		Int *int `flag:"shorts=i;default=13;desc=int option message"`
+		Int *int    `flag:"shorts=i;default=13;desc=int option message"`
 		Str *string `flag:"name=str2;required=true;desc=str2 message"`
 	}
 
@@ -419,8 +419,8 @@ func TestFlags_FromStruct_ptrField(t *testing.T) {
 
 func TestFlags_FromStruct(t *testing.T) {
 	type userOpts struct {
-		Int int `flag:"name=int0;shorts=i;required=true;desc=int option message"`
-		Bol bool `flag:"name=bol;shorts=b;desc=bool option message"`
+		Int  int    `flag:"name=int0;shorts=i;required=true;desc=int option message"`
+		Bol  bool   `flag:"name=bol;shorts=b;desc=bool option message"`
 		Str1 string `flag:"name=str1;shorts=o,h;required=true;desc=str1 message"`
 		// use ptr
 		Str2 *string `flag:"name=str2;required=true;desc=str2 message"`
@@ -434,7 +434,7 @@ func TestFlags_FromStruct(t *testing.T) {
 	verb := gcli.VerbWarn
 	fs := gcli.NewFlags("test")
 	err := fs.FromStruct(&userOpts{
-		Str2: &astr,
+		Str2:  &astr,
 		Verb1: &verb,
 	})
 	assert.NoError(t, err)

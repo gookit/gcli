@@ -10,7 +10,9 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/structs"
+	"github.com/gookit/goutil/strutil"
 )
 
 // core definition TODO rename to context ??
@@ -108,9 +110,77 @@ func (s SimplePrinter) Errorln(a ...interface{}) {
 	color.Error.Println(a...)
 }
 
+// simple map[string]interface{} struct
+type mapData struct {
+	data map[string]interface{}
+}
+
+// Data get all
+func (md *mapData) Data() map[string]interface{} {
+	return md.data
+}
+
+// SetData set all data
+func (md *mapData) SetData(data map[string]interface{}) {
+	md.data = data
+}
+
+// Value get from data
+func (md *mapData) Value(key string) interface{} {
+	return md.data[key]
+}
+
+// StrValue get from data
+func (md *mapData) StrValue(key string) string {
+	return strutil.MustString(md.data[key])
+}
+
+// IntValue get from data
+func (md *mapData) IntValue(key string) int {
+	return mathutil.MustInt(md.data[key])
+}
+
+// SetValue to data
+func (md *mapData) SetValue(key string, val interface{}) {
+	if md.data == nil {
+		md.data = make(map[string]interface{})
+	}
+	md.data[key] = val
+}
+
+// ClearData all data
+func (md *mapData) ClearData() {
+	md.data = nil
+}
+
 /*************************************************************
  * simple events manage
  *************************************************************/
+
+// HookFunc definition.
+// func arguments:
+//  in app, like: func(app *App, data ...interface{})
+//  in cmd, like: func(cmd *Command, data ...interface{})
+// type HookFunc func(obj interface{}, data interface{})
+// return:
+// - True go on handle. default is True
+// - False stop goon handle.
+type HookFunc func(data ...interface{}) bool
+
+// HookCtx struct
+type HookCtx struct {
+	mapData
+	App *App
+	Cmd *Command
+
+	name string
+	data map[string]interface{}
+}
+
+// Name of event
+func (hc *HookCtx) Name() string {
+	return hc.name
+}
 
 // Hooks struct
 type Hooks struct {
@@ -137,10 +207,12 @@ func (h *Hooks) AddOn(name string, handler HookFunc) {
 }
 
 // Fire event by name, allow with event data
-func (h *Hooks) Fire(event string, data ...interface{}) {
+func (h *Hooks) Fire(event string, data ...interface{}) bool {
 	if handler, ok := h.hooks[event]; ok {
-		handler(data...)
+		return handler(data...)
 	}
+
+	return true
 }
 
 // HasHook register
@@ -314,6 +386,7 @@ func (hv *HelpVars) ReplaceVars(input string) string {
 
 // will inject to every Command
 type commandBase struct {
+	mapData
 	// Logo ASCII logo setting
 	Logo *Logo
 	// Version app version. like "1.0.1"
@@ -349,8 +422,6 @@ type commandBase struct {
 
 	// store some runtime errors
 	errors []error
-	// TODO simple context data map
-	data map[string]interface{}
 }
 
 func newCommandBase() commandBase {
@@ -529,27 +600,4 @@ func (b *commandBase) CmdAliases() *structs.Aliases {
 // AliasesMapping get cmd aliases mapping
 func (b *commandBase) AliasesMapping() map[string]string {
 	return b.cmdAliases.Mapping()
-}
-
-// Data get
-func (b *commandBase) Data() map[string]interface{} {
-	return b.data
-}
-
-// SetData to cmd
-func (b *commandBase) SetData(data map[string]interface{}) {
-	b.data = data
-}
-
-// Value get from b.data
-func (b *commandBase) Value(key string) interface{} {
-	return b.data[key]
-}
-
-// SetValue to b.data
-func (b *commandBase) SetValue(key string, val interface{}) {
-	if b.data == nil {
-		b.data = make(map[string]interface{})
-	}
-	b.data[key] = val
 }

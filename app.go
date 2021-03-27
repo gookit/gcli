@@ -16,15 +16,8 @@ import (
  * CLI application
  *************************************************************/
 
-// HookFunc definition.
-// func arguments:
-//  in app, like: func(app *App, data interface{})
-//  in cmd, like: func(cmd *Command, data interface{})
-// type HookFunc func(obj interface{}, data interface{})
-type HookFunc func(obj ...interface{})
-
-// Commander interface definition
-type Commander interface {
+// Handler interface definition
+type Handler interface {
 	// Creator for create new command
 	Creator() *Command
 	// Config bind Flags or Arguments for the command
@@ -42,10 +35,11 @@ type Logo struct {
 // App the cli app definition
 type App struct {
 	// internal use
+	// - *cmdLine
+	// - HelpVars
+	// - Hooks // allow hooks: "init", "before", "after", "error"
 	core
-	// *cmdLine
-	// HelpVars
-	// Hooks // allow hooks: "init", "before", "after", "error"
+	// for manager commands
 	commandBase
 
 	// Name app name
@@ -62,7 +56,7 @@ type App struct {
 	// args on after parse global options and command name.
 	args []string
 	// all commands by module TODO remove
-	moduleCommands map[string]map[string]*Command
+	// moduleCommands map[string]map[string]*Command
 
 	// rawFlagArgs []string
 	// clean os.args, not contains bin-name and command-name
@@ -218,13 +212,15 @@ func (app *App) AddCommand(c *Command) {
 	app.commandBase.addCommand(app.Name, c)
 }
 
-// AddCommander to the application
-func (app *App) AddCommander(cmder Commander) {
-	c := cmder.Creator()
-	c.Func = cmder.Execute
+// AddHandler to the application
+func (app *App) AddHandler(h Handler) {
+	c := h.Creator()
+	c.Func = h.Execute
 
 	// binding flags
-	cmder.Config(c)
+	h.Config(c)
+
+	// add
 	app.AddCommand(c)
 }
 
@@ -329,8 +325,11 @@ func (app *App) prepareRun() (code int, name string) {
 	// name is not empty, but is not command.
 	if app.inputName == "" {
 		Logf(VerbDebug, "input the command is not an registered: %s", name)
-		// display unknown input command and similar commands tips
-		app.showCommandTips(name)
+
+		if ok := app.fireEvent(EvtCmdNotFound, name); ok {
+			// display unknown input command and similar commands tips
+			app.showCommandTips(name)
+		}
 		return
 	}
 
@@ -359,7 +358,7 @@ func (app *App) findCommandName() (name string) {
 	name = args[0]
 	// is empty string or is an option
 	if name == "" || name[0] == '-' {
-		 return ""
+		return ""
 	}
 
 	Debugf("the raw input command name(args[0]) is '%s'", name)
@@ -389,7 +388,7 @@ func (app *App) findCommandName() (name string) {
 
 			bakName := realName
 			realName = nodes[0]
-			app.args = append(nodes[1:], args[1:]...)  // update app.args
+			app.args = append(nodes[1:], args[1:]...) // update app.args
 			Debugf("the '%s' is an command ID, expand it, command '%s', args: %v",
 				bakName,
 				realName,
@@ -503,10 +502,10 @@ func (app *App) exitOnEnd(code int) int {
 	// if IsGteVerbose(VerbDebug) {
 	// 	app.Infoln("[DEBUG] The Runtime Call Stacks:")
 
-		// bts := goutil.GetCallStacks(true)
-		// app.Println(string(bts), len(bts))
-		// cs := goutil.GetCallersInfo(2, 10)
-		// app.Println(strings.Join(cs, "\n"), len(cs))
+	// bts := goutil.GetCallStacks(true)
+	// app.Println(string(bts), len(bts))
+	// cs := goutil.GetCallersInfo(2, 10)
+	// app.Println(strings.Join(cs, "\n"), len(cs))
 	// }
 
 	if app.ExitOnEnd {
@@ -519,6 +518,12 @@ func (app *App) exitOnEnd(code int) int {
 // name can be:
 // - top command name in the app. 'top'
 // - command path in the app. 'top sub'
+//
+// Usage:
+//	app.Exec("top")
+//	app.Exec("top:sub")
+//	app.Exec("top sub")
+//	app.Exec("top sub", []string{"-a", "val0", "arg0"})
 func (app *App) Exec(path string, args []string) error {
 	cmd := app.MatchByPath(path)
 	if cmd == nil {
@@ -562,10 +567,10 @@ func (app *App) On(name string, handler HookFunc) {
 	app.core.On(name, handler)
 }
 
-func (app *App) fireEvent(event string, data interface{}) {
+func (app *App) fireEvent(event string, data interface{}) bool {
 	Debugf("trigger the application event: <green>%s</>", event)
 
-	app.core.Fire(event, app, data)
+	return app.core.Fire(event, app, data)
 }
 
 /*************************************************************

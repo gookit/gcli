@@ -147,8 +147,8 @@ var r = &gcli.Command{
 		},
 		// l1: sub command 2
 		{
-			Name: "pull",
-			Desc: "the pull command for git",
+			Name:    "pull",
+			Desc:    "the pull command for git",
 			Aliases: []string{"pul"},
 			Func: func(c *gcli.Command, args []string) error {
 				bf.WriteString("command path: " + c.Path())
@@ -182,8 +182,8 @@ var r = &gcli.Command{
 				},
 				// l2: sub command 5
 				{
-					Name: "set-url",
-					Desc: "set-url command for git remote",
+					Name:    "set-url",
+					Desc:    "set-url command for git remote",
 					Aliases: []string{"su"},
 					Func: func(c *gcli.Command, args []string) error {
 						bf.WriteString("command path: " + c.Path())

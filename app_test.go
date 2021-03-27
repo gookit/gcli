@@ -8,6 +8,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/dump"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,7 +21,8 @@ var (
 		Name: "simple",
 		Desc: "an simple command",
 		Func: func(c *gcli.Command, args []string) error {
-			fmt.Println(c.Path(), args)
+			dump.Println(c.Path(), args)
+			c.SetValue("simple", "simple command")
 			return nil
 		},
 	}
@@ -432,7 +434,7 @@ func TestApp_showCommandTips(t *testing.T) {
 func TestApp_AddCommander(t *testing.T) {
 	app := gcli.NewApp()
 
-	app.AddCommander(&UserCommand{})
+	app.AddHandler(&UserCommand{})
 
 	assert.True(t, app.HasCommand("test"))
 }
