@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/dump"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -20,13 +21,13 @@ func newNotExitApp(fns ...func(app *gcli.App)) *gcli.App {
 	return cli
 }
 
-func TestApp_Hooks(t *testing.T) {
+func TestApp_Hooks_EvtAppInit(t *testing.T) {
 	buf.Reset()
 
 	cli := newNotExitApp()
 	cli.On(gcli.EvtAppInit, func(data ...interface{}) bool {
 		buf.WriteString("trigger " + gcli.EvtAppInit)
-		return true
+		return false
 	})
 	cli.Add(simpleCmd)
 	assert.Equal(t, "trigger "+gcli.EvtAppInit, buf.String())
@@ -34,10 +35,52 @@ func TestApp_Hooks(t *testing.T) {
 	buf.Reset()
 	cli.On(gcli.EvtGOptionsParsed, func(data ...interface{}) bool {
 		buf.WriteString("trigger " + gcli.EvtGOptionsParsed + ", args:" + fmt.Sprintf("%v", data[1]))
-		return true
+		return false
 	})
 	cli.Run([]string{"simple"})
 	assert.Equal(t, "trigger "+gcli.EvtGOptionsParsed+", args:[simple]", buf.String())
+}
+
+func TestApp_Hooks_EvtCmdInit(t *testing.T) {
+	buf.Reset()
+
+	cli := newNotExitApp()
+	cli.On(gcli.EvtCmdInit, func(data ...interface{}) (stop bool) {
+		buf.WriteString(gcli.EvtCmdInit)
+		buf.WriteString(":")
+
+		c := data[1].(*gcli.Command)
+		buf.WriteString(c.Name + ";")
+		return
+	})
+
+	cli.Add(emptyCmd)
+	assert.Equal(t, "cmd.init:empty;", buf.String())
+
+	cli.Add(simpleCmd)
+	assert.Equal(t, "cmd.init:empty;cmd.init:simple;", buf.String())
+}
+
+func TestCommand_Hooks_EvtCmdOptParsed(t *testing.T) {
+	buf.Reset()
+
+	cli := newNotExitApp()
+	cli.Add(&gcli.Command{
+		Name: "test",
+		Desc: "desc",
+		Config: func(c *gcli.Command) {
+			buf.WriteString("run config;")
+			c.On(gcli.EvtCmdOptParsed, func(data ...interface{}) (stop bool) {
+				dump.P(data[1])
+				buf.WriteString(gcli.EvtCmdOptParsed)
+				return
+			})
+		},
+	})
+	assert.Contains(t, buf.String(), "run config;")
+
+	cli.Run([]string{"test"})
+	assert.Contains(t, buf.String(), gcli.EvtCmdOptParsed)
 }
 
 func TestApp_On_CmdNotFound(t *testing.T) {
@@ -50,7 +93,7 @@ func TestApp_On_CmdNotFound(t *testing.T) {
 	cli.On(gcli.EvtCmdNotFound, func(data ...interface{}) bool {
 		buf.WriteString("trigger: " + gcli.EvtCmdNotFound)
 		buf.WriteString("; command: " + fmt.Sprint(data[1]))
-		return true
+		return false
 	})
 
 	cli.Run([]string{"top"})
@@ -61,7 +104,7 @@ func TestApp_On_CmdNotFound(t *testing.T) {
 	cli.On(gcli.EvtCmdNotFound, func(data ...interface{}) bool {
 		buf.WriteString("trigger: " + gcli.EvtCmdNotFound)
 		buf.WriteString("; command: " + fmt.Sprint(data[1]))
-		return false
+		return true
 	})
 
 	cli.Run([]string{"top"})
@@ -86,7 +129,7 @@ func TestApp_On_CmdNotFound_redirect(t *testing.T) {
 		err := app.Exec("simple", nil)
 		assert.NoError(t, err)
 		buf.WriteString("value:" + simpleCmd.StrValue("simple"))
-		return false
+		return true
 	})
 
 	cli.Run([]string{"top"})

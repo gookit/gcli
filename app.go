@@ -174,8 +174,8 @@ func (app *App) initialize() {
 	app.bindingGlobalOpts()
 
 	// add default error handler.
-	if !app.HasHook(EvtAppError) {
-		app.On(EvtAppError, defaultErrHandler)
+	if !app.HasHook(EvtAppRunError) {
+		app.On(EvtAppRunError, defaultErrHandler)
 	}
 
 	app.fireEvent(EvtAppInit, nil)
@@ -210,6 +210,8 @@ func (app *App) AddCommand(c *Command) {
 
 	// do add command
 	app.commandBase.addCommand(app.Name, c)
+
+	app.fireEvent(EvtCmdInit, c)
 }
 
 // AddHandler to the application
@@ -326,7 +328,7 @@ func (app *App) prepareRun() (code int, name string) {
 	if app.inputName == "" {
 		Logf(VerbDebug, "input the command is not an registered: %s", name)
 
-		if ok := app.fireEvent(EvtCmdNotFound, name); ok {
+		if stop := app.fireEvent(EvtCmdNotFound, name); stop == false {
 			// display unknown input command and similar commands tips
 			app.showCommandTips(name)
 		}
@@ -453,7 +455,7 @@ func (app *App) Run(args []string) (code int) {
 	}
 
 	// trigger event
-	app.fireEvent(EvtAppPrepareAfter, app)
+	app.fireEvent(EvtAppPrepareAfter, name)
 
 	// do run input command
 	code = app.doRunCmd(name, app.args)
@@ -464,7 +466,7 @@ func (app *App) Run(args []string) (code int) {
 
 func (app *App) doRunCmd(name string, args []string) (code int) {
 	cmd := app.GetCommand(name)
-	app.fireEvent(EvtAppBefore, cmd.Copy())
+	app.fireEvent(EvtAppRunBefore, cmd)
 
 	Debugf("will run app command '%s' with args: %v", name, args)
 
@@ -475,9 +477,9 @@ func (app *App) doRunCmd(name string, args []string) (code int) {
 	// if err := cmd.innerExecute(args, true); err != nil {
 	if err := cmd.innerDispatch(args); err != nil {
 		code = ERR
-		app.fireEvent(EvtAppError, err)
+		app.fireEvent(EvtAppRunError, err)
 	} else {
-		app.fireEvent(EvtAppAfter, nil)
+		app.fireEvent(EvtAppRunAfter, nil)
 	}
 	return
 }
@@ -489,9 +491,9 @@ func (app *App) doRunFunc(args []string) (code int) {
 	// do execute command
 	if err := app.Func(app, args); err != nil {
 		code = ERR
-		app.fireEvent(EvtAppError, err)
+		app.fireEvent(EvtAppRunError, err)
 	} else {
-		app.fireEvent(EvtAppAfter, nil)
+		app.fireEvent(EvtAppRunAfter, nil)
 	}
 
 	return

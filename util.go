@@ -53,7 +53,7 @@ func logf(level VerbLevel, format string, v ...interface{}) {
 	color.Printf("GCli: [%s] [%s(), %s:%d] %s\n", name, fnName, fName, line, fmt.Sprintf(format, v...))
 }
 
-func defaultErrHandler(data ...interface{}) bool {
+func defaultErrHandler(data ...interface{}) (stop bool) {
 	if len(data) == 2 && data[1] != nil {
 		if err, ok := data[1].(error); ok {
 			color.Error.Tips(err.Error())
@@ -61,7 +61,7 @@ func defaultErrHandler(data ...interface{}) bool {
 		}
 	}
 
-	return true
+	return
 }
 
 func name2verbLevel(name string) VerbLevel {

@@ -383,8 +383,8 @@ func (c *Command) Run(args []string) (err error) {
 	c.initialize()
 
 	// add default error handler.
-	if !c.HasHook(EvtCmdError) {
-		c.On(EvtCmdError, defaultErrHandler)
+	if !c.HasHook(EvtCmdRunError) {
+		c.On(EvtCmdRunError, defaultErrHandler)
 	}
 
 	// binding global options
@@ -428,7 +428,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 		c.Fire(EvtGOptionsParsed, args)
 	}
 
-	c.Fire(EvtCmdOptParsed, c.Name, args)
+	c.Fire(EvtCmdOptParsed, args)
 	Debugf("cmd: %s - remaining args on options parsed: %v", c.Name, args)
 
 	// find sub command
@@ -523,12 +523,12 @@ func (c *Command) doExecute(args []string) (err error) {
 	// collect and binding named argument
 	Debugf("cmd: %s - collect and binding named argument", c.Name)
 	if err := c.ParseArgs(args); err != nil {
-		c.Fire(EvtCmdError, err)
+		c.Fire(EvtCmdRunError, err)
 		Logf(VerbCrazy, "binding command '%s' arguments err: <red>%s</>", c.Name, err.Error())
 		return err
 	}
 
-	c.Fire(EvtCmdBefore, args)
+	c.Fire(EvtCmdRunBefore, args)
 
 	// do call command handler func
 	if c.Func == nil {
@@ -539,9 +539,9 @@ func (c *Command) doExecute(args []string) (err error) {
 	}
 
 	if err != nil {
-		c.Fire(EvtCmdError, err)
+		c.Fire(EvtCmdRunError, err)
 	} else {
-		c.Fire(EvtCmdAfter, nil)
+		c.Fire(EvtCmdRunAfter, nil)
 	}
 	return
 }
@@ -730,7 +730,7 @@ func (c *Command) goodName() string {
 }
 
 // Fire event handler by name
-func (c *Command) Fire(event string, data ...interface{}) {
+func (c *Command) Fire(event string, data interface{}) {
 	Debugf("cmd: %s - trigger the event: <mga>%s</>", c.Name, event)
 
 	c.Hooks.Fire(event, c, data)
@@ -748,7 +748,7 @@ func (c *Command) Copy() *Command {
 	nc := *c
 	// reset some fields
 	nc.Func = nil
-	nc.Hooks.ClearHooks()
+	nc.Hooks.ClearHooks() // TODO bug, will clear c.Hooks
 	// nc.Flags = flag.FlagSet{}
 
 	return &nc

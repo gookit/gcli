@@ -23,7 +23,7 @@ func main() {
 		app.On(gcli.EvtAppInit, func(data ...interface{}) bool {
 			// do something...
 			// fmt.Println("init app")
-			return true
+			return false
 		})
 
 		// app.SetVerbose(gcli.VerbDebug)

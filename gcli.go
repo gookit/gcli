@@ -40,21 +40,27 @@ const (
 
 // constants for hooks event, there are default allowed event names
 const (
-	EvtAppInit   = "app.init"
-	EvtAppBefore = "app.run.before"
-	EvtAppAfter  = "app.run.after"
-	EvtAppError  = "app.run.error"
+	EvtAppInit = "app.init"
+
+	EvtAppPrepareAfter = "app.prepare.after"
+
+	EvtAppRunBefore = "app.run.before"
+	EvtAppRunAfter  = "app.run.after"
+	EvtAppRunError  = "app.run.error"
 
 	EvtCmdInit = "cmd.init"
 
-	EvtCmdNotFound  = "cmd.not.found"
+	// app or sub command not found
+	EvtCmdNotFound = "cmd.not.found"
+	// app command not found
+	EvtAppCmdNotFound = "app.cmd.not.found"
+	// sub command not found
+	EvtSubCmdNotFound = "cmd.sub.not.found"
+
 	EvtCmdOptParsed = "cmd.opts.parsed"
-
-	EvtCmdBefore = "cmd.run.before"
-	EvtCmdAfter  = "cmd.run.after"
-	EvtCmdError  = "cmd.run.error"
-
-	EvtAppPrepareAfter = "app.prepare.after"
+	EvtCmdRunBefore = "cmd.run.before"
+	EvtCmdRunAfter  = "cmd.run.after"
+	EvtCmdRunError  = "cmd.run.error"
 
 	EvtGOptionsParsed = "gcli.gopts.parsed"
 	// EvtStop   = "stop"

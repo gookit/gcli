@@ -165,7 +165,7 @@ func (md *mapData) ClearData() {
 // return:
 // - True go on handle. default is True
 // - False stop goon handle.
-type HookFunc func(data ...interface{}) bool
+type HookFunc func(data ...interface{}) (stop bool)
 
 // HookCtx struct
 type HookCtx struct {
@@ -212,7 +212,7 @@ func (h *Hooks) Fire(event string, data ...interface{}) bool {
 		return handler(data...)
 	}
 
-	return true
+	return false
 }
 
 // HasHook register
