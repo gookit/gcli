@@ -12,42 +12,39 @@ type spinnerDemo struct {
 	themeNum int
 }
 
-func SpinnerDemoCmd() *gcli.Command {
-	sd := &spinnerDemo{}
+var spOpts = spinnerDemo{}
 
-	return &gcli.Command{
-		Name:    "spinner",
-		Desc:    "there are some CLI spinner bar run demos",
-		Aliases: []string{"spr", "spr-demo"},
-		Func:    sd.Run,
-		Config: func(c *gcli.Command) {
-			c.IntOpt(&sd.speed, "speed", "s", 100, "setting the spinner running speed")
-			c.IntOpt(&sd.themeNum, "theme-num", "t", 0, "setting the theme numbering. allow: 0 - 16")
+var SpinnerDemo = &gcli.Command{
+	Name:    "spinner",
+	Desc:    "there are some CLI spinner bar run demos",
+	Aliases: []string{"spr", "spr-demo"},
+	// Func:    spOpts.Run,
+	Config: func(c *gcli.Command) {
+		c.IntOpt(&spOpts.speed, "speed", "s", 100, "setting the spinner running speed")
+		c.IntOpt(&spOpts.themeNum, "theme-num", "t", 0, "setting the theme numbering. allow: 0 - 16")
 
-			c.AddArg("name",
-				"spinner type name. allow: loading,roundTrip",
-				false,
-			)
-		},
-		Examples: `Loading spinner:
+		c.AddArg("name",
+			"spinner type name. allow: loading,roundTrip",
+			false,
+		)
+	},
+	Examples: `Loading spinner:
   {$fullCmd} loading
 roundTrip spinner:
   {$fullCmd} roundTrip`,
-	}
-}
+	Func: func(c *gcli.Command, _ []string) error {
+		name := c.Arg("name").String()
 
-func (sd *spinnerDemo) Run(c *gcli.Command, _ []string) error {
-	name := c.Arg("name").String()
-
-	switch name {
-	case "", "spinner", "load", "loading":
-		sd.runLoadingSpinner()
-	case "rt", "roundTrip":
-		sd.runRoundTripSpinner()
-	default:
-		return c.Errorf("the spinner type name only allow: loading,roundTrip. input is: %s", name)
-	}
-	return nil
+		switch name {
+		case "", "spinner", "load", "loading":
+			spOpts.runLoadingSpinner()
+		case "rt", "roundTrip":
+			spOpts.runRoundTripSpinner()
+		default:
+			return c.Errorf("the spinner type name only allow: loading,roundTrip. input is: %s", name)
+		}
+		return nil
+	},
 }
 
 func (sd *spinnerDemo) runRoundTripSpinner() {

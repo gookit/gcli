@@ -10,17 +10,18 @@ import (
 	"github.com/gookit/gcli/v3/show/emoji"
 )
 
-// InteractDemoCommand create
-func InteractDemoCommand() *gcli.Command {
-	c := &gcli.Command{
-		Name:    "interact",
-		Func:    interactDemo,
-		Aliases: []string{"itt"},
-		Desc:    "the command will show some interactive methods",
-		Examples: `{$fullCmd} confirm
+var InteractDemo = &gcli.Command{
+	Name:    "interact",
+	Func:    interactDemo,
+	Aliases: []string{"itt"},
+	Config: func(c *gcli.Command) {
+		c.AddArg("name", "want running interact method name", true)
+	},
+	Desc: "the command will show some interactive methods",
+	Examples: `{$fullCmd} confirm
   {$fullCmd} select
 `,
-		Help: `
+	Help: `
 Supported interactive methods:
   read           read user input text
   answerIsYes    check user answer is Yes
@@ -29,10 +30,6 @@ Supported interactive methods:
   password       read user hidden input
   multiSelect    select multi from given options
 `,
-	}
-
-	c.AddArg("name", "want running interact method name", true)
-	return c
 }
 
 var funcMap = map[string]func(c *gcli.Command){

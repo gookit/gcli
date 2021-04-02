@@ -464,6 +464,11 @@ func (b *commandBase) SetDefaultCommand(name string) {
 	b.defaultCommand = name
 }
 
+// HasCommands on the cmd/app
+func (b *commandBase) HasCommands() bool {
+	return len(b.cmdNames) > 0
+}
+
 // HasCommand name check
 func (b *commandBase) HasCommand(name string) bool {
 	_, has := b.cmdNames[name]

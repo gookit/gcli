@@ -50,11 +50,12 @@ func main() {
 	app.Add(cmd.EnvInfoCommand())
 	app.Add(cmd.ColorCommand(), cmd.EmojiDemoCmd())
 	app.Add(
-		cmd.ShowDemoCommand(),
-		cmd.ProgressDemoCmd(),
-		cmd.SpinnerDemoCmd(),
-		cmd.InteractDemoCommand(),
+		cmd.ShowDemo,
+		cmd.ProgressDemo,
+		cmd.SpinnerDemo,
+		cmd.InteractDemo,
 	)
+
 	app.Add(builtin.GenEmojiMapCommand())
 	app.Add(builtin.GenAutoComplete())
 

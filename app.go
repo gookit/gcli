@@ -61,6 +61,8 @@ type App struct {
 	// rawFlagArgs []string
 	// clean os.args, not contains bin-name and command-name
 	cleanArgs []string
+	// has sub-commands on the app
+	hasSubcommands bool
 }
 
 // New alias of the NewApp()
@@ -210,6 +212,10 @@ func (app *App) AddCommand(c *Command) {
 
 	// do add command
 	app.commandBase.addCommand(app.Name, c)
+
+	if c.HasCommands() {
+		app.hasSubcommands = true
+	}
 
 	app.fireEvent(EvtCmdInit, c)
 }
@@ -562,6 +568,11 @@ func (app *App) CommandName() string {
 	return app.commandName
 }
 
+// HasSubcommands on the app
+func (app *App) HasSubcommands() bool {
+	return app.hasSubcommands
+}
+
 // On add hook handler for a hook event
 func (app *App) On(name string, handler HookFunc) {
 	Debugf("register application hook: %s", name)
@@ -607,6 +618,8 @@ func (app *App) showCommandTips(name string) {
 }
 
 // AppHelpTemplate help template for app(all commands)
+// TODO {{if .HasSubcommands }}  {$binName} [global options...] <info>COMMAND</> [--options ...] <info>SUBCOMMAND</> [--options ...] [arguments ...]
+// {{end}}
 var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
 <comment>Usage:</>
   {$binName} [global options...] <info>COMMAND</> [--options ...] [arguments ...]

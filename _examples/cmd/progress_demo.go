@@ -9,73 +9,65 @@ import (
 	"github.com/gookit/gcli/v3/progress"
 )
 
-type progressDemo struct {
+var pdOpts = struct {
 	maxSteps  int
 	overwrite, random bool
 
 	handlers map[string]func(int)
-}
+}{}
 
-var pd = &progressDemo{}
+var ProgressDemo = &gcli.Command{
+	Name:    "prog",
+	Desc:    "there are some progress bar run demos",
+	Aliases: []string{"prg-demo", "progress"},
+	// Subs: []*gcli.Command{},
+	Config: func(c *gcli.Command) {
+		c.IntOpt(&pdOpts.maxSteps, "max-step", "", 100, "setting the max step value")
+		c.BoolOpt(&pdOpts.overwrite, "overwrite", "o", true, "setting overwrite progress bar line")
+		c.BoolVar(&pdOpts.random, &gcli.FlagMeta{Name: "random", Desc: "use random style for progress bar"})
 
-func ProgressDemoCmd() *gcli.Command {
-	c := &gcli.Command{
-		Name:    "prog",
-		Desc:    "there are some progress bar run demos",
-		Aliases: []string{"prg-demo", "progress"},
-		Func:    pd.Run,
-		Config: func(c *gcli.Command) {
-			c.IntOpt(&pd.maxSteps, "max-step", "", 100, "setting the max step value")
-			c.BoolOpt(&pd.overwrite, "overwrite", "o", true, "setting overwrite progress bar line")
-			c.BoolVar(&pd.random, &gcli.FlagMeta{Name: "random", Desc: "use random style for progress bar"})
-			// c.AddArg("name",
-			// 	"progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
-			// 	true,
-			// )
-			c.BindArg(&gcli.Argument{
-				Name: "name",
-				Desc: "progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
+		c.BindArg(&gcli.Argument{
+			Name: "name",
+			Desc: "progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
 
-				Required: true,
-			})
-		},
-		Examples: `Text progress bar:
+			Required: true,
+			// Validator: func(val interface{}) (interface{}, error) {
+			// 	name := val.(string)
+			// },
+		})
+	},
+	Examples: `Text progress bar:
   {$fullCmd} txt
 Image progress bar:
   {$fullCmd} bar`,
-	}
+	Func: func(c *gcli.Command, args []string) error {
+		name := c.Arg("name").String()
+		max := pdOpts.maxSteps
 
-	return c
-}
-
-// Run command
-func (pd *progressDemo) Run(c *gcli.Command, _ []string) error {
-	name := c.Arg("name").String()
-	max := pd.maxSteps
-
-	color.Infoln("Progress Demo:")
-	switch name {
-	case "bar":
-		showProgressBar(max)
-	case "bars", "all-bar":
-		showAllProgressBar(max)
-	case "dt", "dtxt", "dynamicText":
-		dynamicTextBar(max)
-	case "txt", "text":
-		txtProgressBar(max)
-	case "spr", "load", "loading", "spinner":
-		runLoadingBar(max)
-	case "rt", "roundTrip":
-		runRoundTripBar(max)
-	default:
-		return c.Errorf("the progress bar type name only allow: bar,txt,dtxt,loading,roundTrip. input is: %s", name)
-	}
-	return nil
+		color.Infoln("Progress Demo:")
+		switch name {
+		case "bar":
+			showProgressBar(max)
+		case "bars", "all-bar":
+			showAllProgressBar(max)
+		case "dt", "dtxt", "dynamicText":
+			dynamicTextBar(max)
+		case "txt", "text":
+			txtProgressBar(max)
+		case "spr", "load", "loading", "spinner":
+			runLoadingBar(max)
+		case "rt", "roundTrip":
+			runRoundTripBar(max)
+		default:
+			return c.Errorf("the progress bar type name only allow: bar,txt,dtxt,loading,roundTrip. input is: %s", name)
+		}
+		return nil
+	},
 }
 
 func showProgressBar(maxStep int) {
 	cs := progress.BarStyles[3]
-	if pd.random {
+	if pdOpts.random {
 		cs = progress.RandomBarStyle()
 	}
 
