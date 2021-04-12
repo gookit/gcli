@@ -58,9 +58,16 @@ const (
 	EvtSubCmdNotFound = "cmd.sub.not.found"
 
 	EvtCmdOptParsed = "cmd.opts.parsed"
+
+	// cmd run
 	EvtCmdRunBefore = "cmd.run.before"
 	EvtCmdRunAfter  = "cmd.run.after"
 	EvtCmdRunError  = "cmd.run.error"
+
+	// cmd exec
+	EvtCmdExecBefore = "cmd.exec.before"
+	EvtCmdExecAfter  = "cmd.exec.after"
+	EvtCmdExecError  = "cmd.exec.error"
 
 	EvtGOptionsParsed = "gcli.gopts.parsed"
 	// EvtStop   = "stop"

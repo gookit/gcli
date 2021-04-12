@@ -730,10 +730,10 @@ func (c *Command) goodName() string {
 }
 
 // Fire event handler by name
-func (c *Command) Fire(event string, data interface{}) {
+func (c *Command) Fire(event string, data interface{}) (stop bool) {
 	Debugf("cmd: %s - trigger the event: <mga>%s</>", c.Name, event)
 
-	c.Hooks.Fire(event, c, data)
+	return c.core.Fire(event, c, data)
 }
 
 // On add hook handler for a hook event

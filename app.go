@@ -180,7 +180,7 @@ func (app *App) initialize() {
 		app.On(EvtAppRunError, defaultErrHandler)
 	}
 
-	app.fireEvent(EvtAppInit, nil)
+	app.Fire(EvtAppInit, nil)
 	app.initialized = true
 }
 
@@ -217,7 +217,7 @@ func (app *App) AddCommand(c *Command) {
 		app.hasSubcommands = true
 	}
 
-	app.fireEvent(EvtCmdInit, c)
+	app.Fire(EvtCmdInit, c)
 }
 
 // AddHandler to the application
@@ -273,7 +273,7 @@ func (app *App) parseGlobalOpts(args []string) (ok bool) {
 	}
 
 	app.args = app.gFlags.FSetArgs()
-	app.fireEvent(EvtGOptionsParsed, app.args)
+	app.Fire(EvtGOptionsParsed, app.args)
 
 	// check global options
 	if gOpts.showHelp {
@@ -334,7 +334,7 @@ func (app *App) prepareRun() (code int, name string) {
 	if app.inputName == "" {
 		Logf(VerbDebug, "input the command is not an registered: %s", name)
 
-		if stop := app.fireEvent(EvtCmdNotFound, name); stop == false {
+		if stop := app.Fire(EvtCmdNotFound, name); stop == false {
 			// display unknown input command and similar commands tips
 			app.showCommandTips(name)
 		}
@@ -461,7 +461,7 @@ func (app *App) Run(args []string) (code int) {
 	}
 
 	// trigger event
-	app.fireEvent(EvtAppPrepareAfter, name)
+	app.Fire(EvtAppPrepareAfter, name)
 
 	// do run input command
 	code = app.doRunCmd(name, app.args)
@@ -472,7 +472,7 @@ func (app *App) Run(args []string) (code int) {
 
 func (app *App) doRunCmd(name string, args []string) (code int) {
 	cmd := app.GetCommand(name)
-	app.fireEvent(EvtAppRunBefore, cmd)
+	app.Fire(EvtAppRunBefore, cmd)
 
 	Debugf("will run app command '%s' with args: %v", name, args)
 
@@ -483,9 +483,9 @@ func (app *App) doRunCmd(name string, args []string) (code int) {
 	// if err := cmd.innerExecute(args, true); err != nil {
 	if err := cmd.innerDispatch(args); err != nil {
 		code = ERR
-		app.fireEvent(EvtAppRunError, err)
+		app.Fire(EvtAppRunError, err)
 	} else {
-		app.fireEvent(EvtAppRunAfter, nil)
+		app.Fire(EvtAppRunAfter, nil)
 	}
 	return
 }
@@ -497,9 +497,9 @@ func (app *App) doRunFunc(args []string) (code int) {
 	// do execute command
 	if err := app.Func(app, args); err != nil {
 		code = ERR
-		app.fireEvent(EvtAppRunError, err)
+		app.Fire(EvtAppRunError, err)
 	} else {
-		app.fireEvent(EvtAppRunAfter, nil)
+		app.Fire(EvtAppRunAfter, nil)
 	}
 
 	return
@@ -580,7 +580,8 @@ func (app *App) On(name string, handler HookFunc) {
 	app.core.On(name, handler)
 }
 
-func (app *App) fireEvent(event string, data interface{}) bool {
+// Fire hook on the app
+func (app *App) Fire(event string, data interface{}) bool {
 	Debugf("trigger the application event: <green>%s</>", event)
 
 	return app.core.Fire(event, app, data)

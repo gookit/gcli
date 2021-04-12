@@ -140,7 +140,7 @@ you can see:
 
 > by `./cliapp example -h` or `./cliapp example --help`
 
-![cmd-help](_examples/images/cmd-help.jpg)
+![cmd-help](_examples/images/cmd-help.png)
 
 #### Error Command Tips
 

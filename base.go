@@ -207,7 +207,7 @@ func (h *Hooks) AddOn(name string, handler HookFunc) {
 }
 
 // Fire event by name, allow with event data
-func (h *Hooks) Fire(event string, data ...interface{}) bool {
+func (h *Hooks) Fire(event string, data ...interface{}) (stop bool) {
 	if handler, ok := h.hooks[event]; ok {
 		return handler(data...)
 	}
