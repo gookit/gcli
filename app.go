@@ -334,9 +334,11 @@ func (app *App) prepareRun() (code int, name string) {
 	if app.inputName == "" {
 		Logf(VerbDebug, "input the command is not an registered: %s", name)
 
-		if stop := app.Fire(EvtCmdNotFound, name); stop == false {
-			// display unknown input command and similar commands tips
-			app.showCommandTips(name)
+		if stop := app.Fire(EvtAppCmdNotFound, name); stop == false {
+			stop = app.Fire(EvtCmdNotFound, name)
+			if stop == false {
+				app.showCommandTips(name)
+			}
 		}
 		return
 	}
@@ -355,7 +357,7 @@ func (app *App) findCommandName() (name string) {
 			return
 		}
 
-		// It is not an valid command name.
+		// It is not an valid command name. TODO is command ID.
 		if false == app.IsCommand(name) {
 			Logf(VerbError, "the default command '<cyan>%s</>' is invalid", name)
 			return "" // invalid, return empty string.
@@ -363,61 +365,54 @@ func (app *App) findCommandName() (name string) {
 		return name
 	}
 
-	name = args[0]
+	name = strings.TrimSpace(args[0])
 	// is empty string or is an option
 	if name == "" || name[0] == '-' {
 		return ""
 	}
 
-	Debugf("the raw input command name(args[0]) is '%s'", name)
-	if c := app.MatchByPath(name); c != nil {
-		// is command id. eg: "top:sub"
-		if strings.ContainsRune(name, ':') {
-			nodes := splitPath2names(name)
-			name = nodes[0]
+	// check is valid ID/name string.
+	if !goodCmdId.MatchString(name) {
+		Logf(VerbWarn, "the input command name(%s) string is invalid", name)
+		return ""
+	}
 
-			app.args = append(nodes[1:], args[1:]...) // update app.args
-			Debugf("input is an command ID, expand it. now, command '%s', args: %v", name, app.args)
+	var sub string
+	rawName := name
+	nodes := splitPath2names(name)
+	// Is command ID. eg: "top:sub"
+	if len(nodes) > 1 {
+		name, sub = nodes[0], nodes[1]
+		Debugf("input(args[0]) is an command ID, expand it. '%s' -> '%s'", rawName, name)
+	} else {
+		rName := app.ResolveAlias(name)
+		nodes = splitPath2names(rName)
+		// Is command ID. eg: "top:sub"
+		if len(nodes) > 1 {
+			name, sub = nodes[0], nodes[1]
+			Debugf("real command is an command ID, expand it. '%s' -> '%s'", rName, name)
 		} else {
-			app.args = args[1:] // update app.args
+			name = rName
 		}
+	}
 
-		app.inputName = name
-		Debugf("input command: '<cyan>%s</>', real command: '<green>%s</>'", args[0], name)
+	// update app.args
+	if sub != "" {
+		app.args = append([]string{sub}, args[1:]...)
+	} else {
+		app.args = args[1:]
+	}
+
+	// it is exists command name.
+	if app.IsCommand(name) {
+		app.inputName = rawName
+		Debugf("the raw input name: '<cyan>%s</>', real command: '<green>%s</>'", rawName, name)
 		return name
 	}
 
-	// is valid name string.
-	if isValidCmdName(name) {
-		realName := app.ResolveAlias(name)
-		// is command id. eg: "top:sub"
-		if strings.ContainsRune(realName, ':') {
-			nodes := splitPath2names(realName)
-
-			bakName := realName
-			realName = nodes[0]
-			app.args = append(nodes[1:], args[1:]...) // update app.args
-			Debugf("the '%s' is an command ID, expand it, command '%s', args: %v",
-				bakName,
-				realName,
-				app.args,
-			)
-		} else {
-			app.args = args[1:] // update app.args
-		}
-
-		// is valid command name.
-		if app.IsCommand(realName) {
-			app.inputName = name
-			Debugf("the alias name: '<cyan>%s</>', real command: '<green>%s</>'", name, realName)
-			return realName
-		}
-
-		// not exists
-		return name
-	}
-
-	return ""
+	// not exists
+	Logf(VerbInfo, "the input command name '%s' is not exists", rawName)
+	return rawName
 }
 
 // RunLine manual run an command by command line string.
@@ -608,7 +603,7 @@ func (app *App) showVersionInfo() {
 
 // display unknown input command and similar commands tips
 func (app *App) showCommandTips(name string) {
-	Debugf("show similar command tips")
+	Debugf("will find and show similar command tips")
 
 	color.Error.Tips(`unknown input command "<mga>%s</>"`, name)
 	if ns := app.findSimilarCmd(name); len(ns) > 0 {
