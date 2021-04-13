@@ -45,10 +45,10 @@ func main() {
 	// app.Strict = true
 	app.Add(cmd.GitCmd)
 
-	app.Add(cmd.ExampleCommand())
-	app.Add(cmd.DaemonRunCommand())
-	app.Add(cmd.EnvInfoCommand())
-	app.Add(cmd.ColorCommand(), cmd.EmojiDemoCmd())
+	app.Add(cmd.Example)
+	app.Add(cmd.DaemonRun)
+	app.Add(cmd.EnvInfo)
+	app.Add(cmd.CliColor, cmd.EmojiDemo)
 	app.Add(
 		cmd.ShowDemo,
 		cmd.ProgressDemo,
@@ -56,7 +56,7 @@ func main() {
 		cmd.InteractDemo,
 	)
 
-	app.Add(builtin.GenEmojiMapCommand())
+	app.Add(builtin.GenEmojiMap)
 	app.Add(builtin.GenAutoComplete())
 
 	// app.Add(filewatcher.FileWatcher(nil))

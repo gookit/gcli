@@ -63,6 +63,9 @@ type App struct {
 	cleanArgs []string
 	// has sub-commands on the app
 	hasSubcommands bool
+	// the default command name.
+	// if is empty, will render help message.
+	defaultCommand string
 }
 
 // New alias of the NewApp()
@@ -566,6 +569,11 @@ func (app *App) CommandName() string {
 // HasSubcommands on the app
 func (app *App) HasSubcommands() bool {
 	return app.hasSubcommands
+}
+
+// SetDefaultCommand set default command name
+func (app *App) SetDefaultCommand(name string) {
+	app.defaultCommand = name
 }
 
 // On add hook handler for a hook event

@@ -445,23 +445,21 @@ func (c *Command) innerDispatch(args []string) (err error) {
 				// loop find sub...command and run it.
 				return sub.innerDispatch(args[1:])
 			}
+
+			// no arguments, name is not founded subcommand
+			if !c.HasArguments() {
+				// fire events
+				stop := c.Fire(EvtSubCmdNotFound, name)
+				if stop == false {
+					stop = c.Fire(EvtCmdNotFound, name)
+					if stop == false {
+						color.Error.Tips("subcommand '%s' - not found on the command", name)
+					}
+				}
+			}
 		} else {
 			name = "" // reset var
 		}
-	}
-
-	// default command is not empty
-	if c.defaultCommand != "" {
-		name := c.defaultCommand
-		// is valid sub command
-		if sub, has := c.Command(name); has {
-			Debugf("cmd: %s - will run the default command '%s'", c.Name, name)
-
-			// run the default command
-			return sub.innerExecute(args, true)
-		}
-
-		return fmt.Errorf("the default command '%s' is invalid", name)
 	}
 
 	// not set command func and has sub commands.
@@ -472,25 +470,8 @@ func (c *Command) innerDispatch(args []string) (err error) {
 		return err
 	}
 
-	// do execute command
+	// do execute current command
 	return c.doExecute(args)
-}
-
-func (c *Command) runDefaultCommand(args []string) error {
-	// defaultCommand is not empty.
-	name := c.defaultCommand
-	if name != "" {
-		// is valid sub command
-		if sub, has := c.Command(name); has {
-			Debugf("cmd: %s - will run the default command '%s'", c.Name, name)
-
-			// run the default command
-			return sub.innerExecute(args, true)
-		}
-
-		return fmt.Errorf("the default command '%s' is invalid", name)
-	}
-	return nil
 }
 
 // execute the current command

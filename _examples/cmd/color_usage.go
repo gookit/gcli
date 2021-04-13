@@ -13,21 +13,19 @@ var colorOpts = struct {
 	dir string
 }{}
 
-// ColorCommand command definition
-func ColorCommand() *gcli.Command {
-	cmd := gcli.Command{
-		Name:     "color",
-		Desc:     "this is a example for cli color usage",
-		Aliases:  []string{"clr", "colors"},
-		Func:     colorUsage,
-		Examples: "{$binName} {$cmd} --id 12 -c val ag0 ag1",
-	}
+// CliColor command definition
+var CliColor = &gcli.Command{
+	Name:     "color",
+	Desc:     "this is a example for cli color usage",
+	Aliases:  []string{"clr", "colors"},
+	Func:     colorUsage,
+	Examples: "{$binName} {$cmd} --id 12 -c val ag0 ag1",
+	Config: func(c *gcli.Command) {
+		c.IntOpt(&colorOpts.id, "id", "", 2, "the id option")
+		c.StrOpt(&colorOpts.c, "c", "", "value", "the config option")
+		c.StrOpt(&colorOpts.dir, "dir", "", "", "the dir option")
 
-	cmd.IntOpt(&colorOpts.id, "id", "", 2, "the id option")
-	cmd.StrOpt(&colorOpts.c, "c", "", "value", "the config option")
-	cmd.StrOpt(&colorOpts.dir, "dir", "", "", "the dir option")
-
-	return &cmd
+	},
 }
 
 func colorUsage(_ *gcli.Command, _ []string) error {

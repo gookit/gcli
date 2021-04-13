@@ -28,36 +28,35 @@ type Gemoji struct {
 	Tags        []string `json:"tags"`
 }
 
-// GenEmojiMapCommand create
-func GenEmojiMapCommand() *gcli.Command {
-	gem := &genEmojiMap{}
+var gem = &genEmojiMap{}
 
-	return &gcli.Command{
-		Name:    "gen-emojis",
-		Aliases: []string{"gen-emj"},
-		// handler func
-		Func: gem.run,
-		// des
-		Desc: "fetch emoji codes form data source url, then generate a go file.",
-		// config options
-		Config: func(c *gcli.Command) {
-			gem.c = c
-			c.StrOpt(
-				&gem.source, "source", "s", "gemoji",
-				"the emoji data source, allow: muan, gemoji, unicode",
-			)
-			c.StrOpt(&gem.saveDir, "dir", "d", "./", "the generated go file save `DIR` path")
-			c.BoolOpt(&gem.onlyGen, "onlyGen", "", false, "whether only generate go file from exists emoji data file")
-		},
-		Help: `source allow:
+// GenEmojiMapCommand create
+var GenEmojiMap = &gcli.Command{
+	Name:    "gen-emojis",
+	Aliases: []string{"gen-emj"},
+	// handler func
+	Func: gem.run,
+	// des
+	Desc: "fetch emoji codes form data source url, then generate a go file.",
+	// config options
+	Config: func(c *gcli.Command) {
+		gem.c = c
+		c.StrOpt(
+			&gem.source, "source", "s", "gemoji",
+			"the emoji data source, allow: muan, gemoji, unicode",
+		)
+		c.StrOpt(&gem.saveDir, "dir", "d", "./", "the generated go file save `DIR` path")
+		c.BoolOpt(&gem.onlyGen, "onlyGen", "", false, "whether only generate go file from exists emoji data file")
+	},
+	Help: `source allow:
  muan - https://raw.githubusercontent.com/muan/emoji/gh-pages/javascripts/emojilib/emojis.json
  gemoji - https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json
  unicode - https://unicode.org/Public/emoji/11.0/emoji-test.txt
 `,
-	}
 }
 
 func (g *genEmojiMap) run(c *gcli.Command, _ []string) error {
+	c.Infoln("TODO")
 	return nil
 }
 

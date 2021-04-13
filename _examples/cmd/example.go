@@ -30,38 +30,36 @@ var exampleOpts = struct {
 	names   Names
 }{}
 
-// ExampleCommand command definition
-func ExampleCommand() *gcli.Command {
-	cmd := &gcli.Command{
-		Func:    exampleExecute,
-		Name:    "example",
-		Aliases: []string{"module-exp", "exp", "ex"},
-		Desc:    "this is command description message",
-		// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
-		Examples: `
+// Example command definition
+var Example = &gcli.Command{
+	Func:    exampleExecute,
+	Name:    "example",
+	Aliases: []string{"module-exp", "exp", "ex"},
+	Desc:    "this is command description message",
+	// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
+	Examples: `
   {$binName} {$cmd} --id 12 -c val ag0 ag1
   <cyan>{$fullCmd} --names tom --names john -n c</> 	test use special option
 `,
-	}
+	Config: func(c *gcli.Command) {
+		// bind options
+		c.IntOpt(&exampleOpts.id, "id", "", 2, "the id option")
+		c.BoolOpt(&exampleOpts.showErr, "err", "e", false, "display error example")
+		c.StrOpt(&exampleOpts.c, "config", "c", "value", "the config option")
+		// notice `DIRECTORY` will replace to option value type
+		c.StrOpt(&exampleOpts.dir, "dir", "d", "", "the `DIRECTORY` option")
+		// setting option name and short-option name
+		c.StrOpt(&exampleOpts.opt, "opt", "o", "", "the option message")
+		// setting a special option var, it must implement the flag.Value interface
+		c.VarOpt(&exampleOpts.names, "names", "n", "the option message")
 
-	// bind options
-	cmd.IntOpt(&exampleOpts.id, "id", "", 2, "the id option")
-	cmd.BoolOpt(&exampleOpts.showErr, "err", "e", false, "display error example")
-	cmd.StrOpt(&exampleOpts.c, "config", "c", "value", "the config option")
-	// notice `DIRECTORY` will replace to option value type
-	cmd.StrOpt(&exampleOpts.dir, "dir", "d", "", "the `DIRECTORY` option")
-	// setting option name and short-option name
-	cmd.StrOpt(&exampleOpts.opt, "opt", "o", "", "the option message")
-	// setting a special option var, it must implement the flag.Value interface
-	cmd.VarOpt(&exampleOpts.names, "names", "n", "the option message")
+		// bind args with names
+		c.AddArg("arg0", "the first argument, is required", true)
+		c.AddArg("arg1", "the second argument, is required", true)
+		c.AddArg("arg2", "the optional argument, is optional")
+		c.AddArg("arrArg", "the array argument, is array", false, true)
 
-	// bind args with names
-	cmd.AddArg("arg0", "the first argument, is required", true)
-	cmd.AddArg("arg1", "the second argument, is required", true)
-	cmd.AddArg("arg2", "the optional argument, is optional")
-	cmd.AddArg("arrArg", "the array argument, is array", false, true)
-
-	return cmd
+	},
 }
 
 // command running

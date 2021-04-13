@@ -164,6 +164,16 @@ func (ags *Arguments) HasArg(name string) bool {
 	return ok
 }
 
+// HasArgs defined. alias of the HasArguments()
+func (ags *Arguments) HasArgs() bool {
+	return len(ags.argsIndexes) > 0
+}
+
+// HasArguments defined
+func (ags *Arguments) HasArguments() bool {
+	return len(ags.argsIndexes) > 0
+}
+
 // Arg get arg by defined name.
 // Usage:
 // 	intVal := ags.Arg("name").Int()

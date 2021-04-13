@@ -8,49 +8,55 @@ import (
 	"github.com/gookit/gcli/v3/show/emoji"
 )
 
-func EmojiDemoCmd() *gcli.Command {
-	return &gcli.Command{
-		Name:    "emoji",
-		Desc:    "this is a emoji usage example command",
-		Aliases: []string{"emoj"},
-		Config: func(c *gcli.Command) {
-			c.AddArg("subcmd", "The name of the subcommand you want to run. allow: render, search", true)
-			c.AddArg("param", "Used in the previous subcommand. It's message string OR keywords for search", true)
-		},
-		Func: func(c *gcli.Command, _ []string) error {
-			subCmd := c.Arg("subcmd").String()
-			param := c.Arg("param").String()
-			switch subCmd {
-			case "render":
-				return renderEmoji(param)
-			case "search":
-				return searchEmoji(param)
-			default:
-				return c.Errorf("invalid sub-command name for %s, only allow: render, search", c.Name)
-			}
-		},
-		Examples: `An render example
+var EmojiDemo = &gcli.Command{
+	Name:    "emoji",
+	Desc:    "this is a emoji usage example command",
+	Aliases: []string{"emoj"},
+	// Func: ,
+	Examples: `
+An render example
   {$fullCmd} render ":car: a message text, contains emoji :smile:"
 An search example
   {$fullCmd} search smi`,
-	}
-}
+  	Subs: []*gcli.Command{
+		{
+			Name: "render",
+			Desc: "render given string, will replace special char to emoji",
+			Aliases: []string{"r"},
+			Config: func(c *gcli.Command) {
+				c.AddArg("msg", "The message string for render", true)
+			},
+			Func: func(c *gcli.Command, args []string) error {
+				fmt.Println(emoji.Render(c.Arg("msg").String()))
+				return nil
+			},
+		},
+		{
+			Name: "search",
+			Desc: "search emojis by given keywords",
+			Aliases: []string{"s"},
+			Config: func(c *gcli.Command) {
+				c.AddArg("keyword", "The keyword string for search", true)
+			},
+			Func: func(c *gcli.Command, args []string) error {
+				kw := c.Arg("keyword").String()
 
-func renderEmoji(msg string) (err error) {
-	fmt.Println(emoji.Render(msg))
-	return
+				return searchEmoji(kw)
+			},
+		},
+	},
 }
 
 func searchEmoji(kw string) (err error) {
 	ret := emoji.Search(kw, 15)
 	if len(ret) == 0 {
-		color.Info.Tips(":( no matched emoji found! keyword: %s", kw)
+		color.Note.Tips(":( no matched emoji found! keyword: %s", kw)
+		return
 	}
 
-	color.Success.Println("OK, successfully found some emoji:")
+	color.Success.Println("OK, successfully found some emojis:")
 	for name, code := range ret {
 		fmt.Println(code, name)
 	}
-
 	return
 }

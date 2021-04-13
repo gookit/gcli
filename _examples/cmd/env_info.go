@@ -17,36 +17,31 @@ var eiOpts = struct {
 	names Names
 }{}
 
-// EnvInfoCommand
-func EnvInfoCommand() *gcli.Command {
-	cmd := gcli.Command{
-		Name:    "env",
-		Aliases: []string{"env-info", "ei"},
-		Desc:    "collect project info by git info",
+// EnvInfo command
+var EnvInfo = &gcli.Command{
+	Name:    "env",
+	Desc:    "collect project info by git info",
+	Aliases: []string{"env-info", "ei"},
+	Config: func(c *gcli.Command) {
+		c.IntOpt(&eiOpts.id, "id", "", 0, "the id option")
+		c.StrOpt(&eiOpts.c, "c", "", "", "the config option")
+		c.StrOpt(&eiOpts.dir, "dir", "d", "", "the dir option")
 
-		Func: envInfoRun,
-	}
+	},
 
-	cmd.IntOpt(&eiOpts.id, "id", "", 0, "the id option")
-	cmd.StrOpt(&eiOpts.c, "c", "", "", "the config option")
-	cmd.StrOpt(&eiOpts.dir, "dir", "d", "", "the dir option")
+	Func: func(c *gcli.Command, _ []string) error {
+		eAble, _ := os.Executable()
 
-	return &cmd
-}
+		data := map[string]interface{}{
+			"os":       runtime.GOOS,
+			"binName":  c.BinName(),
+			"workDir":  c.WorkDir(),
+			"rawArgs":  os.Args,
+			"execAble": eAble,
+			"env":      os.Environ(),
+		}
 
-// do run
-func envInfoRun(c *gcli.Command, _ []string) error {
-	eAble, _ := os.Executable()
-
-	data := map[string]interface{}{
-		"os":       runtime.GOOS,
-		"binName":  c.BinName(),
-		"workDir":  c.WorkDir(),
-		"rawArgs":  os.Args,
-		"execAble": eAble,
-		"env":      os.Environ(),
-	}
-
-	show.JSON(&data)
-	return nil
+		show.JSON(&data)
+		return nil
+	},
 }

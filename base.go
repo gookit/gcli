@@ -392,11 +392,6 @@ type commandBase struct {
 	// Version app version. like "1.0.1"
 	Version string
 
-	// Cmds sub commands of the Command
-	// Cmds []*Command
-	// mapping sub-command.name => Cmds.index of the Cmds
-	// name2idx map[string]int
-
 	// all commands for the group
 	commands map[string]*Command
 	// command names. key is name, value is name string length
@@ -411,15 +406,9 @@ type commandBase struct {
 	commandName string
 	// the max width for added command names. default set 12.
 	nameMaxWidth int
-	// the default command name.
-	// if is empty:
-	// - on app, will render help message.
-	// - on cmd, it's sub-command, will run current command
-	defaultCommand string
 
 	// Whether it has been initialized
 	initialized bool
-
 	// store some runtime errors
 	errors []error
 }
@@ -457,11 +446,6 @@ func (b *commandBase) IsAlias(alias string) bool {
 // ResolveAlias get real command name by alias
 func (b *commandBase) ResolveAlias(alias string) string {
 	return b.cmdAliases.ResolveAlias(alias)
-}
-
-// SetDefaultCommand set default sub-command name
-func (b *commandBase) SetDefaultCommand(name string) {
-	b.defaultCommand = name
 }
 
 // HasCommands on the cmd/app
