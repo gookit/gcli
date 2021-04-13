@@ -55,7 +55,7 @@ const (
 	// app command not found
 	EvtAppCmdNotFound = "app.cmd.not.found"
 	// sub command not found
-	EvtSubCmdNotFound = "cmd.sub.not.found"
+	EvtCmdSubNotFound = "cmd.sub.not.found"
 
 	EvtCmdOptParsed = "cmd.opts.parsed"
 

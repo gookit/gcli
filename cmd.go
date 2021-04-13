@@ -449,13 +449,16 @@ func (c *Command) innerDispatch(args []string) (err error) {
 			// no arguments, name is not founded subcommand
 			if !c.HasArguments() {
 				// fire events
-				stop := c.Fire(EvtSubCmdNotFound, name)
-				if stop == false {
-					stop = c.Fire(EvtCmdNotFound, name)
-					if stop == false {
-						color.Error.Tips("subcommand '%s' - not found on the command", name)
-					}
+				stop := c.Fire(EvtCmdSubNotFound, name)
+				if stop == true {
+					return
 				}
+
+				if stop = c.Fire(EvtCmdNotFound, name); stop == false {
+					return
+				}
+
+				color.Error.Tips("subcommand '%s' - not found on the command", name)
 			}
 		} else {
 			name = "" // reset var
