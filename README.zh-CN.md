@@ -138,7 +138,7 @@ func main() {
 ./cliapp help {command}
 ```
 
-![cmd-help](_examples/images/cmd-help.jpg)
+![cmd-help](_examples/images/cmd-help.png)
 
 #### 相似命令提示
 
@@ -162,7 +162,7 @@ func main() {
 
 可以观察到选项和参数的搜集结果:
 
-![run-example](_examples/images/run-example.jpg)
+![run-example](_examples/images/run-example.png)
 
 ## 生成命令补全脚本
 
@@ -302,7 +302,7 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 
 > 漂亮的帮助信息就已经自动生成并展示出来了
 
-![cmd-help](_examples/images/cmd-help.jpg)
+![cmd-help](_examples/images/cmd-help.png)
 
 ### 添加选项
 

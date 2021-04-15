@@ -134,7 +134,7 @@ Examples:
 
 you can see:
 
-![run-example](_examples/images/run-example.jpg)
+![run-example](_examples/images/run-example.png)
 
 #### Display Command Help
 
@@ -289,7 +289,7 @@ func exampleExecute(c *gcli.Command, args []string) error {
 go build ./_examples/cliapp.go && ./cliapp example -h
 ```
 
-![cmd-help](_examples/images/cmd-help.jpg)
+![cmd-help](_examples/images/cmd-help.png)
 
 ### Bind Option(flag)
 

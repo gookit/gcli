@@ -66,7 +66,7 @@ var Example = &gcli.Command{
 // example run:
 // 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
 func exampleExecute(c *gcli.Command, args []string) error {
-	color.Cyan.Println("hello, in example command")
+	color.Infoln("hello, in example command")
 
 	if exampleOpts.showErr {
 		return c.Errorf("OO, An error has occurred!!")
@@ -74,11 +74,13 @@ func exampleExecute(c *gcli.Command, args []string) error {
 
 	magentaln := color.Magenta.Println
 
-	magentaln("All options:")
-	fmt.Printf("%+v\n", exampleOpts)
+	color.Cyanln("All Aptions:")
+	// fmt.Printf("%+v\n", exampleOpts)
 	dump.V(exampleOpts)
-	magentaln("Remain args:")
-	fmt.Printf("%v\n", args)
+
+	color.Cyanln("Remain Args:")
+	// fmt.Printf("%v\n", args)
+	dump.P(args)
 
 	magentaln("Get arg by name:")
 	arr := c.Arg("arg0")
@@ -86,7 +88,7 @@ func exampleExecute(c *gcli.Command, args []string) error {
 
 	magentaln("All named args:")
 	for _, arg := range c.Args() {
-		fmt.Printf("named arg '%s': %+v\n", arg.Name, arg.Value)
+		fmt.Printf("- named arg '%s': %+v\n", arg.Name, arg.Value)
 	}
 
 	return nil
