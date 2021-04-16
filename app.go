@@ -380,19 +380,19 @@ func (app *App) findCommandName() (name string) {
 		return ""
 	}
 
-	var sub string
 	rawName := name
 	nodes := splitPath2names(name)
 	// Is command ID. eg: "top:sub"
 	if len(nodes) > 1 {
-		name, sub = nodes[0], nodes[1]
+		name = nodes[0]
+		name = app.ResolveAlias(name)
 		Debugf("input(args[0]) is an command ID, expand it. '%s' -> '%s'", rawName, name)
 	} else {
 		rName := app.ResolveAlias(name)
 		nodes = splitPath2names(rName)
 		// Is command ID. eg: "top:sub"
 		if len(nodes) > 1 {
-			name, sub = nodes[0], nodes[1]
+			name = nodes[0]
 			Debugf("real command is an command ID, expand it. '%s' -> '%s'", rName, name)
 		} else {
 			name = rName
@@ -400,8 +400,8 @@ func (app *App) findCommandName() (name string) {
 	}
 
 	// update app.args
-	if sub != "" {
-		app.args = append([]string{sub}, args[1:]...)
+	if len(nodes) > 1 {
+		app.args = append(nodes[1:], args[1:]...)
 	} else {
 		app.args = args[1:]
 	}
@@ -409,12 +409,12 @@ func (app *App) findCommandName() (name string) {
 	// it is exists command name.
 	if app.IsCommand(name) {
 		app.inputName = rawName
-		Debugf("the raw input name: '<cyan>%s</>', real command: '<green>%s</>'", rawName, name)
+		Debugf("the raw input command: '<cyan>%s</>'; now, name: '<green>%s</>', args: %v", rawName, name, app.args)
 		return name
 	}
 
 	// not exists
-	Logf(VerbInfo, "the input command name '%s' is not exists", rawName)
+	Logf(VerbInfo, "the input command name '%s' is not exists. nodes: %v", rawName, nodes)
 	return rawName
 }
 
