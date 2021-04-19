@@ -74,7 +74,7 @@ func main() {
     app.Desc = "this is my cli application"
     // app.SetVerbose(gcli.VerbDebug)
 
-    app.Add(cmd.ExampleCommand())
+    app.Add(cmd.Example)
     app.Add(&gcli.Command{
         Name: "demo",
         // allow color tag and {$cmd} will be replace to 'demo'

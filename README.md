@@ -72,7 +72,7 @@ func main() {
     app.Desc = "this is my cli application"
     // app.SetVerbose(gcli.VerbDebug)
 
-    app.Add(cmd.ExampleCommand())
+    app.Add(cmd.Example)
     app.Add(&gcli.Command{
         Name: "demo",
         // allow color tag and {$cmd} will be replace to 'demo'
@@ -90,15 +90,15 @@ func main() {
 }
 ```
 
-### Usage
+## Usage
 
-- build a demo package 
+Build a demo application 
 
 ```bash
-% go build ./_examples/cliapp.go                                                           
+% go build ./_examples/cliapp                                                         
 ```
 
-#### Display version
+**Display version**
 
 ```bash
 % ./cliapp --version      
@@ -108,7 +108,7 @@ func main() {
 
 ![app-version](_examples/images/app-version.jpg)
 
-#### Display app help
+**Display app help**
 
 > by `./cliapp` or `./cliapp -h` or `./cliapp --help`
 
@@ -122,27 +122,32 @@ Examples:
 
 ![cmd-list](_examples/images/cmd-list.png)
 
-#### Run Command
+ **Run command**
 
-```text
+Format:
+
+```bash
 ./cliapp COMMAND [--OPTION VALUE -S VALUE ...] [ARGUMENT0 ARGUMENT1 ...]
+./cliapp COMMAND [--OPTION VALUE -S VALUE ...] SUBCOMMAND [--OPTION ...] [ARGUMENT0 ARGUMENT1 ...]
 ```
+
+Run example:
 
 ```bash
 % ./cliapp example -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
 ```
 
-you can see:
+You can see:
 
 ![run-example](_examples/images/run-example.png)
 
-#### Display Command Help
+**Display command help**
 
 > by `./cliapp example -h` or `./cliapp example --help`
 
 ![cmd-help](_examples/images/cmd-help.png)
 
-#### Error Command Tips
+**Error command tips**
 
 ![command tips](_examples/images/err-cmd-tips.jpg)
 
@@ -218,6 +223,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/dump"
 )
 
 // options for the command
@@ -231,9 +237,9 @@ var exampleOpts = struct {
 
 // ExampleCommand command definition
 var ExampleCommand = &gcli.Command{
-	Name:        "example",
+	Name: "example",
 	Desc: "this is a description message",
-	Aliases:     []string{"exp", "ex"}, // 命令别名
+	Aliases: []string{"exp", "ex"}, // 命令别名
 	// {$binName} {$cmd} is help vars. '{$cmd}' will replace to 'example'
 	Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1
 <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
@@ -261,22 +267,29 @@ var ExampleCommand = &gcli.Command{
 // example run:
 // 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
 func exampleExecute(c *gcli.Command, args []string) error {
-	fmt.Print("hello, in example command\n")
+	color.Infoln("hello, in example command")
+
+	if exampleOpts.showErr {
+		return c.Errorf("OO, An error has occurred!!")
+	}
 
 	magentaln := color.Magenta.Println
 
-	magentaln("All options:")
-	fmt.Printf("%+v\n", exampleOpts)
-	magentaln("Raw args:")
-	fmt.Printf("%v\n", args)
+	color.Cyanln("All Aptions:")
+	// fmt.Printf("%+v\n", exampleOpts)
+	dump.V(exampleOpts)
+
+	color.Cyanln("Remain Args:")
+	// fmt.Printf("%v\n", args)
+	dump.P(args)
 
 	magentaln("Get arg by name:")
-	arr := c.Arg("arrArg")
-	fmt.Printf("named array arg '%s', value: %v\n", arr.Name, arr.Value)
+	arr := c.Arg("arg0")
+	fmt.Printf("named arg '%s', value: %#v\n", arr.Name, arr.Value)
 
 	magentaln("All named args:")
 	for _, arg := range c.Args() {
-		fmt.Printf("named arg '%s': %+v\n", arg.Name, *arg)
+		fmt.Printf("- named arg '%s': %+v\n", arg.Name, arg.Value)
 	}
 
 	return nil
@@ -291,7 +304,7 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 
 ![cmd-help](_examples/images/cmd-help.png)
 
-### Bind Option(flag)
+### Bind Options(flag)
 
 Available methods:
 
@@ -334,13 +347,13 @@ cmd.StrOpt(&opt, "opt", "o", "", "the option message")
 cmd.VarOpt(&names, "names", "n", "the option message")
 ```
 
-### Bind Argument
+### Bind Arguments
 
 About arguments:
 
 - Required argument cannot be defined after optional argument
 - Only one array parameter is allowed
-- The (array)argument of multiple values ​​can only be defined at the end
+- The (array)argument of multiple values can only be defined at the end
 
 Available methods:
 
