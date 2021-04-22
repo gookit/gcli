@@ -43,7 +43,7 @@ func TestNewCommand(t *testing.T) {
 	is.True(app.HasCommand("test1"))
 }
 
-func TestCommand_Errorf(t *testing.T) {
+func TestCommand_NewErrf(t *testing.T) {
 	is := assert.New(t)
 
 	c := gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
@@ -51,7 +51,7 @@ func TestCommand_Errorf(t *testing.T) {
 	})
 	c.SetFunc(func(c *gcli.Command, args []string) error {
 		is.Equal([]string{"hi"}, args)
-		return c.Errorf("error message")
+		return c.NewErrf("error message")
 	})
 
 	is.NotEmpty(c)

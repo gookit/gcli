@@ -55,7 +55,6 @@ type App struct {
 
 	// args on after parse global options and command name.
 	args []string
-	// all commands by module TODO remove
 	// moduleCommands map[string]map[string]*Command
 
 	// rawFlagArgs []string
@@ -149,7 +148,7 @@ func (app *App) bindingGlobalOpts() {
 	gf.BoolOpt(&gOpts.showVer, "version", "V", false, "Display app version information")
 	// This is a internal option
 	gf.BoolVar(&gOpts.inCompletion, &FlagMeta{
-		Name: "cmd-completion", // TODO rename to --in-completion
+		Name: "in-completion",
 		Desc: "generate completion scripts for bash/zsh",
 		// hidden it
 		Hidden: true,
@@ -360,7 +359,7 @@ func (app *App) findCommandName() (name string) {
 			return
 		}
 
-		// It is not an valid command name. TODO is command ID.
+		// It is not an valid command name. TODO default is command ID.
 		if false == app.IsCommand(name) {
 			Logf(VerbError, "the default command '<cyan>%s</>' is invalid", name)
 			return "" // invalid, return empty string.
@@ -499,7 +498,6 @@ func (app *App) doRunFunc(args []string) (code int) {
 	} else {
 		app.Fire(EvtAppRunAfter, nil)
 	}
-
 	return
 }
 
@@ -631,8 +629,8 @@ var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
 
 <comment>Global Options:</>
 {{.GOpts}}
-<comment>Available Commands:</>{{range $cmdName, $c := .Cs}}
-  <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
+<comment>Available Commands:</>{{range $cmdName, $c := .Cs}}{{if $c.Visible}}
+  <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}{{end}}
   <info>{{ paddingName "help" }}</> Display help information
 
 Use "<cyan>{$binName} COMMAND -h</>" for more information about a command

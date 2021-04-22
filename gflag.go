@@ -976,7 +976,10 @@ type FlagMeta struct {
 	// short names. eg: ["o", "a"]
 	Shorts []string
 	// advanced settings
-	Hidden, Required bool
+	// hidden the option on help
+	Hidden bool
+	// the option is required
+	Required bool
 	// Validator support validate the option flag value
 	Validator func(val string) error
 }

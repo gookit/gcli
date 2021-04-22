@@ -72,6 +72,8 @@ type Command struct {
 	// Config func, will call on `initialize`.
 	// - you can config options and other init works
 	Config func(c *Command)
+	// Hidden the command on render help
+	Hidden bool
 
 	// --- for middleware ---
 	// run error
@@ -154,6 +156,12 @@ func (c *Command) WithFunc(fn RunnerFunc) *Command {
 	return c
 }
 
+// WithHidden Settings command is hidden
+func (c *Command) WithHidden() *Command {
+	c.Hidden = true
+	return c
+}
+
 // AttachTo attach the command to CLI application
 func (c *Command) AttachTo(app *App) {
 	app.AddCommand(c)
@@ -162,6 +170,11 @@ func (c *Command) AttachTo(app *App) {
 // Disable set cmd is disabled
 func (c *Command) Disable() {
 	c.disabled = true
+}
+
+// Visible return cmd is visible
+func (c *Command) Visible() bool {
+	return c.Hidden == false
 }
 
 // IsDisabled get cmd is disabled
@@ -781,6 +794,16 @@ func (c *Command) PathNames() []string {
 
 // Errorf format message and add error to the command
 func (c *Command) Errorf(format string, v ...interface{}) error {
+	return fmt.Errorf(format, v...)
+}
+
+// NewErr format message and add error to the command
+func (c *Command) NewErr(msg string) error {
+	return errors.New(msg)
+}
+
+// NewErrf format message and add error to the command
+func (c *Command) NewErrf(format string, v ...interface{}) error {
 	return fmt.Errorf(format, v...)
 }
 

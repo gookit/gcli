@@ -291,7 +291,8 @@ func shorts2string(ss []string) string {
 }
 
 // regex: "`[\w ]+`"
-var codeReg = regexp.MustCompile("`" + `[\w ]+` + "`")
+// regex: "`.+`"
+var codeReg = regexp.MustCompile("`" + `.+` + "`")
 
 // convert "`keywords`" to "<mga>keywords</>"
 func wrapColor2string(s string) string {

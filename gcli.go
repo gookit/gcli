@@ -160,15 +160,9 @@ func IsGteVerbose(verb VerbLevel) bool {
 	return gOpts.verbose >= verb
 }
 
-// binding global options
-func bindingCommonGOpts(fs *Flags) {
-	// up: allow use int and string.
-	fs.VarOpt(&gOpts.verbose, "verbose", "", "Set error reporting level(quiet 0 - 5 crazy)")
-
-	fs.BoolOpt(&gOpts.showHelp, "help", "h", false, "Display the help information")
-	fs.BoolOpt(&gOpts.NoColor, "no-color", "", gOpts.NoColor, "Disable color when outputting message")
-	fs.BoolOpt(&gOpts.noProgress, "no-progress", "", gOpts.noProgress, "Disable display progress message")
-	fs.BoolOpt(&gOpts.noInteractive, "no-interactive", "", gOpts.noInteractive, "Disable interactive confirmation operations")
+// IsDebugMode get is debug mode
+func IsDebugMode() bool {
+	return gOpts.verbose >= VerbDebug
 }
 
 // Commander interface
@@ -188,6 +182,8 @@ type GOptions struct {
 	verbose  VerbLevel // message report level
 	showVer  bool
 	showHelp bool
+	// TODO Run application an interactive shell environment
+	inShell bool
 	// dont display progress
 	noProgress bool
 	// close interactive confirm
@@ -241,6 +237,7 @@ func (g *GOptions) bindingFlags(fs *Flags) {
 	// up: allow use int and string.
 	fs.VarOpt(&g.verbose, "verbose", "", "Set error reporting level(quiet 0 - 5 crazy)")
 
+	fs.BoolOpt(&g.inShell, "ishell", "", false, "Run in an interactive shell environment(`TODO`)")
 	fs.BoolOpt(&g.showHelp, "help", "h", false, "Display the help information")
 	fs.BoolOpt(&g.NoColor, "no-color", "", g.NoColor, "Disable color when outputting message")
 	fs.BoolOpt(&g.noProgress, "no-progress", "", g.noProgress, "Disable display progress message")
