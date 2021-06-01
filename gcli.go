@@ -50,21 +50,21 @@ const (
 
 	EvtCmdInit = "cmd.init"
 
-	// app or sub command not found
+	// EvtCmdNotFound app or sub command not found
 	EvtCmdNotFound = "cmd.not.found"
-	// app command not found
+	// EvtAppCmdNotFound app command not found
 	EvtAppCmdNotFound = "app.cmd.not.found"
-	// sub command not found
+	// EvtCmdSubNotFound sub command not found
 	EvtCmdSubNotFound = "cmd.sub.not.found"
 
 	EvtCmdOptParsed = "cmd.opts.parsed"
 
-	// cmd run
+	// EvtCmdRunBefore cmd run
 	EvtCmdRunBefore = "cmd.run.before"
 	EvtCmdRunAfter  = "cmd.run.after"
 	EvtCmdRunError  = "cmd.run.error"
 
-	// cmd exec
+	// EvtCmdExecBefore cmd exec
 	EvtCmdExecBefore = "cmd.exec.before"
 	EvtCmdExecAfter  = "cmd.exec.after"
 	EvtCmdExecError  = "cmd.exec.error"
@@ -155,7 +155,7 @@ func SetStrictMode(strict bool) {
 	gOpts.SetStrictMode(strict)
 }
 
-// IsGtVerbose get is strict mode
+// IsGteVerbose get is strict mode
 func IsGteVerbose(verb VerbLevel) bool {
 	return gOpts.verbose >= verb
 }
@@ -167,7 +167,6 @@ func IsDebugMode() bool {
 
 // Commander interface
 type Commander interface {
-	// Run([]string) int
 	Value(string) interface{}
 	SetValue(string, interface{})
 }
@@ -266,7 +265,7 @@ func (vl VerbLevel) Upper() string {
 	return strings.ToUpper(vl.Name())
 }
 
-// String verbose level to string.
+// Name verbose level to string.
 func (vl VerbLevel) Name() string {
 	switch vl {
 	case VerbQuiet:

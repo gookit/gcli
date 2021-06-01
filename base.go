@@ -17,6 +17,7 @@ import (
 
 // core definition TODO rename to context ??
 type core struct {
+	color.SimplePrinter
 	*cmdLine
 	// Hooks manage. allowed hooks: "init", "before", "after", "error"
 	*Hooks
@@ -24,7 +25,6 @@ type core struct {
 	HelpVars
 	// global options flag set
 	gFlags *Flags
-	SimplePrinter
 	// GOptsBinder you can custom binding global options
 	GOptsBinder func(gf *Flags)
 }
@@ -75,39 +75,6 @@ func (c core) innerHelpVars() map[string]string {
 		"binFile": CLI.binFile,
 		"binName": CLI.binName,
 	}
-}
-
-// SimplePrinter struct. for inject struct
-type SimplePrinter struct{}
-
-// Print message
-func (s SimplePrinter) Print(v ...interface{}) {
-	color.Print(v...)
-}
-
-// Printf message
-func (s SimplePrinter) Printf(format string, v ...interface{}) {
-	color.Printf(format, v...)
-}
-
-// Println message
-func (s SimplePrinter) Println(v ...interface{}) {
-	color.Println(v...)
-}
-
-// Infoln message
-func (s SimplePrinter) Infoln(a ...interface{}) {
-	color.Info.Println(a...)
-}
-
-// Warnln message
-func (s SimplePrinter) Warnln(a ...interface{}) {
-	color.Warn.Println(a...)
-}
-
-// Errorln message
-func (s SimplePrinter) Errorln(a ...interface{}) {
-	color.Error.Println(a...)
 }
 
 // simple map[string]interface{} struct
@@ -182,7 +149,7 @@ func (hc *HookCtx) Name() string {
 	return hc.name
 }
 
-// Hooks struct
+// Hooks struct. hookManager
 type Hooks struct {
 	// Hooks can setting some hooks func on running.
 	hooks map[string]HookFunc

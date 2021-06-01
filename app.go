@@ -467,6 +467,17 @@ func (app *App) Run(args []string) (code int) {
 	return app.exitOnEnd(code)
 }
 
+// RunCmd running an top command with custom args
+//
+// Usage:
+//	app.Exec("top")
+//	app.Exec("top", []string{"-a", "val0", "arg0"})
+//	// can add sub command on args
+//	app.Exec("top", []string{"sub", "-o", "abc"})
+func (app *App) RunCmd(name string, args []string) int {
+	return app.doRunCmd(name, args)
+}
+
 func (app *App) doRunCmd(name string, args []string) (code int) {
 	cmd := app.GetCommand(name)
 	app.Fire(EvtAppRunBefore, cmd)
@@ -518,7 +529,8 @@ func (app *App) exitOnEnd(code int) int {
 	return code
 }
 
-// Exec running other command in current command
+// Exec direct exec other command in current command
+//
 // name can be:
 // - top command name in the app. 'top'
 // - command path in the app. 'top sub'
