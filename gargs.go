@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"strconv"
 	"strings"
+
+	"github.com/gookit/goutil/strutil"
 )
 
 /*************************************************************
@@ -65,7 +67,7 @@ func (ags *Arguments) ParseArgs(args []string) (err error) {
 			break
 		}
 
-		if arg.IsArray {
+		if arg.Arrayed {
 			err = arg.bindValue(args[i:])
 			inNum = num // must reset inNum
 		} else {
@@ -101,6 +103,20 @@ func (ags *Arguments) ParseArgs(args []string) (err error) {
 func (ags *Arguments) AddArg(name, desc string, requiredAndIsArray ...bool) *Argument {
 	// create new argument
 	newArg := NewArgument(name, desc, requiredAndIsArray...)
+
+	return ags.AddArgument(newArg)
+}
+
+// AddArgByRule add an arg by simple string rule
+func (ags *Arguments) AddArgByRule(name, rule string) *Argument {
+	mp := parseSimpleRule(name, rule)
+
+	required := strutil.MustBool(mp["required"])
+	newArg := NewArgument(name, mp["desc"], required)
+
+	if defVal := mp["default"]; defVal != "" {
+		newArg.Value = defVal
+	}
 
 	return ags.AddArgument(newArg)
 }
@@ -146,7 +162,7 @@ func (ags *Arguments) AddArgument(arg *Argument) *Argument {
 		ags.hasOptionalArg = true
 	}
 
-	if arg.IsArray {
+	if arg.Arrayed {
 		ags.hasArrayArg = true
 	}
 
@@ -175,6 +191,7 @@ func (ags *Arguments) HasArguments() bool {
 }
 
 // Arg get arg by defined name.
+//
 // Usage:
 // 	intVal := ags.Arg("name").Int()
 // 	strVal := ags.Arg("name").String()
@@ -211,9 +228,9 @@ type Argument struct {
 	ShowName string
 	// Required arg is required
 	Required bool
-	// IsArray if is array, can allow accept multi values, and must in last.
-	IsArray bool
-	// valWrapper Value TODO ...
+	// Arrayed if is array, can allow accept multi values, and must in last.
+	Arrayed bool
+	// value *goutil.Value TODO ...
 	// value store parsed argument data. (type: string, []string)
 	Value interface{}
 	// Handler custom argument value handler on call GetValue()
@@ -225,12 +242,12 @@ type Argument struct {
 }
 
 // NewArgument quick create an new command argument
-func NewArgument(name, desc string, requiredAndIsArray ...bool) *Argument {
-	var isArray, required bool
-	if ln := len(requiredAndIsArray); ln > 0 {
-		required = requiredAndIsArray[0]
+func NewArgument(name, desc string, requiredAndArrayed ...bool) *Argument {
+	var arrayed, required bool
+	if ln := len(requiredAndArrayed); ln > 0 {
+		required = requiredAndArrayed[0]
 		if ln > 1 {
-			isArray = requiredAndIsArray[1]
+			arrayed = requiredAndArrayed[1]
 		}
 	}
 
@@ -240,8 +257,14 @@ func NewArgument(name, desc string, requiredAndIsArray ...bool) *Argument {
 		// other options
 		// ShowName: name,
 		Required: required,
-		IsArray:  isArray,
+		Arrayed:  arrayed,
 	}
+}
+
+// SetArrayed the argument
+func (a *Argument) SetArrayed() *Argument {
+	a.Arrayed = true
+	return a
 }
 
 // Init the argument
@@ -269,7 +292,7 @@ func (a *Argument) goodArgument() string {
 
 // HelpName for render help message
 func (a *Argument) HelpName() string {
-	if a.IsArray {
+	if a.Arrayed {
 		return a.ShowName + "..."
 	}
 
@@ -313,7 +336,7 @@ func (a *Argument) Int(defVal ...int) int {
 		def = defVal[0]
 	}
 
-	if a.Value == nil || a.IsArray {
+	if a.Value == nil || a.Arrayed {
 		return def
 	}
 
@@ -337,7 +360,7 @@ func (a *Argument) String(defVal ...string) string {
 		def = defVal[0]
 	}
 
-	if a.Value == nil || a.IsArray {
+	if a.Value == nil || a.Arrayed {
 		return def
 	}
 
@@ -369,7 +392,7 @@ func (a *Argument) Array() (ss []string) {
 
 // Strings argument value to string array, if argument isArray = true.
 func (a *Argument) Strings() (ss []string) {
-	if a.Value != nil && a.IsArray {
+	if a.Value != nil && a.Arrayed {
 		ss = a.Value.([]string)
 	}
 

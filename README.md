@@ -56,11 +56,12 @@ go get github.com/gookit/gcli/v3
 
 ## Quick start
 
-```go 
+an example for quick start:
+
+```go
 package main
 
 import (
-    "runtime"
     "github.com/gookit/gcli/v3"
     "github.com/gookit/gcli/v3/_examples/cmd"
 )
@@ -77,20 +78,163 @@ func main() {
         Name: "demo",
         // allow color tag and {$cmd} will be replace to 'demo'
         Desc: "this is a description <info>message</> for {$cmd}", 
+        Subs: []*gcli.Command {
+            // ... allow add subcommands
+        },
         Aliases: []string{"dm"},
         Func: func (cmd *gcli.Command, args []string) error {
             gcli.Print("hello, in the demo command\n")
-            return 0
+            return nil
         },
     })
 
     // .... add more ...
 
-    app.Run()
+    app.Run(nil)
 }
 ```
 
-## Usage
+## Binding flags
+
+### Bind Options(flag)
+
+#### Use flag methods
+
+Available methods:
+
+```go
+BoolOpt(p *bool, name, shorts string, defValue bool, desc string)
+BoolVar(p *bool, meta FlagMeta)
+Float64Opt(p *float64, name, shorts string, defValue float64, desc string)
+Float64Var(p *float64, meta FlagMeta)
+Int64Opt(p *int64, name, shorts string, defValue int64, desc string)
+Int64Var(p *int64, meta FlagMeta)
+IntOpt(p *int, name, shorts string, defValue int, desc string)
+IntVar(p *int, meta FlagMeta)
+StrOpt(p *string, name, shorts, defValue, desc string)
+StrVar(p *string, meta FlagMeta)
+Uint64Opt(p *uint64, name, shorts string, defValue uint64, desc string)
+Uint64Var(p *uint64, meta FlagMeta)
+UintOpt(p *uint, name, shorts string, defValue uint, desc string)
+UintVar(p *uint, meta FlagMeta)
+Var(p flag.Value, meta FlagMeta)
+VarOpt(p flag.Value, name, shorts, desc string)
+```
+
+Usage examples:
+
+```go
+var id int
+var b bool
+var opt, dir string
+var f1 float64
+var names gcli.Strings
+
+// bind options
+cmd.IntOpt(&id, "id", "", 2, "the id option")
+cmd.BoolOpt(&b, "bl", "b", false, "the bool option")
+// notice `DIRECTORY` will replace to option value type
+cmd.StrOpt(&dir, "dir", "d", "", "the `DIRECTORY` option")
+// setting option name and short-option name
+cmd.StrOpt(&opt, "opt", "o", "", "the option message")
+// setting a special option var, it must implement the flag.Value interface
+cmd.VarOpt(&names, "names", "n", "the option message")
+```
+
+#### Use struct tags
+
+```go
+package main
+
+import (
+	"fmt"
+
+	"github.com/gookit/gcli/v3"
+)
+
+func main() {
+	type userOpts struct {
+		Int  int    `flag:"name=int0;shorts=i;required=true;desc=int option message"`
+		Bol  bool   `flag:"name=bol;shorts=b;desc=bool option message"`
+		Str1 string `flag:"name=str1;shorts=o,h;required=true;desc=str1 message"`
+		// use ptr
+		Str2 *string `flag:"name=str2;required=true;desc=str2 message"`
+		// custom type and implement flag.Value
+		Verb0 gcli.VerbLevel `flag:"name=verb0;shorts=V;desc=verb0 message"`
+		// use ptr
+		Verb1 *gcli.VerbLevel `flag:"name=verb1;desc=verb1 message"`
+	}
+
+	astr := "xyz"
+	verb := gcli.VerbWarn
+
+	cmd := gcli.NewCommand("test", "desc")
+	// fs := gcli.NewFlags("test")
+	// err := fs.FromStruct(&userOpts{
+	err := cmd.FromStruct(&userOpts{
+		Str2:  &astr,
+		Verb1: &verb,
+	})
+	fmt.Println(err)
+}
+```
+
+### Bind Arguments
+
+About arguments:
+
+- Required argument cannot be defined after optional argument
+- Only one array parameter is allowed
+- The (array)argument of multiple values can only be defined at the end
+
+Available methods:
+
+```go
+Add(arg Argument) *Argument
+AddArg(name, desc string, requiredAndIsArray ...bool) *Argument
+AddArgument(arg *Argument) *Argument
+BindArg(arg Argument) *Argument
+```
+
+Usage examples:
+
+```go
+cmd.AddArg("arg0", "the first argument, is required", true)
+cmd.AddArg("arg1", "the second argument, is required", true)
+cmd.AddArg("arg2", "the optional argument, is optional")
+cmd.AddArg("arrArg", "the array argument, is array", false, true)
+```
+
+can also use `Arg()/BindArg()`:
+
+```go
+cmd.Arg("arg0", gcli.Argument{
+	Name: "ag0",
+	Desc: "the first argument, is required",
+	Require: true,
+})
+cmd.BindArg("arg0", gcli.Argument{
+	Name: "ag0",
+	Desc: "the second argument, is required",
+	Require: true,
+})
+cmd.Arg("arg2", gcli.Argument{
+	Name: "ag0",
+	Desc: "the third argument, is is optional",
+})
+
+cmd.BindArg("arrArg", gcli.Argument{
+	Name: "arrArg",
+	Desc: "the third argument, is is array",
+	IsArray: true,
+})
+```
+
+## Add commands
+
+
+
+## Run application
 
 Build a demo application 
 
@@ -183,7 +327,7 @@ OK, auto-complete file generate successful
 
 > After running, it will generate an `auto-completion.{zsh|bash}` file in the current directory,
  and the shell environment name is automatically obtained.
- Of course you can specify it manually at runtime
+ Of course, you can specify it manually at runtime
 
 Generated shell script file ref： 
 
@@ -303,100 +447,6 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 ```
 
 ![cmd-help](_examples/images/cmd-help.png)
-
-### Bind Options(flag)
-
-Available methods:
-
-```go
-BoolOpt(p *bool, name, shorts string, defValue bool, desc string)
-BoolVar(p *bool, meta FlagMeta)
-Float64Opt(p *float64, name, shorts string, defValue float64, desc string)
-Float64Var(p *float64, meta FlagMeta)
-Int64Opt(p *int64, name, shorts string, defValue int64, desc string)
-Int64Var(p *int64, meta FlagMeta)
-IntOpt(p *int, name, shorts string, defValue int, desc string)
-IntVar(p *int, meta FlagMeta)
-StrOpt(p *string, name, shorts, defValue, desc string)
-StrVar(p *string, meta FlagMeta)
-Uint64Opt(p *uint64, name, shorts string, defValue uint64, desc string)
-Uint64Var(p *uint64, meta FlagMeta)
-UintOpt(p *uint, name, shorts string, defValue uint, desc string)
-UintVar(p *uint, meta FlagMeta)
-Var(p flag.Value, meta FlagMeta)
-VarOpt(p flag.Value, name, shorts, desc string)
-```
-
-Usage examples:
-
-```go
-var id int
-var b bool
-var opt, dir string
-var f1 float64
-var names gcli.Strings
-
-// bind options
-cmd.IntOpt(&id, "id", "", 2, "the id option")
-cmd.BoolOpt(&b, "bl", "b", false, "the bool option")
-// notice `DIRECTORY` will replace to option value type
-cmd.StrOpt(&dir, "dir", "d", "", "the `DIRECTORY` option")
-// setting option name and short-option name
-cmd.StrOpt(&opt, "opt", "o", "", "the option message")
-// setting a special option var, it must implement the flag.Value interface
-cmd.VarOpt(&names, "names", "n", "the option message")
-```
-
-### Bind Arguments
-
-About arguments:
-
-- Required argument cannot be defined after optional argument
-- Only one array parameter is allowed
-- The (array)argument of multiple values can only be defined at the end
-
-Available methods:
-
-```go
-Add(arg Argument) *Argument
-AddArg(name, desc string, requiredAndIsArray ...bool) *Argument
-AddArgument(arg *Argument) *Argument
-BindArg(arg Argument) *Argument
-```
-
-Usage examples:
-
-```go
-cmd.AddArg("arg0", "the first argument, is required", true)
-cmd.AddArg("arg1", "the second argument, is required", true)
-cmd.AddArg("arg2", "the optional argument, is optional")
-cmd.AddArg("arrArg", "the array argument, is array", false, true)
-```
-
-can also use `Arg()/BindArg()`:
-
-```go
-cmd.Arg("arg0", gcli.Argument{
-	Name: "ag0",
-	Desc: "the first argument, is required",
-	Require: true,
-})
-cmd.BindArg("arg0", gcli.Argument{
-	Name: "ag0",
-	Desc: "the second argument, is required",
-	Require: true,
-})
-cmd.Arg("arg2", gcli.Argument{
-	Name: "ag0",
-	Desc: "the third argument, is is optional",
-})
-
-cmd.BindArg("arrArg", gcli.Argument{
-	Name: "arrArg",
-	Desc: "the third argument, is is array",
-	IsArray: true,
-})
-```
 
 ## Progress display
 

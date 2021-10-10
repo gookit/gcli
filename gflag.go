@@ -27,6 +27,14 @@ const (
 
 	// default desc
 	defaultDesc = "No description"
+
+	// TagRuleNamed struct tag use named k-v rule.
+	// eg: `flag:"name=int0;shorts=i;required=true;desc=int option message"`
+	TagRuleNamed = 0
+	// TagRuleSimple struct tag use simple rule.
+	// format: "desc;required;default;shorts"
+	// eg: `flag:"int option message;required;;i"`
+	TagRuleSimple = 1
 )
 
 var (
@@ -46,6 +54,8 @@ type FlagsOption struct {
 	Alignment uint8
 	// TagName on struct
 	TagName string
+	// TagRuleType for struct tag value. default is TagRuleNamed
+	TagRuleType uint8
 }
 
 // Flags struct definition
@@ -105,8 +115,9 @@ func NewFlags(nameWithDesc ...string) *Flags {
 	return fs
 }
 
-var errNotAnStruct = errors.New("must input an struct")
 var flagValueType = reflect.TypeOf(new(flag.Value)).Elem()
+var errNotAnStruct = errors.New("must input an struct")
+var errTagRuleType = errors.New("invalid tag rule type on struct")
 
 // FromStruct from struct tag binding options
 func (fs *Flags) FromStruct(s interface{}) error {
@@ -125,6 +136,7 @@ func (fs *Flags) FromStruct(s interface{}) error {
 		tagName = FlagTagName
 	}
 
+	var mp map[string]string
 	for i := 0; i < t.NumField(); i++ {
 		sf := t.Field(i)
 		name := sf.Name
@@ -159,7 +171,13 @@ func (fs *Flags) FromStruct(s interface{}) error {
 			fv = fv.Elem()
 		}
 
-		mp := parseTagValue(name, str)
+		if fs.opt.TagRuleType == TagRuleNamed {
+			mp = parseNamedRule(name, str)
+		} else if fs.opt.TagRuleType == TagRuleSimple {
+			mp = parseSimpleRule(name, str)
+		} else {
+			return errTagRuleType
+		}
 
 		// for create flag meta
 		defVal := mp["default"]
@@ -212,6 +230,11 @@ func (fs *Flags) FromStruct(s interface{}) error {
 	return nil
 }
 
+// FromText from text desc binding options
+// func (fs *Flags) FromText(s string) error {
+// 	return nil
+// }
+
 // SetOptions for the object.
 func (fs *Flags) SetOptions(opt *FlagsOption) {
 	fs.opt = opt
@@ -223,7 +246,7 @@ func (fs *Flags) WithOptions(fns func(opt *FlagsOption)) *Flags {
 	return fs
 }
 
-// create and init flag.FlagSet
+// InitFlagSet create and init flag.FlagSet
 func (fs *Flags) InitFlagSet(name string) {
 	if fs.fSet != nil {
 		return

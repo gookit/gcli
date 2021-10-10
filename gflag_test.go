@@ -446,6 +446,9 @@ func TestFlags_FromStruct(t *testing.T) {
 	fs.PrintHelpPanel()
 }
 
+// func TestFlags_FromText(t *testing.T) {
+// }
+
 func TestFlags_PrintHelpPanel(t *testing.T) {
 	fs := gcli.NewFlags("test")
 

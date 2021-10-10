@@ -54,6 +54,16 @@ func TestCommand_AddArg(t *testing.T) {
 	})
 }
 
+func TestArguments_AddArgByRule(t *testing.T) {
+	is := assert.New(t)
+	ags := gcli.Arguments{}
+
+	arg := ags.AddArgByRule("arg2", "arg2 desc;false;23")
+	is.Equal("arg2 desc", arg.Desc)
+	is.Equal(23, arg.Int())
+	is.Equal(false, arg.Arrayed)
+}
+
 func TestArguments_BindArg(t *testing.T) {
 	is := assert.New(t)
 	ags := gcli.Arguments{}
@@ -66,7 +76,7 @@ func TestArgument(t *testing.T) {
 	is := assert.New(t)
 	arg := gcli.NewArgument("arg0", "arg desc")
 
-	is.False(arg.IsArray)
+	is.False(arg.Arrayed)
 	is.False(arg.Required)
 	is.False(arg.IsEmpty())
 	is.False(arg.HasValue())
@@ -107,9 +117,9 @@ func TestArgument(t *testing.T) {
 	is.Equal("23", arg.String())
 
 	// array value
-	arg.IsArray = true
+	arg.Arrayed = true
 	arg.Value = []string{"a", "b"}
-	is.True(arg.IsArray)
+	is.True(arg.Arrayed)
 	is.Equal(0, arg.Int())
 	is.Equal("", arg.String())
 	is.Equal([]string{"a", "b"}, arg.Array())
@@ -117,7 +127,7 @@ func TestArgument(t *testing.T) {
 	// required and is-array
 	arg = gcli.NewArgument("arg1", "arg desc", true, true)
 	arg.Init()
-	is.True(arg.IsArray)
+	is.True(arg.Arrayed)
 	is.True(arg.Required)
 	is.Equal("arg1...", arg.HelpName())
 }

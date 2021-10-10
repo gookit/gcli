@@ -107,9 +107,18 @@ func panicf(format string, v ...interface{}) {
 	panic(fmt.Sprintf("GCli: "+format, v...))
 }
 
-// parse tag value. eg: "name=int0;shorts=i;required=true;desc=int option message"
-func parseTagValue(name, str string) (mp map[string]string) {
-	ss := strutil.Split(str, ";")
+// parse tag named k-v value. item split by ';'
+//
+// eg: "name=int0;shorts=i;required=true;desc=int option message"
+//
+// supported field name:
+//	name
+//	desc
+//	shorts
+//	required
+//	default
+func parseNamedRule(name, rule string) (mp map[string]string) {
+	ss := strutil.Split(rule, ";")
 	if len(ss) == 0 {
 		return
 	}
@@ -127,6 +136,55 @@ func parseTagValue(name, str string) (mp map[string]string) {
 		}
 
 		mp[key] = val
+	}
+	return
+}
+
+// struct tag value use simple rule. each item split by ';'
+//
+// format: "desc;required;default;shorts"
+//
+// eg: "int option message;required;i"
+// eg: "int option message;;a,b"
+// eg: "int option message;;a,b;23"
+func parseSimpleRule(name, rule string) (mp map[string]string) {
+	ss := splitNTrimmed(rule, ";", 4)
+	ln := len(ss)
+	if ln == 0 {
+		return
+	}
+
+	mp = make(map[string]string, ln)
+
+	mp["desc"] = ss[0]
+	if ln == 1 {
+		return
+	}
+
+	required := ss[1]
+	if required == "required" {
+		required = "true"
+	}
+
+	mp["required"] = required
+
+	// has shorts and default
+	if ln > 3 {
+		mp["default"], mp["shorts"] = ss[2], ss[3]
+	} else if ln > 2 {
+		mp["default"] = ss[2]
+	}
+	return
+}
+
+// TODO use strutil.SplitNTrimmed
+func splitNTrimmed(s, sep string, n int) (ss []string) {
+	if s = strings.TrimSpace(s); s == "" {
+		return
+	}
+
+	for _, val := range strings.SplitN(s, sep, n) {
+		ss = append(ss, strings.TrimSpace(val))
 	}
 	return
 }
