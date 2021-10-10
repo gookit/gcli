@@ -359,7 +359,7 @@ cmd.VarOpt(&names, "names", "n", "the option message")
 
 ```go
 Add(arg Argument) *Argument
-AddArg(name, desc string, requiredAndIsArray ...bool) *Argument
+AddArg(name, desc string, requiredAndArrayed ...bool) *Argument
 AddArgument(arg *Argument) *Argument
 BindArg(arg Argument) *Argument
 ```
@@ -394,7 +394,7 @@ cmd.Add("arg2", gcli.Argument{
 cmd.BindArg("arrArg", gcli.Argument{
 	Name: "arrArg",
 	Desc: "the third argument, is is array",
-	IsArray: true,
+	Arrayed: true,
 })
 ```
 

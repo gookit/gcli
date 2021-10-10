@@ -100,9 +100,9 @@ func (ags *Arguments) ParseArgs(args []string) (err error) {
 // 	cmd.AddArg("name", "description")
 // 	cmd.AddArg("name", "description", true) // required
 // 	cmd.AddArg("names", "description", true, true) // required and is array
-func (ags *Arguments) AddArg(name, desc string, requiredAndIsArray ...bool) *Argument {
+func (ags *Arguments) AddArg(name, desc string, requiredAndArrayed ...bool) *Argument {
 	// create new argument
-	newArg := NewArgument(name, desc, requiredAndIsArray...)
+	newArg := NewArgument(name, desc, requiredAndArrayed...)
 
 	return ags.AddArgument(newArg)
 }

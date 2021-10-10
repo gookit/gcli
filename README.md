@@ -21,7 +21,7 @@ A simple-to-use command line application, written using golang.
 
 ## Features
 
-- Simple to use
+- Rich in functions and easy to use
 - Support for adding multiple commands and supporting command **aliases**
 - Support binding command options from structure
     - example `flag:"name=int0;shorts=i;required=true;desc=int option message"`
@@ -42,6 +42,19 @@ A simple-to-use command line application, written using golang.
 - When the command entered is incorrect, a similar command will be prompted(including an alias prompt)
 - Supports generation of `zsh` and `bash` command completion script files
 - Supports a single command as a stand-alone application
+
+**Flag Options**:
+
+- Options start with `-` or `--`, and the first character must be a letter
+- Support long option. eg: `--long` `--long value`
+- Support short option. eg: `-s -a value`
+- Support define array option
+    - eg: `--tag php --tag go` will get `tag: [php, go]`
+
+**Flag Arguments**:
+
+- Support binding named arguemnt
+- Support define array argument
 
 ## GoDoc
 
@@ -96,7 +109,9 @@ func main() {
 
 ## Binding flags
 
-### Bind Options(flag)
+flags parse and manage by `gflag`, allow binding flag options and arguments.
+
+### Bind Options
 
 #### Use flag methods
 
@@ -152,19 +167,19 @@ import (
 	"github.com/gookit/gcli/v3"
 )
 
-func main() {
-	type userOpts struct {
-		Int  int    `flag:"name=int0;shorts=i;required=true;desc=int option message"`
-		Bol  bool   `flag:"name=bol;shorts=b;desc=bool option message"`
-		Str1 string `flag:"name=str1;shorts=o,h;required=true;desc=str1 message"`
-		// use ptr
-		Str2 *string `flag:"name=str2;required=true;desc=str2 message"`
-		// custom type and implement flag.Value
-		Verb0 gcli.VerbLevel `flag:"name=verb0;shorts=V;desc=verb0 message"`
-		// use ptr
-		Verb1 *gcli.VerbLevel `flag:"name=verb1;desc=verb1 message"`
-	}
+type userOpts struct {
+	Int  int    `flag:"name=int0;shorts=i;required=true;desc=int option message"`
+	Bol  bool   `flag:"name=bol;shorts=b;desc=bool option message"`
+	Str1 string `flag:"name=str1;shorts=o,h;required=true;desc=str1 message"`
+	// use ptr
+	Str2 *string `flag:"name=str2;required=true;desc=str2 message"`
+	// custom type and implement flag.Value
+	Verb0 gcli.VerbLevel `flag:"name=verb0;shorts=V;desc=verb0 message"`
+	// use ptr
+	Verb1 *gcli.VerbLevel `flag:"name=verb1;desc=verb1 message"`
+}
 
+func main() {
 	astr := "xyz"
 	verb := gcli.VerbWarn
 
@@ -181,17 +196,18 @@ func main() {
 
 ### Bind Arguments
 
-About arguments:
+**About arguments**:
 
 - Required argument cannot be defined after optional argument
-- Only one array parameter is allowed
+- Support binding array argument
 - The (array)argument of multiple values can only be defined at the end
 
 Available methods:
 
 ```go
 Add(arg Argument) *Argument
-AddArg(name, desc string, requiredAndIsArray ...bool) *Argument
+AddArg(name, desc string, requiredAndArrayed ...bool) *Argument
+AddArgByRule(name, rule string) *Argument
 AddArgument(arg *Argument) *Argument
 BindArg(arg Argument) *Argument
 ```
@@ -205,7 +221,7 @@ cmd.AddArg("arg2", "the optional argument, is optional")
 cmd.AddArg("arrArg", "the array argument, is array", false, true)
 ```
 
-can also use `Arg()/BindArg()`:
+can also use `Arg()/BindArg()` add a gcli.Argument object:
 
 ```go
 cmd.Arg("arg0", gcli.Argument{
@@ -222,21 +238,64 @@ cmd.Arg("arg2", gcli.Argument{
 	Name: "ag0",
 	Desc: "the third argument, is is optional",
 })
-
 cmd.BindArg("arrArg", gcli.Argument{
 	Name: "arrArg",
 	Desc: "the third argument, is is array",
-	IsArray: true,
+	Arrayed: true,
 })
+```
+
+use `AddArgByRule`:
+
+```go
+cmd.AddArgByRule("arg2", "add an arg by string rule;required;23")
+```
+
+## New application
+
+```go
+app := gcli.NewApp()
+app.Version = "1.0.3"
+app.Desc = "this is my cli application"
+// app.SetVerbose(gcli.VerbDebug)
 ```
 
 ## Add commands
 
-
+```go
+app.Add(cmd.Example)
+app.Add(&gcli.Command{
+    Name: "demo",
+    // allow color tag and {$cmd} will be replace to 'demo'
+    Desc: "this is a description <info>message</> for {$cmd}", 
+    Subs: []*gcli.Command {
+        // level1: sub commands...
+    	{
+            Name:    "remote",
+            Desc:    "remote command for git",
+            Aliases: []string{"rmt"},
+            Func: func(c *gcli.Command, args []string) error {
+                dump.Println(c.Path())
+                return nil
+            },
+            Subs: []*gcli.Command{
+                // level2: sub commands...
+                // {}
+            }
+        },
+        // ... allow add subcommands
+    },
+    Aliases: []string{"dm"},
+    Func: func (cmd *gcli.Command, args []string) error {
+        gcli.Print("hello, in the demo command\n")
+        return nil
+    },
+})
+```
 
 ## Run application
 
-Build a demo application 
+Build the example application as demo
 
 ```bash
 % go build ./_examples/cliapp                                                         
@@ -340,10 +399,20 @@ Preview:
 
 ## Write a command
 
-### Quick add
+command allow setting fields:
+
+- `Name` the command name.
+- `Desc` the command description.
+- `Aliases` the command alias names.
+- `Config` the command config func, will call it on init.
+- `Subs` add subcommands, allow multi level subcommands
+- `Func` the command handle callback func
+- More, please see [godoc](https://pkg.go.dev/github.com/gookit/gcli/v3)
+
+### Quick create
 
 ```go
-app.Add(&gcli.Command{
+var MyCmd = &gcli.Command{
     Name: "demo",
     // allow color tag and {$cmd} will be replace to 'demo'
     Desc: "this is a description <info>message</> for command {$cmd}", 
@@ -352,7 +421,9 @@ app.Add(&gcli.Command{
         gcli.Print("hello, in the demo command\n")
         return nil
     },
-})
+    // allow add multi level subcommands
+    Subs: []*gcli.Command{},
+}
 ```
 
 ### Write go file
@@ -644,7 +715,6 @@ func main() {
 	// internal theme/style:
 	color.Info.Tips("message")
 	color.Info.Prompt("message")
-	color.Info.Println("message")
 	color.Warn.Println("message")
 	color.Error.Println("message")
 	

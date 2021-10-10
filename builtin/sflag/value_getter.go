@@ -11,7 +11,7 @@ type ValueGetter struct {
 	// value store parsed argument data. (type: string, []string)
 	Value interface{}
 	// is array
-	IsArray bool
+	Arrayed bool
 }
 
 // Int argument value to int
@@ -21,7 +21,7 @@ func (v *ValueGetter) Int(defVal ...int) int {
 		def = defVal[0]
 	}
 
-	if v.Value == nil || v.IsArray {
+	if v.Value == nil || v.Arrayed {
 		return def
 	}
 
@@ -42,7 +42,7 @@ func (v *ValueGetter) String(defVal ...string) string {
 		def = defVal[0]
 	}
 
-	if v.Value == nil || v.IsArray {
+	if v.Value == nil || v.Arrayed {
 		return def
 	}
 
@@ -61,7 +61,7 @@ func (v *ValueGetter) Ints() (ints []int) {
 
 // Strings value to string slice, if argument isArray = true.
 func (v *ValueGetter) Strings() (ss []string) {
-	if v.Value != nil && v.IsArray {
+	if v.Value != nil && v.Arrayed {
 		ss = v.Value.([]string)
 	}
 
