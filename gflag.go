@@ -116,13 +116,18 @@ func NewFlags(nameWithDesc ...string) *Flags {
 }
 
 var flagValueType = reflect.TypeOf(new(flag.Value)).Elem()
-var errNotAnStruct = errors.New("must input an struct")
+var errNotPtrValue = errors.New("must provide an ptr value")
+var errNotAnStruct = errors.New("must provide an struct ptr")
 var errTagRuleType = errors.New("invalid tag rule type on struct")
 
 // FromStruct from struct tag binding options
-func (fs *Flags) FromStruct(s interface{}) error {
-	v := reflect.ValueOf(s)
-	if v.Kind() == reflect.Ptr && !v.IsNil() {
+func (fs *Flags) FromStruct(ptr interface{}) error {
+	v := reflect.ValueOf(ptr)
+	if v.Kind() != reflect.Ptr {
+		return errNotPtrValue
+	}
+
+	if !v.IsNil() {
 		v = v.Elem()
 	}
 
@@ -238,6 +243,12 @@ func (fs *Flags) FromStruct(s interface{}) error {
 // SetOptions for the object.
 func (fs *Flags) SetOptions(opt *FlagsOption) {
 	fs.opt = opt
+}
+
+// UseSimpleRule for the parse tag value rule string. see TagRuleSimple
+func (fs *Flags) UseSimpleRule() *Flags {
+	fs.opt.TagRuleType = TagRuleSimple
+	return fs
 }
 
 // WithOptions for the object.

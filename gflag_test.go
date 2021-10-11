@@ -382,6 +382,11 @@ func TestFlags_FromStruct_simple(t *testing.T) {
 
 	assert.Equal(t, 13, opt.Int)
 	assert.Equal(t, "xyz", opt.Str)
+
+	// not use ptr
+	opts1 := userOpts0{}
+	err = fs.FromStruct(opts1)
+	assert.Error(t, err)
 }
 
 func TestFlags_FromStruct_ptrField(t *testing.T) {
@@ -415,6 +420,25 @@ func TestFlags_FromStruct_ptrField(t *testing.T) {
 	dump.P(opt)
 	fmt.Println("Flag Help:")
 	fs.PrintHelpPanel()
+}
+
+func TestFlags_FromStruct_noNameStruct(t *testing.T) {
+	logOpts := struct {
+		Abbrev    bool `flag:"Only display the abbrev commit ID"`
+		NoColor   bool	`flag:"Dont use color render git output"`
+		MaxCommit int	`flag:"Max display how many commits;;15"`
+		Logfile   string      `flag:"export changelog message to file"`
+		Exclude   gcli.String `flag:"exclude contains given sub-string. multi by comma split."`
+	}{}
+
+	fs := gcli.NewFlags("test")
+	fs.UseSimpleRule()
+	// err := fs.FromStruct(logOpts)
+	err := fs.FromStruct(&logOpts)
+
+	assert.NoError(t, err)
+	assert.True(t, fs.HasFlag("abbrev"))
+	assert.True(t, fs.HasFlagMeta("abbrev"))
 }
 
 func TestFlags_FromStruct(t *testing.T) {
