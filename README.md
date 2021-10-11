@@ -9,7 +9,8 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gcli)](https://goreportcard.com/report/github.com/gookit/gcli)
 [![Coverage Status](https://coveralls.io/repos/github/gookit/gcli/badge.svg?branch=master)](https://coveralls.io/github/gookit/gcli?branch=master)
 
-A simple-to-use command line application, written using golang.
+A simple and easy-to-use command-line application and tool library written in Golang.
+Including running commands, color styles, data display, progress display, interactive methods, etc.
 
 ## [中文说明](README.zh-CN.md)
 
@@ -109,9 +110,11 @@ func main() {
 
 ## Binding flags
 
-flags parse and manage by `gflag`, allow binding flag options and arguments.
+flags binding and manage by builtin `gflag.go`, allow binding flag options and arguments.
 
-### Bind Options
+### Bind options
+
+gcli support multi method to binding flag options.
 
 #### Use flag methods
 
@@ -194,7 +197,7 @@ func main() {
 }
 ```
 
-### Bind Arguments
+### Bind arguments
 
 **About arguments**:
 
@@ -229,12 +232,7 @@ cmd.Arg("arg0", gcli.Argument{
 	Desc: "the first argument, is required",
 	Require: true,
 })
-cmd.BindArg("arg0", gcli.Argument{
-	Name: "ag0",
-	Desc: "the second argument, is required",
-	Require: true,
-})
-cmd.Arg("arg2", gcli.Argument{
+cmd.BindArg("arg2", gcli.Argument{
 	Name: "ag0",
 	Desc: "the third argument, is is optional",
 })
@@ -298,15 +296,15 @@ app.Add(&gcli.Command{
 Build the example application as demo
 
 ```bash
-% go build ./_examples/cliapp                                                         
+$ go build ./_examples/cliapp                                                         
 ```
 
 **Display version**
 
 ```bash
-% ./cliapp --version      
+$ ./cliapp --version      
 # or use -V                                                 
-% ./cliapp -V                                                     
+$ ./cliapp -V                                                     
 ```
 
 ![app-version](_examples/images/app-version.jpg)
@@ -337,7 +335,7 @@ Format:
 Run example:
 
 ```bash
-% ./cliapp example -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
+$ ./cliapp example -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
 ```
 
 You can see:
@@ -368,8 +366,8 @@ import  "github.com/gookit/gcli/v3/builtin"
 Build and run command(_This command can be deleted after success._)：
 
 ```bash
-% go build ./_examples/cliapp.go && ./cliapp genac -h // display help
-% go build ./_examples/cliapp.go && ./cliapp genac // run gen command
+$ go build ./_examples/cliapp.go && ./cliapp genac -h // display help
+$ go build ./_examples/cliapp.go && ./cliapp genac // run gen command
 ```
 
 will see:
@@ -431,7 +429,7 @@ var MyCmd = &gcli.Command{
 > the source file at: [example.go](_examples/cmd/example.go)
 
 ```go
-package cmd
+package main
 
 import (
 	"fmt"
@@ -459,8 +457,9 @@ var ExampleCommand = &gcli.Command{
 	Examples: `{$binName} {$cmd} --id 12 -c val ag0 ag1
 <cyan>{$fullCmd} --names tom --names john -n c</> test use special option`,
 	Config: func(c *gcli.Command) {
-		// 绑定命令选项信息
-		c.IntOpt(&exampleOpts.id, "id", "", 2, "the id option")
+	    // binding options
+        // ...
+        c.IntOpt(&exampleOpts.id, "id", "", 2, "the id option")
 		c.StrOpt(&exampleOpts.c, "config", "c", "value", "the config option")
 		// notice `DIRECTORY` will replace to option value type
 		c.StrOpt(&exampleOpts.dir, "dir", "d", "", "the `DIRECTORY` option")
@@ -469,11 +468,9 @@ var ExampleCommand = &gcli.Command{
 		// 支持绑定自定义变量, 但必须实现 flag.Value 接口
 		c.VarOpt(&exampleOpts.names, "names", "n", "the option message")
 
-		// 绑定命令参数信息，按参数位置绑定
+      // binding arguments
 		c.AddArg("arg0", "the first argument, is required", true)
-		c.AddArg("arg1", "the second argument, is required", true)
-		c.AddArg("arg2", "the optional argument, is optional")
-		c.AddArg("arrArg", "the array argument, is array", false, true)
+		// ...
 	},
 	Func:  exampleExecute,
 }
@@ -699,7 +696,7 @@ color.Comment.Println("your input password is: ", pwd)
 
 ![colored-demo](_examples/images/color/color-demo.jpg)
 
-### Usage
+### Color usage
 
 ```go
 package main
@@ -741,39 +738,6 @@ func main() {
 	color.Info.Tips("tips style message")
 	color.Warn.Tips("tips style message")
 }
-```
-
-### More usage
-
-- Basic color
-
-```go
-color.Bold.Println("bold message")
-color.Yellow.Println("yellow message")
-```
-
-- Extra themes
-
-```go
-color.Info.Println("Info message")
-color.Danger.Println("Danger message")
-color.Error.Println("Error message")
-color.Success.Println("Success message")
-```
-
-- Use like html tag
-
-> **Support** working on windows `cmd.exe` `powerShell` 
-
-```go
-// use style tag
-color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>")
-color.Println("<suc>hello</>")
-color.Println("<error>hello</>")
-color.Println("<warning>hello</>")
-
-// custom color attributes
-color.Print("<fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
 ```
 
 > **For more information on the use of color libraries, please visit [gookit/color](https://github.com/gookit/color)**

@@ -2,7 +2,7 @@
 
 ## TODO
 
-- [ ] flag option support alias name. 
+- [x] flag option support alias name. 
   - It isn't shorts name. eg: `name='dry-run' alias='dr'`
 - [ ] support flag option category
 - [ ] support command category by `c.Category`

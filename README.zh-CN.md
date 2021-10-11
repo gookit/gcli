@@ -9,7 +9,7 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gcli)](https://goreportcard.com/report/github.com/gookit/gcli)
 [![Coverage Status](https://coveralls.io/repos/github/gookit/gcli/badge.svg?branch=master)](https://coveralls.io/github/gookit/gcli?branch=master)
 
-一个Golang下的简单易用的命令行应用，工具库。包含运行命令，颜色风格，数据展示，进度显示，交互方法等
+Golang编写的简单易用的命令行应用，工具库。包含运行命令，颜色风格，数据展示，进度显示，交互方法等
 
 ## [ENGLISH](README.md)
 
@@ -58,7 +58,7 @@ go get github.com/gookit/gcli/v3
 
 如下，引入当前包就可以快速的编写cli应用了
 
-```go 
+```go
 package main
 
 import (
@@ -88,7 +88,7 @@ func main() {
 
     // .... add more ...
 
-    app.Run()
+    app.Run(nil)
 }
 ```
 
@@ -381,12 +381,7 @@ cmd.Add("arg0", gcli.Argument{
 	Desc: "the first argument, is required",
 	Require: true,
 })
-cmd.BindArg("arg0", gcli.Argument{
-	Name: "ag0",
-	Desc: "the second argument, is required",
-	Require: true,
-})
-cmd.Add("arg2", gcli.Argument{
+cmd.BindArg("arg2", gcli.Argument{
 	Name: "ag0",
 	Desc: "the third argument, is is optional",
 })
