@@ -309,11 +309,15 @@ func (c *Command) initCore(cName string) {
 		c.core.Hooks = &Hooks{}
 	}
 
+	binWithPath := c.binName + " " + c.Path()
+
 	c.AddVars(c.innerHelpVars())
 	c.AddVars(map[string]string{
 		"cmd": cName,
-		// binName with command
-		"binWithCmd": c.binName + " " + cName,
+		// binName with command name
+		"binWithCmd": binWithPath,
+		// binName with command path
+		"binWithPath": binWithPath,
 		// binFile with command
 		"fullCmd": c.binFile + " " + cName,
 	})
