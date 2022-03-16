@@ -5,7 +5,7 @@ go 1.13
 require (
 	github.com/gookit/color v1.5.0
 	github.com/gookit/goutil v0.4.4
-	github.com/stretchr/testify v1.7.0
+	github.com/stretchr/testify v1.7.1
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 	golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d // indirect
 )
