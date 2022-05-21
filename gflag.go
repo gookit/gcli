@@ -18,7 +18,7 @@ import (
 	"github.com/gookit/goutil/strutil"
 )
 
-// The options alignment type
+// The options text alignment type
 // - Align right, padding left
 // - Align left, padding right
 const (
@@ -46,7 +46,7 @@ var (
 
 // FlagsOption for render help information
 type FlagsOption struct {
-	// WithoutType dont display flag data type on print help
+	// WithoutType don't display flag data type on print help
 	WithoutType bool
 	// NameDescOL flag and desc at one line on print help
 	NameDescOL bool

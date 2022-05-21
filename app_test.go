@@ -45,7 +45,7 @@ var (
 					Name: "sub1",
 					Desc: "desc for top1.sub1",
 					Func: func(c *gcli.Command, args []string) error {
-						c.SetValue("msg", c.App().Value("top1:sub1"))
+						c.SetValue("msg", c.App().GetVal("top1:sub1"))
 						return nil
 					},
 				},
@@ -296,7 +296,7 @@ func TestApp_Run_subcommand(t *testing.T) {
 
 	c := appWithMl.FindCommand(id)
 	is.NotEmpty(c)
-	is.Equal("TestApp_Run_subcommand", c.Value("msg"))
+	is.Equal("TestApp_Run_subcommand", c.GetVal("msg"))
 }
 
 func TestApp_Run_by_cmd_ID(t *testing.T) {
@@ -307,7 +307,7 @@ func TestApp_Run_by_cmd_ID(t *testing.T) {
 
 	c := appWithMl.FindCommand("top1:sub1")
 	is.NotEmpty(c)
-	is.Equal("TestApp_Run_by_cmd_ID", c.Value("msg"))
+	is.Equal("TestApp_Run_by_cmd_ID", c.GetVal("msg"))
 }
 
 func TestApp_AddAliases_and_run(t *testing.T) {
@@ -320,7 +320,7 @@ func TestApp_AddAliases_and_run(t *testing.T) {
 
 	c := appWithMl.FindCommand(id)
 	is.NotEmpty(c)
-	is.Equal("TestApp_AddAliases_and_run", c.Value("msg"))
+	is.Equal("TestApp_AddAliases_and_run", c.GetVal("msg"))
 }
 
 func TestApp_showCommandHelp(t *testing.T) {

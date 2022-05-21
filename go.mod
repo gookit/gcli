@@ -1,6 +1,6 @@
 module github.com/gookit/gcli/v3
 
-go 1.13
+go 1.15
 
 require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
@@ -10,6 +10,3 @@ require (
 	golang.org/x/crypto v0.0.0-20210220033148-5ea612d1eb83
 	golang.org/x/term v0.0.0-20210220032956-6a3ed077a48d // indirect
 )
-
-// for develop
-//replace github.com/gookit/goutil => ../goutil

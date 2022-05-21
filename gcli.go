@@ -167,7 +167,7 @@ func IsDebugMode() bool {
 
 // Commander interface
 type Commander interface {
-	Value(string) interface{}
+	Value(string) (interface{}, bool)
 	SetValue(string, interface{})
 }
 

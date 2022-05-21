@@ -339,8 +339,8 @@ func TestCommand_Run_parseOptions(t *testing.T) {
 	err := c0.Run([]string{"--int", "10", "--str=abc", "txt"})
 
 	is.NoError(err)
-	is.Equal("test", c0.Value("name"))
-	is.Equal([]string{"txt"}, c0.Value("args"))
+	is.Equal("test", c0.GetVal("name"))
+	is.Equal([]string{"txt"}, c0.GetVal("args"))
 
 	is.Equal(10, int0)
 	is.Equal("abc", str0)

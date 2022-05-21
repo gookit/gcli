@@ -16,7 +16,7 @@ import (
 
 // Runner /Executor interface
 type Runner interface {
-	// Config(c *Command)
+	// Run Config(c *Command)
 	Run(c *Command, args []string) error
 }
 

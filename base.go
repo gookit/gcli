@@ -78,6 +78,7 @@ func (c core) innerHelpVars() map[string]string {
 }
 
 // simple map[string]interface{} struct
+// TODO use structs.MapDataStore
 type mapData struct {
 	data map[string]interface{}
 }
@@ -94,6 +95,11 @@ func (md *mapData) SetData(data map[string]interface{}) {
 
 // Value get from data
 func (md *mapData) Value(key string) interface{} {
+	return md.data[key]
+}
+
+// GetVal get from data
+func (md *mapData) GetVal(key string) interface{} {
 	return md.data[key]
 }
 

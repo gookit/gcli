@@ -114,7 +114,7 @@ func TestApp_On_CmdNotFound(t *testing.T) {
 func TestApp_On_CmdNotFound_redirect(t *testing.T) {
 	buf.Reset()
 	simpleCmd.ClearData()
-	assert.Equal(t, nil, simpleCmd.Value("simple"))
+	assert.Equal(t, nil, simpleCmd.GetVal("simple"))
 
 	cli := newNotExitApp()
 	cli.Add(simpleCmd)
