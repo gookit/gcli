@@ -49,9 +49,9 @@ type App struct {
 	// Func on run app, if is empty will display help.
 	Func func(app *App, args []string) error
 	// ExitOnEnd call os.Exit on running end
-	ExitOnEnd bool
+	// ExitOnEnd bool
 	// ExitFunc default is os.Exit
-	ExitFunc func(int)
+	// ExitFunc func(int)
 
 	// args on after parse global options and command name.
 	args []string
@@ -87,7 +87,7 @@ func NewApp(fns ...func(app *App)) *App {
 		// set a default version
 		// Version: "1.0.0",
 		// config
-		ExitOnEnd: true,
+		// ExitOnEnd: true,
 		// group
 		// moduleCommands: make(map[string]map[string]*Command),
 		commandBase: newCommandBase(),
@@ -190,11 +190,11 @@ func (app *App) initialize() {
  * register commands
  *************************************************************/
 
-// Add add one or multi command(s)
+// Add one or multi command(s)
 func (app *App) Add(c *Command, more ...*Command) {
 	app.AddCommand(c)
 
-	// if has more command
+	// has more command
 	if len(more) > 0 {
 		for _, cmd := range more {
 			app.AddCommand(cmd)

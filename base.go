@@ -131,10 +131,12 @@ func (md *mapData) ClearData() {
  *************************************************************/
 
 // HookFunc definition.
+//
 // func arguments:
 //  in app, like: func(app *App, data ...interface{})
 //  in cmd, like: func(cmd *Command, data ...interface{})
 // type HookFunc func(obj interface{}, data interface{})
+//
 // return:
 // - True go on handle. default is True
 // - False stop goon handle.
@@ -157,7 +159,7 @@ func (hc *HookCtx) Name() string {
 
 // Hooks struct. hookManager
 type Hooks struct {
-	// Hooks can setting some hooks func on running.
+	// Hooks can set some hooks func on running.
 	hooks map[string]HookFunc
 }
 
@@ -262,7 +264,7 @@ func (c *cmdLine) OsArgs() []string {
 	return os.Args
 }
 
-// BinName get bin script file
+// BinFile get bin script file
 func (c *cmdLine) BinFile() string {
 	return c.binFile
 }
@@ -364,6 +366,10 @@ type commandBase struct {
 	Logo *Logo
 	// Version app version. like "1.0.1"
 	Version string
+	// ExitOnEnd call os.Exit on running end
+	ExitOnEnd bool
+	// ExitFunc default is os.Exit
+	ExitFunc func(int)
 
 	// all commands for the group
 	commands map[string]*Command
@@ -397,15 +403,16 @@ func newCommandBase() commandBase {
 		nameMaxWidth: 12,
 		// cmdAliases:   make(maputil.Aliases),
 		cmdAliases: structs.NewAliases(aliasNameCheck),
+		ExitOnEnd:  true,
 	}
 }
 
-// GetCommand get an command by name
+// GetCommand get a command by name
 func (b *commandBase) GetCommand(name string) *Command {
 	return b.commands[name]
 }
 
-// Command get an command by name
+// Command get a command by name
 func (b *commandBase) Command(name string) (c *Command, exist bool) {
 	c, exist = b.commands[name]
 	return

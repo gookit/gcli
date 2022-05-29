@@ -108,7 +108,8 @@ type Command struct {
 	HelpRender func(c *Command)
 
 	// command is inject to the App
-	app *App
+	app  *App
+	root bool // is root command
 	// mark is disabled. if true will skip register to cli-app.
 	disabled bool
 	// command is standalone running.

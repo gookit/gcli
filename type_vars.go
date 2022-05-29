@@ -91,7 +91,6 @@ func (s *EnumString) Set(value string) error {
 	if !ok {
 		return fmt.Errorf("value must one of the: %v", s.enum)
 	}
-
 	return nil
 }
 
@@ -125,11 +124,11 @@ func (s String) String() string {
 }
 
 // Split value to []string
-func (s String) Split(sep string) []string  {
+func (s String) Split(sep string) []string {
 	return strutil.ToStrings(string(s), sep)
 }
 
 // Ints value to []int
-func (s String) Ints(sep string) []int  {
+func (s String) Ints(sep string) []int {
 	return strutil.Ints(string(s), sep)
 }
