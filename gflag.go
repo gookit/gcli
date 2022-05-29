@@ -15,6 +15,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/arrutil"
+	"github.com/gookit/goutil/stdutil"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -1061,7 +1062,7 @@ func (m *FlagMeta) Validate(val string) error {
 // DValue wrap the default value
 func (m *FlagMeta) DValue() *goutil.Value {
 	if m.defVal == nil {
-		m.defVal = &goutil.Value{V: m.DefVal}
+		m.defVal = &stdutil.Value{V: m.DefVal}
 	}
 
 	return m.defVal

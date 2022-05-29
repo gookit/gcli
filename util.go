@@ -23,7 +23,7 @@ var level2color = map[VerbLevel]color.Color{
 	VerbCrazy: color.FgMagenta,
 }
 
-// Logf print log message
+// Debugf print log message
 func Debugf(format string, v ...interface{}) {
 	logf(VerbDebug, format, v...)
 }
@@ -360,6 +360,5 @@ func wrapColor2string(s string) string {
 			return color.WrapTag(code, "mga")
 		})
 	}
-
 	return s
 }
