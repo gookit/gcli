@@ -3,8 +3,11 @@ package show
 import (
 	"bytes"
 	"os"
+	"reflect"
 
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/arrutil"
+	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -60,7 +63,7 @@ func NewList(title string, data interface{}) *List {
 			SepChar:    " ",
 			KeyStyle:   "info",
 			LeftIndent: "  ",
-			//
+			// more settings
 			KeyMinWidth: 8,
 			IgnoreEmpty: true,
 			TitleStyle:  "comment",
@@ -73,7 +76,6 @@ func (l *List) WithOptions(fn func(opts *ListOption)) *List {
 	if fn != nil {
 		fn(l.Opts)
 	}
-
 	return l
 }
 
@@ -99,8 +101,11 @@ func (l *List) Format() string {
 		keyWidth = l.Opts.KeyMinWidth
 	}
 
+	// multi line indent
+	mlIndent := l.Opts.LeftIndent + strutil.Repeat(" ", len(l.Opts.LeftIndent))
+
 	for _, item := range items.List {
-		if l.Opts.IgnoreEmpty && item.Val == "" {
+		if l.Opts.IgnoreEmpty && item.IsEmpty() {
 			continue
 		}
 
@@ -108,19 +113,38 @@ func (l *List) Format() string {
 			l.buffer.WriteString(l.Opts.LeftIndent)
 		}
 
-		// parsed from map, struct
+		// format key - parsed from map, struct
 		if items.itemType == ItemMap {
 			key := strutil.PadRight(item.Key, " ", keyWidth)
 			key = color.WrapTag(key, l.Opts.KeyStyle)
 			l.buffer.WriteString(key + l.Opts.SepChar)
 		}
 
-		val := item.Val
-		if l.Opts.UpperFirst {
-			val = strutil.UpperFirst(val)
+		// format value
+		if item.IsArray() {
+			arrutil.NewFormatter(item.rftVal).WithFn(func(f *arrutil.ArrFormatter) {
+				f.Indent = mlIndent
+				f.ClosePrefix = "  "
+				// f.AfterReset = true
+				f.SetOutput(l.buffer)
+			}).Format()
+			l.buffer.WriteByte('\n')
+		} else if item.Kind() == reflect.Map {
+			maputil.NewFormatter(item.rftVal).WithFn(func(f *maputil.MapFormatter) {
+				f.Indent = mlIndent
+				f.ClosePrefix = "  "
+				// f.AfterReset = true
+				f.SetOutput(l.buffer)
+			}).Format()
+			l.buffer.WriteByte('\n')
+		} else {
+			val := item.ValString()
+			if l.Opts.UpperFirst {
+				val = strutil.UpperFirst(val)
+			}
+			l.buffer.WriteString(val + "\n")
 		}
 
-		l.buffer.WriteString(val + "\n")
 	}
 
 	l.formatted = l.buffer.String()
@@ -182,7 +206,6 @@ func NewLists(listMap map[string]interface{}) *Lists {
 	for title, data := range listMap {
 		ls.rows = append(ls.rows, NewList(title, data))
 	}
-
 	return ls
 }
 
@@ -191,7 +214,6 @@ func (ls *Lists) WithOptions(fn func(opts *ListOption)) *Lists {
 	if fn != nil {
 		fn(ls.Opts)
 	}
-
 	return ls
 }
 

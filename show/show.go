@@ -47,13 +47,15 @@ func JSON(v interface{}, settings ...string) int {
 }
 
 // AList create a List instance and print.
+//
 // Usage:
 // 	show.AList("some info", map[string]string{"name": "tom"}, nil)
-func AList(title string, data interface{}, fn func(opts *ListOption)) {
-	NewList(title, data).WithOptions(fn).Println()
+func AList(title string, data interface{}, optFn func(opts *ListOption)) {
+	NewList(title, data).WithOptions(optFn).Println()
 }
 
 // MList show multi list data.
+//
 // Usage:
 // 	show.MList(data, nil)
 // 	show.MList(data, func(opts *ListOption) {
@@ -65,6 +67,7 @@ func MList(listMap map[string]interface{}, fn func(opts *ListOption)) {
 
 // TabWriter create.
 // more please see: package text/tabwriter/example_test.go
+//
 // Usage:
 // 	w := TabWriter(os.Stdout, []string{
 // 		"a\tb\tc\td\t.",

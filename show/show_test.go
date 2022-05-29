@@ -28,6 +28,24 @@ func TestList(t *testing.T) {
 	l.Println()
 }
 
+func TestList_mlevel(t *testing.T) {
+	d := map[string]interface{}{
+		"key0":     "list item 0",
+		"key2":     []string{"abc", "def"},
+		"key4":     map[string]int{"abc": 23, "def": 45},
+		"the key1": "list item 1",
+		"key3":     "", // empty value
+	}
+
+	l := show.NewList("test list", d)
+	l.Println()
+
+	l = show.NewList("test list2", d).WithOptions(func(opts *show.ListOption) {
+		opts.SepChar = " | "
+	})
+	l.Println()
+}
+
 func TestLists(t *testing.T) {
 	ls := show.NewLists(map[string]interface{}{
 		"test list": []string{

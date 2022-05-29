@@ -1,14 +1,15 @@
 package show
 
 import (
-	"encoding/json"
-	"fmt"
 	"io"
 	"os"
 	"reflect"
+	"strings"
 	"unicode/utf8"
 
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/reflects"
+	"github.com/gookit/goutil/strutil"
 )
 
 const (
@@ -27,11 +28,11 @@ type FormatterFace interface {
 
 // ShownFace shown interface
 type ShownFace interface {
-	// data to string
+	// String data to string
 	String() string
-	// print current message
+	// Print print current message
 	Print()
-	// print current message
+	// Println print current message
 	Println()
 }
 
@@ -92,8 +93,9 @@ const (
 // Items definition
 type Items struct {
 	List []*Item
+	// raw data
 	data interface{}
-	//
+	// inner context
 	itemType    string
 	rowNumber   int
 	keyMaxWidth int
@@ -116,34 +118,41 @@ func NewItems(data interface{}) *Items {
 		mapKeys := rv.MapKeys()
 		for i := 0; i < len(mapKeys); i++ {
 			key := mapKeys[i]
-			item := newItem(key.Interface(), rv.MapIndex(key).Interface(), i)
+			rftV := rv.MapIndex(key)
+			item := newItem(key.Interface(), rftV, i)
+
 			items.List = append(items.List, item)
-			// max len
 			keyWidth = item.maxLen(keyWidth)
 		}
 	case reflect.Slice, reflect.Array:
 		items.itemType = ItemList
 		for i := 0; i < rv.Len(); i++ {
-			item := newItem("", rv.Index(i).Interface(), i)
+			rftV := rv.Index(i)
+			item := newItem("", rftV, i)
+
 			items.List = append(items.List, item)
-			// max len
 			keyWidth = item.maxLen(keyWidth)
 		}
 	case reflect.Struct:
-		bs, err := json.Marshal(data)
-		if err != nil {
-			panic(err)
-		}
+		rt := rv.Type()
+		for i := 0; i < rt.NumField(); i++ {
+			ft := rt.Field(i)
+			fv := rv.Field(i)
+			// skip don't exported field
+			name := ft.Name
+			if name[0] >= 'a' && name[0] <= 'z' {
+				continue
+			}
 
-		mp := make(map[string]interface{})
-		if err = json.Unmarshal(bs, &mp); err != nil {
-			panic(err)
-		}
+			tagName := ft.Tag.Get("json")
+			if tagName == "" {
+				tagName = ft.Name
+			} else if pos := strings.IndexByte(tagName, ','); pos > 0 {
+				tagName = tagName[:pos]
+			}
 
-		for key, val := range mp {
-			item := newItem(key, val, 0)
+			item := newItem(tagName, fv, i)
 			items.List = append(items.List, item)
-			// max len
 			keyWidth = item.maxLen(keyWidth)
 		}
 	default:
@@ -161,7 +170,6 @@ func (its *Items) KeyMaxWidth(userSetting int) int {
 	if userSetting > 0 {
 		return userSetting
 	}
-
 	return its.keyMaxWidth
 }
 
@@ -179,33 +187,67 @@ func (its *Items) Each(fn func(item *Item)) {
 
 // Item definition
 type Item struct {
+	// Val string
 	Key string
-	Val string
 	// info
-	index  int
+	index int
+	// valLen int
 	keyLen int
-	valLen int
+	// rawVal interface{}
+	rftVal reflect.Value
 }
 
-func newItem(key, value interface{}, index int) *Item {
+func newItem(key interface{}, rv reflect.Value, index int) *Item {
 	item := &Item{
-		Key:   fmt.Sprint(key),
-		Val:   fmt.Sprint(value),
+		Key: strutil.QuietString(key),
+		// Val:    fmt.Sprint(value),
 		index: index,
+		// rawVal: value,
+		rftVal: reflects.Elem(rv),
 	}
 
 	if item.Key != "" {
 		item.keyLen = utf8.RuneCountInString(item.Key)
 	}
 
-	item.valLen = utf8.RuneCountInString(item.Val)
+	// item.valLen = utf8.RuneCountInString(item.Val)
 	return item
+}
+
+// Kind get
+func (item *Item) Kind() reflect.Kind {
+	return item.rftVal.Kind()
+}
+
+// IsArray get is array, slice
+func (item *Item) IsArray() bool {
+	return item.rftVal.Kind() == reflect.Array || item.rftVal.Kind() == reflect.Slice
+}
+
+// IsEmpty get value is empty: nil, empty string.
+func (item *Item) IsEmpty() bool {
+	switch item.rftVal.Kind() {
+	case reflect.String:
+		return item.rftVal.Len() == 0
+	case reflect.Interface, reflect.Slice, reflect.Ptr:
+		return item.rftVal.IsNil()
+	}
+	return false
+}
+
+// ValString get
+func (item *Item) ValString() string {
+	return strutil.QuietString(item.rftVal.Interface())
+}
+
+// RftVal get
+func (item *Item) RftVal() reflect.Value {
+	return item.rftVal
 }
 
 func (item *Item) maxLen(ln int) int {
 	if item.keyLen > ln {
 		return item.keyLen
 	}
-
 	return ln
 }
