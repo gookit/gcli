@@ -20,7 +20,6 @@ func GetByName(name string) string {
 	if val, ok := emojiMap[name]; ok {
 		return val
 	}
-
 	return name
 }
 

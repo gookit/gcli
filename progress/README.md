@@ -60,15 +60,15 @@ go run ./_examples/cliapp.go prog roundTrip
 
 ### Internal Widgets
 
-Widget Name | Usage example | Description
-------------|----------------|----------------
-`max`  | `{@max}` | Display max steps for progress bar
-`current`  | `{@current}` | Display current steps for progress bar
-`percent`  | `{@percent:4s}` | Display percent for progress run
-`elapsed`  | `{@elapsed:7s}` | Display has elapsed time for progress run
-`remaining`  | `{@remaining:7s}` | Display remaining time
-`estimated`  | `{@estimated:-7s}` | Display estimated time
-`memory`   | `{@memory:6s}` | Display memory consumption size
+ Widget Name | Usage example      | Description                               
+-------------|--------------------|-------------------------------------------
+ `max`       | `{@max}`           | Display max steps for progress bar        
+ `current`   | `{@current}`       | Display current steps for progress bar    
+ `percent`   | `{@percent:4s}`    | Display percent for progress run          
+ `elapsed`   | `{@elapsed:7s}`    | Display has elapsed time for progress run 
+ `remaining` | `{@remaining:7s}`  | Display remaining time                    
+ `estimated` | `{@estimated:-7s}` | Display estimated time                    
+ `memory`    | `{@memory:6s}`     | Display memory consumption size           
 
 ### Custom Progress Bar
 
@@ -93,7 +93,7 @@ Examples:
 package main
 import "github.com/gookit/gcli/v3/progress"
 
-// CustomBar create a custom progress bar
+// CustomBar create custom progress bar
 func main() {
     maxSteps := 100
 	// use special bar style: [==============>-------------]

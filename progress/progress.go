@@ -12,7 +12,7 @@ import (
 )
 
 // use for match like "{@bar}" "{@percent:3s}"
-var widgetMatch = regexp.MustCompile(`{@([\w]+)(?::([\w-]+))?}`)
+var widgetMatch = regexp.MustCompile(`{@([\w_]+)(?::([\w-]+))?}`)
 
 // WidgetFunc handler func for progress widget
 type WidgetFunc func(p *Progress) string

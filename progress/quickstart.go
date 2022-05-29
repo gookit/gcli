@@ -138,6 +138,7 @@ func RoundTripBar(char rune, charNumAndBoxWidth ...int) *Progress {
 }
 
 // RoundTrip create a RoundTrip progress bar.
+//
 // Usage:
 // 	p := RoundTrip(CharEqual)
 // 	// p := RoundTrip('*') // custom char
@@ -175,7 +176,7 @@ func SpinnerBar(chars []rune, maxSteps ...int) *Progress {
 	return LoadBar(chars, maxSteps...)
 }
 
-// LoadBar create a loading progress bar
+// LoadBar create loading progress bar
 func LoadBar(chars []rune, maxSteps ...int) *Progress {
 	return New(maxSteps...).Config(func(p *Progress) {
 		p.Format = "{@loading} ({@current}/{@max}){@message}"

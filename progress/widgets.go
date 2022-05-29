@@ -92,7 +92,7 @@ func DynamicTextWidget(messages map[int]string) WidgetFunc {
 	}
 }
 
-// LoadingWidget create a loading progress widget
+// LoadingWidget create loading progress widget
 func LoadingWidget(chars []rune) WidgetFunc {
 	builder := loadingCharBuilder(chars)
 
