@@ -126,7 +126,7 @@ func (ags *Arguments) BindArg(arg *Argument) *Argument {
 	return ags.AddArgument(arg)
 }
 
-// AddArgument binding an named argument for the command.
+// AddArgument binding a named argument for the command.
 //
 // Notice:
 // 	- Required argument cannot be defined after optional argument

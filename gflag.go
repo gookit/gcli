@@ -357,7 +357,7 @@ func (fs *Flags) FSetArgs() []string {
 
 // --- bool option
 
-// Bool binding an bool option flag, return pointer
+// Bool binding a bool option flag, return pointer
 func (fs *Flags) Bool(name, shorts string, defValue bool, desc string) *bool {
 	meta := newFlagMeta(name, desc, defValue, splitShortcut(shorts))
 	name = fs.checkFlagInfo(meta)
@@ -367,17 +367,17 @@ func (fs *Flags) Bool(name, shorts string, defValue bool, desc string) *bool {
 
 	// binding all short name options to flag.FlagSet
 	for _, s := range meta.Shorts {
-		fs.fSet.BoolVar(p, s, defValue, "") // dont add description for short name
+		fs.fSet.BoolVar(p, s, defValue, "") // don't add description for short name
 	}
 	return p
 }
 
-// BoolVar binding an bool option flag
+// BoolVar binding a bool option flag
 func (fs *Flags) BoolVar(p *bool, meta *FlagMeta) {
 	fs.boolOpt(p, meta)
 }
 
-// BoolOpt binding an bool option
+// BoolOpt binding a bool option
 func (fs *Flags) BoolOpt(p *bool, name, shorts string, defValue bool, desc string) {
 	fs.boolOpt(p, newFlagMeta(name, desc, defValue, splitShortcut(shorts)))
 }
@@ -502,7 +502,7 @@ func (fs *Flags) intOpt(p *int, meta *FlagMeta) {
 	}
 }
 
-// Str binding an int64 option flag, return pointer
+// Int64 binding an int64 option flag, return pointer
 func (fs *Flags) Int64(name, shorts string, defValue int64, desc string) *int64 {
 	meta := newFlagMeta(name, desc, defValue, splitShortcut(shorts))
 	name = fs.checkFlagInfo(meta)
@@ -625,6 +625,7 @@ func (fs *Flags) Var(p flag.Value, meta *FlagMeta) {
 }
 
 // VarOpt binding a custom var option
+//
 // Usage:
 //		var names gcli.Strings
 // 		cmd.VarOpt(&names, "tables", "t", "description ...")
@@ -813,7 +814,7 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 			fullName = fmt.Sprintf("%s, --%s", shorts2string(shorts), name)
 		} else {
 			fullName = "--" + name
-			// if has short names. add 4 space. eg: "-s, "
+			// has short names. add 4 space. eg: "-s, "
 			if fs.existShort {
 				fullName = "    " + fullName
 			}
@@ -903,7 +904,7 @@ func (fs *Flags) IsShortOpt(short string) bool {
 	return fs.IsShortName(short)
 }
 
-// IsShortcut check it is a shortcut name
+// IsShortName check it is a shortcut name
 func (fs *Flags) IsShortName(short string) bool {
 	if len(short) != 1 {
 		return false
@@ -1055,16 +1056,14 @@ func (m *FlagMeta) Validate(val string) error {
 	if m.Validator != nil {
 		return m.Validator(val)
 	}
-
 	return nil
 }
 
 // DValue wrap the default value
-func (m *FlagMeta) DValue() *goutil.Value {
+func (m *FlagMeta) DValue() *stdutil.Value {
 	if m.defVal == nil {
 		m.defVal = &stdutil.Value{V: m.DefVal}
 	}
-
 	return m.defVal
 }
 
