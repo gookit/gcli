@@ -1,10 +1,15 @@
 name: action-tests
 on:
-  push:
+  pull_request:
     paths:
+      - 'go.mod'
       - '**.go'
       - '**.yml'
+  push:
+    paths:
       - 'go.mod'
+      - '**.go'
+      - '**.yml'
 
 jobs:
 
@@ -13,22 +18,36 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go_version: [1.13, 1.14, 1.15, 1.16, 1.17]
+        go_version: [1.15, 1.16, 1.17, 1.18]
 
     steps:
-    - name: Check out code into the Go module directory
-      uses: actions/checkout@v2
+    - name: Check out codes
+      uses: actions/checkout@v3
 
-    - name: Use Go ${{ matrix.go_version }}
+    - name: Setup Go Faster
+      uses: WillAbides/setup-go-faster@v1.7.0
       timeout-minutes: 3
-      uses: actions/setup-go@v2
       with:
         go-version: ${{ matrix.go_version }}
-#      id: go
 
-    - name: Get dependencies
-      run: |
-        go get -v -t -d ./...
+    - name: Revive check
+      uses: morphy2k/revive-action@v2.3.1
+      if: ${{ matrix.os == 'ubuntu-latest' }}
+      with:
+        # Exclude patterns, separated by semicolons (optional)
+        exclude: "./internal/..."
+
+    - name: Run staticcheck
+      uses: reviewdog/action-staticcheck@v1
+      if: ${{ github.event_name == 'pull_request'}}
+      with:
+        github_token: ${{ secrets.github_token }}
+        # Change reviewdog reporter if you need [github-pr-check,github-check,github-pr-review].
+        reporter: github-pr-check
+        # Report all results. [added,diff_context,file,nofilter].
+        filter_mode: added
+        # Exit with 1 when it find at least one finding.
+        fail_on_error: true
 
     - name: Run tests
       run: go test -v -cover ./...
