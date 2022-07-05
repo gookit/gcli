@@ -91,6 +91,7 @@ func (ags *Arguments) ParseArgs(args []string) (err error) {
  *************************************************************/
 
 // AddArg binding an named argument for the command.
+//
 // Notice:
 // 	- Required argument cannot be defined after optional argument
 //  - Only one array parameter is allowed
@@ -111,7 +112,7 @@ func (ags *Arguments) AddArg(name, desc string, requiredAndArrayed ...bool) *Arg
 func (ags *Arguments) AddArgByRule(name, rule string) *Argument {
 	mp := parseSimpleRule(name, rule)
 
-	required := strutil.MustBool(mp["required"])
+	required := strutil.QuietBool(mp["required"])
 	newArg := NewArgument(name, mp["desc"], required)
 
 	if defVal := mp["default"]; defVal != "" {

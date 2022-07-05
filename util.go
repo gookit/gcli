@@ -148,7 +148,7 @@ func parseNamedRule(name, rule string) (mp map[string]string) {
 // eg: "int option message;;a,b"
 // eg: "int option message;;a,b;23"
 func parseSimpleRule(name, rule string) (mp map[string]string) {
-	ss := splitNTrimmed(rule, ";", 4)
+	ss := strutil.SplitNTrimmed(rule, ";", 4)
 	ln := len(ss)
 	if ln == 0 {
 		return
@@ -173,18 +173,6 @@ func parseSimpleRule(name, rule string) (mp map[string]string) {
 		mp["default"], mp["shorts"] = ss[2], ss[3]
 	} else if ln > 2 {
 		mp["default"] = ss[2]
-	}
-	return
-}
-
-// TODO use strutil.SplitNTrimmed
-func splitNTrimmed(s, sep string, n int) (ss []string) {
-	if s = strings.TrimSpace(s); s == "" {
-		return
-	}
-
-	for _, val := range strings.SplitN(s, sep, n) {
-		ss = append(ss, strings.TrimSpace(val))
 	}
 	return
 }
@@ -319,7 +307,6 @@ func splitPath2names(path string) []string {
 	return names
 }
 
-// split "ef" to ["e", "f"]
 // split "e,f" to ["e", "f"]
 func splitShortcut(str string) (ss []string) {
 	bs := []byte(str)
