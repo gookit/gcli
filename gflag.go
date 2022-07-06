@@ -44,8 +44,8 @@ const (
 // FlagTagName default tag name on struct
 var FlagTagName = "flag"
 
-// FlagsOption for render help information
-type FlagsOption struct {
+// FlagsConfig for render help information
+type FlagsConfig struct {
 	// WithoutType don't display flag data type on print help
 	WithoutType bool
 	// NameDescOL flag and desc at one line on print help
@@ -64,8 +64,8 @@ type Flags struct {
 	Desc string
 	// ExitFunc for handle exit
 	ExitFunc func(code int)
-	// FlagsOption option for render help message
-	opt *FlagsOption
+	// FlagsConfig option for render help message
+	cfg *FlagsConfig
 	// raw flag set
 	fSet *flag.FlagSet
 	// buf for build help message
@@ -88,8 +88,8 @@ type Flags struct {
 	existShort bool
 }
 
-func newDefaultFlagOption() *FlagsOption {
-	return &FlagsOption{
+func newDefaultFlagOption() *FlagsConfig {
+	return &FlagsConfig{
 		Alignment: AlignRight,
 		TagName:   FlagTagName,
 	}
@@ -99,7 +99,7 @@ func newDefaultFlagOption() *FlagsOption {
 func NewFlags(nameWithDesc ...string) *Flags {
 	fs := &Flags{
 		out: os.Stdout,
-		opt: newDefaultFlagOption(),
+		cfg: newDefaultFlagOption(),
 	}
 	fs.ExitFunc = os.Exit
 
@@ -128,6 +128,28 @@ func (fs *Flags) InitFlagSet(name string) {
 	fs.fSet.Usage = func() {}
 }
 
+// SetConfig for the object.
+func (fs *Flags) SetConfig(opt *FlagsConfig) { fs.cfg = opt }
+
+// UseSimpleRule for the parse tag value rule string. see TagRuleSimple
+func (fs *Flags) UseSimpleRule() *Flags {
+	fs.cfg.TagRuleType = TagRuleSimple
+	return fs
+}
+
+// WithConfigFn for the object.
+func (fs *Flags) WithConfigFn(fns ...func(opt *FlagsConfig)) *Flags {
+	for _, fn := range fns {
+		fn(fs.cfg)
+	}
+	return fs
+}
+
+/***********************************************************************
+ * Flags:
+ * - binding option from struct
+ ***********************************************************************/
+
 var (
 	flagValueType  = reflect.TypeOf(new(flag.Value)).Elem()
 	errNotPtrValue = errors.New("must provide an ptr value")
@@ -151,7 +173,7 @@ func (fs *Flags) FromStruct(ptr interface{}) error {
 		return errNotAnStruct
 	}
 
-	tagName := fs.opt.TagName
+	tagName := fs.cfg.TagName
 	if tagName == "" {
 		tagName = FlagTagName
 	}
@@ -191,9 +213,9 @@ func (fs *Flags) FromStruct(ptr interface{}) error {
 			fv = fv.Elem()
 		}
 
-		if fs.opt.TagRuleType == TagRuleNamed {
+		if fs.cfg.TagRuleType == TagRuleNamed {
 			mp = parseNamedRule(name, str)
-		} else if fs.opt.TagRuleType == TagRuleSimple {
+		} else if fs.cfg.TagRuleType == TagRuleSimple {
 			mp = parseSimpleRule(name, str)
 		} else {
 			return errTagRuleType
@@ -245,26 +267,6 @@ func (fs *Flags) FromStruct(ptr interface{}) error {
 		}
 	}
 	return nil
-}
-
-// FromText from text desc binding options
-// func (fs *Flags) FromText(s string) error {
-// 	return nil
-// }
-
-// SetOptions for the object.
-func (fs *Flags) SetOptions(opt *FlagsOption) { fs.opt = opt }
-
-// UseSimpleRule for the parse tag value rule string. see TagRuleSimple
-func (fs *Flags) UseSimpleRule() *Flags {
-	fs.opt.TagRuleType = TagRuleSimple
-	return fs
-}
-
-// WithOptions for the object.
-func (fs *Flags) WithOptions(fns func(opt *FlagsOption)) *Flags {
-	fns(fs.opt)
-	return fs
 }
 
 // Run flags parse and handle help render
@@ -436,15 +438,10 @@ func (fs *Flags) StrOpt(p *string, name, shorts, defValue, desc string) {
 // binding option and shorts
 func (fs *Flags) strOpt(p *string, meta *FlagMeta) {
 	defValue := meta.DValue().String()
-	fmtName := fs.checkFlagInfo(meta)
+	fs.checkFlagInfo(meta)
 
 	// binding option to flag.FlagSet
-	fs.fSet.StringVar(p, fmtName, defValue, meta.Desc)
-
-	// binding all short name options to flag.FlagSet
-	for _, s := range meta.Shorts {
-		fs.fSet.StringVar(p, s, defValue, "") // dont add description for short name
-	}
+	fs.fSet.StringVar(p, meta.Name, defValue, meta.Desc)
 }
 
 // --- intX option
@@ -673,7 +670,6 @@ func (fs *Flags) checkFlagInfo(meta *FlagMeta) string {
 // check short names
 func (fs *Flags) checkShortNames(name string, nameLength int, shorts []string) {
 	if len(shorts) == 0 {
-		// record name without shorts
 		fs.names[name] = nameLength
 		return
 	}
@@ -766,8 +762,8 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 	fullName = cflag.AddPrefixes(name, meta.Shorts)
 
 	// fs.NameDescOL = true: padding space to same width.
-	if fs.opt.NameDescOL {
-		fullName = strutil.Padding(fullName, " ", fs.flagMaxLen, fs.opt.Alignment)
+	if fs.cfg.NameDescOL {
+		fullName = strutil.Padding(fullName, " ", fs.flagMaxLen, fs.cfg.Alignment)
 	}
 
 	s = fmt.Sprintf("  <info>%s</>", fullName)
@@ -775,14 +771,14 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 	// - build flag type info
 	typeName, desc := flag.UnquoteUsage(f)
 	// typeName: option value data type: int, string, ..., bool value will return ""
-	if fs.opt.WithoutType == false && len(typeName) > 0 {
+	if fs.cfg.WithoutType == false && len(typeName) > 0 {
 		s += fmt.Sprintf(" <magenta>%s</>", typeName)
 	}
 
 	// - flag and description at one line
 	// - Boolean flags of one ASCII letter are so common we
 	// treat them specially, putting their usage on the same line.
-	if fs.opt.NameDescOL || (typeName == "" && fLen <= 4) { // space, space, '-', 'x'.
+	if fs.cfg.NameDescOL || (typeName == "" && fLen <= 4) { // space, space, '-', 'x'.
 		s += "    "
 	} else {
 		// display description on new line

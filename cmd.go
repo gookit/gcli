@@ -275,7 +275,7 @@ func (c *Command) initialize() {
 	c.Arguments.SetValidateNum(gOpts.strictMode)
 
 	// init for cmd Flags
-	c.Flags.SetOptions(newDefaultFlagOption())
+	c.Flags.SetConfig(newDefaultFlagOption())
 	c.Flags.InitFlagSet(cName)
 	// c.Flags.SetOption(cName)
 	// c.Flags.FSet().SetOutput(c.Flags.out)

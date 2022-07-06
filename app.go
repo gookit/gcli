@@ -99,7 +99,7 @@ func NewApp(fns ...func(app *App)) *App {
 		cmdLine: CLI,
 		// init
 		Hooks: &Hooks{},
-		gFlags: NewFlags("app.GOptions").WithOptions(func(opt *FlagsOption) {
+		gFlags: NewFlags("app.GOptions").WithConfigFn(func(opt *FlagsConfig) {
 			opt.WithoutType = true
 			opt.NameDescOL = true
 			opt.Alignment = AlignLeft
