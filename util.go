@@ -8,6 +8,7 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -107,6 +108,9 @@ func panicf(format string, v ...interface{}) {
 	panic(fmt.Sprintf("GCli: "+format, v...))
 }
 
+// allowed keys on struct tag.
+var flagTagKeys = arrutil.Strings{"name", "shorts", "desc", "default", "required"}
+
 // parse tag named k-v value. item split by ';'
 //
 // eg: "name=int0;shorts=i;required=true;desc=int option message"
@@ -130,7 +134,7 @@ func parseNamedRule(name, rule string) (mp map[string]string) {
 		}
 
 		kvNodes := strings.SplitN(s, "=", 2)
-		key, val := kvNodes[0], kvNodes[1]
+		key, val := kvNodes[0], strings.TrimSpace(kvNodes[1])
 		if !flagTagKeys.Has(key) {
 			panicf("parse tag error on field '%s': invalid key name '%s'", name, key)
 		}
@@ -144,9 +148,17 @@ func parseNamedRule(name, rule string) (mp map[string]string) {
 //
 // format: "desc;required;default;shorts"
 //
-// eg: "int option message;required;i"
-// eg: "int option message;;a,b"
-// eg: "int option message;;a,b;23"
+// eg:
+// 	"int option message;required;i"
+//  "int option message;;a,b"
+//  "int option message;;a,b;23"
+//
+// returns field name:
+//	name
+//	desc
+//	shorts
+//	required
+//	default
 func parseSimpleRule(name, rule string) (mp map[string]string) {
 	ss := strutil.SplitNTrimmed(rule, ";", 4)
 	ln := len(ss)
@@ -155,7 +167,6 @@ func parseSimpleRule(name, rule string) (mp map[string]string) {
 	}
 
 	mp = make(map[string]string, ln)
-
 	mp["desc"] = ss[0]
 	if ln == 1 {
 		return
@@ -177,15 +188,10 @@ func parseSimpleRule(name, rule string) (mp map[string]string) {
 	return
 }
 
-// func exitWithMsg(format string, v ...interface{}) {
-// 	fmt.Printf(format, v...)
-// 	Exit(0)
-// }
-
 const (
-	// match an good option, argument name
+	// match a good option, argument name
 	regGoodName = `^[a-zA-Z][\w-]*$`
-	// match an good command name
+	// match a good command name
 	regGoodCmdName = `^[a-zA-Z][\w-]*$`
 	// match command id. eg: "self:init"
 	regGoodCmdId = `^[a-zA-Z][\w:-]*$`
@@ -206,7 +212,6 @@ func isValidCmdName(name string) bool {
 	if name[0] == '-' { // is option name.
 		return false
 	}
-
 	return goodCmdName.MatchString(name)
 }
 
@@ -214,7 +219,6 @@ func isValidCmdId(name string) bool {
 	if name[0] == '-' { // is option name.
 		return false
 	}
-
 	return goodCmdId.MatchString(name)
 }
 
@@ -222,7 +226,6 @@ func aliasNameCheck(name string) {
 	if goodCmdName.MatchString(name) {
 		return
 	}
-
 	panicf("alias name '%s' is invalid, must match: %s", name, regGoodCmdName)
 }
 
@@ -305,34 +308,6 @@ func splitPath2names(path string) []string {
 	}
 
 	return names
-}
-
-// split "e,f" to ["e", "f"]
-func splitShortcut(str string) (ss []string) {
-	bs := []byte(str)
-	if len(bs) == 0 {
-		return
-	}
-
-	for _, b := range bs {
-		// if b == ',' {
-		// 	continue
-		// }
-		if strutil.IsAlphabet(b) {
-			ss = append(ss, string(b))
-		}
-	}
-	return
-}
-
-func shorts2string(ss []string) string {
-	var newSs []string
-	for _, s := range ss {
-		newSs = append(newSs, "-"+s)
-	}
-
-	// eg: "-t, -o"
-	return strings.Join(newSs, ", ")
 }
 
 // regex: "`[\w ]+`"

@@ -111,59 +111,37 @@ func Version() string {
 }
 
 // CommitID of the gcli
-func CommitID() string {
-	return commitID
-}
+func CommitID() string { return commitID }
 
 // Verbose returns verbose level
-func Verbose() VerbLevel {
-	return gOpts.Verbose()
-}
+func Verbose() VerbLevel { return gOpts.Verbose() }
 
 // SetCrazyMode level
-func SetCrazyMode() {
-	gOpts.SetVerbose(VerbCrazy)
-}
+func SetCrazyMode() { gOpts.SetVerbose(VerbCrazy) }
 
 // SetDebugMode level
-func SetDebugMode() {
-	gOpts.SetVerbose(VerbDebug)
-}
+func SetDebugMode() { gOpts.SetVerbose(VerbDebug) }
 
 // SetQuietMode level
-func SetQuietMode() {
-	gOpts.SetVerbose(VerbQuiet)
-}
+func SetQuietMode() { gOpts.SetVerbose(VerbQuiet) }
 
 // SetVerbose level
-func SetVerbose(verbose VerbLevel) {
-	gOpts.SetVerbose(verbose)
-}
+func SetVerbose(verbose VerbLevel) { gOpts.SetVerbose(verbose) }
 
 // ResetVerbose level
-func ResetVerbose() {
-	gOpts.SetVerbose(DefaultVerb)
-}
+func ResetVerbose() { gOpts.SetVerbose(DefaultVerb) }
 
 // StrictMode get is strict mode
-func StrictMode() bool {
-	return gOpts.strictMode
-}
+func StrictMode() bool { return gOpts.strictMode }
 
 // SetStrictMode for parse flags
-func SetStrictMode(strict bool) {
-	gOpts.SetStrictMode(strict)
-}
+func SetStrictMode(strict bool) { gOpts.SetStrictMode(strict) }
 
 // IsGteVerbose get is strict mode
-func IsGteVerbose(verb VerbLevel) bool {
-	return gOpts.verbose >= verb
-}
+func IsGteVerbose(verb VerbLevel) bool { return gOpts.verbose >= verb }
 
 // IsDebugMode get is debug mode
-func IsDebugMode() bool {
-	return gOpts.verbose >= VerbDebug
-}
+func IsDebugMode() bool { return gOpts.verbose >= VerbDebug }
 
 // Commander interface
 type Commander interface {

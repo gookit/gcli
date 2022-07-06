@@ -25,7 +25,7 @@ type core struct {
 	HelpVars
 	// global options flag set
 	gFlags *Flags
-	// GOptsBinder you can custom binding global options
+	// GOptsBinder you can be custom binding global options
 	GOptsBinder func(gf *Flags)
 }
 
@@ -186,7 +186,6 @@ func (h *Hooks) Fire(event string, data ...interface{}) (stop bool) {
 	if handler, ok := h.hooks[event]; ok {
 		return handler(data...)
 	}
-
 	return false
 }
 
@@ -302,6 +301,7 @@ func (c *cmdLine) hasHelpKeywords() bool {
  *************************************************************/
 
 // HelpVarFormat allow var replace on render help info.
+//
 // Default support:
 // 	"{$binName}" "{$cmd}" "{$fullCmd}" "{$workDir}"
 const HelpVarFormat = "{$%s}"

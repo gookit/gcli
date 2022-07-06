@@ -803,9 +803,7 @@ func (c *Command) Errorf(format string, v ...interface{}) error {
 }
 
 // NewErr format message and add error to the command
-func (c *Command) NewErr(msg string) error {
-	return errors.New(msg)
-}
+func (c *Command) NewErr(msg string) error { return errors.New(msg) }
 
 // NewErrf format message and add error to the command
 func (c *Command) NewErrf(format string, v ...interface{}) error {

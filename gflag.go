@@ -14,8 +14,8 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/goutil"
-	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/cflag"
+	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/stdutil"
 	"github.com/gookit/goutil/strutil"
 )
@@ -31,20 +31,18 @@ const (
 	defaultDesc = "No description"
 
 	// TagRuleNamed struct tag use named k-v rule.
+	//
 	// eg: `flag:"name=int0;shorts=i;required=true;desc=int option message"`
 	TagRuleNamed = 0
 	// TagRuleSimple struct tag use simple rule.
 	// format: "desc;required;default;shorts"
+	//
 	// eg: `flag:"int option message;required;;i"`
 	TagRuleSimple = 1
 )
 
-var (
-	// FlagTagName default tag name on struct
-	FlagTagName = "flag"
-	// allowed keys on struct tag.
-	flagTagKeys = arrutil.Strings{"name", "shorts", "desc", "default", "required"}
-)
+// FlagTagName default tag name on struct
+var FlagTagName = "flag"
 
 // FlagsOption for render help information
 type FlagsOption struct {
@@ -82,7 +80,7 @@ type Flags struct {
 	// eg. {"n": "name", "o": "opt"}
 	shorts map[string]string
 	// mapping for name to shortcut {"name": {"n", "m"}}
-	name2shorts map[string][]string
+	// name2shorts map[string][]string
 	// flag name max length. useful for render help
 	// eg: "-V, --version" length is 13
 	flagMaxLen int
@@ -117,10 +115,25 @@ func NewFlags(nameWithDesc ...string) *Flags {
 	return fs
 }
 
-var flagValueType = reflect.TypeOf(new(flag.Value)).Elem()
-var errNotPtrValue = errors.New("must provide an ptr value")
-var errNotAnStruct = errors.New("must provide an struct ptr")
-var errTagRuleType = errors.New("invalid tag rule type on struct")
+// InitFlagSet create and init flag.FlagSet
+func (fs *Flags) InitFlagSet(name string) {
+	if fs.fSet != nil {
+		return
+	}
+
+	fs.fSet = flag.NewFlagSet(name, flag.ContinueOnError)
+	// disable output internal error message on parse flags
+	fs.fSet.SetOutput(ioutil.Discard)
+	// nothing to do ... render usage on after parsed
+	fs.fSet.Usage = func() {}
+}
+
+var (
+	flagValueType  = reflect.TypeOf(new(flag.Value)).Elem()
+	errNotPtrValue = errors.New("must provide an ptr value")
+	errNotAnStruct = errors.New("must provide an struct ptr")
+	errTagRuleType = errors.New("invalid tag rule type on struct")
+)
 
 // FromStruct from struct tag binding options
 func (fs *Flags) FromStruct(ptr interface{}) error {
@@ -187,20 +200,18 @@ func (fs *Flags) FromStruct(ptr interface{}) error {
 		}
 
 		// for create flag meta
-		defVal := mp["default"]
 		optName, has := mp["name"]
 		if !has { // use field as option name.
 			optName = strutil.SnakeCase(name, "-")
 		}
 
-		meta := newFlagMeta(optName, mp["desc"], defVal, mp["shorts"])
+		meta := newFlagMeta(optName, mp["desc"], mp["default"], mp["shorts"])
 		if must, has := mp["required"]; has {
 			meta.Required = strutil.MustBool(must)
 		}
 
 		// field is implements flag.Value
 		if ft.Implements(flagValueType) {
-			// use assert
 			fs.Var(fv.Interface().(flag.Value), meta)
 			continue
 		}
@@ -254,19 +265,6 @@ func (fs *Flags) UseSimpleRule() *Flags {
 func (fs *Flags) WithOptions(fns func(opt *FlagsOption)) *Flags {
 	fns(fs.opt)
 	return fs
-}
-
-// InitFlagSet create and init flag.FlagSet
-func (fs *Flags) InitFlagSet(name string) {
-	if fs.fSet != nil {
-		return
-	}
-
-	fs.fSet = flag.NewFlagSet(name, flag.ContinueOnError)
-	// disable output internal error message on parse flags
-	fs.fSet.SetOutput(ioutil.Discard)
-	// nothing to do ... render usage on after parsed
-	fs.fSet.Usage = func() {}
 }
 
 // Run flags parse and handle help render
@@ -651,7 +649,7 @@ func (fs *Flags) checkFlagInfo(meta *FlagMeta) string {
 	}
 
 	nameLength := len(name)
-	// is an short name
+	// is a short name
 	if nameLength == 1 {
 		nameLength += 1 // prefix: "-"
 		fs.existShort = true
@@ -664,8 +662,8 @@ func (fs *Flags) checkFlagInfo(meta *FlagMeta) string {
 		fs.flagMaxLen = nameLength
 	}
 
-	// check and format short names
-	meta.Shorts = fs.checkShortNames(name, nameLength, meta.Shorts)
+	// check short names
+	fs.checkShortNames(name, nameLength, meta.Shorts)
 
 	// storage meta and name
 	fs.metas[name] = meta
@@ -673,34 +671,19 @@ func (fs *Flags) checkFlagInfo(meta *FlagMeta) string {
 }
 
 // check short names
-func (fs *Flags) checkShortNames(name string, nameLength int, shorts []string) []string {
+func (fs *Flags) checkShortNames(name string, nameLength int, shorts []string) {
 	if len(shorts) == 0 {
 		// record name without shorts
 		fs.names[name] = nameLength
-		return shorts
+		return
 	}
 
 	// init fs.shorts and fs.name2shorts
 	if fs.shorts == nil {
 		fs.shorts = map[string]string{}
-		fs.name2shorts = map[string][]string{}
 	}
 
-	var fmtShorts []string
 	for _, short := range shorts {
-		short = strings.Trim(short, "- ")
-		if short == "" {
-			continue
-		}
-
-		// ensure it is one char
-		char := short[0]
-		short = string(char)
-		// A 65 -> Z 90, a 97 -> z 122
-		if !strutil.IsAlphabet(char) {
-			panicf("short name only allow: A-Za-z given: '%s'", short)
-		}
-
 		if name == short {
 			panicf("short name '%s' has been used as the current option name", short)
 		}
@@ -713,7 +696,6 @@ func (fs *Flags) checkShortNames(name string, nameLength int, shorts []string) [
 			panicf("short name '%s' has been used by option '%s'", short, n)
 		}
 
-		fmtShorts = append(fmtShorts, short)
 		// storage short name
 		fs.shorts[short] = name
 	}
@@ -721,17 +703,14 @@ func (fs *Flags) checkShortNames(name string, nameLength int, shorts []string) [
 	// one short = '-' + 'x' + ',' + ' '
 	// eg: "-o, " len=4
 	// eg: "-o, -a, " len=8
-	nameLength += 4 * len(fmtShorts)
+	nameLength += 4 * len(shorts)
 	fs.existShort = true
 
 	// update name length
 	fs.names[name] = nameLength
-	if fs.flagMaxLen < nameLength {
-		fs.flagMaxLen = nameLength
-	}
+	fs.flagMaxLen = mathutil.MaxInt(fs.flagMaxLen, nameLength)
 
-	fs.name2shorts[name] = fmtShorts
-	return fmtShorts
+	// fs.name2shorts[name] = fmtShorts
 }
 
 /***********************************************************************
@@ -852,10 +831,10 @@ func (fs *Flags) IterAll(fn func(f *flag.Flag, meta *FlagMeta)) {
 
 // ShortNames get all short-names of the option
 func (fs *Flags) ShortNames(name string) (ss []string) {
-	if len(fs.name2shorts) == 0 {
-		return
+	if opt, ok := fs.metas[name]; ok {
+		ss = opt.Shorts
 	}
-	return fs.name2shorts[name]
+	return
 }
 
 // IsShortOpt alias of the IsShortcut()
@@ -937,6 +916,8 @@ func (fs *Flags) FlagNames() map[string]int { return fs.names }
 
 // FlagMeta for an flag(option/argument)
 type FlagMeta struct {
+	// Flag value
+	Flag *flag.Flag
 	// varPtr interface{}
 	// name and description
 	Name, Desc string
@@ -958,17 +939,17 @@ type FlagMeta struct {
 }
 
 // newFlagMeta quick create an FlagMeta
-func newFlagMeta(name, desc string, defVal interface{}, shorts string) *FlagMeta {
+func newFlagMeta(name, desc string, defVal interface{}, shortcut string) *FlagMeta {
 	return &FlagMeta{
 		Name: name,
 		Desc: desc,
 		// other info
 		DefVal: defVal,
-		Shorts: strutil.Split(shorts, ","),
+		Shorts: cflag.SplitShortcut(shortcut),
 	}
 }
 
-// Shorts2String join shorts to an string
+// Shorts2String join shorts to a string
 func (m *FlagMeta) Shorts2String(sep ...string) string {
 	if len(m.Shorts) == 0 {
 		return ""
@@ -978,13 +959,11 @@ func (m *FlagMeta) Shorts2String(sep ...string) string {
 	if len(sep) > 0 {
 		char = sep[0]
 	}
-
 	return strings.Join(m.Shorts, char)
 }
 
 // Validate the binding value
 func (m *FlagMeta) Validate(val string) error {
-	// check required
 	if m.Required && val == "" {
 		return fmt.Errorf("flag '%s' is required", m.Name)
 	}
@@ -1002,6 +981,10 @@ func (m *FlagMeta) DValue() *stdutil.Value {
 		m.defVal = &stdutil.Value{V: m.DefVal}
 	}
 	return m.defVal
+}
+
+func (m *FlagMeta) initCheck() {
+	m.goodName()
 }
 
 // good name of the flag

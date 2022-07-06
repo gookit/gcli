@@ -1,10 +1,10 @@
 package gcli
 
 import (
-	"fmt"
 	"strconv"
 	"strings"
 
+	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -62,7 +62,7 @@ func (ags *Arguments) ParseArgs(args []string) (err error) {
 		num = i + 1
 		if num > inNum { // not enough args
 			if arg.Required {
-				return fmt.Errorf("must set value for the argument: %s(position#%d)", arg.ShowName, arg.index)
+				return errorx.Rawf("must set value for the argument: %s(position#%d)", arg.ShowName, arg.index)
 			}
 			break
 		}
@@ -81,7 +81,7 @@ func (ags *Arguments) ParseArgs(args []string) (err error) {
 	}
 
 	if ags.validateNum && inNum > num {
-		return fmt.Errorf("entered too many arguments: %v", args[num:])
+		return errorx.Rawf("entered too many arguments: %v", args[num:])
 	}
 	return
 }
@@ -296,11 +296,10 @@ func (a *Argument) HelpName() string {
 	if a.Arrayed {
 		return a.ShowName + "..."
 	}
-
 	return a.ShowName
 }
 
-// With an func for config the argument
+// With a func for config the argument
 func (a *Argument) With(fn func(arg *Argument)) *Argument {
 	if fn != nil {
 		fn(a)
@@ -309,7 +308,7 @@ func (a *Argument) With(fn func(arg *Argument)) *Argument {
 	return a
 }
 
-// WithValidator set an value validator of the argument
+// WithValidator set a value validator of the argument
 func (a *Argument) WithValidator(fn func(interface{}) (interface{}, error)) *Argument {
 	a.Validator = fn
 	return a
