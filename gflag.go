@@ -13,10 +13,10 @@ import (
 	"unsafe"
 
 	"github.com/gookit/color"
-	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/stdutil"
+	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -48,14 +48,20 @@ var FlagTagName = "flag"
 type FlagsConfig struct {
 	// WithoutType don't display flag data type on print help
 	WithoutType bool
-	// NameDescOL flag and desc at one line on print help
-	NameDescOL bool
-	// Alignment flag name align left or right. default is: right
+	// DescNewline flag desc at new line on print help
+	DescNewline bool
+	// Alignment flag name align left or right. default is: left
 	Alignment uint8
 	// TagName on struct
 	TagName string
 	// TagRuleType for struct tag value. default is TagRuleNamed
 	TagRuleType uint8
+}
+
+// OptCategory struct
+type OptCategory struct {
+	Name, Title string
+	OptNames    []string
 }
 
 // Flags struct definition
@@ -64,23 +70,25 @@ type Flags struct {
 	Desc string
 	// ExitFunc for handle exit
 	ExitFunc func(code int)
-	// FlagsConfig option for render help message
+
+	// cfg option for the flags
 	cfg *FlagsConfig
-	// raw flag set
+	// the options flag set
 	fSet *flag.FlagSet
 	// buf for build help message
 	buf *bytes.Buffer
 	// output for print help message
 	out io.Writer
+
 	// all option names of the command. {name: length} // TODO delete, move len to meta.
 	names map[string]int
 	// metadata for all options
 	metas map[string]*FlagMeta // TODO support option category
-	// short names for options. format: {short:name}
+	// short names map for options. format: {short: name}
 	// eg. {"n": "name", "o": "opt"}
 	shorts map[string]string
-	// mapping for name to shortcut {"name": {"n", "m"}}
-	// name2shorts map[string][]string
+	// support option category
+	categories []OptCategory
 	// flag name max length. useful for render help
 	// eg: "-V, --version" length is 13
 	flagMaxLen int
@@ -88,18 +96,18 @@ type Flags struct {
 	existShort bool
 }
 
-func newDefaultFlagOption() *FlagsConfig {
+func newDefaultFlagConfig() *FlagsConfig {
 	return &FlagsConfig{
-		Alignment: AlignRight,
+		Alignment: AlignLeft,
 		TagName:   FlagTagName,
 	}
 }
 
-// NewFlags create an new Flags
+// NewFlags create a new Flags
 func NewFlags(nameWithDesc ...string) *Flags {
 	fs := &Flags{
 		out: os.Stdout,
-		cfg: newDefaultFlagOption(),
+		cfg: newDefaultFlagConfig(),
 	}
 	fs.ExitFunc = os.Exit
 
@@ -121,6 +129,10 @@ func (fs *Flags) InitFlagSet(name string) {
 		return
 	}
 
+	if fs.cfg == nil {
+		fs.cfg = newDefaultFlagConfig()
+	}
+
 	fs.fSet = flag.NewFlagSet(name, flag.ContinueOnError)
 	// disable output internal error message on parse flags
 	fs.fSet.SetOutput(ioutil.Discard)
@@ -138,11 +150,102 @@ func (fs *Flags) UseSimpleRule() *Flags {
 }
 
 // WithConfigFn for the object.
-func (fs *Flags) WithConfigFn(fns ...func(opt *FlagsConfig)) *Flags {
+func (fs *Flags) WithConfigFn(fns ...func(cfg *FlagsConfig)) *Flags {
 	for _, fn := range fns {
 		fn(fs.cfg)
 	}
 	return fs
+}
+
+/***********************************************************************
+ * Flags:
+ * - parse input flags
+ ***********************************************************************/
+
+// Run flags parse and handle help render
+//
+// Usage:
+// 	gf := gcli.NewFlags()
+//  ...
+// 	gf.Run(os.Args)
+func (fs *Flags) Run(args []string) {
+	if args == nil {
+		args = os.Args
+	}
+
+	// split binFile and args
+	binFile, waitArgs := args[0], args[1:]
+
+	// register help render
+	fs.SetHelpRender(func() {
+		if fs.Desc != "" {
+			color.Infoln(fs.Desc)
+		}
+
+		color.Comment.Println("Usage:")
+		color.Cyan.Println(" ", binFile, "[--OPTIONS...]\n")
+		color.Comment.Println("Options:")
+
+		fs.PrintHelpPanel()
+	})
+
+	// do parsing
+	if err := fs.Parse(waitArgs); err != nil {
+		color.Errorf("Parse error: %s\n", err.Error())
+	}
+}
+
+// Parse given arguments
+//
+// Usage:
+// 	gf := gcli.NewFlags()
+// 	gf.BoolOpt(&debug, "debug", "", defDebug, "open debug mode")
+// 	gf.UintOpt(&port, "port", "p", 18081, "the http server port")
+//
+// 	err := gf.Parse(os.Args[1:])
+func (fs *Flags) Parse(args []string) (err error) {
+	defer func() {
+		if err := recover(); err != nil {
+			// if Debug {
+			// 	cliutil.Errorln("recover error on run parse")
+			// }
+			color.Errorln("Panic Error:", err)
+		}
+	}()
+
+	// prepare
+	if err := fs.prepare(); err != nil {
+		return err
+	}
+
+	if len(fs.shorts) > 0 && len(args) > 0 {
+		args = cflag.ReplaceShorts(args, fs.shorts)
+	}
+
+	// do parsing
+	if err = fs.fSet.Parse(args); err != nil {
+		if err == flag.ErrHelp {
+			return nil // ignore help error
+		}
+		return err
+	}
+
+	// call flags validate
+	for name, meta := range fs.metas {
+		fItem := fs.fSet.Lookup(name)
+		err = meta.Validate(fItem.Value.String())
+		if err != nil {
+			return err
+		}
+	}
+	return
+}
+
+func (fs *Flags) prepare() error {
+	// disable output internal error message on parse flags
+	fs.fSet.SetOutput(ioutil.Discard)
+
+	return nil
 }
 
 /***********************************************************************
@@ -269,80 +372,6 @@ func (fs *Flags) FromStruct(ptr interface{}) error {
 	return nil
 }
 
-// Run flags parse and handle help render
-//
-// Usage:
-// 	gf := gcli.NewFlags()
-//  ...
-// 	gf.Run(os.Args)
-func (fs *Flags) Run(args []string) {
-	if args == nil {
-		args = os.Args
-	}
-
-	// split binFile and args
-	binFile, waitArgs := args[0], args[1:]
-
-	// register help render
-	fs.SetHelpRender(func() {
-		if fs.Desc != "" {
-			color.Infoln(fs.Desc)
-		}
-
-		color.Comment.Println("Usage:")
-		color.Cyan.Println(" ", binFile, "[--OPTIONS...]\n")
-		color.Comment.Println("Options:")
-
-		fs.PrintHelpPanel()
-	})
-
-	// do parsing
-	if err := fs.Parse(waitArgs); err != nil {
-		if err == flag.ErrHelp {
-			fs.ExitFunc(0)
-		} else {
-			color.Errorf("flag parse error - %s", err.Error())
-			fs.ExitFunc(2)
-		}
-	}
-}
-
-// Parse given arguments
-//
-// Usage:
-// 	gf := gcli.NewFlags()
-// 	gf.BoolOpt(&debug, "debug", "", defDebug, "open debug mode")
-// 	gf.UintOpt(&port, "port", "p", 18081, "the http server port")
-//
-// 	err := gf.Parse(os.Args[1:])
-func (fs *Flags) Parse(args []string) (err error) {
-	err = fs.fSet.Parse(args)
-	if err != nil {
-		return
-	}
-
-	// call flags validate
-	for name, meta := range fs.metas {
-		fItem := fs.fSet.Lookup(name)
-		err = meta.Validate(fItem.Value.String())
-		if err != nil {
-			return err
-		}
-	}
-	return
-}
-
-// RawArg get an argument value by index
-func (fs *Flags) RawArg(i int) string { return fs.fSet.Arg(i) }
-
-// RawArgs get all raw arguments.
-// if have been called parse, the return is remaining args.
-func (fs *Flags) RawArgs() []string { return fs.fSet.Args() }
-
-// FSetArgs get all raw arguments. alias of the RawArgs()
-// if have been called parse, the return is remaining args.
-func (fs *Flags) FSetArgs() []string { return fs.fSet.Args() }
-
 /***********************************************************************
  * Flags:
  * - binding option var
@@ -351,17 +380,14 @@ func (fs *Flags) FSetArgs() []string { return fs.fSet.Args() }
 // --- bool option
 
 // Bool binding a bool option flag, return pointer
-func (fs *Flags) Bool(name, shorts string, defValue bool, desc string) *bool {
-	meta := newFlagMeta(name, desc, defValue, shorts)
+func (fs *Flags) Bool(name, shorts string, defVal bool, desc string) *bool {
+	meta := newFlagMeta(name, desc, defVal, shorts)
 	name = fs.checkFlagInfo(meta)
 
 	// binding option to flag.FlagSet
-	p := fs.fSet.Bool(name, defValue, meta.Desc)
+	p := fs.fSet.Bool(name, defVal, meta.Desc)
+	meta.Flag = fs.fSet.Lookup(name)
 
-	// binding all short name options to flag.FlagSet
-	for _, s := range meta.Shorts {
-		fs.fSet.BoolVar(p, s, defValue, "") // don't add description for short name
-	}
 	return p
 }
 
@@ -369,22 +395,18 @@ func (fs *Flags) Bool(name, shorts string, defValue bool, desc string) *bool {
 func (fs *Flags) BoolVar(p *bool, meta *FlagMeta) { fs.boolOpt(p, meta) }
 
 // BoolOpt binding a bool option
-func (fs *Flags) BoolOpt(p *bool, name, shorts string, defValue bool, desc string) {
-	fs.boolOpt(p, newFlagMeta(name, desc, defValue, shorts))
+func (fs *Flags) BoolOpt(p *bool, name, shorts string, defVal bool, desc string) {
+	fs.boolOpt(p, newFlagMeta(name, desc, defVal, shorts))
 }
 
 // binding option and shorts
 func (fs *Flags) boolOpt(p *bool, meta *FlagMeta) {
 	defVal := meta.DValue().Bool()
-	fmtName := fs.checkFlagInfo(meta)
+	name := fs.checkFlagInfo(meta)
 
 	// binding option to flag.FlagSet
-	fs.fSet.BoolVar(p, fmtName, defVal, meta.Desc)
-
-	// binding all short name options to flag.FlagSet
-	for _, s := range meta.Shorts {
-		fs.fSet.BoolVar(p, s, defVal, "") // dont add description for short name
-	}
+	fs.fSet.BoolVar(p, name, defVal, meta.Desc)
+	meta.Flag = fs.fSet.Lookup(name)
 }
 
 // --- float option
@@ -393,21 +415,17 @@ func (fs *Flags) boolOpt(p *bool, meta *FlagMeta) {
 func (fs *Flags) Float64Var(p *float64, meta *FlagMeta) { fs.float64Opt(p, meta) }
 
 // Float64Opt binding a float64 option
-func (fs *Flags) Float64Opt(p *float64, name, shorts string, defValue float64, desc string) {
-	fs.float64Opt(p, newFlagMeta(name, desc, defValue, shorts))
+func (fs *Flags) Float64Opt(p *float64, name, shorts string, defVal float64, desc string) {
+	fs.float64Opt(p, newFlagMeta(name, desc, defVal, shorts))
 }
 
 func (fs *Flags) float64Opt(p *float64, meta *FlagMeta) {
-	defValue := meta.DValue().Float64()
-	fmtName := fs.checkFlagInfo(meta)
+	defVal := meta.DValue().Float64()
+	name := fs.checkFlagInfo(meta)
 
 	// binding option to flag.FlagSet
-	fs.fSet.Float64Var(p, fmtName, defValue, meta.Desc)
-
-	// binding all short name options to flag.FlagSet
-	for _, s := range meta.Shorts {
-		fs.fSet.Float64Var(p, s, defValue, "") // dont add description for short name
-	}
+	fs.fSet.Float64Var(p, name, defVal, meta.Desc)
+	meta.Flag = fs.fSet.Lookup(name)
 }
 
 // --- string option
@@ -419,11 +437,8 @@ func (fs *Flags) Str(name, shorts string, defValue, desc string) *string {
 
 	// binding option to flag.FlagSet
 	p := fs.fSet.String(name, defValue, meta.Desc)
+	meta.Flag = fs.fSet.Lookup(name)
 
-	// binding all short name options to flag.FlagSet
-	for _, s := range meta.Shorts {
-		fs.fSet.StringVar(p, s, defValue, "") // dont add description for short name
-	}
 	return p
 }
 
@@ -437,11 +452,12 @@ func (fs *Flags) StrOpt(p *string, name, shorts, defValue, desc string) {
 
 // binding option and shorts
 func (fs *Flags) strOpt(p *string, meta *FlagMeta) {
-	defValue := meta.DValue().String()
-	fs.checkFlagInfo(meta)
+	defVal := meta.DValue().String()
+	name := fs.checkFlagInfo(meta)
 
 	// binding option to flag.FlagSet
-	fs.fSet.StringVar(p, meta.Name, defValue, meta.Desc)
+	fs.fSet.StringVar(p, meta.Name, defVal, meta.Desc)
+	meta.Flag = fs.fSet.Lookup(name)
 }
 
 // --- intX option
@@ -453,11 +469,8 @@ func (fs *Flags) Int(name, shorts string, defValue int, desc string) *int {
 
 	// binding option to flag.FlagSet
 	p := fs.fSet.Int(name, defValue, meta.Desc)
+	meta.Flag = fs.fSet.Lookup(name)
 
-	// binding all short name options to flag.FlagSet
-	for _, s := range meta.Shorts {
-		fs.fSet.IntVar(p, s, defValue, "") // dont add description for short name
-	}
 	return p
 }
 
@@ -471,15 +484,11 @@ func (fs *Flags) IntOpt(p *int, name, shorts string, defValue int, desc string) 
 
 func (fs *Flags) intOpt(p *int, meta *FlagMeta) {
 	defValue := meta.DValue().Int()
-	fmtName := fs.checkFlagInfo(meta)
+	name := fs.checkFlagInfo(meta)
 
 	// binding option to flag.FlagSet
-	fs.fSet.IntVar(p, fmtName, defValue, meta.Desc)
-
-	// binding all short name options to flag.FlagSet
-	for _, s := range meta.Shorts {
-		fs.fSet.IntVar(p, s, defValue, "") // dont add description for short name
-	}
+	fs.fSet.IntVar(p, name, defValue, meta.Desc)
+	meta.Flag = fs.fSet.Lookup(name)
 }
 
 // Int64 binding an int64 option flag, return pointer
@@ -489,11 +498,8 @@ func (fs *Flags) Int64(name, shorts string, defValue int64, desc string) *int64 
 
 	// binding option to flag.FlagSet
 	p := fs.fSet.Int64(name, defValue, meta.Desc)
+	meta.Flag = fs.fSet.Lookup(name)
 
-	// binding all short name options to flag.FlagSet
-	for _, s := range meta.Shorts {
-		fs.fSet.Int64Var(p, s, defValue, "") // dont add description for short name
-	}
 	return p
 }
 
@@ -506,32 +512,25 @@ func (fs *Flags) Int64Opt(p *int64, name, shorts string, defValue int64, desc st
 }
 
 func (fs *Flags) int64Opt(p *int64, meta *FlagMeta) {
-	defValue := meta.DValue().Int64()
-	fmtName := fs.checkFlagInfo(meta)
+	defVal := meta.DValue().Int64()
+	name := fs.checkFlagInfo(meta)
 
 	// binding option to flag.FlagSet
-	fs.fSet.Int64Var(p, fmtName, defValue, meta.Desc)
-
-	// binding all short options to flag.FlagSet
-	for _, s := range meta.Shorts {
-		fs.fSet.Int64Var(p, s, defValue, "") // dont add description for short name
-	}
+	fs.fSet.Int64Var(p, name, defVal, meta.Desc)
+	meta.Flag = fs.fSet.Lookup(name)
 }
 
 // --- uintX option
 
 // Uint binding an int option flag, return pointer
-func (fs *Flags) Uint(name, shorts string, defValue uint, desc string) *uint {
-	meta := newFlagMeta(name, desc, defValue, shorts)
+func (fs *Flags) Uint(name, shorts string, defVal uint, desc string) *uint {
+	meta := newFlagMeta(name, desc, defVal, shorts)
 	name = fs.checkFlagInfo(meta)
 
 	// binding option to flag.FlagSet
-	p := fs.fSet.Uint(name, defValue, meta.Desc)
+	p := fs.fSet.Uint(name, defVal, meta.Desc)
+	meta.Flag = fs.fSet.Lookup(name)
 
-	// binding all short name options to flag.FlagSet
-	for _, s := range meta.Shorts {
-		fs.fSet.UintVar(p, s, defValue, "") // dont add description for short name
-	}
 	return p
 }
 
@@ -544,30 +543,22 @@ func (fs *Flags) UintOpt(p *uint, name, shorts string, defValue uint, desc strin
 }
 
 func (fs *Flags) uintOpt(p *uint, meta *FlagMeta) {
-	defValue := meta.DValue().Int()
-	fmtName := fs.checkFlagInfo(meta)
+	defVal := meta.DValue().Int()
+	name := fs.checkFlagInfo(meta)
 
 	// binding option to flag.FlagSet
-	fs.fSet.UintVar(p, fmtName, uint(defValue), meta.Desc)
-
-	// binding all short options to flag.FlagSet
-	for _, s := range meta.Shorts {
-		fs.fSet.UintVar(p, s, uint(defValue), "") // dont add description for short name
-	}
+	fs.fSet.UintVar(p, name, uint(defVal), meta.Desc)
+	meta.Flag = fs.fSet.Lookup(name)
 }
 
 // Uint64 binding an int option flag, return pointer
-func (fs *Flags) Uint64(name, shorts string, defValue uint64, desc string) *uint64 {
-	meta := newFlagMeta(name, desc, defValue, shorts)
+func (fs *Flags) Uint64(name, shorts string, defVal uint64, desc string) *uint64 {
+	meta := newFlagMeta(name, desc, defVal, shorts)
 	name = fs.checkFlagInfo(meta)
 
-	// binding option to flag.FlagSet
-	p := fs.fSet.Uint64(name, defValue, meta.Desc)
+	p := fs.fSet.Uint64(name, defVal, meta.Desc)
+	meta.Flag = fs.fSet.Lookup(name)
 
-	// binding all short name options to flag.FlagSet
-	for _, s := range meta.Shorts {
-		fs.fSet.Uint64Var(p, s, defValue, "") // dont add description for short name
-	}
 	return p
 }
 
@@ -575,22 +566,18 @@ func (fs *Flags) Uint64(name, shorts string, defValue uint64, desc string) *uint
 func (fs *Flags) Uint64Var(p *uint64, meta *FlagMeta) { fs.uint64Opt(p, meta) }
 
 // Uint64Opt binding an uint64 option
-func (fs *Flags) Uint64Opt(p *uint64, name, shorts string, defValue uint64, desc string) {
-	fs.uint64Opt(p, newFlagMeta(name, desc, defValue, shorts))
+func (fs *Flags) Uint64Opt(p *uint64, name, shorts string, defVal uint64, desc string) {
+	fs.uint64Opt(p, newFlagMeta(name, desc, defVal, shorts))
 }
 
 // binding option and shorts
 func (fs *Flags) uint64Opt(p *uint64, meta *FlagMeta) {
-	defValue := meta.DValue().Int64()
-	fmtName := fs.checkFlagInfo(meta)
+	defVal := meta.DValue().Int64()
+	name := fs.checkFlagInfo(meta)
 
 	// binding option to flag.FlagSet
-	fs.fSet.Uint64Var(p, fmtName, uint64(defValue), meta.Desc)
-
-	// binding all short options to flag.FlagSet
-	for _, s := range meta.Shorts {
-		fs.fSet.Uint64Var(p, s, uint64(defValue), "") // dont add description for short name
-	}
+	fs.fSet.Uint64Var(p, name, uint64(defVal), meta.Desc)
+	meta.Flag = fs.fSet.Lookup(name)
 }
 
 // Var binding an custom var option flag
@@ -607,15 +594,11 @@ func (fs *Flags) VarOpt(p flag.Value, name, shorts, desc string) {
 
 // binding option and shorts
 func (fs *Flags) varOpt(p flag.Value, meta *FlagMeta) {
-	fmtName := fs.checkFlagInfo(meta)
+	name := fs.checkFlagInfo(meta)
 
 	// binding option to flag.FlagSet
-	fs.fSet.Var(p, fmtName, meta.Desc)
-
-	// binding all short options to flag.FlagSet
-	for _, s := range meta.Shorts {
-		fs.fSet.Var(p, s, "") // dont add description for short name
-	}
+	fs.fSet.Var(p, name, meta.Desc)
+	meta.Flag = fs.fSet.Lookup(name)
 }
 
 // Required flag option name(s)
@@ -625,7 +608,6 @@ func (fs *Flags) Required(names ...string) {
 		if !ok {
 			panicf("undefined option flag '%s'", name)
 		}
-
 		meta.Required = true
 	}
 }
@@ -645,36 +627,30 @@ func (fs *Flags) checkFlagInfo(meta *FlagMeta) string {
 		panicf("redefined option flag '%s'", name)
 	}
 
-	nameLength := len(name)
 	// is a short name
-	if nameLength == 1 {
-		nameLength += 1 // prefix: "-"
-		fs.existShort = true
-	} else {
-		nameLength += 2 // prefix: "--"
-	}
-
+	helpLen := meta.helpNameLen()
 	// fix: must exclude Hidden option
-	if !meta.Hidden && fs.flagMaxLen < nameLength {
-		fs.flagMaxLen = nameLength
+	if !meta.Hidden {
+		fs.flagMaxLen = mathutil.MaxInt(fs.flagMaxLen, helpLen)
 	}
 
 	// check short names
-	fs.checkShortNames(name, nameLength, meta.Shorts)
+	fs.checkShortNames(name, meta.Shorts)
 
+	// update name length
+	fs.names[name] = helpLen
 	// storage meta and name
 	fs.metas[name] = meta
 	return name
 }
 
 // check short names
-func (fs *Flags) checkShortNames(name string, nameLength int, shorts []string) {
+func (fs *Flags) checkShortNames(name string, shorts []string) {
 	if len(shorts) == 0 {
-		fs.names[name] = nameLength
 		return
 	}
 
-	// init fs.shorts and fs.name2shorts
+	fs.existShort = true
 	if fs.shorts == nil {
 		fs.shorts = map[string]string{}
 	}
@@ -696,17 +672,6 @@ func (fs *Flags) checkShortNames(name string, nameLength int, shorts []string) {
 		fs.shorts[short] = name
 	}
 
-	// one short = '-' + 'x' + ',' + ' '
-	// eg: "-o, " len=4
-	// eg: "-o, -a, " len=8
-	nameLength += 4 * len(shorts)
-	fs.existShort = true
-
-	// update name length
-	fs.names[name] = nameLength
-	fs.flagMaxLen = mathutil.MaxInt(fs.flagMaxLen, nameLength)
-
-	// fs.name2shorts[name] = fmtShorts
 }
 
 /***********************************************************************
@@ -732,11 +697,6 @@ func (fs *Flags) String() string {
 
 	// repeat call the method
 	if fs.buf.Len() < 1 {
-		// if fs.existShort { // add 4 space prefix for flag
-		// 	fs.flagMaxLen += 4
-		// }
-
-		// refer fs.Fs().PrintDefaults()
 		fs.FSet().VisitAll(fs.formatOneFlag)
 	}
 
@@ -756,33 +716,38 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 	var s, fullName string
 	name := f.Name
 	// eg: "-V, --version" length is: 13
-	fLen := fs.names[name]
+	nameLen := fs.names[name]
+	descNl := fs.cfg.DescNewline
 
 	// add prefix '-' to option
 	fullName = cflag.AddPrefixes(name, meta.Shorts)
-
-	// fs.NameDescOL = true: padding space to same width.
-	if fs.cfg.NameDescOL {
-		fullName = strutil.Padding(fullName, " ", fs.flagMaxLen, fs.cfg.Alignment)
-	}
 
 	s = fmt.Sprintf("  <info>%s</>", fullName)
 
 	// - build flag type info
 	typeName, desc := flag.UnquoteUsage(f)
 	// typeName: option value data type: int, string, ..., bool value will return ""
-	if fs.cfg.WithoutType == false && len(typeName) > 0 {
+	if !fs.cfg.WithoutType && len(typeName) > 0 {
+		typeLen := len(typeName) + 1
+		if nameLen+typeLen > fs.flagMaxLen {
+			descNl = true
+		} else {
+			nameLen += typeLen
+		}
+
 		s += fmt.Sprintf(" <magenta>%s</>", typeName)
 	}
 
-	// - flag and description at one line
-	// - Boolean flags of one ASCII letter are so common we
-	// treat them specially, putting their usage on the same line.
-	if fs.cfg.NameDescOL || (typeName == "" && fLen <= 4) { // space, space, '-', 'x'.
-		s += "    "
+	// display description on new line
+	nlIndent := "\n      " + strings.Repeat(" ", fs.flagMaxLen)
+	if descNl {
+		s += nlIndent
 	} else {
-		// display description on new line
-		s += "\n        "
+		// padding space to flagMaxLen width.
+		if padLen := fs.flagMaxLen - nameLen; padLen > 0 {
+			s += strings.Repeat(" ", padLen)
+		}
+		s += "    "
 	}
 
 	// --- build description
@@ -795,7 +760,7 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 		s += "<red>*</>"
 	}
 
-	s += strings.Replace(strutil.UpperFirst(desc), "\n", "\n        ", -1)
+	s += strings.Replace(strutil.UpperFirst(desc), "\n", nlIndent, -1)
 
 	// ---- append default value
 	if isZero, isStr := cflag.IsZeroValue(f, f.DefValue); !isZero {
@@ -905,6 +870,17 @@ func (fs *Flags) SetOutput(out io.Writer) { fs.out = out }
 // FlagNames return all option names
 func (fs *Flags) FlagNames() map[string]int { return fs.names }
 
+// RawArg get an argument value by index
+func (fs *Flags) RawArg(i int) string { return fs.fSet.Arg(i) }
+
+// RawArgs get all raw arguments.
+// if have been called parse, the return is remaining args.
+func (fs *Flags) RawArgs() []string { return fs.fSet.Args() }
+
+// FSetArgs get all raw arguments. alias of the RawArgs()
+// if have been called parse, the return is remaining args.
+func (fs *Flags) FSetArgs() []string { return fs.fSet.Args() }
+
 /***********************************************************************
  * Flags:
  * - flag metadata
@@ -914,21 +890,20 @@ func (fs *Flags) FlagNames() map[string]int { return fs.names }
 type FlagMeta struct {
 	// Flag value
 	Flag *flag.Flag
-	// varPtr interface{}
-	// name and description
+	// Name of flag and description
 	Name, Desc string
-	// Alias of the name. isn't shorts. eg: name='dry-run' alias='dr' TODO
-	Alias string
 	// default value for the flag option
 	DefVal interface{}
 	// wrapped the default value
-	defVal *goutil.Value
+	defVal *structs.Value
 	// short names. eg: ["o", "a"]
 	Shorts []string
-	// advanced settings
-	// hidden the option on help
+
+	// --- advanced settings
+
+	// Hidden the option on help
 	Hidden bool
-	// the option is required
+	// Required the option is required
 	Required bool
 	// Validator support validate the option flag value
 	Validator func(val string) error
@@ -956,6 +931,15 @@ func (m *FlagMeta) Shorts2String(sep ...string) string {
 		char = sep[0]
 	}
 	return strings.Join(m.Shorts, char)
+}
+
+// HelpName for show help
+func (m *FlagMeta) HelpName() string {
+	return cflag.AddPrefixes(m.Name, m.Shorts)
+}
+
+func (m *FlagMeta) helpNameLen() int {
+	return len(m.HelpName())
 }
 
 // Validate the binding value

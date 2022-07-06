@@ -73,6 +73,7 @@ func New(fns ...func(app *App)) *App {
 }
 
 // NewApp create new app instance.
+//
 // Usage:
 // 	NewApp()
 // 	// Or with a config func
@@ -101,7 +102,6 @@ func NewApp(fns ...func(app *App)) *App {
 		Hooks: &Hooks{},
 		gFlags: NewFlags("app.GOptions").WithConfigFn(func(opt *FlagsConfig) {
 			opt.WithoutType = true
-			opt.NameDescOL = true
 			opt.Alignment = AlignLeft
 		}),
 	}

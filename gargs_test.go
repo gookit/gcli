@@ -88,37 +88,36 @@ func TestArgument(t *testing.T) {
 	// no value
 	is.Nil(arg.Strings())
 	is.Nil(arg.GetValue())
-	is.Nil(arg.StringSplit())
+	is.Nil(arg.SplitToStrings())
 	is.Equal(0, arg.Int())
-	is.Equal(34, arg.Int(34))
 	is.Equal("", arg.String())
-	is.Equal("ab", arg.String("ab"))
+	is.Equal("ab", arg.WithValue("ab").String())
 
 	// add value
-	arg.Value = "ab,cd"
+	err := arg.SetValue("ab,cd")
+	is.NoError(err)
 
 	is.Nil(arg.Strings())
 	is.Equal(0, arg.Int())
-	is.Equal(34, arg.Int(34))
 
 	is.Equal("ab,cd", arg.String())
-	is.Equal([]string{"ab", "cd"}, arg.StringSplit())
-	is.Equal([]string{"ab", "cd"}, arg.StringSplit(","))
+	is.Equal([]string{"ab", "cd"}, arg.Strings())
+	is.Equal([]string{"ab", "cd"}, arg.SplitToStrings(","))
 
 	// int value
-	arg.Value = 23
+	is.NoError(arg.SetValue(23))
 	is.Equal(23, arg.Int())
-	is.Equal("", arg.String())
+	is.Equal("23", arg.String())
 
 	// string int value
-	err := arg.SetValue("23")
+	err = arg.SetValue("23")
 	is.NoError(err)
 	is.Equal(23, arg.Int())
 	is.Equal("23", arg.String())
 
 	// array value
 	arg.Arrayed = true
-	arg.Value = []string{"a", "b"}
+	is.NoError(arg.SetValue([]string{"a", "b"}))
 	is.True(arg.Arrayed)
 	is.Equal(0, arg.Int())
 	is.Equal("", arg.String())
@@ -136,7 +135,7 @@ func TestArgument_GetValue(t *testing.T) {
 	arg := gcli.NewArgument("arg0", "arg desc")
 
 	// custom handler
-	arg.Value = "a-b-c"
+	assert.NoError(t, arg.SetValue("a-b-c"))
 	arg.Handler = func(value interface{}) interface{} {
 		str := value.(string)
 		return strings.SplitN(str, "-", 2)
@@ -149,8 +148,8 @@ var str2int = func(val interface{}) (interface{}, error) {
 }
 
 func TestArgument_WithConfig(t *testing.T) {
-	arg := gcli.NewArgument("arg0", "arg desc").With(func(arg *gcli.Argument) {
-		arg.Value = 23
+	arg := gcli.NewArgument("arg0", "arg desc").WithFn(func(arg *gcli.Argument) {
+		arg.SetValue(23)
 		arg.Init()
 	})
 

@@ -230,11 +230,9 @@ func (c *Command) Match(names []string) *Command {
 	// ensure is initialized
 	c.initialize()
 
-	ln := len(names)
-	if ln == 0 { // return self.
+	if len(names) == 0 { // return self.
 		return c
 	}
-
 	return c.commandBase.Match(names)
 }
 
@@ -251,7 +249,6 @@ func (c *Command) initialize() {
 
 	// check command name
 	cName := c.goodName()
-
 	Debugf("initialize the command '%s'", cName)
 
 	c.initialized = true
@@ -272,13 +269,10 @@ func (c *Command) initialize() {
 
 	// init for cmd Arguments
 	c.Arguments.SetName(cName)
-	c.Arguments.SetValidateNum(gOpts.strictMode)
+	// c.Arguments.SetValidateNum(gOpts.strictMode)
 
 	// init for cmd Flags
-	c.Flags.SetConfig(newDefaultFlagOption())
 	c.Flags.InitFlagSet(cName)
-	// c.Flags.SetOption(cName)
-	// c.Flags.FSet().SetOutput(c.Flags.out)
 	// c.Flags.FSet().Usage = func() { // call on exists "-h" "--help"
 	// 	Logf(VerbDebug, "render help on exists '-h|--help' or has unknown flag")
 	// 	c.ShowHelp()
@@ -367,8 +361,7 @@ var errCallRunOnSub = errors.New("c.Run() cannot allow call at subcommand")
 //	cmd.MustRun([]string{"-a", ...})
 func (c *Command) MustRun(args []string) {
 	if err := c.Run(args); err != nil {
-		color.Error.Println("ERROR:", err.Error())
-		panic(err)
+		color.Errorln("ERROR:", err.Error())
 	}
 }
 
@@ -381,12 +374,8 @@ func (c *Command) MustRun(args []string) {
 //	// custom args
 //	cmd.Run([]string{"-a", ...})
 func (c *Command) Run(args []string) (err error) {
-	if c.app != nil {
-		return errCallRunOnApp
-	}
-
-	if c.parent != nil {
-		return errCallRunOnSub
+	if c.app != nil || c.parent != nil {
+		return c.innerDispatch(args)
 	}
 
 	// mark is standalone
@@ -522,8 +511,6 @@ func (c *Command) parseOptions(args []string) (ss []string, err error) {
 	// args = moveArgumentsToEnd(args)
 	// Debugf("cmd: %s - option flags on after format: %v", c.Name, args)
 
-	// NOTICE: disable output internal error message on parse flags
-	// c.FSet().SetOutput(ioutil.Discard)
 	Debugf("cmd: %s - will parse options by args: %v", c.Name, args)
 
 	// parse options, don't contains command name.
