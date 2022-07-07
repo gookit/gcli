@@ -1,4 +1,4 @@
-# Format message 
+# Show data
 
 contains `section, panel, padding, helpPanel, table, tree, title, list, multiList`
 

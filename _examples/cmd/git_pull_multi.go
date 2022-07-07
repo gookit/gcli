@@ -24,12 +24,14 @@ var GitPullMulti = &gcli.Command{
 			"basePath",
 			"the base operate dir path. default is current dir",
 			true,
-		).WithValidator(func(v interface{}) (i interface{}, e error) {
-			if !fsutil.IsDir(v.(string)) {
-				return nil, fmt.Errorf("the base path must be an exist dir")
-			}
-			return v, nil
-		})
+		).
+			WithValue("./").
+			WithValidator(func(v interface{}) (i interface{}, e error) {
+				if !fsutil.IsDir(v.(string)) {
+					return nil, fmt.Errorf("the base path must be an exist dir")
+				}
+				return v, nil
+			})
 
 		c.AddArg(
 			"dirNames",
@@ -42,7 +44,7 @@ var GitPullMulti = &gcli.Command{
 `,
 	Func: func(c *gcli.Command, _ []string) (err error) {
 		var ret string
-		basePath := c.Arg("basePath").String("./")
+		basePath := c.Arg("basePath").String()
 		dirNames := c.Arg("dirNames").Strings()
 
 		if len(dirNames) == 0 {

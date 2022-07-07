@@ -28,7 +28,7 @@ var (
 	confFile string
 )
 
-// eg: cliapp serve:start
+// ServerStart eg: cliapp serve:start
 func ServerStart() *gcli.Command {
 	c := &gcli.Command{
 		Name: "start",

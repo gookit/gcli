@@ -2,20 +2,44 @@
 
 ## run example
 
-**run with application:**
+### cli application
+
+show help:
 
 ```bash
-go run ./_examples/cliapp
+go run ./cliapp -h
 ```
 
-**only one command:**
+run application:
 
 ```bash
-go run ./_examples/simpleone
+go run ./cliapp demo
 ```
 
-**multi level commands:**
+### Only one command
+
+show help:
 
 ```bash
-go run ./_examples/multilevel
+go run ./simpleone -h
+```
+
+run command:
+
+```bash
+go run ./simpleone
+```
+
+### Multi level commands
+
+show help:
+
+```bash
+go run ./multilevel -h
+```
+
+run command:
+
+```bash
+go run ./multilevel
 ```

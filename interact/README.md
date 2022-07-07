@@ -1,4 +1,4 @@
-# Interactive Util
+# Interactive
 
 command-line interactive util methods
 
