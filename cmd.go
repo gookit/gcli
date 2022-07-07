@@ -348,8 +348,8 @@ func (c *Command) Next() {
  * standalone running
  *************************************************************/
 
-var errCallRunOnApp = errors.New("c.Run() method can only be called in standalone mode")
-var errCallRunOnSub = errors.New("c.Run() cannot allow call at subcommand")
+// var errCallRunOnApp = errors.New("c.Run() method can only be called in standalone mode")
+// var errCallRunOnSub = errors.New("c.Run() cannot allow call at subcommand")
 
 // MustRun Alone the current command, will panic on error
 //
@@ -671,13 +671,13 @@ func (c *Command) ShowHelp() {
 		// - on standalone, will not init c.core.gFlags
 		"GOpts": nil,
 		// parse options to string
-		"Options": c.Flags.String(),
+		"Options": c.Flags.BuildHelp(),
 		// always upper first char
 		"Desc": c.HelpDesc(),
 	}
 
 	if c.NotStandalone() {
-		vars["GOpts"] = c.GFlags().String()
+		vars["GOpts"] = c.GFlags().BuildHelp()
 	}
 
 	// render help message

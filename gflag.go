@@ -689,8 +689,8 @@ func (fs *Flags) PrintHelpPanel() {
 	color.Fprint(fs.out, fs.String())
 }
 
-// String for all flag options
-func (fs *Flags) String() string {
+// BuildHelp string for all flag options
+func (fs *Flags) BuildHelp() string {
 	if fs.buf == nil {
 		fs.buf = new(bytes.Buffer)
 	}
@@ -701,6 +701,11 @@ func (fs *Flags) String() string {
 	}
 
 	return fs.buf.String()
+}
+
+// String for all flag options
+func (fs *Flags) String() string {
+	return fs.BuildHelp()
 }
 
 func (fs *Flags) formatOneFlag(f *flag.Flag) {
@@ -717,11 +722,18 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 	name := f.Name
 	// eg: "-V, --version" length is: 13
 	nameLen := fs.names[name]
+	// display description on new line
 	descNl := fs.cfg.DescNewline
+
+	var nlIndent string
+	if descNl {
+		nlIndent = "\n        "
+	} else {
+		nlIndent = "\n      " + strings.Repeat(" ", fs.flagMaxLen)
+	}
 
 	// add prefix '-' to option
 	fullName = cflag.AddPrefixes(name, meta.Shorts)
-
 	s = fmt.Sprintf("  <info>%s</>", fullName)
 
 	// - build flag type info
@@ -729,7 +741,7 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 	// typeName: option value data type: int, string, ..., bool value will return ""
 	if !fs.cfg.WithoutType && len(typeName) > 0 {
 		typeLen := len(typeName) + 1
-		if nameLen+typeLen > fs.flagMaxLen {
+		if !descNl && nameLen+typeLen > fs.flagMaxLen {
 			descNl = true
 		} else {
 			nameLen += typeLen
@@ -738,8 +750,6 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 		s += fmt.Sprintf(" <magenta>%s</>", typeName)
 	}
 
-	// display description on new line
-	nlIndent := "\n      " + strings.Repeat(" ", fs.flagMaxLen)
 	if descNl {
 		s += nlIndent
 	} else {
