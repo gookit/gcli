@@ -191,6 +191,10 @@ func (fs *Flags) Run(args []string) {
 
 	// do parsing
 	if err := fs.Parse(waitArgs); err != nil {
+		if err == flag.ErrHelp {
+			return // ignore help error
+		}
+
 		color.Errorf("Parse error: %s\n", err.Error())
 	}
 }
@@ -224,9 +228,6 @@ func (fs *Flags) Parse(args []string) (err error) {
 
 	// do parsing
 	if err = fs.fSet.Parse(args); err != nil {
-		if err == flag.ErrHelp {
-			return nil // ignore help error
-		}
 		return err
 	}
 

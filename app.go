@@ -408,7 +408,7 @@ func (app *App) findCommandName() (name string) {
 	// it is exists command name.
 	if app.IsCommand(name) {
 		app.inputName = rawName
-		Debugf("the raw input command: '<cyan>%s</>'; now, name: '<green>%s</>', args: %v", rawName, name, app.args)
+		Debugf("the raw input command: '<cyan>%s</>'; real name: '<green>%s</>', args: %v", rawName, name, app.args)
 		return name
 	}
 

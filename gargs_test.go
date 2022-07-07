@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3"
+	assert2 "github.com/gookit/goutil/testutil/assert"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -18,8 +19,10 @@ func TestCommand_AddArg(t *testing.T) {
 
 	ret := c.ArgByIndex(0)
 	is.Equal(ret, arg)
-	ret = c.ArgByIndex(1)
-	is.True(ret.IsEmpty())
+
+	assert2.PanicsMsg(t, func() {
+		c.ArgByIndex(1)
+	}, "GCli: get not exists argument #1")
 
 	arg = c.AddArg("arg1", "arg1 desc")
 	is.Equal(1, arg.Index())
@@ -27,9 +30,9 @@ func TestCommand_AddArg(t *testing.T) {
 	ret = c.Arg("arg1")
 	is.Equal(ret, arg)
 
-	ret = c.Arg("not-exist")
-	is.True(ret.IsEmpty())
-	is.False(ret.HasValue())
+	assert2.PanicsMsg(t, func() {
+		c.Arg("not-exist")
+	}, "GCli: get not exists argument 'not-exist'")
 
 	is.Len(c.Args(), 2)
 
@@ -37,9 +40,9 @@ func TestCommand_AddArg(t *testing.T) {
 		c.AddArg("", "desc")
 	})
 
-	is.PanicsWithValue("GCli: the command argument name ':)&dfd' is invalid, must match: ^[a-zA-Z][\\w-]*$", func() {
+	assert2.PanicsMsg(t, func() {
 		c.AddArg(":)&dfd", "desc")
-	})
+	}, "GCli: the argument name ':)&dfd' is invalid, must match: ^[a-zA-Z][\\w-]*$")
 
 	is.PanicsWithValue("GCli: the argument name 'arg1' already exists in command 'test'", func() {
 		c.AddArg("arg1", "desc")

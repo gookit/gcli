@@ -62,7 +62,7 @@ func TestCommand_NewErrf(t *testing.T) {
 	is.Equal("error message", err.Error())
 	is.Equal([]string{"hi"}, c.RawArgs())
 
-	is.Panics(func() {
+	is.NotPanics(func() {
 		c.MustRun(simpleArgs)
 	})
 }
@@ -121,8 +121,7 @@ func TestNewCommand_Run(t *testing.T) {
 	g := gcli.NewApp()
 	g.AddCommand(c)
 	err = c.Run(simpleArgs)
-	is.Error(err)
-
+	is.NoError(err)
 }
 
 var bf = new(bytes.Buffer)

@@ -316,6 +316,10 @@ func (a *Argument) goodArgument() string {
 	if a.ShowName == "" {
 		a.ShowName = name
 	}
+
+	if !a.HasValue() {
+		a.Value = structs.NewValue(nil)
+	}
 	return name
 }
 
@@ -345,11 +349,6 @@ func (a *Argument) Strings() (ss []string) {
 // HasValue value is empty
 func (a *Argument) HasValue() bool {
 	return a.Value != nil
-}
-
-// IsEmpty argument is empty
-func (a *Argument) IsEmpty() bool {
-	return a.Name == ""
 }
 
 // Index get argument index in the command

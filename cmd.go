@@ -273,10 +273,6 @@ func (c *Command) initialize() {
 
 	// init for cmd Flags
 	c.Flags.InitFlagSet(cName)
-	// c.Flags.FSet().Usage = func() { // call on exists "-h" "--help"
-	// 	Logf(VerbDebug, "render help on exists '-h|--help' or has unknown flag")
-	// 	c.ShowHelp()
-	// }
 
 	// format description
 	if len(c.Desc) > 0 {
@@ -412,6 +408,8 @@ func (c *Command) Run(args []string) (err error) {
 
 // dispatch execute the command
 func (c *Command) innerDispatch(args []string) (err error) {
+	Debugf("cmd: %s - begin parse options by args: %v", c.Name, args)
+
 	// parse command flags
 	args, err = c.parseOptions(args)
 	if err != nil {
@@ -474,8 +472,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 
 	// not set command func and has sub commands.
 	if c.Func == nil && len(c.commands) > 0 {
-		// color.Cyanln()
-		Logf(VerbWarn, "cmd: %s - c.Func is empty, but has subcommands, render cmd list", c.Name)
+		Logf(VerbWarn, "cmd: %s - c.Func is empty, but has subcommands, render help", c.Name)
 		c.ShowHelp()
 		return err
 	}
@@ -515,7 +512,7 @@ func (c *Command) parseOptions(args []string) (ss []string, err error) {
 
 	// parse options, don't contains command name.
 	if err = c.Parse(args); err != nil {
-		Logf(VerbCrazy, "'%s' - parse options  err: <red>%s</>", c.Name, err.Error())
+		Logf(VerbCrazy, "cmd: %s - parse options, err: <red>%s</>", c.Name, err.Error())
 		return
 	}
 
