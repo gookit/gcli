@@ -68,7 +68,7 @@ func GenAutoComplete() *gcli.Command {
 		&genOpts.output,
 		"output",
 		"o",
-		"auto-completion.{shell}",
+		"auto-completion."+shell,
 		"output shell auto completion script file name.",
 	)
 

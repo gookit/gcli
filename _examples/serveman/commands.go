@@ -28,21 +28,18 @@ var (
 	confFile string
 )
 
-// ServerStart eg: cliapp serve:start
-func ServerStart() *gcli.Command {
-	c := &gcli.Command{
-		Name: "start",
-		Desc: "start server",
-		Func: func(c *gcli.Command, args []string) error {
-			return startServer(c.BinName())
-		},
-	}
-
-	// c.StrOpt(&config.Pid, "pid", "", "", "the running server PID file")
-	c.StrOpt(&confFile, "config", "c", "serve-config.json", "the running json config file path")
-	c.BoolOpt(&config.Daemon, "daemon", "d", false, "the running server PID file")
-
-	return c
+// ServerStart command
+var ServerStart = &gcli.Command{
+	Name: "start",
+	Desc: "start server",
+	Func: func(c *gcli.Command, args []string) error {
+		return startServer(c.BinName())
+	},
+	Config: func(c *gcli.Command) {
+		// c.StrOpt(&config.Pid, "pid", "", "", "the running server PID file")
+		c.StrOpt(&confFile, "config", "c", "serve-config.json", "the running json config file path")
+		c.BoolOpt(&config.Daemon, "daemon", "d", false, "the running server PID file")
+	},
 }
 
 func startServer(binFile string) (err error) {
@@ -53,29 +50,38 @@ func startServer(binFile string) (err error) {
 		}
 
 		pid := cmd.Process.Pid
-		color.Green.Printf("Server start, [PID] %d running...\n", pid)
+		color.Greenf("Server start, [PID] %d running...\n", pid)
 		err = ioutil.WriteFile(config.PidFile, []byte(fmt.Sprintf("%d", pid)), 0666)
 		config.Daemon = false
 		return
 	}
 
-	color.Info.Println("Server started")
+	color.Infoln("Server started")
 	// front run
 	// startHttp()
 	return
 }
 
-func ServerStop() *gcli.Command {
-	c := &gcli.Command{
-		Name: "stop",
-		Desc: "stop the running server(by PID file)",
-	}
-
-	c.Func = func(_ *gcli.Command, _ []string) error {
+var ServerStop = &gcli.Command{
+	Name: "stop",
+	Desc: "stop the running server(by PID file)",
+	Func: func(_ *gcli.Command, _ []string) error {
 		return stopServer()
-	}
+	},
+}
 
-	return c
+// ServerRestart Server restart
+var ServerRestart = &gcli.Command{
+	Name: "restart",
+	Desc: "restart the running server by PID file",
+	Func: func(c *gcli.Command, _ []string) (err error) {
+		// c.App().SubRun("stop", []string{"-c", confFile})
+		if err = stopServer(); err != nil {
+			return
+		}
+
+		return startServer(c.BinName())
+	},
 }
 
 func stopServer() error {
@@ -85,20 +91,4 @@ func stopServer() error {
 
 	color.Success.Println("server stopped")
 	return err
-}
-
-// ServerRestart Server restart
-func ServerRestart() *gcli.Command {
-	return &gcli.Command{
-		Name: "restart",
-		Desc: "restart the running server by PID file",
-		Func: func(c *gcli.Command, _ []string) (err error) {
-			// c.App().SubRun("stop", []string{"-c", confFile})
-			if err = stopServer(); err != nil {
-				return
-			}
-
-			return startServer(c.BinName())
-		},
-	}
 }

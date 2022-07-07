@@ -18,6 +18,7 @@ var l1sub1opts = struct {
 var l2sub1opts = struct {
 	astr string
 }{}
+
 var cmd = gcli.Command{
 	Name:    "test",
 	Aliases: []string{"ts"},
