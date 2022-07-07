@@ -7,6 +7,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/goutil/arrutil"
+	"github.com/gookit/goutil/common"
 	"github.com/gookit/goutil/stdutil"
 	"github.com/gookit/goutil/strutil"
 )
@@ -97,6 +98,13 @@ func Printf(format string, args ...interface{}) {
 
 func panicf(format string, v ...interface{}) {
 	panic(fmt.Sprintf("GCli: "+format, v...))
+}
+
+func sepStr(seps []string) string {
+	if len(seps) > 0 {
+		return seps[0]
+	}
+	return common.DefaultSep
 }
 
 // allowed keys on struct tag.

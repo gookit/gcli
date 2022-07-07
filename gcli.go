@@ -212,13 +212,13 @@ func (g *GOptions) NoProgress() bool {
 
 func (g *GOptions) bindingFlags(fs *Flags) {
 	// up: allow use int and string.
-	fs.VarOpt(&g.verbose, "verbose", "", "Set error reporting level(quiet 0 - 5 crazy)")
+	fs.VarOpt(&g.verbose, "verbose", "", "Set logs reporting level(quiet 0 - 5 crazy)")
 
 	fs.BoolOpt(&g.inShell, "ishell", "", false, "Run in an interactive shell environment(`TODO`)")
 	fs.BoolOpt(&g.showHelp, "help", "h", false, "Display the help information")
-	fs.BoolOpt(&g.NoColor, "no-color", "", g.NoColor, "Disable color when outputting message")
-	fs.BoolOpt(&g.noProgress, "no-progress", "", g.noProgress, "Disable display progress message")
-	fs.BoolOpt(&g.noInteractive, "no-interactive", "", g.noInteractive, "Disable interactive confirmation operations")
+	fs.BoolOpt(&g.NoColor, "no-color", "nc", g.NoColor, "Disable color when outputting message")
+	fs.BoolOpt(&g.noProgress, "no-progress", "np", g.noProgress, "Disable display progress message")
+	fs.BoolOpt(&g.noInteractive, "no-interactive", "ni", g.noInteractive, "Disable interactive confirmation operation")
 }
 
 /*************************************************************************

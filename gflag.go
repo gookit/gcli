@@ -231,6 +231,10 @@ func (fs *Flags) Parse(args []string) (err error) {
 		return err
 	}
 
+	if gOpts.showHelp {
+		return flag.ErrHelp
+	}
+
 	// call flags validate
 	for name, meta := range fs.metas {
 		fItem := fs.fSet.Lookup(name)
@@ -262,7 +266,7 @@ var (
 )
 
 // FromStruct from struct tag binding options
-func (fs *Flags) FromStruct(ptr interface{}) error {
+func (fs *Flags) FromStruct(ptr any) error {
 	v := reflect.ValueOf(ptr)
 	if v.Kind() != reflect.Ptr {
 		return errNotPtrValue
@@ -623,7 +627,7 @@ func (fs *Flags) checkFlagInfo(meta *FlagMeta) string {
 	}
 
 	// check flag name
-	name := meta.goodName()
+	name := meta.initCheck()
 	if _, ok := fs.metas[name]; ok {
 		panicf("redefined option flag '%s'", name)
 	}
@@ -904,7 +908,7 @@ type FlagMeta struct {
 	// Name of flag and description
 	Name, Desc string
 	// default value for the flag option
-	DefVal interface{}
+	DefVal any
 	// wrapped the default value
 	defVal *structs.Value
 	// short names. eg: ["o", "a"]
@@ -921,7 +925,7 @@ type FlagMeta struct {
 }
 
 // newFlagMeta quick create an FlagMeta
-func newFlagMeta(name, desc string, defVal interface{}, shortcut string) *FlagMeta {
+func newFlagMeta(name, desc string, defVal any, shortcut string) *FlagMeta {
 	return &FlagMeta{
 		Name: name,
 		Desc: desc,
@@ -936,12 +940,7 @@ func (m *FlagMeta) Shorts2String(sep ...string) string {
 	if len(m.Shorts) == 0 {
 		return ""
 	}
-
-	char := ","
-	if len(sep) > 0 {
-		char = sep[0]
-	}
-	return strings.Join(m.Shorts, char)
+	return strings.Join(m.Shorts, sepStr(sep))
 }
 
 // HelpName for show help
@@ -974,8 +973,25 @@ func (m *FlagMeta) DValue() *stdutil.Value {
 	return m.defVal
 }
 
-func (m *FlagMeta) initCheck() {
-	m.goodName()
+func (m *FlagMeta) initCheck() string {
+	if m.Desc != "" {
+		desc := strings.Trim(m.Desc, "; ")
+		if strings.ContainsRune(desc, ';') {
+			// format: desc;required
+			parts := strutil.SplitNTrimmed(desc, ";", 2)
+			if ln := len(parts); ln > 1 {
+				bl, err := strutil.Bool(parts[1])
+				if err == nil && bl {
+					desc = parts[0]
+					m.Required = true
+				}
+			}
+		}
+
+		m.Desc = desc
+	}
+
+	return m.goodName()
 }
 
 // good name of the flag

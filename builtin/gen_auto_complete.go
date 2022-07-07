@@ -39,8 +39,7 @@ func GenAutoComplete() *gcli.Command {
 		Func:    doGen,
 		Name:    "genac",
 		Aliases: []string{"gen-ac"},
-		// des
-		Desc: "generate auto complete scripts for current application",
+		Desc:    "generate auto complete scripts for current application",
 	}
 
 	genOpts._selfName = c.Name

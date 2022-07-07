@@ -508,7 +508,7 @@ func (c *Command) parseOptions(args []string) (ss []string, err error) {
 	// args = moveArgumentsToEnd(args)
 	// Debugf("cmd: %s - option flags on after format: %v", c.Name, args)
 
-	Debugf("cmd: %s - will parse options by args: %v", c.Name, args)
+	Debugf("cmd: %s - will parse options from args: %v", c.Name, args)
 
 	// parse options, don't contains command name.
 	if err = c.Parse(args); err != nil {
