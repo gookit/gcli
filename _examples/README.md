@@ -43,3 +43,17 @@ run command:
 ```bash
 go run ./multilevel
 ```
+
+### Simple git commands
+
+show help:
+
+```bash
+go run ./ggit -h
+```
+
+run command:
+
+```bash
+go run ./ggit
+```

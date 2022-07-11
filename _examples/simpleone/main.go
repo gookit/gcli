@@ -25,7 +25,7 @@ func main() {
 	}
 
 	cmd.BoolOpt(&opts.visualMode, "visual", "v", false, "Prints the font name.")
-	cmd.StrOpt(&opts.fontName, "font", "fn", "", "Choose a font name. Default is a random font.")
+	cmd.StrOpt(&opts.fontName, "font", "fn", "", "Choose a font name. Default is a random name;true")
 	cmd.BoolOpt(&opts.list, "list", "", false, "Lists all available fonts.")
 	cmd.BoolOpt(&opts.sample, "sample", "", false, "Prints a sample with that font.\nmessage at new line")
 	cmd.IntOpt(&opts.number, "number", "n,num", 0, "a integer option")
