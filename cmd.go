@@ -747,6 +747,9 @@ func (c *Command) Fire(event string, data interface{}) (stop bool) {
 func (c *Command) On(name string, handler HookFunc) {
 	Debugf("cmd: %s - register hook: <cyan>%s</>", c.Name, name)
 
+	if c.Hooks == nil {
+		c.Hooks = &Hooks{}
+	}
 	c.Hooks.On(name, handler)
 }
 
