@@ -76,62 +76,60 @@ func TestArguments_BindArg(t *testing.T) {
 }
 
 func TestArgument(t *testing.T) {
-	is := assert.New(t)
+	is := assert2.New(t)
 	arg := gcli.NewArgument("arg0", "arg desc")
 
 	is.False(arg.Arrayed)
 	is.False(arg.Required)
-	is.False(arg.IsEmpty())
+	is.True(arg.IsEmpty())
 	is.False(arg.HasValue())
 
-	is.Equal("arg0", arg.Name)
-	is.Equal("arg desc", arg.Desc)
-	is.Equal(0, arg.Index())
+	is.Eq("arg0", arg.Name)
+	is.Eq("arg desc", arg.Desc)
+	is.Eq(0, arg.Index())
 
 	// no value
 	is.Nil(arg.Strings())
 	is.Nil(arg.GetValue())
 	is.Nil(arg.SplitToStrings())
-	is.Equal(0, arg.Int())
-	is.Equal("", arg.String())
-	is.Equal("ab", arg.WithValue("ab").String())
+	is.Eq(0, arg.Int())
+	is.Eq("", arg.String())
+	is.Eq("ab", arg.WithValue("ab").String())
 
 	// add value
 	err := arg.SetValue("ab,cd")
-	is.NoError(err)
+	is.NoErr(err)
 
-	is.Nil(arg.Strings())
-	is.Equal(0, arg.Int())
-
-	is.Equal("ab,cd", arg.String())
-	is.Equal([]string{"ab", "cd"}, arg.Strings())
-	is.Equal([]string{"ab", "cd"}, arg.SplitToStrings(","))
+	is.Eq(0, arg.Int())
+	is.Eq("ab,cd", arg.String())
+	is.Eq([]string{"ab", "cd"}, arg.Array())
+	is.Eq([]string{"ab", "cd"}, arg.SplitToStrings(","))
 
 	// int value
-	is.NoError(arg.SetValue(23))
-	is.Equal(23, arg.Int())
-	is.Equal("23", arg.String())
+	is.NoErr(arg.SetValue(23))
+	is.Eq(23, arg.Int())
+	is.Eq("23", arg.String())
 
 	// string int value
 	err = arg.SetValue("23")
-	is.NoError(err)
-	is.Equal(23, arg.Int())
-	is.Equal("23", arg.String())
+	is.NoErr(err)
+	is.Eq(23, arg.Int())
+	is.Eq("23", arg.String())
 
 	// array value
 	arg.Arrayed = true
-	is.NoError(arg.SetValue([]string{"a", "b"}))
+	is.NoErr(arg.SetValue([]string{"a", "b"}))
 	is.True(arg.Arrayed)
-	is.Equal(0, arg.Int())
-	is.Equal("", arg.String())
-	is.Equal([]string{"a", "b"}, arg.Array())
+	is.Eq(0, arg.Int())
+	is.Eq("[a b]", arg.String())
+	is.Eq([]string{"a", "b"}, arg.Array())
 
 	// required and is-array
 	arg = gcli.NewArgument("arg1", "arg desc", true, true)
 	arg.Init()
 	is.True(arg.Arrayed)
 	is.True(arg.Required)
-	is.Equal("arg1...", arg.HelpName())
+	is.Eq("arg1...", arg.HelpName())
 }
 
 func TestArgument_GetValue(t *testing.T) {
@@ -156,7 +154,7 @@ func TestArgument_WithConfig(t *testing.T) {
 		arg.Init()
 	})
 
-	assert.Equal(t, 23, arg.Value)
+	assert.Equal(t, 23, arg.Val())
 	assert.Equal(t, "arg0", arg.HelpName())
 }
 
@@ -167,16 +165,16 @@ func TestArgument_SetValue(t *testing.T) {
 
 	err := arg.SetValue("12")
 	assert.NoError(t, err)
-	assert.Equal(t, 12, arg.Value)
-	arg.Value = nil // reset value
+	assert.Equal(t, 12, arg.Val())
+	arg.Set(nil) // reset value
 
 	err = arg.SetValue("abc")
 	assert.Error(t, err)
-	assert.Nil(t, arg.Value)
+	assert.Nil(t, arg.Val())
 
 	// convert "12" to 12
 	arg = gcli.NewArgument("arg0", "arg desc").WithValidator(str2int)
 	err = arg.SetValue("12")
 	assert.NoError(t, err)
-	assert.Equal(t, 12, arg.Value)
+	assert.Equal(t, 12, arg.Val())
 }

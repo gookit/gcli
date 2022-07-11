@@ -9,6 +9,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
+	assert2 "github.com/gookit/goutil/testutil/assert"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -240,7 +241,7 @@ func TestApp_Run_command_withArguments(t *testing.T) {
 }
 
 func TestApp_Run_command_withOptions(t *testing.T) {
-	is := assert.New(t)
+	is := assert2.New(t)
 	app := gcli.NewApp(gcli.NotExitOnEnd())
 
 	// run with command
@@ -264,10 +265,10 @@ func TestApp_Run_command_withOptions(t *testing.T) {
 
 	// run command
 	code := app.Run([]string{"test"})
-	is.Equal(0, code)
-	is.Equal("", optStr)
-	is.Equal("test", cmdRet)
-	is.Equal("test", app.CommandName())
+	is.Eq(0, code)
+	is.Eq("", optStr)
+	is.Eq("test", cmdRet)
+	is.Eq("test", app.CommandName())
 
 	// help option
 	app.Run([]string{"test", "-h"})

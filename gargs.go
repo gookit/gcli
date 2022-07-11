@@ -317,7 +317,7 @@ func (a *Argument) goodArgument() string {
 		a.ShowName = name
 	}
 
-	if !a.HasValue() {
+	if a.Value == nil {
 		a.Value = structs.NewValue(nil)
 	}
 	return name
@@ -325,11 +325,10 @@ func (a *Argument) goodArgument() string {
 
 // GetValue get value by custom handler func
 func (a *Argument) GetValue() interface{} {
-	val := a.Value
+	val := a.Value.Val()
 	if a.Handler != nil {
 		return a.Handler(val)
 	}
-
 	return val
 }
 
@@ -338,17 +337,9 @@ func (a *Argument) Array() (ss []string) {
 	return a.Strings()
 }
 
-// Strings argument value to string array, if argument isArray = true.
-func (a *Argument) Strings() (ss []string) {
-	if a.Value != nil && a.Arrayed {
-		ss = a.Value.Strings()
-	}
-	return
-}
-
 // HasValue value is empty
 func (a *Argument) HasValue() bool {
-	return a.Value != nil
+	return a.V != nil
 }
 
 // Index get argument index in the command

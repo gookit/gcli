@@ -9,15 +9,15 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
-	"github.com/stretchr/testify/assert"
+	"github.com/gookit/goutil/testutil/assert"
 )
 
 func TestFlags_Basic(t *testing.T) {
 	fs := gcli.NewFlags("testFlags")
 
 	assert.Len(t, fs.Metas(), 0)
-	assert.Equal(t, 0, fs.Len())
-	assert.Equal(t, "testFlags", fs.Name())
+	assert.Eq(t, 0, fs.Len())
+	assert.Eq(t, "testFlags", fs.Name())
 
 	assert.Nil(t, fs.LookupFlag("opt1"))
 	assert.Len(t, fs.ShortNames("opt"), 0)
@@ -41,7 +41,7 @@ func TestFlags_Basic(t *testing.T) {
 		_, _ = fmt.Fprintf(buf, "flag: %s, shorts: %s;", f.Name, meta.Shorts2String(","))
 	})
 
-	assert.Equal(t, "flag: str1, shorts: ;flag: str2, shorts: b;", buf.String())
+	assert.Eq(t, "flag: str1, shorts: ;flag: str2, shorts: b;", buf.String())
 }
 
 func TestFlags_BoolOpt(t *testing.T) {
@@ -49,7 +49,7 @@ func TestFlags_BoolOpt(t *testing.T) {
 
 	var b1, b2 bool
 	b0 := fs.Bool("bl0", "", false, "desc0")
-	fs.BoolOpt(&b1, "bl1", "ab", false, "desc1")
+	fs.BoolOpt(&b1, "bl1", "a,b", false, "desc1")
 	fs.BoolVar(&b2, &gcli.FlagMeta{
 		Name: "bl2",
 		Desc: "desc2",
@@ -57,7 +57,7 @@ func TestFlags_BoolOpt(t *testing.T) {
 
 	assert.False(t, *b0)
 	assert.False(t, b1)
-	assert.NoError(t, fs.Parse([]string{"--bl0", "-a", "--bl2"}))
+	assert.NoErr(t, fs.Parse([]string{"--bl0", "-a", "--bl2"}))
 	assert.True(t, *b0)
 	assert.True(t, b1)
 }
@@ -79,8 +79,8 @@ func TestFlags_StrOpt(t *testing.T) {
 	f := fs.LookupFlag("test")
 	assert.NotEmpty(t, f)
 
-	assert.Equal(t, "test", f.Name)
-	assert.Equal(t, "test desc", f.Usage)
+	assert.Eq(t, "test", f.Name)
+	assert.Eq(t, "test desc", f.Usage)
 
 	ns := fs.FlagNames()
 	assert.Len(t, ns, 1)
@@ -89,12 +89,12 @@ func TestFlags_StrOpt(t *testing.T) {
 	assert.Nil(t, f)
 
 	err := fs.Parse([]string{})
-	assert.NoError(t, err)
-	assert.Equal(t, "", str)
+	assert.NoErr(t, err)
+	assert.Eq(t, "", str)
 
 	err = fs.Parse([]string{"--test", "value"})
-	assert.NoError(t, err)
-	assert.Equal(t, "value", str)
+	assert.NoErr(t, err)
+	assert.Eq(t, "value", str)
 	assert.Len(t, fs.ShortNames("test"), 0)
 }
 
@@ -102,79 +102,79 @@ func TestFlags_Float64Opt(t *testing.T) {
 	fs := gcli.NewFlags("testFlags")
 
 	var f1, f2 float64
-	fs.Float64Opt(&f1, "f1", "ab", 0, "desc1")
+	fs.Float64Opt(&f1, "f1", "a", 0, "desc1")
 	fs.Float64Var(&f2, &gcli.FlagMeta{
 		Name:   "f2",
 		Desc:   "desc2",
 		DefVal: 3.14,
 	})
 
-	assert.Equal(t, float64(0), f1)
-	assert.Equal(t, 3.14, f2)
-	assert.NoError(t, fs.Parse([]string{"-a", "12.3", "--f2", "1.63"}))
-	assert.Equal(t, 12.3, f1)
-	assert.Equal(t, 1.63, f2)
+	assert.Eq(t, float64(0), f1)
+	assert.Eq(t, 3.14, f2)
+	assert.NoErr(t, fs.Parse([]string{"-a", "12.3", "--f2", "1.63"}))
+	assert.Eq(t, 12.3, f1)
+	assert.Eq(t, 1.63, f2)
 }
 
 func TestFlags_IntOpt(t *testing.T) {
 	fs := gcli.NewFlags("testFlags")
 
 	var int1, int2 int
-	fs.IntOpt(&int1, "int1", "ab", 0, "desc1")
+	fs.IntOpt(&int1, "int1", "a,b", 0, "desc1")
 	fs.IntVar(&int2, &gcli.FlagMeta{
 		Name:   "int2",
 		Desc:   "desc2",
 		DefVal: 314,
 	})
 
-	assert.Equal(t, 0, int1)
-	assert.Equal(t, 314, int2)
-	assert.NoError(t, fs.Parse([]string{"-a", "123", "--int2", "163"}))
-	assert.Equal(t, 123, int1)
-	assert.Equal(t, 163, int2)
+	assert.Eq(t, 0, int1)
+	assert.Eq(t, 314, int2)
+	assert.NoErr(t, fs.Parse([]string{"-a", "123", "--int2", "163"}))
+	assert.Eq(t, 123, int1)
+	assert.Eq(t, 163, int2)
 }
 
 func TestFlags_Int64Opt(t *testing.T) {
 	fs := gcli.NewFlags("testFlags")
 
 	var int1, int2 int64
-	fs.Int64Opt(&int1, "int1", "ab", 0, "desc1")
+	fs.Int64Opt(&int1, "int1", "a,b", 0, "desc1")
 	fs.Int64Var(&int2, &gcli.FlagMeta{
 		Name:   "int2",
 		Desc:   "desc2",
 		DefVal: 314,
 	})
 
-	assert.Equal(t, int64(0), int1)
-	assert.Equal(t, int64(314), int2)
-	assert.NoError(t, fs.Parse([]string{"-a", "12", "--int2", "16"}))
-	assert.Equal(t, int64(12), int1)
-	assert.Equal(t, int64(16), int2)
+	assert.Eq(t, int64(0), int1)
+	assert.Eq(t, int64(314), int2)
+	assert.NoErr(t, fs.Parse([]string{"-a", "12", "--int2", "16"}))
+	assert.Eq(t, int64(12), int1)
+	assert.Eq(t, int64(16), int2)
 }
 
 func TestFlags_UintOpt(t *testing.T) {
 	fs := gcli.NewFlags("testFlags")
 
 	var int1, int2 uint
-	fs.UintOpt(&int1, "int1", "ab", 0, "desc1")
+	fs.UintOpt(&int1, "int1", "a", 0, "desc1")
 	fs.UintVar(&int2, &gcli.FlagMeta{
 		Name:   "c",
 		Desc:   "desc2",
 		DefVal: 314,
 	})
 
-	assert.Equal(t, uint(0), int1)
-	assert.Equal(t, uint(314), int2)
-	assert.NoError(t, fs.Parse([]string{"-a", "12", "-c", "16"}))
-	assert.Equal(t, uint(12), int1)
-	assert.Equal(t, uint(16), int2)
+	assert.Eq(t, uint(0), int1)
+	assert.Eq(t, uint(314), int2)
+	assert.NoErr(t, fs.Parse([]string{"-a", "12", "-c", "16"}))
+	assert.Eq(t, uint(12), int1)
+	assert.Eq(t, uint(16), int2)
 }
 
 func TestFlags_Uint64Opt(t *testing.T) {
 	fs := gcli.NewFlags("testFlags")
 
 	var uint1, uint2 uint64
-	fs.Uint64Opt(&uint1, "uint1", "ab", 0, "desc1")
+	fs.Uint64Opt(&uint1, "uint1", "a", 0, "desc1")
 	fs.Uint64Var(&uint2, &gcli.FlagMeta{
 		Name:   "uint2",
 		Desc:   "desc2",
@@ -184,13 +184,13 @@ func TestFlags_Uint64Opt(t *testing.T) {
 
 	fm2 := fs.FlagMeta("uint2")
 	assert.Len(t, fm2.Shorts, 2)
-	assert.Equal(t, "c,f", fm2.Shorts2String())
+	assert.Eq(t, "c,f", fm2.Shorts2String())
 
-	assert.Equal(t, uint64(0), uint1)
-	assert.Equal(t, uint64(314), uint2)
-	assert.NoError(t, fs.Parse([]string{"-a", "12", "--uint2", "16"}))
-	assert.Equal(t, uint64(12), uint1)
-	assert.Equal(t, uint64(16), uint2)
+	assert.Eq(t, uint64(0), uint1)
+	assert.Eq(t, uint64(314), uint2)
+	assert.NoErr(t, fs.Parse([]string{"-a", "12", "--uint2", "16"}))
+	assert.Eq(t, uint64(12), uint1)
+	assert.Eq(t, uint64(16), uint2)
 }
 
 func TestFlags_VarOpt(t *testing.T) {
@@ -198,44 +198,44 @@ func TestFlags_VarOpt(t *testing.T) {
 
 	var ints gcli.Ints
 	fs.Var(&ints, &gcli.FlagMeta{Name: "ints", Desc: "desc"})
-	assert.NoError(t, fs.Parse([]string{"--ints", "12", "--ints", "16"}))
+	assert.NoErr(t, fs.Parse([]string{"--ints", "12", "--ints", "16"}))
 
 	assert.Len(t, ints, 2)
-	assert.Equal(t, "[12 16]", ints.String())
+	assert.Eq(t, "[12 16]", ints.String())
 
 	var ss gcli.Strings
-	fs.VarOpt(&ss, "names", "ns", "desc")
-	assert.NoError(t, fs.Parse([]string{"--names", "abc", "-n", "def", "-s", "ghi"}))
+	fs.VarOpt(&ss, "names", "n,s", "desc")
+	assert.NoErr(t, fs.Parse([]string{"--names", "abc", "-n", "def", "-s", "ghi"}))
 
 	assert.Len(t, ss, 3)
-	assert.Equal(t, "[abc def ghi]", ss.String())
+	assert.Eq(t, "[abc def ghi]", ss.String())
 }
 
 func TestFlags_CheckName(t *testing.T) {
-	assert.PanicsWithValue(t, "GCli: redefined option flag 'opt1'", func() {
+	assert.PanicsMsg(t, func() {
 		var i int64
 		fs := gcli.NewFlags()
 		fs.Int64Opt(&i, "opt1", "", 0, "desc")
 		fs.Int64Opt(&i, "opt1", "", 0, "desc")
-	})
+	}, "GCli: redefined option flag 'opt1'")
 
-	assert.PanicsWithValue(t, "GCli: option flag name cannot be empty", func() {
+	assert.PanicsMsg(t, func() {
 		var b bool
 		fs := gcli.NewFlags()
 		fs.BoolOpt(&b, "", "", false, "desc")
-	})
+	}, "GCli: option flag name cannot be empty")
 
-	assert.PanicsWithValue(t, "GCli: option flag name '+invalid' is invalid, must match: ^[a-zA-Z][\\w-]*$", func() {
+	assert.PanicsMsg(t, func() {
 		var fv uint
 		fs := gcli.NewFlags()
 		fs.UintOpt(&fv, "+invalid", "", 0, "desc")
-	})
+	}, "GCli: option flag name '+invalid' is invalid, must match: ^[a-zA-Z][\\w-]*$")
 
-	assert.PanicsWithValue(t, "GCli: option flag name '78' is invalid, must match: ^[a-zA-Z][\\w-]*$", func() {
+	assert.PanicsMsg(t, func() {
 		var fv uint64
 		fs := gcli.NewFlags()
 		fs.Uint64Opt(&fv, "78", "", 0, "desc")
-	})
+	}, "GCli: option flag name '78' is invalid, must match: ^[a-zA-Z][\\w-]*$")
 }
 
 func TestFlags_CheckShorts(t *testing.T) {
@@ -250,34 +250,34 @@ func TestFlags_CheckShorts(t *testing.T) {
 		assert.Len(t, fm.Shorts, 0)
 	})
 
-	assert.PanicsWithValue(t, "GCli: short name only allow: A-Za-z given: '+'", func() {
-		var fv float64
-		fs := gcli.NewFlags()
-		fs.Float64Var(&fv, &gcli.FlagMeta{
-			Name:   "float",
-			Shorts: []string{"+"},
-		})
+	var fv float64
+	fs := gcli.NewFlags()
+	fs.Float64Var(&fv, &gcli.FlagMeta{
+		Name:   "float",
+		Shorts: []string{"+", "-"},
 	})
+	fm := fs.FlagMeta("float")
+	assert.Empty(t, fm.Shorts)
 
-	assert.PanicsWithValue(t, "GCli: short name 'a' has been used as the current option name", func() {
+	assert.PanicsMsg(t, func() {
 		var i int
 		fs := gcli.NewFlags()
 		fs.IntVar(&i, &gcli.FlagMeta{Name: "a", Shorts: []string{"a"}})
-	})
+	}, "GCli: short name 'a' has been used as the current option name")
 
-	assert.PanicsWithValue(t, "GCli: short name 's' has been used as an option name", func() {
+	assert.PanicsMsg(t, func() {
 		var i int
 		fs := gcli.NewFlags()
 		fs.IntOpt(&i, "s", "", 0, "desc")
 		fs.IntOpt(&i, "int1", "s", 0, "desc")
-	})
+	}, "GCli: short name 's' has been used as an option name")
 
-	assert.PanicsWithValue(t, "GCli: short name 's' has been used by option 'str'", func() {
+	assert.PanicsMsg(t, func() {
 		var str string
 		fs := gcli.NewFlags()
 		fs.StrOpt(&str, "str", "s", "", "desc")
 		fs.StrOpt(&str, "str1", "s", "", "desc")
-	})
+	}, "GCli: short name 's' has been used by option 'str'")
 }
 
 var flagOpts = struct {
@@ -296,8 +296,8 @@ func TestFlags_Run(t *testing.T) {
 
 	// parse
 	fg.Run([]string{"./app", "-i", "23", "-s", "inhere"})
-	is.Equal(23, flagOpts.intv)
-	is.Equal("inhere", flagOpts.strv)
+	is.Eq(23, flagOpts.intv)
+	is.Eq("inhere", flagOpts.strv)
 
 	// help
 	fg.Run([]string{"./app", "-h"})
@@ -320,18 +320,18 @@ func TestFlags_Parse(t *testing.T) {
 	})
 
 	err := gf.Parse([]string{})
-	assert.Error(t, err)
+	assert.Err(t, err)
 
 	err = gf.Parse([]string{"--opt1", ""})
-	assert.Error(t, err)
+	assert.Err(t, err)
 
 	err = gf.Parse([]string{"--opt1", "val"})
-	assert.Error(t, err)
-	assert.Equal(t, "flag value min len is 5", err.Error())
+	assert.Err(t, err)
+	assert.Eq(t, "flag value min len is 5", err.Error())
 
 	err = gf.Parse([]string{"--opt1", "value"})
-	assert.NoError(t, err)
-	assert.Equal(t, "value", str)
+	assert.NoErr(t, err)
+	assert.Eq(t, "value", str)
 }
 
 func TestFlags_Int_bindingNilPtr(t *testing.T) {
@@ -367,26 +367,26 @@ func TestFlags_FromStruct_simple(t *testing.T) {
 
 	opt := &userOpts0{}
 	assert.False(t, opt.Bol)
-	assert.Equal(t, 0, opt.Int)
-	assert.Equal(t, "", opt.Str)
+	assert.Eq(t, 0, opt.Int)
+	assert.Eq(t, "", opt.Str)
 
 	err := fs.FromStruct(opt)
-	assert.NoError(t, err)
+	assert.NoErr(t, err)
 	assert.True(t, opt.Bol)
 	assert.True(t, fs.HasFlagMeta("bol"))
 
 	fs.PrintHelpPanel()
 
 	err = fs.Parse([]string{"--int0", "13", "--str1", "xyz"})
-	assert.NoError(t, err)
+	assert.NoErr(t, err)
 
-	assert.Equal(t, 13, opt.Int)
-	assert.Equal(t, "xyz", opt.Str)
+	assert.Eq(t, 13, opt.Int)
+	assert.Eq(t, "xyz", opt.Str)
 
 	// not use ptr
 	opts1 := userOpts0{}
 	err = fs.FromStruct(opts1)
-	assert.Error(t, err)
+	assert.Err(t, err)
 }
 
 func TestFlags_FromStruct_ptrField(t *testing.T) {
@@ -401,21 +401,21 @@ func TestFlags_FromStruct_ptrField(t *testing.T) {
 	fs := gcli.NewFlags("test1")
 	opt = &userOpts{}
 	err := fs.FromStruct(opt)
-	assert.Error(t, err)
-	assert.Equal(t, "field: Int - nil pointer dereference", err.Error())
+	assert.Err(t, err)
+	assert.Eq(t, "field: Int - nil pointer dereference", err.Error())
 
 	aint := 23
 	astr := "xyz"
 	opt = &userOpts{Int: &aint, Str: &astr}
 	dump.P(opt)
-	assert.Equal(t, 23, *opt.Int)
-	assert.Equal(t, "xyz", *opt.Str)
+	assert.Eq(t, 23, *opt.Int)
+	assert.Eq(t, "xyz", *opt.Str)
 
 	fs = gcli.NewFlags("test1")
 	err = fs.FromStruct(opt)
-	assert.NoError(t, err)
-	assert.Equal(t, 13, *(opt.Int))
-	// assert.Equal(t, "", *opt.Str)
+	assert.NoErr(t, err)
+	assert.Eq(t, 13, *(opt.Int))
+	// assert.Eq(t, "", *opt.Str)
 
 	dump.P(opt)
 	fmt.Println("Flag Help:")
@@ -424,9 +424,9 @@ func TestFlags_FromStruct_ptrField(t *testing.T) {
 
 func TestFlags_FromStruct_noNameStruct(t *testing.T) {
 	logOpts := struct {
-		Abbrev    bool `flag:"Only display the abbrev commit ID"`
-		NoColor   bool	`flag:"Dont use color render git output"`
-		MaxCommit int	`flag:"Max display how many commits;;15"`
+		Abbrev    bool        `flag:"Only display the abbrev commit ID"`
+		NoColor   bool        `flag:"Dont use color render git output"`
+		MaxCommit int         `flag:"Max display how many commits;;15"`
 		Logfile   string      `flag:"export changelog message to file"`
 		Exclude   gcli.String `flag:"exclude contains given sub-string. multi by comma split."`
 	}{}
@@ -436,7 +436,7 @@ func TestFlags_FromStruct_noNameStruct(t *testing.T) {
 	// err := fs.FromStruct(logOpts)
 	err := fs.FromStruct(&logOpts)
 
-	assert.NoError(t, err)
+	assert.NoErr(t, err)
 	assert.True(t, fs.HasFlag("abbrev"))
 	assert.True(t, fs.HasFlagMeta("abbrev"))
 }
@@ -461,7 +461,7 @@ func TestFlags_FromStruct(t *testing.T) {
 		Str2:  &astr,
 		Verb1: &verb,
 	})
-	assert.NoError(t, err)
+	assert.NoErr(t, err)
 
 	help := fs.String()
 	assert.Contains(t, help, "-o, -h, --str1")
@@ -507,13 +507,13 @@ func TestFlagMeta_Validate(t *testing.T) {
 	}
 
 	err := fm.Validate("")
-	assert.Error(t, err)
-	assert.Equal(t, "flag 'opt1' is required", err.Error())
+	assert.Err(t, err)
+	assert.Eq(t, "flag 'opt1' is required", err.Error())
 
 	err = fm.Validate("val")
-	assert.Error(t, err)
-	assert.Equal(t, "flag value min len is 5", err.Error())
+	assert.Err(t, err)
+	assert.Eq(t, "flag value min len is 5", err.Error())
 
 	err = fm.Validate("value")
-	assert.NoError(t, err)
+	assert.NoErr(t, err)
 }

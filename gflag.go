@@ -738,7 +738,7 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 	}
 
 	// add prefix '-' to option
-	fullName = cflag.AddPrefixes(name, meta.Shorts)
+	fullName = cflag.AddPrefixes2(name, meta.Shorts, true)
 	s = fmt.Sprintf("  <info>%s</>", fullName)
 
 	// - build flag type info
@@ -931,8 +931,49 @@ func newFlagMeta(name, desc string, defVal any, shortcut string) *FlagMeta {
 		Desc: desc,
 		// other info
 		DefVal: defVal,
-		Shorts: cflag.SplitShortcut(shortcut),
+		Shorts: strings.Split(shortcut, ","),
 	}
+}
+
+func (m *FlagMeta) initCheck() string {
+	if m.Desc != "" {
+		desc := strings.Trim(m.Desc, "; ")
+		if strings.ContainsRune(desc, ';') {
+			// format: desc;required
+			parts := strutil.SplitNTrimmed(desc, ";", 2)
+			if ln := len(parts); ln > 1 {
+				bl, err := strutil.Bool(parts[1])
+				if err == nil && bl {
+					desc = parts[0]
+					m.Required = true
+				}
+			}
+		}
+
+		m.Desc = desc
+	}
+
+	// filter shorts
+	if len(m.Shorts) > 0 {
+		m.Shorts = cflag.FilterNames(m.Shorts)
+	}
+	return m.goodName()
+}
+
+// good name of the flag
+func (m *FlagMeta) goodName() string {
+	name := strings.Trim(m.Name, "- ")
+	if name == "" {
+		panicf("option flag name cannot be empty")
+	}
+
+	if !goodName.MatchString(name) {
+		panicf("option flag name '%s' is invalid, must match: %s", name, regGoodName)
+	}
+
+	// update self name
+	m.Name = name
+	return name
 }
 
 // Shorts2String join shorts to a string
@@ -971,41 +1012,4 @@ func (m *FlagMeta) DValue() *stdutil.Value {
 		m.defVal = &stdutil.Value{V: m.DefVal}
 	}
 	return m.defVal
-}
-
-func (m *FlagMeta) initCheck() string {
-	if m.Desc != "" {
-		desc := strings.Trim(m.Desc, "; ")
-		if strings.ContainsRune(desc, ';') {
-			// format: desc;required
-			parts := strutil.SplitNTrimmed(desc, ";", 2)
-			if ln := len(parts); ln > 1 {
-				bl, err := strutil.Bool(parts[1])
-				if err == nil && bl {
-					desc = parts[0]
-					m.Required = true
-				}
-			}
-		}
-
-		m.Desc = desc
-	}
-
-	return m.goodName()
-}
-
-// good name of the flag
-func (m *FlagMeta) goodName() string {
-	name := strings.Trim(m.Name, "- ")
-	if name == "" {
-		panicf("option flag name cannot be empty")
-	}
-
-	if !goodName.MatchString(name) {
-		panicf("option flag name '%s' is invalid, must match: %s", name, regGoodName)
-	}
-
-	// update self name
-	m.Name = name
-	return name
 }
