@@ -8,7 +8,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
-	"github.com/stretchr/testify/assert"
+	"github.com/gookit/goutil/testutil/assert"
 )
 
 var simpleArgs = []string{"hi"}
@@ -25,7 +25,7 @@ func TestNewCommand(t *testing.T) {
 	is.Nil(c.App())
 
 	err := c.Run([]string{})
-	is.NoError(err)
+	is.NoErr(err)
 	is.True(c.IsStandalone())
 	is.False(c.NotStandalone())
 
@@ -33,9 +33,9 @@ func TestNewCommand(t *testing.T) {
 	c.Disable()
 	is.True(c.IsDisabled())
 
-	// is.Equal("", c.ArgLine())
-	is.Equal("alias1,alias2", c.AliasesString())
-	is.Equal("alias1alias2", c.AliasesString(""))
+	// is.Eq("", c.ArgLine())
+	is.Eq("alias1,alias2", c.AliasesString())
+	is.Eq("alias1alias2", c.AliasesString(""))
 
 	c = gcli.NewCommand("test1", "desc test")
 	app := gcli.NewApp()
@@ -50,7 +50,7 @@ func TestCommand_NewErrf(t *testing.T) {
 		c.AddArg("arg0", "desc message")
 	})
 	c.SetFunc(func(c *gcli.Command, args []string) error {
-		is.Equal([]string{"hi"}, args)
+		is.Eq([]string{"hi"}, args)
 		return c.NewErrf("error message")
 	})
 
@@ -58,9 +58,9 @@ func TestCommand_NewErrf(t *testing.T) {
 	is.True(c.Runnable())
 
 	err := c.Run(simpleArgs)
-	is.Error(err)
-	is.Equal("error message", err.Error())
-	is.Equal([]string{"hi"}, c.RawArgs())
+	is.Err(err)
+	is.Eq("error message", err.Error())
+	is.Eq([]string{"hi"}, c.RawArgs())
 
 	is.NotPanics(func() {
 		c.MustRun(simpleArgs)
@@ -75,7 +75,7 @@ func TestCommand_Run(t *testing.T) {
 		Name: "test",
 		Desc: "test desc",
 		Config: func(c *gcli.Command) {
-			is.Equal("test", c.Name)
+			is.Eq("test", c.Name)
 			c.Aliases = []string{"alias1"}
 		},
 		Func: func(c *gcli.Command, args []string) error {
@@ -84,21 +84,21 @@ func TestCommand_Run(t *testing.T) {
 	}
 
 	err := c.Run([]string{})
-	is.NoError(err)
+	is.NoErr(err)
 	is.True(c.IsStandalone())
 	is.False(c.NotStandalone())
-	is.Equal("alias1", c.AliasesString(""))
+	is.Eq("alias1", c.AliasesString(""))
 
 	err = c.Run([]string{"-h"})
-	is.NoError(err)
-	is.Equal("alias1", c.AliasesString(""))
+	is.NoErr(err)
+	is.Eq("alias1", c.AliasesString(""))
 }
 
 func TestNewCommand_Run(t *testing.T) {
 	is := assert.New(t)
 
 	c := gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
-		is.Equal("test", c.Name)
+		is.Eq("test", c.Name)
 		c.Aliases = []string{"alias1"}
 	})
 	c.SetFunc(func(c *gcli.Command, args []string) error {
@@ -107,21 +107,21 @@ func TestNewCommand_Run(t *testing.T) {
 
 	is.NotEmpty(c)
 	err := c.Run([]string{})
-	is.NoError(err)
+	is.NoErr(err)
 	is.True(c.IsStandalone())
 	is.False(c.NotStandalone())
 
-	is.Equal("alias1", c.AliasesString(""))
+	is.Eq("alias1", c.AliasesString(""))
 
 	err = c.Run([]string{"-h"})
-	is.NoError(err)
-	is.Equal("alias1", c.AliasesString(""))
+	is.NoErr(err)
+	is.Eq("alias1", c.AliasesString(""))
 
 	// error run on app
 	g := gcli.NewApp()
 	g.AddCommand(c)
 	err = c.Run(simpleArgs)
-	is.NoError(err)
+	is.NoErr(err)
 }
 
 var bf = new(bytes.Buffer)
@@ -204,20 +204,20 @@ func TestCommand_MatchByPath(t *testing.T) {
 	c := r.MatchByPath("add")
 
 	assert.NotNil(t, c)
-	assert.Equal(t, "add", c.Name)
-	assert.Equal(t, "git", c.ParentName())
+	assert.Eq(t, "add", c.Name)
+	assert.Eq(t, "git", c.ParentName())
 
 	c = r.MatchByPath("remote:add")
 	assert.NotNil(t, c)
-	assert.Equal(t, "add", c.Name)
-	assert.Equal(t, "Add command for git remote", c.Desc)
-	assert.Equal(t, "remote", c.Parent().Name)
-	assert.Equal(t, "git", c.Root().Name)
+	assert.Eq(t, "add", c.Name)
+	assert.Eq(t, "Add command for git remote", c.Desc)
+	assert.Eq(t, "remote", c.Parent().Name)
+	assert.Eq(t, "git", c.Root().Name)
 
 	// empty will return self
 	c = r.MatchByPath("")
 	assert.NotNil(t, c)
-	assert.Equal(t, "git", c.Name)
+	assert.Eq(t, "git", c.Name)
 
 	c = r.MatchByPath("not-exist")
 	assert.Nil(t, c)
@@ -233,22 +233,22 @@ func TestCommand_Sub(t *testing.T) {
 	c := r.Sub("add")
 	assert.NotNil(t, c)
 	assert.False(t, c.IsRoot())
-	assert.Equal(t, "add", c.Name)
+	assert.Eq(t, "add", c.Name)
 }
 
 func TestCommand_Run_top(t *testing.T) {
 	bf.Reset() // reset buffer
 
 	err := r.Run([]string{})
-	assert.NoError(t, err)
-	assert.Equal(t, "command path: git", bf.String())
+	assert.NoErr(t, err)
+	assert.Eq(t, "command path: git", bf.String())
 }
 
 func TestCommand_Run_oneLevelSub(t *testing.T) {
 	bf.Reset() // reset buffer
 
 	err := r.Run([]string{"add", "./"})
-	assert.NoError(t, err)
+	assert.NoErr(t, err)
 }
 
 func TestCommand_Run_moreLevelSub(t *testing.T) {
@@ -260,12 +260,12 @@ func TestCommand_Run_moreLevelSub(t *testing.T) {
 		"https://github.com/inhere/console",
 	})
 
-	assert.NoError(t, err)
+	assert.NoErr(t, err)
 	assert.True(t, r.IsAlias("rmt"))
 	assert.True(t, r.IsAlias("pul"))
 	assert.False(t, r.IsAlias("not-exist"))
-	assert.Equal(t, "remote", r.ResolveAlias("rmt"))
-	assert.Equal(t, "command path: git remote add", bf.String())
+	assert.Eq(t, "remote", r.ResolveAlias("rmt"))
+	assert.Eq(t, "command path: git remote add", bf.String())
 }
 
 var int0 int
@@ -292,15 +292,15 @@ func TestCommand_Run_emptyArgs(t *testing.T) {
 	gcli.SetCrazyMode()
 	defer gcli.ResetVerbose()
 
-	is.Equal("test", c0.Name)
+	is.Eq("test", c0.Name)
 
 	err := c0.Run([]string{})
 
-	is.NoError(err)
-	is.Equal("name=test", bf.String())
-	is.Equal("int desc", c0.FlagMeta("int").Desc)
+	is.NoErr(err)
+	is.Eq("name=test", bf.String())
+	is.Eq("int desc", c0.FlagMeta("int").Desc)
 	is.NotEmpty(c0.Args())
-	is.Equal("arg0", c0.Arg("arg0").Name)
+	is.Eq("arg0", c0.Arg("arg0").Name)
 }
 
 func TestCommand_Run_parseHelp(t *testing.T) {
@@ -308,7 +308,7 @@ func TestCommand_Run_parseHelp(t *testing.T) {
 	is := assert.New(t)
 
 	err := c0.Run([]string{"-h"})
-	is.NoError(err)
+	is.NoErr(err)
 
 	// no color
 	color.Disable()
@@ -333,18 +333,18 @@ func TestCommand_Run_parseOptions(t *testing.T) {
 	gcli.SetDebugMode()
 	defer gcli.ResetVerbose()
 
-	is.Equal("test", c0.Name)
+	is.Eq("test", c0.Name)
 
 	err := c0.Run([]string{"--int", "10", "--str=abc", "txt"})
 
-	is.NoError(err)
-	is.Equal("test", c0.GetVal("name"))
-	is.Equal([]string{"txt"}, c0.GetVal("args"))
+	is.NoErr(err)
+	is.Eq("test", c0.GetVal("name"))
+	is.Eq([]string{"txt"}, c0.GetVal("args"))
 
-	is.Equal(10, int0)
-	is.Equal("abc", str0)
-	is.Equal([]string{"txt"}, c0.FSetArgs())
-	is.Equal("txt", c0.RawArg(0))
+	is.Eq(10, int0)
+	is.Eq("abc", str0)
+	is.Eq([]string{"txt"}, c0.FSetArgs())
+	is.Eq("txt", c0.RawArg(0))
 
 	// var str0 string
 	co := struct {
@@ -358,16 +358,16 @@ func TestCommand_Run_parseOptions(t *testing.T) {
 		c.AddArg("arg0", "arg0 desc")
 	})
 	c1.SetFunc(func(c *gcli.Command, args []string) error {
-		is.Equal("[txt]", fmt.Sprint(args))
+		is.Eq("[txt]", fmt.Sprint(args))
 		return nil
 	})
 
-	is.Equal("test1", c1.Name)
+	is.Eq("test1", c1.Name)
 	err = c1.Run([]string{"--int", "10", "--max-step=100", "txt"})
-	is.NoError(err)
-	is.Equal(10, int0)
-	is.Equal(100, co.maxSteps)
-	is.Equal("[txt]", fmt.Sprint(c0.RawArgs()))
+	is.NoErr(err)
+	is.Eq(10, int0)
+	is.Eq(100, co.maxSteps)
+	is.Eq("[txt]", fmt.Sprint(c0.RawArgs()))
 }
 
 func TestInts(t *testing.T) {
@@ -375,15 +375,15 @@ func TestInts(t *testing.T) {
 	ints := gcli.Ints{}
 
 	err := ints.Set("1")
-	is.NoError(err)
+	is.NoErr(err)
 	err = ints.Set("3")
-	is.NoError(err)
-	is.Equal("[1 3]", ints.String())
+	is.NoErr(err)
+	is.Eq("[1 3]", ints.String())
 	err = ints.Set("abc")
-	is.Error(err)
+	is.Err(err)
 
 	ints = gcli.Ints{1, 3}
-	is.Equal("[1 3]", ints.String())
+	is.Eq("[1 3]", ints.String())
 }
 
 func TestStrings(t *testing.T) {
@@ -391,12 +391,12 @@ func TestStrings(t *testing.T) {
 	ss := gcli.Strings{}
 
 	err := ss.Set("1")
-	is.NoError(err)
+	is.NoErr(err)
 	err = ss.Set("3")
-	is.NoError(err)
+	is.NoErr(err)
 	err = ss.Set("abc")
-	is.NoError(err)
-	is.Equal("[1 3 abc]", ss.String())
+	is.NoErr(err)
+	is.Eq("[1 3 abc]", ss.String())
 }
 
 func TestBooleans(t *testing.T) {
@@ -404,14 +404,14 @@ func TestBooleans(t *testing.T) {
 	val := gcli.Booleans{}
 
 	err := val.Set("false")
-	is.NoError(err)
+	is.NoErr(err)
 	is.False(val[0])
-	is.Equal("[false]", val.String())
+	is.Eq("[false]", val.String())
 
 	err = val.Set("True")
-	is.NoError(err)
-	is.Equal("[false true]", val.String())
+	is.NoErr(err)
+	is.Eq("[false true]", val.String())
 
 	err = val.Set("abc")
-	is.Error(err)
+	is.Err(err)
 }

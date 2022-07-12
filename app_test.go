@@ -9,8 +9,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
-	assert2 "github.com/gookit/goutil/testutil/assert"
-	"github.com/stretchr/testify/assert"
+	"github.com/gookit/goutil/testutil/assert"
 )
 
 var (
@@ -74,11 +73,11 @@ func TestApp_MatchByPath(t *testing.T) {
 
 	c := app.MatchByPath("simple:sub")
 	assert.NotNil(t, c)
-	assert.Equal(t, "sub", c.Name)
-	assert.Equal(t, "simple", c.ParentName())
+	assert.Eq(t, "sub", c.Name)
+	assert.Eq(t, "simple", c.ParentName())
 
 	c = appWithMl.FindByPath("top1:sub1")
-	assert.Equal(t, "sub1", c.Name)
+	assert.Eq(t, "sub1", c.Name)
 }
 
 func TestApp_Add(t *testing.T) {
@@ -86,16 +85,16 @@ func TestApp_Add(t *testing.T) {
 
 	app := gcli.NewApp()
 	app.Add(gcli.NewCommand("c1", "c1 desc", func(c *gcli.Command) {
-		is.Equal("c1", c.Name)
+		is.Eq("c1", c.Name)
 	}), gcli.NewCommand("c2", "c2 desc", func(c *gcli.Command) {
-		is.Equal("c2", c.Name)
+		is.Eq("c2", c.Name)
 	}))
 	app.AddCommand(&gcli.Command{
 		Name:    "c3",
 		Desc:    "{$cmd} desc",
 		Aliases: []string{"alias1"},
 		Config: func(c *gcli.Command) {
-			is.Equal("c3", c.Name)
+			is.Eq("c3", c.Name)
 		},
 	})
 
@@ -109,9 +108,9 @@ func TestApp_Add(t *testing.T) {
 	c := gcli.NewCommand("mdl-test", "desc test2")
 	app.AddCommand(c)
 
-	is.Equal("", c.ParentName())
-	is.Equal("mdl-test", c.Name)
-	is.Equal("c3", app.ResolveAlias("alias1"))
+	is.Eq("", c.ParentName())
+	is.Eq("mdl-test", c.Name)
+	is.Eq("c3", app.ResolveAlias("alias1"))
 	is.True(app.IsAlias("alias1"))
 }
 
@@ -129,14 +128,14 @@ func TestApp_AddCommand(t *testing.T) {
 	assert.Len(t, app.Commands(), 1)
 	assert.Len(t, app.CommandNames(), 1)
 	assert.False(t, app.IsCommand("cmd1"))
-	assert.Equal(t, "", app.CommandName())
+	assert.Eq(t, "", app.CommandName())
 
-	assert.PanicsWithValue(t, "GCli: the command name can not be empty", func() {
+	assert.PanicsMsg(t, func() {
 		app.AddCommand(&gcli.Command{})
-	})
-	assert.PanicsWithValue(t, "GCli: the command name '+xdd' is invalid, must match: ^[a-zA-Z][\\w-]*$", func() {
+	}, "GCli: the command name can not be empty")
+	assert.PanicsMsg(t, func() {
 		app.AddCommand(&gcli.Command{Name: "+xdd"})
-	})
+	}, "GCli: the command name '+xdd' is invalid, must match: ^[a-zA-Z][\\w-]*$")
 }
 
 func TestApp_AddAliases(t *testing.T) {
@@ -153,12 +152,12 @@ func TestApp_AddAliases(t *testing.T) {
 	app.AddCommand(gcli.NewCommand("cmd2", "desc"))
 	assert.True(t, app.IsAlias("alias1"))
 
-	assert.PanicsWithValue(t, "GCli: The name 'alias1' is already used as an alias", func() {
+	assert.PanicsMsg(t, func() {
 		app.AddCommand(gcli.NewCommand("alias1", "desc"))
-	})
-	assert.PanicsWithValue(t, "GCli: The name 'test' has been used as an command name", func() {
+	}, "GCli: The name 'alias1' is already used as an alias")
+	assert.PanicsMsg(t, func() {
 		app.AddAliases("cmd2", "test")
-	})
+	}, "GCli: The name 'test' has been used as an command name")
 }
 
 func TestApp_Run_noCommands(t *testing.T) {
@@ -186,14 +185,14 @@ func TestApp_Run_noCommands(t *testing.T) {
 	str := buf.String()
 	buf.Reset()
 
-	is.Equal(0, code)
+	is.Eq(0, code)
 	is.Contains(str, "1.3.9")
 	is.Contains(str, "Version: 1.3.9")
 	is.Contains(str, "This is my console application")
 	is.Contains(str, "Display help information")
 
 	err := app.Exec("not-exists", []string{})
-	is.Error(err)
+	is.Err(err)
 }
 
 func TestApp_Run_command_withArguments(t *testing.T) {
@@ -220,28 +219,28 @@ func TestApp_Run_command_withArguments(t *testing.T) {
 
 	// run an command
 	code := app.Run([]string{"test"})
-	is.Equal(0, code)
-	is.Equal("", argStr)
-	is.Equal("test", cmdRet)
-	is.Equal("test", app.CommandName())
+	is.Eq(0, code)
+	is.Eq("", argStr)
+	is.Eq("test", cmdRet)
+	is.Eq("test", app.CommandName())
 	// clear
 	argStr = ""
 	cmdRet = ""
 
 	err := app.Exec("test", []string{"val0", "val1"})
-	is.NoError(err)
-	is.Equal("test", cmdRet)
-	is.Equal("val0,val1", argStr)
+	is.NoErr(err)
+	is.Eq("test", cmdRet)
+	is.Eq("val0,val1", argStr)
 
 	err = app.Exec("not-exists", []string{})
-	is.Error(err)
-	is.Equal("exec unknown command: 'not-exists'", err.Error())
+	is.Err(err)
+	is.Eq("exec unknown command: 'not-exists'", err.Error())
 	// other
 	// app.AddError(fmt.Errorf("test error"))
 }
 
 func TestApp_Run_command_withOptions(t *testing.T) {
-	is := assert2.New(t)
+	is := assert.New(t)
 	app := gcli.NewApp(gcli.NotExitOnEnd())
 
 	// run with command
@@ -297,7 +296,7 @@ func TestApp_Run_subcommand(t *testing.T) {
 
 	c := appWithMl.FindCommand(id)
 	is.NotEmpty(c)
-	is.Equal("TestApp_Run_subcommand", c.GetVal("msg"))
+	is.Eq("TestApp_Run_subcommand", c.GetVal("msg"))
 }
 
 func TestApp_Run_by_cmd_ID(t *testing.T) {
@@ -308,7 +307,7 @@ func TestApp_Run_by_cmd_ID(t *testing.T) {
 
 	c := appWithMl.FindCommand("top1:sub1")
 	is.NotEmpty(c)
-	is.Equal("TestApp_Run_by_cmd_ID", c.GetVal("msg"))
+	is.Eq("TestApp_Run_by_cmd_ID", c.GetVal("msg"))
 }
 
 func TestApp_AddAliases_and_run(t *testing.T) {
@@ -321,7 +320,7 @@ func TestApp_AddAliases_and_run(t *testing.T) {
 
 	c := appWithMl.FindCommand(id)
 	is.NotEmpty(c)
-	is.Equal("TestApp_AddAliases_and_run", c.GetVal("msg"))
+	is.Eq("TestApp_AddAliases_and_run", c.GetVal("msg"))
 }
 
 func TestApp_showCommandHelp(t *testing.T) {
@@ -345,7 +344,7 @@ func TestApp_showCommandHelp(t *testing.T) {
 	code := app.Run([]string{"help", "test"})
 	str := buf.String()
 	buf.Reset()
-	is.Equal(0, code)
+	is.Eq(0, code)
 	is.Contains(str, "Name: test")
 	is.Contains(str, "Desc for test command")
 
@@ -353,21 +352,21 @@ func TestApp_showCommandHelp(t *testing.T) {
 	code = app.Run([]string{"help", "test", "more"})
 	str = buf.String()
 	buf.Reset()
-	is.Equal(gcli.ERR, code)
+	is.Eq(gcli.ERR, code)
 	is.Contains(str, "ERROR: Too many arguments given.")
 
 	// show command help for 'help'
 	code = app.Run([]string{"help", "help"})
 	str = buf.String()
 	buf.Reset()
-	is.Equal(gcli.OK, code)
+	is.Eq(gcli.OK, code)
 	is.Contains(str, "Display help message for application or command.")
 
 	// show command help: unknown command
 	code = app.Run([]string{"help", "not-exist"})
 	str = buf.String()
 	buf.Reset()
-	is.Equal(gcli.ERR, code)
+	is.Eq(gcli.ERR, code)
 	is.Contains(str, "Unknown command name 'not-exist'")
 }
 
@@ -427,7 +426,7 @@ func TestApp_showCommandTips(t *testing.T) {
 // 	assert.Len(t, app.Commands(), 2)
 // 	assert.True(t, app.IsCommand("cmd1"))
 //
-// 	assert.Equal(t, 1, app.RemoveCommand("cmd1"))
+// 	assert.Eq(t, 1, app.RemoveCommand("cmd1"))
 // 	assert.Len(t, app.Commands(), 1)
 // 	assert.False(t, app.IsCommand("cmd1"))
 // }

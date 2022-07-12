@@ -5,7 +5,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/stretchr/testify/assert"
+	"github.com/gookit/goutil/testutil/assert"
 )
 
 func TestArgsParser_Parse(t *testing.T) {
@@ -16,7 +16,7 @@ func TestArgsParser_Parse(t *testing.T) {
 	p := &ArgsParser{}
 	p.Parse(args)
 
-	at.Equal("[arg0 arg1]", fmt.Sprint(p.Args()))
+	at.Eq("[arg0 arg1]", fmt.Sprint(p.Args()))
 	assertOptions := func(str string) {
 		at.Contains(str, `"n":"10"`)
 		at.Contains(str, `"name":"tom"`)
@@ -36,7 +36,7 @@ func TestArgsParser_Parse(t *testing.T) {
 	// 加上 []string{"debug"} 解析器就能正确分别 "--debug arg0"
 	p = NewArgsParser([]string{"debug"}, nil)
 	p.Parse(args)
-	at.Equal("[arg0 arg1]", fmt.Sprint(p.Args()))
+	at.Eq("[arg0 arg1]", fmt.Sprint(p.Args()))
 	str = p.OptsString()
 	assertOptions(str)
 
@@ -45,7 +45,7 @@ func TestArgsParser_Parse(t *testing.T) {
 	args = strings.Split(sample, " ")
 	// 加上 []string{"name"} 解析器就能正确解析 "--name --name john"
 	p = ParseArgs(args, nil, []string{"name"})
-	at.Equal("[arg0 arg1]", fmt.Sprint(p.Args()))
+	at.Eq("[arg0 arg1]", fmt.Sprint(p.Args()))
 	str = p.OptsString()
 	at.Contains(str, `"n":"10"`)
 	at.Contains(str, `"name":[]string{"tom", "john"}`)
@@ -60,7 +60,7 @@ func TestArgsParser_Parse(t *testing.T) {
 	args = strings.Split(sample, " ")
 
 	p = ParseArgs(args, []string{"debug"}, []string{"name"})
-	at.Equal("[arg0 arg1]", fmt.Sprint(p.Args()))
+	at.Eq("[arg0 arg1]", fmt.Sprint(p.Args()))
 	str = p.OptsString()
 	at.Contains(str, `"n":"10"`)
 	at.Contains(str, `"name":[]string{"tom", "john"}`)

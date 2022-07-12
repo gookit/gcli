@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3/show"
-	"github.com/stretchr/testify/assert"
+	"github.com/gookit/goutil/testutil/assert"
 )
 
 func TestList(t *testing.T) {
@@ -74,7 +74,7 @@ func TestTabWriter(t *testing.T) {
 	}
 
 	err := show.TabWriter(os.Stdout, ss).Flush()
-	is.NoError(err)
+	is.NoErr(err)
 }
 
 func TestSome(t *testing.T) {

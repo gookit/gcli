@@ -7,7 +7,7 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/dump"
-	"github.com/stretchr/testify/assert"
+	"github.com/gookit/goutil/testutil/assert"
 )
 
 var (
@@ -30,7 +30,7 @@ func TestApp_Hooks_EvtAppInit(t *testing.T) {
 		return false
 	})
 	cli.Add(simpleCmd)
-	assert.Equal(t, "trigger "+gcli.EvtAppInit, buf.String())
+	assert.Eq(t, "trigger "+gcli.EvtAppInit, buf.String())
 
 	buf.Reset()
 	cli.On(gcli.EvtGOptionsParsed, func(data ...interface{}) bool {
@@ -38,7 +38,7 @@ func TestApp_Hooks_EvtAppInit(t *testing.T) {
 		return false
 	})
 	cli.Run([]string{"simple"})
-	assert.Equal(t, "trigger "+gcli.EvtGOptionsParsed+", args:[simple]", buf.String())
+	assert.Eq(t, "trigger "+gcli.EvtGOptionsParsed+", args:[simple]", buf.String())
 }
 
 func TestApp_Hooks_EvtCmdInit(t *testing.T) {
@@ -55,10 +55,10 @@ func TestApp_Hooks_EvtCmdInit(t *testing.T) {
 	})
 
 	cli.Add(emptyCmd)
-	assert.Equal(t, "cmd.init:empty;", buf.String())
+	assert.Eq(t, "cmd.init:empty;", buf.String())
 
 	cli.Add(simpleCmd)
-	assert.Equal(t, "cmd.init:empty;cmd.init:simple;", buf.String())
+	assert.Eq(t, "cmd.init:empty;cmd.init:simple;", buf.String())
 }
 
 func TestCommand_Hooks_EvtCmdOptParsed(t *testing.T) {
@@ -97,7 +97,7 @@ func TestApp_On_CmdNotFound(t *testing.T) {
 	})
 
 	cli.Run([]string{"top"})
-	assert.Equal(t, "trigger: cmd.not.found; command: top", buf.String())
+	assert.Eq(t, "trigger: cmd.not.found; command: top", buf.String())
 	buf.Reset()
 
 	fmt.Println("--------- dont print command tips ----------")
@@ -108,13 +108,13 @@ func TestApp_On_CmdNotFound(t *testing.T) {
 	})
 
 	cli.Run([]string{"top"})
-	assert.Equal(t, "trigger: cmd.not.found; command: top", buf.String())
+	assert.Eq(t, "trigger: cmd.not.found; command: top", buf.String())
 }
 
 func TestApp_On_CmdNotFound_redirect(t *testing.T) {
 	buf.Reset()
 	simpleCmd.ClearData()
-	assert.Equal(t, nil, simpleCmd.GetVal("simple"))
+	assert.Eq(t, nil, simpleCmd.GetVal("simple"))
 
 	cli := newNotExitApp()
 	cli.Add(simpleCmd)
@@ -127,12 +127,12 @@ func TestApp_On_CmdNotFound_redirect(t *testing.T) {
 
 		app := data[0].(*gcli.App)
 		err := app.Exec("simple", nil)
-		assert.NoError(t, err)
+		assert.NoErr(t, err)
 		buf.WriteString("value:" + simpleCmd.StrValue("simple"))
 		return true
 	})
 
 	cli.Run([]string{"top"})
 	want := "trigger:cmd.not.found - command:top; redirect:simple - value:simple command"
-	assert.Equal(t, want, buf.String())
+	assert.Eq(t, want, buf.String())
 }

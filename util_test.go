@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3"
-	"github.com/stretchr/testify/assert"
+	"github.com/gookit/goutil/testutil/assert"
 )
 
 func TestHelpVars(t *testing.T) {
@@ -22,11 +22,11 @@ func TestHelpVars(t *testing.T) {
 	vs.AddVars(map[string]string{"key2": "val2"})
 	vs.AddVar("key3", "val3")
 
-	is.Equal("val3", vs.GetVar("key3"))
-	is.Equal("", vs.GetVar("not-exist"))
+	is.Eq("val3", vs.GetVar("key3"))
+	is.Eq("", vs.GetVar("not-exist"))
 
-	is.Equal("hello val0", vs.ReplaceVars("hello {$key0}"))
-	is.Equal("hello val0 val2", vs.ReplaceVars("hello {$key0} {$key2}"))
-	// invlaid input
-	is.Equal("hello {key0}", vs.ReplaceVars("hello {key0}"))
+	is.Eq("hello val0", vs.ReplaceVars("hello {$key0}"))
+	is.Eq("hello val0 val2", vs.ReplaceVars("hello {$key0} {$key2}"))
+	// invalid input
+	is.Eq("hello {key0}", vs.ReplaceVars("hello {key0}"))
 }

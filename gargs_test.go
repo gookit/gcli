@@ -6,8 +6,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3"
-	assert2 "github.com/gookit/goutil/testutil/assert"
-	"github.com/stretchr/testify/assert"
+	"github.com/gookit/goutil/testutil/assert"
 )
 
 func TestCommand_AddArg(t *testing.T) {
@@ -15,46 +14,46 @@ func TestCommand_AddArg(t *testing.T) {
 	c := gcli.NewCommand("test", "test desc", nil)
 
 	arg := c.AddArg("arg0", "arg desc", true)
-	is.Equal(0, arg.Index())
+	is.Eq(0, arg.Index())
 
 	ret := c.ArgByIndex(0)
-	is.Equal(ret, arg)
+	is.Eq(ret, arg)
 
-	assert2.PanicsMsg(t, func() {
+	assert.PanicsMsg(t, func() {
 		c.ArgByIndex(1)
 	}, "GCli: get not exists argument #1")
 
 	arg = c.AddArg("arg1", "arg1 desc")
-	is.Equal(1, arg.Index())
+	is.Eq(1, arg.Index())
 
 	ret = c.Arg("arg1")
-	is.Equal(ret, arg)
+	is.Eq(ret, arg)
 
-	assert2.PanicsMsg(t, func() {
+	is.PanicsMsg(func() {
 		c.Arg("not-exist")
 	}, "GCli: get not exists argument 'not-exist'")
 
 	is.Len(c.Args(), 2)
 
-	is.PanicsWithValue("GCli: the command argument name cannot be empty", func() {
+	is.PanicsMsg(func() {
 		c.AddArg("", "desc")
-	})
+	}, "GCli: the command argument name cannot be empty")
 
-	assert2.PanicsMsg(t, func() {
+	is.PanicsMsg(func() {
 		c.AddArg(":)&dfd", "desc")
 	}, "GCli: the argument name ':)&dfd' is invalid, must match: ^[a-zA-Z][\\w-]*$")
 
-	is.PanicsWithValue("GCli: the argument name 'arg1' already exists in command 'test'", func() {
+	is.PanicsMsg(func() {
 		c.AddArg("arg1", "desc")
-	})
-	is.PanicsWithValue("GCli: required argument 'arg2' cannot be defined after optional argument", func() {
+	}, "GCli: the argument name 'arg1' already exists in command 'test'")
+	is.PanicsMsg(func() {
 		c.AddArg("arg2", "arg2 desc", true)
-	})
+	}, "GCli: required argument 'arg2' cannot be defined after optional argument")
 
 	c.AddArg("arg3", "arg3 desc", false, true)
-	is.PanicsWithValue("GCli: have defined an array argument, you cannot add argument 'argN'", func() {
+	is.PanicsMsg(func() {
 		c.AddArg("argN", "desc", true)
-	})
+	}, "GCli: have defined an array argument, you cannot add argument 'argN'")
 }
 
 func TestArguments_AddArgByRule(t *testing.T) {
@@ -62,9 +61,9 @@ func TestArguments_AddArgByRule(t *testing.T) {
 	ags := gcli.Arguments{}
 
 	arg := ags.AddArgByRule("arg2", "arg2 desc;false;23")
-	is.Equal("arg2 desc", arg.Desc)
-	is.Equal(23, arg.Int())
-	is.Equal(false, arg.Arrayed)
+	is.Eq("arg2 desc", arg.Desc)
+	is.Eq(23, arg.Int())
+	is.Eq(false, arg.Arrayed)
 }
 
 func TestArguments_BindArg(t *testing.T) {
@@ -76,7 +75,7 @@ func TestArguments_BindArg(t *testing.T) {
 }
 
 func TestArgument(t *testing.T) {
-	is := assert2.New(t)
+	is := assert.New(t)
 	arg := gcli.NewArgument("arg0", "arg desc")
 
 	is.False(arg.Arrayed)
@@ -136,12 +135,12 @@ func TestArgument_GetValue(t *testing.T) {
 	arg := gcli.NewArgument("arg0", "arg desc")
 
 	// custom handler
-	assert.NoError(t, arg.SetValue("a-b-c"))
+	assert.NoErr(t, arg.SetValue("a-b-c"))
 	arg.Handler = func(value interface{}) interface{} {
 		str := value.(string)
 		return strings.SplitN(str, "-", 2)
 	}
-	assert.Equal(t, []string{"a", "b-c"}, arg.GetValue())
+	assert.Eq(t, []string{"a", "b-c"}, arg.GetValue())
 }
 
 var str2int = func(val interface{}) (interface{}, error) {
@@ -154,8 +153,8 @@ func TestArgument_WithConfig(t *testing.T) {
 		arg.Init()
 	})
 
-	assert.Equal(t, 23, arg.Val())
-	assert.Equal(t, "arg0", arg.HelpName())
+	assert.Eq(t, 23, arg.Val())
+	assert.Eq(t, "arg0", arg.HelpName())
 }
 
 func TestArgument_SetValue(t *testing.T) {
@@ -164,17 +163,17 @@ func TestArgument_SetValue(t *testing.T) {
 	arg.Validator = str2int
 
 	err := arg.SetValue("12")
-	assert.NoError(t, err)
-	assert.Equal(t, 12, arg.Val())
+	assert.NoErr(t, err)
+	assert.Eq(t, 12, arg.Val())
 	arg.Set(nil) // reset value
 
 	err = arg.SetValue("abc")
-	assert.Error(t, err)
+	assert.Err(t, err)
 	assert.Nil(t, arg.Val())
 
 	// convert "12" to 12
 	arg = gcli.NewArgument("arg0", "arg desc").WithValidator(str2int)
 	err = arg.SetValue("12")
-	assert.NoError(t, err)
-	assert.Equal(t, 12, arg.Val())
+	assert.NoErr(t, err)
+	assert.Eq(t, 12, arg.Val())
 }
