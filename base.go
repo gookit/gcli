@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
@@ -43,17 +44,20 @@ type core struct {
 // 	})
 // }
 
+// parse global options
 func (c core) doParseGOpts(args []string) (err error) {
 	if c.gFlags == nil { // skip on nil
 		return
 	}
 
-	// parse global options
 	err = c.gFlags.Parse(args)
+
 	if err != nil {
+		if cflag.IsFlagHelpErr(err) {
+			return nil
+		}
 		Logf(VerbWarn, "parse global options err: <red>%s</>", err.Error())
 	}
-
 	return
 }
 

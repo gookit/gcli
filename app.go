@@ -265,7 +265,7 @@ func (app *App) AddAliases(name string, aliases ...string) {
 
 // parseGlobalOpts parse global options
 func (app *App) parseGlobalOpts(args []string) (ok bool) {
-	Logf(VerbDebug, "will begin parse global options")
+	Logf(VerbDebug, "will begin parse application options")
 
 	// parse global options
 	err := app.core.doParseGOpts(args)
