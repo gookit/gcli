@@ -391,7 +391,7 @@ func (fs *Flags) Bool(name, shorts string, defVal bool, desc string) *bool {
 
 	// binding option to flag.FlagSet
 	p := fs.fSet.Bool(name, defVal, meta.Desc)
-	meta.Flag = fs.fSet.Lookup(name)
+	meta.flag = fs.fSet.Lookup(name)
 
 	return p
 }
@@ -411,7 +411,7 @@ func (fs *Flags) boolOpt(p *bool, meta *FlagMeta) {
 
 	// binding option to flag.FlagSet
 	fs.fSet.BoolVar(p, name, defVal, meta.Desc)
-	meta.Flag = fs.fSet.Lookup(name)
+	meta.flag = fs.fSet.Lookup(name)
 }
 
 // --- float option
@@ -430,7 +430,7 @@ func (fs *Flags) float64Opt(p *float64, meta *FlagMeta) {
 
 	// binding option to flag.FlagSet
 	fs.fSet.Float64Var(p, name, defVal, meta.Desc)
-	meta.Flag = fs.fSet.Lookup(name)
+	meta.flag = fs.fSet.Lookup(name)
 }
 
 // --- string option
@@ -442,7 +442,7 @@ func (fs *Flags) Str(name, shorts string, defValue, desc string) *string {
 
 	// binding option to flag.FlagSet
 	p := fs.fSet.String(name, defValue, meta.Desc)
-	meta.Flag = fs.fSet.Lookup(name)
+	meta.flag = fs.fSet.Lookup(name)
 
 	return p
 }
@@ -462,7 +462,7 @@ func (fs *Flags) strOpt(p *string, meta *FlagMeta) {
 
 	// binding option to flag.FlagSet
 	fs.fSet.StringVar(p, meta.Name, defVal, meta.Desc)
-	meta.Flag = fs.fSet.Lookup(name)
+	meta.flag = fs.fSet.Lookup(name)
 }
 
 // --- intX option
@@ -474,7 +474,7 @@ func (fs *Flags) Int(name, shorts string, defValue int, desc string) *int {
 
 	// binding option to flag.FlagSet
 	p := fs.fSet.Int(name, defValue, meta.Desc)
-	meta.Flag = fs.fSet.Lookup(name)
+	meta.flag = fs.fSet.Lookup(name)
 
 	return p
 }
@@ -493,7 +493,7 @@ func (fs *Flags) intOpt(p *int, meta *FlagMeta) {
 
 	// binding option to flag.FlagSet
 	fs.fSet.IntVar(p, name, defValue, meta.Desc)
-	meta.Flag = fs.fSet.Lookup(name)
+	meta.flag = fs.fSet.Lookup(name)
 }
 
 // Int64 binding an int64 option flag, return pointer
@@ -503,7 +503,7 @@ func (fs *Flags) Int64(name, shorts string, defValue int64, desc string) *int64 
 
 	// binding option to flag.FlagSet
 	p := fs.fSet.Int64(name, defValue, meta.Desc)
-	meta.Flag = fs.fSet.Lookup(name)
+	meta.flag = fs.fSet.Lookup(name)
 
 	return p
 }
@@ -522,7 +522,7 @@ func (fs *Flags) int64Opt(p *int64, meta *FlagMeta) {
 
 	// binding option to flag.FlagSet
 	fs.fSet.Int64Var(p, name, defVal, meta.Desc)
-	meta.Flag = fs.fSet.Lookup(name)
+	meta.flag = fs.fSet.Lookup(name)
 }
 
 // --- uintX option
@@ -534,7 +534,7 @@ func (fs *Flags) Uint(name, shorts string, defVal uint, desc string) *uint {
 
 	// binding option to flag.FlagSet
 	p := fs.fSet.Uint(name, defVal, meta.Desc)
-	meta.Flag = fs.fSet.Lookup(name)
+	meta.flag = fs.fSet.Lookup(name)
 
 	return p
 }
@@ -553,7 +553,7 @@ func (fs *Flags) uintOpt(p *uint, meta *FlagMeta) {
 
 	// binding option to flag.FlagSet
 	fs.fSet.UintVar(p, name, uint(defVal), meta.Desc)
-	meta.Flag = fs.fSet.Lookup(name)
+	meta.flag = fs.fSet.Lookup(name)
 }
 
 // Uint64 binding an int option flag, return pointer
@@ -562,7 +562,7 @@ func (fs *Flags) Uint64(name, shorts string, defVal uint64, desc string) *uint64
 	name = fs.checkFlagInfo(meta)
 
 	p := fs.fSet.Uint64(name, defVal, meta.Desc)
-	meta.Flag = fs.fSet.Lookup(name)
+	meta.flag = fs.fSet.Lookup(name)
 
 	return p
 }
@@ -582,7 +582,7 @@ func (fs *Flags) uint64Opt(p *uint64, meta *FlagMeta) {
 
 	// binding option to flag.FlagSet
 	fs.fSet.Uint64Var(p, name, uint64(defVal), meta.Desc)
-	meta.Flag = fs.fSet.Lookup(name)
+	meta.flag = fs.fSet.Lookup(name)
 }
 
 // Var binding an custom var option flag
@@ -603,7 +603,7 @@ func (fs *Flags) varOpt(p flag.Value, meta *FlagMeta) {
 
 	// binding option to flag.FlagSet
 	fs.fSet.Var(p, name, meta.Desc)
-	meta.Flag = fs.fSet.Lookup(name)
+	meta.flag = fs.fSet.Lookup(name)
 }
 
 // Required flag option name(s)
@@ -903,8 +903,8 @@ func (fs *Flags) FSetArgs() []string { return fs.fSet.Args() }
 
 // FlagMeta for an flag(option/argument)
 type FlagMeta struct {
-	// Flag value
-	Flag *flag.Flag
+	// go flag value
+	flag *flag.Flag
 	// Name of flag and description
 	Name, Desc string
 	// default value for the flag option
@@ -913,6 +913,8 @@ type FlagMeta struct {
 	defVal *structs.Value
 	// short names. eg: ["o", "a"]
 	Shorts []string
+	// EnvVar allow set flag value from ENV var
+	EnvVar string
 
 	// --- advanced settings
 
@@ -940,6 +942,7 @@ func (m *FlagMeta) initCheck() string {
 		desc := strings.Trim(m.Desc, "; ")
 		if strings.ContainsRune(desc, ';') {
 			// format: desc;required
+			// format: desc;required;env TODO parse ENV var
 			parts := strutil.SplitNTrimmed(desc, ";", 2)
 			if ln := len(parts); ln > 1 {
 				bl, err := strutil.Bool(parts[1])
@@ -1004,6 +1007,11 @@ func (m *FlagMeta) Validate(val string) error {
 		return m.Validator(val)
 	}
 	return nil
+}
+
+// Flag value
+func (m *FlagMeta) Flag() *flag.Flag {
+	return m.flag
 }
 
 // DValue wrap the default value
