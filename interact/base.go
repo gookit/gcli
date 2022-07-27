@@ -83,8 +83,9 @@ func (v Value) IsEmpty() bool {
 
 // SelectResult data store
 type SelectResult struct {
-	Value       // V the select value(s)
-	K     Value // K the select key(s)
+	Value // V the select value(s)
+	// K the select key(s)
+	K Value
 }
 
 // create SelectResult create

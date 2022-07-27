@@ -31,6 +31,7 @@ func Unconfirmed(message string, defVal ...bool) bool {
 }
 
 // Ask a question and return the result of the input.
+//
 // Usage:
 // 	answer := Ask("Your name?", "", nil)
 // 	answer := Ask("Your name?", "tom", nil)
@@ -60,12 +61,14 @@ func SingleSelect(title string, options interface{}, defOpt string, allowQuit ..
 }
 
 // SelectOne select one of the options, returns selected option value
+//
 // map options:
 // 	{
 //    // option value => option name
 //    'a' => 'chengdu',
 //    'b' => 'beijing'
 // 	}
+//
 // array options:
 // 	{
 //    // only name, value will use index

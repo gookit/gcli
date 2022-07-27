@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -33,6 +34,7 @@ type Select struct {
 }
 
 // NewSelect instance.
+//
 // Usage:
 // 	s := NewSelect("Your city?", []string{"chengdu", "beijing"})
 // 	r := s.Run()
@@ -99,14 +101,7 @@ func (s *Select) prepare() (keys []string) {
 	// format some field data
 	s.DefOpt = strings.TrimSpace(s.DefOpt)
 	if len(s.DefOpts) > 0 {
-		var ss []string
-		for _, v := range s.DefOpts {
-			if v = strings.TrimSpace(v); v != "" {
-				ss = append(ss, v)
-			}
-		}
-
-		s.DefOpts = ss
+		s.DefOpts = arrutil.StringsFilter(s.DefOpts)
 	}
 	return
 }
@@ -251,6 +246,5 @@ func (s *Select) Run() *SelectResult {
 	if s.MultiSelect {
 		return s.selectMulti()
 	}
-
 	return s.selectOne()
 }
