@@ -238,27 +238,32 @@ func strictFormatArgs(args []string) (fmtArgs []string) {
 	}
 
 	for _, arg := range args {
-		// eg: --a ---name
-		if strings.Index(arg, "--") == 0 {
-			farg := strings.TrimLeft(arg, "-")
-			if rl := len(farg); rl == 1 { // fix: "--a" -> "-a"
-				arg = "-" + farg
-			} else if rl > 1 { // fix: "---name" -> "--name"
-				arg = "--" + farg
-			}
-			// TODO No change remain OR remove like "--" "---"
-			// maybe ...
-
-		} else if strings.IndexByte(arg, '-') == 0 {
-			ln := len(arg)
-			// fix: "-abc" -> "-a -b -c"
-			if ln > 2 {
-				chars := strings.Split(strings.Trim(arg, "-"), "")
-
-				for _, s := range chars {
-					fmtArgs = append(fmtArgs, "-"+s)
+		// if contains `=` append self
+		// TODO mode:
+		//  `--test=x`, `-t=x` , `-test=x`
+		if !strings.Contains(arg, "=") {
+			// eg: --a ---name
+			if strings.Index(arg, "--") == 0 {
+				farg := strings.TrimLeft(arg, "-")
+				if rl := len(farg); rl == 1 { // fix: "--a" -> "-a"
+					arg = "-" + farg
+				} else if rl > 1 { // fix: "---name" -> "--name"
+					arg = "--" + farg
 				}
-				continue
+				// TODO No change remain OR remove like "--" "---"
+				// maybe ...
+
+			} else if strings.IndexByte(arg, '-') == 0 {
+				ln := len(arg)
+				// fix: "-abc" -> "-a -b -c"
+				if ln > 2 {
+					chars := strings.Split(strings.Trim(arg, "-"), "")
+
+					for _, s := range chars {
+						fmtArgs = append(fmtArgs, "-"+s)
+					}
+					continue
+				}
 			}
 		}
 
