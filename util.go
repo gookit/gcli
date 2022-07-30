@@ -238,9 +238,9 @@ func strictFormatArgs(args []string) (fmtArgs []string) {
 	}
 
 	for _, arg := range args {
-		// if contains `=` append self
+		// if contains '=' append self
 		// TODO mode:
-		//  `--test=x`, `-t=x` , `-test=x`
+		//  '--test=x', '-t=x' , '-test=x', '-test'
 		if !strings.Contains(arg, "=") {
 			// eg: --a ---name
 			if strings.Index(arg, "--") == 0 {
