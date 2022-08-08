@@ -336,12 +336,15 @@ func (app *App) prepareRun() (code int, name string) {
 	if app.inputName == "" {
 		Logf(VerbDebug, "input the command is not an registered: %s", name)
 
-		if stop := app.Fire(EvtAppCmdNotFound, name); stop == false {
-			stop = app.Fire(EvtCmdNotFound, name)
-			if stop == false {
-				app.showCommandTips(name)
-			}
+		// fire events
+		if stop := app.Fire(EvtAppCmdNotFound, name); stop {
+			return
 		}
+		if stop := app.Fire(EvtCmdNotFound, name); stop {
+			return
+		}
+
+		app.showCommandTips(name)
 		return
 	}
 
