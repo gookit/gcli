@@ -454,12 +454,10 @@ func (c *Command) innerDispatch(args []string) (err error) {
 			// no arguments, name is not founded subcommand
 			if !c.HasArguments() {
 				// fire events
-				stop := c.Fire(EvtCmdSubNotFound, name)
-				if stop == true {
+				if stop := c.Fire(EvtCmdSubNotFound, name); stop {
 					return
 				}
-
-				if stop = c.Fire(EvtCmdNotFound, name); stop == false {
+				if stop := c.Fire(EvtCmdNotFound, name); stop {
 					return
 				}
 
