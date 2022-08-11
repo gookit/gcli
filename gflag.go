@@ -165,9 +165,10 @@ func (fs *Flags) WithConfigFn(fns ...func(cfg *FlagsConfig)) *Flags {
 // Run flags parse and handle help render
 //
 // Usage:
-// 	gf := gcli.NewFlags()
-//  ...
-// 	gf.Run(os.Args)
+//
+//		gf := gcli.NewFlags()
+//	 ...
+//		gf.Run(os.Args)
 func (fs *Flags) Run(args []string) {
 	if args == nil {
 		args = os.Args
@@ -202,11 +203,12 @@ func (fs *Flags) Run(args []string) {
 // Parse given arguments
 //
 // Usage:
-// 	gf := gcli.NewFlags()
-// 	gf.BoolOpt(&debug, "debug", "", defDebug, "open debug mode")
-// 	gf.UintOpt(&port, "port", "p", 18081, "the http server port")
 //
-// 	err := gf.Parse(os.Args[1:])
+//	gf := gcli.NewFlags()
+//	gf.BoolOpt(&debug, "debug", "", defDebug, "open debug mode")
+//	gf.UintOpt(&port, "port", "p", 18081, "the http server port")
+//
+//	err := gf.Parse(os.Args[1:])
 func (fs *Flags) Parse(args []string) (err error) {
 	defer func() {
 		if err := recover(); err != nil {
@@ -224,6 +226,7 @@ func (fs *Flags) Parse(args []string) (err error) {
 
 	if len(fs.shorts) > 0 && len(args) > 0 {
 		args = cflag.ReplaceShorts(args, fs.shorts)
+		Debugf("replace shortcuts. now, args: %v", args)
 	}
 
 	// do parsing
@@ -591,8 +594,9 @@ func (fs *Flags) Var(p flag.Value, meta *FlagMeta) { fs.varOpt(p, meta) }
 // VarOpt binding a custom var option
 //
 // Usage:
-//		var names gcli.Strings
-// 		cmd.VarOpt(&names, "tables", "t", "description ...")
+//
+//	var names gcli.Strings
+//	cmd.VarOpt(&names, "tables", "t", "description ...")
 func (fs *Flags) VarOpt(p flag.Value, name, shorts, desc string) {
 	fs.varOpt(p, newFlagMeta(name, desc, nil, shorts))
 }

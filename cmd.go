@@ -120,10 +120,11 @@ type Command struct {
 
 // NewCommand create a new command instance.
 // Usage:
-// 	cmd := NewCommand("my-cmd", "description")
+//
+//	cmd := NewCommand("my-cmd", "description")
 //	// OR with an config func
-// 	cmd := NewCommand("my-cmd", "description", func(c *Command) { ... })
-// 	app.Add(cmd) // OR cmd.AttachTo(app)
+//	cmd := NewCommand("my-cmd", "description", func(c *Command) { ... })
+//	app.Add(cmd) // OR cmd.AttachTo(app)
 func NewCommand(name, desc string, fn ...func(c *Command)) *Command {
 	c := &Command{
 		Name: name,
@@ -249,7 +250,7 @@ func (c *Command) initialize() {
 
 	// check command name
 	cName := c.goodName()
-	Debugf("initialize the command '%s'", cName)
+	Debugf("initialize the command '%s': init flags, run config func", cName)
 
 	c.initialized = true
 	c.pathNames = append(c.pathNames, cName)
@@ -350,6 +351,7 @@ func (c *Command) Next() {
 // MustRun Alone the current command, will panic on error
 //
 // Usage:
+//
 //	// run with os.Args
 //	cmd.MustRun(nil)
 //	cmd.MustRun(os.Args[1:])
@@ -364,6 +366,7 @@ func (c *Command) MustRun(args []string) {
 // Run standalone running the command
 //
 // Usage:
+//
 //	// run with os.Args
 //	cmd.Run(nil)
 //	cmd.Run(os.Args[1:])
@@ -408,8 +411,6 @@ func (c *Command) Run(args []string) (err error) {
 
 // dispatch execute the command
 func (c *Command) innerDispatch(args []string) (err error) {
-	Debugf("cmd: %s - begin parse options by args: %v", c.Name, args)
-
 	// parse command flags
 	args, err = c.parseOptions(args)
 	if err != nil {

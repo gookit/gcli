@@ -75,12 +75,13 @@ func New(fns ...func(app *App)) *App {
 // NewApp create new app instance.
 //
 // Usage:
-// 	NewApp()
-// 	// Or with a config func
-// 	NewApp(func(a *App) {
-// 		// do something before init ....
-// 		a.Hooks[gcli.EvtInit] = func () {}
-// 	})
+//
+//	NewApp()
+//	// Or with a config func
+//	NewApp(func(a *App) {
+//		// do something before init ....
+//		a.Hooks[gcli.EvtInit] = func () {}
+//	})
 func NewApp(fns ...func(app *App)) *App {
 	app := &App{
 		Name: "GCliApp",
@@ -431,11 +432,12 @@ func (app *App) RunLine(argsLine string) int {
 // Run running application
 //
 // Usage:
+//
 //	// run with os.Args
 //	app.Run(nil)
 //	app.Run(os.Args[1:])
 //	// custom args
-//	app.Run([]string{"cmd", ...})
+//	app.Run([]string{"cmd", "--name", "inhere"})
 func (app *App) Run(args []string) (code int) {
 	// ensure application initialized
 	app.initialize()
@@ -473,6 +475,7 @@ func (app *App) Run(args []string) (code int) {
 // RunCmd running an top command with custom args
 //
 // Usage:
+//
 //	app.Exec("top")
 //	app.Exec("top", []string{"-a", "val0", "arg0"})
 //	// can add sub command on args
@@ -487,11 +490,7 @@ func (app *App) doRunCmd(name string, args []string) (code int) {
 
 	Debugf("will run app command '%s' with args: %v", name, args)
 
-	// parse command options
-	// args, err = cmd.parseOptions(args)
-
 	// do execute command
-	// if err := cmd.innerExecute(args, true); err != nil {
 	if err := cmd.innerDispatch(args); err != nil {
 		code = ERR
 		app.Fire(EvtAppRunError, err)
@@ -539,6 +538,7 @@ func (app *App) exitOnEnd(code int) int {
 // - command path in the app. 'top sub'
 //
 // Usage:
+//
 //	app.Exec("top")
 //	app.Exec("top:sub")
 //	app.Exec("top sub")
