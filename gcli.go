@@ -3,7 +3,8 @@
 // Contains: cli app, flags parse, interact, progress, data show tools.
 //
 // Source code and other details for the project are available at GitHub:
-// 		https://github.com/gookit/gcli
+//
+//	https://github.com/gookit/gcli
 //
 // Usage please refer examples and see README
 package gcli
@@ -26,6 +27,8 @@ const (
 	CommandSep = ":"
 	// HelpCommand name
 	HelpCommand = "help"
+	// VerbEnvName for set gcli debug level
+	VerbEnvName = "GCLI_VERBOSE"
 )
 
 // constants for error level (quiet 0 - 5 crazy)
@@ -89,7 +92,7 @@ var (
 // init
 func init() {
 	// set verbose from ENV var.
-	envVerb := os.Getenv("GCLI_VERBOSE")
+	envVerb := os.Getenv(VerbEnvName)
 	if envVerb != "" {
 		_ = gOpts.verbose.Set(envVerb)
 	}
@@ -155,6 +158,7 @@ type Commander interface {
 
 // GOptions global flag options
 type GOptions struct {
+	Disable  bool
 	NoColor  bool
 	verbose  VerbLevel // message report level
 	showVer  bool
@@ -179,7 +183,7 @@ type GOptions struct {
 
 func newDefaultGOptions() *GOptions {
 	return &GOptions{
-		strictMode: true,
+		strictMode: false,
 		// init error level.
 		verbose: DefaultVerb,
 	}
@@ -210,12 +214,21 @@ func (g *GOptions) NoProgress() bool {
 	return g.noProgress
 }
 
+// SetDisable global options
+func (g *GOptions) SetDisable() {
+	g.Disable = true
+}
+
 func (g *GOptions) bindingFlags(fs *Flags) {
+	fs.BoolOpt(&g.showHelp, "help", "h", false, "Display the help information")
+
+	if g.Disable {
+		return
+	}
+
 	// up: allow use int and string.
 	fs.VarOpt(&g.verbose, "verbose", "", "Set logs reporting level(quiet 0 - 5 crazy)")
-
 	fs.BoolOpt(&g.inShell, "ishell", "", false, "Run in an interactive shell environment(`TODO`)")
-	fs.BoolOpt(&g.showHelp, "help", "h", false, "Display the help information")
 	fs.BoolOpt(&g.NoColor, "no-color", "nc", g.NoColor, "Disable color when outputting message")
 	fs.BoolOpt(&g.noProgress, "no-progress", "np", g.noProgress, "Disable display progress message")
 	fs.BoolOpt(&g.noInteractive, "no-interactive", "ni", g.noInteractive, "Disable interactive confirmation operation")

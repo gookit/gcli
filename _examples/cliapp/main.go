@@ -5,17 +5,18 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/_examples/cmd"
 	"github.com/gookit/gcli/v3/builtin"
-
 	// "github.com/gookit/gcli/v3/builtin/filewatcher"
 	// "github.com/gookit/gcli/v3/builtin/reverseproxy"
 )
 
 // local run:
-// 	go run ./_examples/cliapp
-// 	go build ./_examples/cliapp && ./cliapp
+//
+//	go run ./_examples/cliapp
+//	go build ./_examples/cliapp && ./cliapp
 //
 // run on windows(cmd, powerShell):
-// 	go build ./_examples/cliapp && ./cliapp
+//
+//	go build ./_examples/cliapp && ./cliapp
 func main() {
 	app := gcli.NewApp(func(app *gcli.App) {
 		app.Version = "3.0.0"
@@ -35,6 +36,9 @@ func main() {
 \____/_____/___/_/  |_/ .___/ .___/
                      /_/   /_/`
 	})
+
+	// disable global options
+	// gcli.GOpts().SetDisable()
 
 	var customGOpt string
 	app.GOptsBinder = func(gf *gcli.Flags) {
