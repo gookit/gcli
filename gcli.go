@@ -219,6 +219,7 @@ func (g *GOptions) SetDisable() {
 func (g *GOptions) bindingFlags(fs *Flags) {
 	fs.BoolOpt(&g.showHelp, "help", "h", false, "Display the help information")
 
+	// disabled
 	if g.Disable {
 		return
 	}

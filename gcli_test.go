@@ -27,16 +27,24 @@ func TestVerbose(t *testing.T) {
 	gcli.SetQuietMode()
 	is.Eq(gcli.VerbQuiet, gcli.Verbose())
 
-	gcli.SetVerbose(gcli.VerbInfo)
-	is.Eq(gcli.VerbInfo, gcli.Verbose())
-	is.Eq("info", gcli.Verbose().Name())
-	is.Eq("INFO", gcli.Verbose().Upper())
+	info := gcli.VerbInfo
+	gcli.SetVerbose(info)
+	is.Eq(info, gcli.Verbose())
+	is.Eq(3, info.Int())
+	is.Eq("info", info.Name())
+	is.Eq("INFO", info.Upper())
 
 	gcli.SetVerbose(old)
 	is.Eq(gcli.VerbError, gcli.Verbose())
+}
+
+func TestVerbLevel(t *testing.T) {
+	is := assert.New(t)
 
 	verb := gcli.VerbLevel(23)
 	is.Eq("unknown", verb.Name())
+	is.Eq(23, verb.Int())
+
 	err := verb.Set("2")
 	is.NoErr(err)
 	is.Eq(gcli.VerbWarn, verb)
@@ -56,7 +64,10 @@ func TestVerbose(t *testing.T) {
 func TestStrictMode(t *testing.T) {
 	is := assert.New(t)
 
-	is.True(gcli.StrictMode())
+	old := gcli.StrictMode()
+	defer func() {
+		gcli.SetStrictMode(old)
+	}()
 
 	gcli.SetStrictMode(false)
 	is.False(gcli.StrictMode())
@@ -121,5 +132,10 @@ func TestSetStrictMode(t *testing.T) {
 	app.Run([]string{"test", "-ob"})
 	assert.True(t, opts.ok)
 	assert.True(t, opts.bl)
+}
 
+func TestString(t *testing.T) {
+	s := gcli.String("ab,cd")
+	assert.Eq(t, "ab,cd", s.String())
+	assert.Eq(t, []string{"ab", "cd"}, s.Split(","))
 }
