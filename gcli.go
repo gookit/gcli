@@ -1,4 +1,4 @@
-// Package gcli is a simple to use command line application and tool library.
+// Package gcli is a simple-to-use command line application and tool library.
 //
 // Contains: cli app, flags parse, interact, progress, data show tools.
 //
@@ -10,10 +10,7 @@
 package gcli
 
 import (
-	"fmt"
 	"os"
-	"strconv"
-	"strings"
 )
 
 const (
@@ -232,65 +229,4 @@ func (g *GOptions) bindingFlags(fs *Flags) {
 	fs.BoolOpt(&g.NoColor, "no-color", "nc", g.NoColor, "Disable color when outputting message")
 	fs.BoolOpt(&g.noProgress, "no-progress", "np", g.noProgress, "Disable display progress message")
 	fs.BoolOpt(&g.noInteractive, "no-interactive", "ni", g.noInteractive, "Disable interactive confirmation operation")
-}
-
-/*************************************************************************
- * verbose level
- *************************************************************************/
-
-// VerbLevel type.
-type VerbLevel uint
-
-// Int verbose level to int.
-func (vl VerbLevel) Int() int {
-	return int(vl)
-}
-
-// String verbose level to string.
-func (vl VerbLevel) String() string {
-	return fmt.Sprintf("%d=%s", vl, vl.Name())
-}
-
-// Upper verbose level to string.
-func (vl VerbLevel) Upper() string {
-	return strings.ToUpper(vl.Name())
-}
-
-// Name verbose level to string.
-func (vl VerbLevel) Name() string {
-	switch vl {
-	case VerbQuiet:
-		return "quiet"
-	case VerbError:
-		return "error"
-	case VerbWarn:
-		return "warn"
-	case VerbInfo:
-		return "info"
-	case VerbDebug:
-		return "debug"
-	case VerbCrazy:
-		return "crazy"
-	}
-	return "unknown"
-}
-
-// Set value from option binding.
-func (vl *VerbLevel) Set(value string) error {
-	// int: level value.
-	if iv, err := strconv.Atoi(value); err == nil {
-		if iv > VerbCrazy.Int() {
-			*vl = VerbCrazy
-		} else if iv < 0 { // fallback to default level.
-			*vl = DefaultVerb
-		} else { // 0 - 5
-			*vl = VerbLevel(iv)
-		}
-
-		return nil
-	}
-
-	// string: level name.
-	*vl = name2verbLevel(value)
-	return nil
 }

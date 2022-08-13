@@ -115,6 +115,7 @@ var flagTagKeys = arrutil.Strings{"name", "shorts", "desc", "default", "required
 // eg: "name=int0;shorts=i;required=true;desc=int option message"
 //
 // supported field name:
+//
 //	name
 //	desc
 //	shorts
@@ -148,11 +149,13 @@ func parseNamedRule(name, rule string) (mp map[string]string) {
 // format: "desc;required;default;shorts"
 //
 // eg:
-// 	"int option message;required;i"
-//  "int option message;;a,b"
-//  "int option message;;a,b;23"
+//
+//		"int option message;required;i"
+//	 "int option message;;a,b"
+//	 "int option message;;a,b;23"
 //
 // returns field name:
+//
 //	name
 //	desc
 //	shorts
@@ -201,9 +204,9 @@ const (
 var (
 	// good name for option and argument
 	goodName = regexp.MustCompile(regGoodName)
-	// match an good command name
+	// match a good command name
 	goodCmdId = regexp.MustCompile(regGoodCmdId)
-	// match an good command name
+	// match a good command name
 	goodCmdName = regexp.MustCompile(regGoodCmdName)
 )
 
@@ -230,8 +233,9 @@ func aliasNameCheck(name string) {
 
 // strictFormatArgs
 // TODO mode:
-//  POSIX '-ab' will split to '-a -b', '--o' -> '-o'
-//  UNIX '-ab' will split to '-a b'
+//
+//	POSIX '-ab' will split to '-a -b', '--o' -> '-o'
+//	UNIX '-ab' will split to '-a b'
 func strictFormatArgs(args []string) (fmtArgs []string) {
 	if len(args) == 0 {
 		return args
@@ -241,29 +245,31 @@ func strictFormatArgs(args []string) (fmtArgs []string) {
 		// if contains '=' append self
 		// TODO mode:
 		//  '--test=x', '-t=x' , '-test=x', '-test'
-		if !strings.Contains(arg, "=") {
-			// eg: --a ---name
-			if strings.Index(arg, "--") == 0 {
-				farg := strings.TrimLeft(arg, "-")
-				if rl := len(farg); rl == 1 { // fix: "--a" -> "-a"
-					arg = "-" + farg
-				} else if rl > 1 { // fix: "---name" -> "--name"
-					arg = "--" + farg
-				}
-				// TODO No change remain OR remove like "--" "---"
-				// maybe ...
+		if strings.ContainsRune(arg, '=') {
+			fmtArgs = append(fmtArgs, arg)
+			continue
+		}
 
-			} else if strings.IndexByte(arg, '-') == 0 {
-				ln := len(arg)
-				// fix: "-abc" -> "-a -b -c"
-				if ln > 2 {
-					chars := strings.Split(strings.Trim(arg, "-"), "")
+		// eg: --a ---name
+		if strings.HasPrefix(arg, "--") {
+			farg := strings.TrimLeft(arg, "-")
+			if rl := len(farg); rl == 1 { // fix: "--a" -> "-a"
+				arg = "-" + farg
+			} else if rl > 1 { // fix: "---name" -> "--name"
+				arg = "--" + farg
+			}
 
-					for _, s := range chars {
-						fmtArgs = append(fmtArgs, "-"+s)
-					}
-					continue
+			// TODO No change remain OR remove like "--" "---"
+			// maybe ...
+
+		} else if strings.HasPrefix(arg, "-") {
+			ln := len(arg)
+			// fix: "-abc" -> "-a -b -c"
+			if ln > 2 {
+				for _, s := range arg[1:] {
+					fmtArgs = append(fmtArgs, "-"+string(s))
 				}
+				continue
 			}
 		}
 

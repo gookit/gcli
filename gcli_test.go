@@ -82,3 +82,44 @@ func TestCmdLine(t *testing.T) {
 		is.Empty(gcli.CLI.ArgLine())
 	}
 }
+
+func TestSetStrictMode(t *testing.T) {
+	stm := gcli.StrictMode()
+	defer gcli.SetStrictMode(stm)
+
+	opts := struct {
+		name   string
+		ok, bl bool
+	}{}
+
+	// gcli.SetVerbose(gcli.VerbDebug)
+	app := gcli.NewApp(gcli.NotExitOnEnd())
+	app.Add(&gcli.Command{
+		Name: "test",
+		Config: func(c *gcli.Command) {
+			c.StrOpt(&opts.name, "name", "n", "", "1")
+			c.BoolOpt(&opts.ok, "ok", "o", true, "2")
+			c.BoolOpt(&opts.bl, "bl", "b", false, "3")
+		},
+		Func: func(c *gcli.Command, _ []string) error {
+			return nil
+		},
+	})
+
+	app.Run([]string{"test", "-o", "-n", "inhere"})
+	assert.Eq(t, "inhere", opts.name)
+	assert.True(t, opts.ok)
+
+	app.Run([]string{"test", "-o=false", "-n=inhere"})
+	assert.Eq(t, "inhere", opts.name)
+	assert.False(t, opts.ok)
+
+	app.Run([]string{"test", "-ob"})
+	// assert.StrContains(t, errMsg, "ddd")
+
+	gcli.SetStrictMode(true)
+	app.Run([]string{"test", "-ob"})
+	assert.True(t, opts.ok)
+	assert.True(t, opts.bl)
+
+}

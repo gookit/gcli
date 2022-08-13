@@ -137,8 +137,10 @@ func (md *mapData) ClearData() {
 // HookFunc definition.
 //
 // func arguments:
-//  in app, like: func(app *App, data ...interface{})
-//  in cmd, like: func(cmd *Command, data ...interface{})
+//
+//	in app, like: func(app *App, data ...interface{})
+//	in cmd, like: func(cmd *Command, data ...interface{})
+//
 // type HookFunc func(obj interface{}, data interface{})
 //
 // return:
@@ -230,7 +232,7 @@ func newCmdLine() *cmdLine {
 	binFile := os.Args[0]
 	workDir, _ := os.Getwd()
 
-	// binName will contains work dir path on windows
+	// binName will contain work dir path on Windows
 	// if envutil.IsWin() {
 	// 	binFile = strings.Replace(CLI.binName, workDir+"\\", "", 1)
 	// }
@@ -307,7 +309,8 @@ func (c *cmdLine) hasHelpKeywords() bool {
 // HelpVarFormat allow var replace on render help info.
 //
 // Default support:
-// 	"{$binName}" "{$cmd}" "{$fullCmd}" "{$workDir}"
+//
+//	"{$binName}" "{$cmd}" "{$fullCmd}" "{$workDir}"
 const HelpVarFormat = "{$%s}"
 
 // HelpVars struct. provide string var function for render help template.

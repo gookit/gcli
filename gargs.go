@@ -89,17 +89,18 @@ func (ags *Arguments) ParseArgs(args []string) (err error) {
  * command arguments
  *************************************************************/
 
-// AddArg binding an named argument for the command.
+// AddArg binding a named argument for the command.
 //
 // Notice:
-// 	- Required argument cannot be defined after optional argument
-//  - Only one array parameter is allowed
-// 	- The (array) argument of multiple values can only be defined at the end
+//   - Required argument cannot be defined after optional argument
+//   - Only one array parameter is allowed
+//   - The (array) argument of multiple values can only be defined at the end
 //
 // Usage:
-// 	cmd.AddArg("name", "description")
-// 	cmd.AddArg("name", "description", true) // required
-// 	cmd.AddArg("names", "description", true, true) // required and is arrayed
+//
+//	cmd.AddArg("name", "description")
+//	cmd.AddArg("name", "description", true) // required
+//	cmd.AddArg("names", "description", true, true) // required and is arrayed
 func (ags *Arguments) AddArg(name, desc string, requiredAndArrayed ...bool) *Argument {
 	newArg := NewArgument(name, desc, requiredAndArrayed...)
 	return ags.AddArgument(newArg)
@@ -127,10 +128,9 @@ func (ags *Arguments) BindArg(arg *Argument) *Argument {
 // AddArgument binding a named argument for the command.
 //
 // Notice:
-// 	- Required argument cannot be defined after optional argument
-//  - Only one array parameter is allowed
-// 	- The (array) argument of multiple values can only be defined at the end
-//
+//   - Required argument cannot be defined after optional argument
+//   - Only one array parameter is allowed
+//   - The (array) argument of multiple values can only be defined at the end
 func (ags *Arguments) AddArgument(arg *Argument) *Argument {
 	if ags.argsIndexes == nil {
 		ags.argsIndexes = make(map[string]int)
@@ -191,9 +191,10 @@ func (ags *Arguments) HasArguments() bool {
 // Arg get arg by defined name.
 //
 // Usage:
-// 	intVal := ags.Arg("name").Int()
-// 	strVal := ags.Arg("name").String()
-// 	arrVal := ags.Arg("names").Array()
+//
+//	intVal := ags.Arg("name").Int()
+//	strVal := ags.Arg("name").String()
+//	arrVal := ags.Arg("names").Array()
 func (ags *Arguments) Arg(name string) *Argument {
 	i, ok := ags.argsIndexes[name]
 	if !ok {
@@ -228,7 +229,7 @@ type Argument struct {
 	ShowName string
 	// Required arg is required
 	Required bool
-	// Arrayed if is array, can allow accept multi values, and must in last.
+	// Arrayed if is array, can allow to accept multi values, and must in last.
 	Arrayed bool
 
 	// Handler custom argument value handler on call GetValue()
