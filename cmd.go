@@ -443,7 +443,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 		name := args[0]
 
 		// ensure is not an option
-		if name[0] != '-' {
+		if name != "" && name[0] != '-' {
 			name = c.ResolveAlias(name)
 
 			// is valid sub command
@@ -452,7 +452,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 				return sub.innerDispatch(args[1:])
 			}
 
-			// no arguments, name is not founded subcommand
+			// is not a sub command and has no arguments -> error
 			if !c.HasArguments() {
 				// fire events
 				if stop := c.Fire(EvtCmdSubNotFound, name); stop {
@@ -464,8 +464,6 @@ func (c *Command) innerDispatch(args []string) (err error) {
 
 				color.Error.Tips("subcommand '%s' - not found on the command", name)
 			}
-		} else {
-			name = "" // reset var
 		}
 	}
 
