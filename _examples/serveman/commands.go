@@ -23,7 +23,7 @@ type Config struct {
 }
 
 var (
-	config *Config
+	config = New(Config)
 	// config file
 	confFile string
 )
