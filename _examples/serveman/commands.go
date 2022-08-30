@@ -9,8 +9,9 @@ import (
 	"github.com/gookit/gcli/v3"
 )
 
+// Config struct
 type Config struct {
-	// will exec command. eg. "go run main.go"
+	// will exec command. eg: "go run main.go"
 	Cmd string `json:"cmd"`
 	// serve name for will exec command
 	Name string `json:"name"`
@@ -23,7 +24,7 @@ type Config struct {
 }
 
 var (
-	config = New(Config)
+	config = new(Config)
 	// config file
 	confFile string
 )

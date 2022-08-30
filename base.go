@@ -82,7 +82,7 @@ func (c core) innerHelpVars() map[string]string {
 }
 
 // simple map[string]interface{} struct
-// TODO use structs.MapDataStore
+// TODO use structs.DataStore
 type mapData struct {
 	data map[string]interface{}
 }

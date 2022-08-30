@@ -146,13 +146,13 @@ func parseNamedRule(name, rule string) (mp map[string]string) {
 
 // struct tag value use simple rule. each item split by ';'
 //
-// format: "desc;required;default;shorts"
+//   - format: "desc;required;default;shorts"
 //
 // eg:
 //
-//		"int option message;required;i"
-//	 "int option message;;a,b"
-//	 "int option message;;a,b;23"
+//	"int option message;required;i"
+//	"int option message;;a,b"
+//	"int option message;;a,b;23"
 //
 // returns field name:
 //
