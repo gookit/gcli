@@ -635,12 +635,10 @@ func (app *App) showCommandTips(name string) {
 }
 
 // AppHelpTemplate help template for app(all commands)
-// TODO {{if .HasSubcommands }}  {$binName} [global options...] <info>COMMAND</> [--options ...] <info>SUBCOMMAND</> [--options ...] [arguments ...]
-// {{end}}
 var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
 <comment>Usage:</>
-  {$binName} [global options...] <info>COMMAND</> [--options ...] [arguments ...]
-  {$binName} [global options...] <info>COMMAND</> [--options ...] <info>SUBCOMMAND</> [--options ...] [arguments ...]
+  {$binName} [global options...] <info>COMMAND</> [--options ...] [arguments ...]{{if .HasSubs }}
+  {$binName} [global options...] <info>COMMAND</> [--options ...] <info>SUBCOMMAND</> [--options ...] [arguments ...]{{end}}
 
 <comment>Global Options:</>
 {{.GOpts}}
@@ -662,6 +660,7 @@ func (app *App) showApplicationHelp() {
 		"GOpts": app.gFlags.String(),
 		// app version
 		"Version": app.Version,
+		"HasSubs": app.hasSubcommands,
 		// always upper first char
 		"Desc": strutil.UpperFirst(app.Desc),
 	}, template.FuncMap{
