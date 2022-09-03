@@ -4,7 +4,7 @@ import "github.com/gookit/gcli/v3/show/symbols"
 
 // some constants
 const (
-	// position
+	// Left position
 	Left = iota
 	Middle
 	Right

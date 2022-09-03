@@ -134,6 +134,7 @@ func NewItems(data interface{}) *Items {
 			keyWidth = item.maxLen(keyWidth)
 		}
 	case reflect.Struct:
+		// structs.ToMap()
 		rt := rv.Type()
 		for i := 0; i < rt.NumField(); i++ {
 			ft := rt.Field(i)

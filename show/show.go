@@ -49,31 +49,34 @@ func JSON(v interface{}, settings ...string) int {
 // AList create a List instance and print.
 //
 // Usage:
-// 	show.AList("some info", map[string]string{"name": "tom"}, nil)
-func AList(title string, data interface{}, optFn func(opts *ListOption)) {
-	NewList(title, data).WithOptions(optFn).Println()
+//
+//	show.AList("some info", map[string]string{"name": "tom"})
+func AList(title string, data interface{}, fns ...ListOpFunc) {
+	NewList(title, data).WithOptionFns(fns).Println()
 }
 
 // MList show multi list data.
 //
 // Usage:
-// 	show.MList(data, nil)
-// 	show.MList(data, func(opts *ListOption) {
-// 		opts.LeftIndent = "    "
-// 	})
-func MList(listMap map[string]interface{}, fn func(opts *ListOption)) {
-	NewLists(listMap).WithOptions(fn).Println()
+//
+//	show.MList(data)
+//	show.MList(data, func(opts *ListOption) {
+//		opts.LeftIndent = "    "
+//	})
+func MList(listMap map[string]interface{}, fns ...ListOpFunc) {
+	NewLists(listMap).WithOptionFns(fns).Println()
 }
 
 // TabWriter create.
 // more please see: package text/tabwriter/example_test.go
 //
 // Usage:
-// 	w := TabWriter(os.Stdout, []string{
-// 		"a\tb\tc\td\t.",
-// 		"123\t12345\t1234567\t123456789\t."
-// 	})
-// 	w.Flush()
+//
+//	w := TabWriter(os.Stdout, []string{
+//		"a\tb\tc\td\t.",
+//		"123\t12345\t1234567\t123456789\t."
+//	})
+//	w.Flush()
 func TabWriter(outTo io.Writer, rows []string) *tabwriter.Writer {
 	w := tabwriter.NewWriter(outTo, 0, 4, 2, ' ', tabwriter.Debug)
 

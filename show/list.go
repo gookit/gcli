@@ -19,12 +19,15 @@ type ListOption struct {
 	UpperFirst  bool
 	SepChar     string // split key value
 	LeftIndent  string
-	KeyWidth    int // if not set, will auto detect.
+	KeyWidth    int // if not set, will be auto-detected.
 	KeyMinWidth int
 	KeyStyle    string
 	ValueStyle  string
 	TitleStyle  string
 }
+
+// ListOpFunc define
+type ListOpFunc func(opts *ListOption)
 
 /*************************************************************
  * List
@@ -33,7 +36,8 @@ type ListOption struct {
 // List definition
 //
 // String len:
-// 	len("你好"), len("hello"), len("hello你好") -> 6 5 11
+//
+//	len("你好"), len("hello"), len("hello你好") -> 6 5 11
 type List struct {
 	Base // use for internal
 	// options
@@ -51,9 +55,13 @@ func (l *List) SetBuffer(buffer *bytes.Buffer) {
 	l.buffer = buffer
 }
 
-// NewList instance
-func NewList(title string, data interface{}) *List {
-	return &List{
+// NewList instance.
+//
+// data allow type:
+//
+//	struct, slice, array, map
+func NewList(title string, data interface{}, fns ...ListOpFunc) *List {
+	l := &List{
 		title: title,
 		data:  data,
 		// base
@@ -69,14 +77,23 @@ func NewList(title string, data interface{}) *List {
 			TitleStyle:  "comment",
 		},
 	}
+
+	return l.WithOptionFns(fns)
+}
+
+// WithOptionFns with options func
+func (l *List) WithOptionFns(fns []ListOpFunc) *List {
+	for _, fn := range fns {
+		if fn != nil {
+			fn(l.Opts)
+		}
+	}
+	return l
 }
 
 // WithOptions with options func
-func (l *List) WithOptions(fn func(opts *ListOption)) *List {
-	if fn != nil {
-		fn(l.Opts)
-	}
-	return l
+func (l *List) WithOptions(fns ...ListOpFunc) *List {
+	return l.WithOptionFns(fns)
 }
 
 // Format as string
@@ -190,7 +207,7 @@ type Lists struct {
 }
 
 // NewLists create lists
-func NewLists(listMap map[string]interface{}) *Lists {
+func NewLists(listMap map[string]interface{}, fns ...ListOpFunc) *Lists {
 	ls := &Lists{
 		Opts: &ListOption{
 			SepChar:  " ",
@@ -206,15 +223,20 @@ func NewLists(listMap map[string]interface{}) *Lists {
 	for title, data := range listMap {
 		ls.rows = append(ls.rows, NewList(title, data))
 	}
-	return ls
+	return ls.WithOptionFns(fns)
 }
 
-// WithOptions with options func
-func (ls *Lists) WithOptions(fn func(opts *ListOption)) *Lists {
-	if fn != nil {
+// WithOptionFns with options func
+func (ls *Lists) WithOptionFns(fns []ListOpFunc) *Lists {
+	for _, fn := range fns {
 		fn(ls.Opts)
 	}
 	return ls
+}
+
+// WithOptions with options func list
+func (ls *Lists) WithOptions(fns ...ListOpFunc) *Lists {
+	return ls.WithOptionFns(fns)
 }
 
 // Format as string

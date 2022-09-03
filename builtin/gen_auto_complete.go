@@ -99,7 +99,7 @@ func doGen(c *gcli.Command, _ []string) (err error) {
 		"FileName": genOpts.output,
 	}
 
-	show.AList("Information", data, nil)
+	show.AList("Information", data)
 
 	if interact.Unconfirmed("Please confirm the above information", true) {
 		color.Info.Print("\nBye :)\n")

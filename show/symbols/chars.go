@@ -1,7 +1,9 @@
 package symbols
 
 // links:
-//  http://cn.piliapp.com/symbol/
+//
+//	http://cn.piliapp.com/symbol/
+//
 // 卍 卐 ■ ▶ ☐☑☒ ❖
 const (
 	OK  = '✔'
@@ -23,7 +25,7 @@ const (
 	FLOWER = '✿'
 	MUSIC  = '♬'
 
-	// ☚ ☜ ☛ ☞
+	// UP ☚ ☜ ☛ ☞
 	UP     = '⇧'
 	DOWN   = '⇩'
 	LEFT   = '⇦'
@@ -51,9 +53,19 @@ const (
 	Equal1 rune = '═'
 	Space  rune = ' '
 	// Hyphen Minus
-	Hyphen     rune = '-'
-	CNHyphen   rune = '—'
+	Hyphen   rune = '-' // eg: -------
+	CNHyphen rune = '—' // eg: —————
+	Hyphen2  rune = '─' // eg: ────
+
 	Underline  rune = '_'
 	LeftArrow  rune = '<'
 	RightArrow rune = '>'
+
+	VLine     rune = '|'
+	VLineFull rune = '│'
+
+	// TChar eg TChar + Hyphen2: ──┬──
+	TChar rune = '┬'
+	// CCChar criss-cross
+	CCChar rune = '┼'
 )
