@@ -15,7 +15,7 @@ import (
 type Select struct {
 	// Title message for select. e.g "Your city?"
 	Title string
-	// Options the options data for select. allow: []int,[]string,map[string]string
+	// Options the items data for select. allow: []int, []string, map[string]string
 	Options any
 	// DefOpt default option when not input answer
 	DefOpt string
@@ -41,10 +41,10 @@ type Select struct {
 //	r := s.Run()
 //	key := r.KeyString() // "1"
 //	val := r.String() // "beijing"
-func NewSelect(title string, options any) *Select {
+func NewSelect(title string, items any) *Select {
 	return &Select{
 		Title:   title,
-		Options: options,
+		Options: items,
 	}
 }
 

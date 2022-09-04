@@ -58,8 +58,7 @@ DoASK:
 
 	// has validator func
 	if q.Func != nil {
-		err := q.Func(ans)
-		if err != nil {
+		if err := q.Func(ans); err != nil {
 			q.checkErrTimes()
 			echoErr(err.Error())
 			goto DoASK

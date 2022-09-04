@@ -15,10 +15,10 @@ import (
 // ReadInput read user input form Stdin
 func ReadInput(question string) (string, error) {
 	if len(question) > 0 {
-		color.Print(question)
+		color.Fprint(Output, question)
 	}
 
-	scanner := bufio.NewScanner(os.Stdin)
+	scanner := bufio.NewScanner(Input)
 	if !scanner.Scan() { // reading
 		return "", scanner.Err()
 	}
@@ -34,10 +34,10 @@ func ReadInput(question string) (string, error) {
 //	ans, _ := ReadLine("your name?")
 func ReadLine(question string) (string, error) {
 	if len(question) > 0 {
-		color.Print(question)
+		color.Fprint(Output, question)
 	}
 
-	reader := bufio.NewReader(os.Stdin)
+	reader := bufio.NewReader(Input)
 	answer, _, err := reader.ReadLine()
 	return strings.TrimSpace(string(answer)), err
 }
@@ -91,7 +91,7 @@ func AnswerIsYes(defVal ...bool) bool {
 		return defVal[0]
 	}
 
-	fmt.Print("Please try again")
+	_, _ = fmt.Fprint(Output, "Please try again")
 	return AnswerIsYes()
 }
 

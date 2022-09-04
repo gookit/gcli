@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"context"
 	"fmt"
-	"os"
 	"strings"
 )
 
@@ -16,14 +15,16 @@ type result struct {
 // Prompt query and read user answer.
 //
 // Usage:
-// 	answer,err := Prompt(context.TODO(), "your name?", "")
+//
+//	answer,err := Prompt(context.Background(), "your name?", "")
+//
 // from package golang.org/x/tools/cmd/getgo
 func Prompt(ctx context.Context, query, defaultAnswer string) (string, error) {
-	fmt.Printf("%s [%s]: ", query, defaultAnswer)
+	_, _ = fmt.Fprintf(Output, "%s [%s]: ", query, defaultAnswer)
 
 	ch := make(chan result, 1)
 	go func() {
-		s := bufio.NewScanner(os.Stdin)
+		s := bufio.NewScanner(Input)
 		if !s.Scan() { // reading
 			ch <- result{"", s.Err()}
 			return
