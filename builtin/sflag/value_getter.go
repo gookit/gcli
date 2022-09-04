@@ -9,7 +9,7 @@ import (
 // ValueGetter struct
 type ValueGetter struct {
 	// value store parsed argument data. (type: string, []string)
-	Value interface{}
+	Value any
 	// is array
 	Arrayed bool
 }

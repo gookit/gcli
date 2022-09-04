@@ -32,7 +32,7 @@ var EnvInfo = &gcli.Command{
 	Func: func(c *gcli.Command, _ []string) error {
 		eAble, _ := os.Executable()
 
-		data := map[string]interface{}{
+		data := map[string]any{
 			"os":       runtime.GOOS,
 			"binName":  c.BinName(),
 			"workDir":  c.WorkDir(),

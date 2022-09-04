@@ -21,7 +21,7 @@ func main() {
 	app := gcli.NewApp(func(app *gcli.App) {
 		app.Version = "3.0.0"
 		app.Desc = "this is my cli application"
-		app.On(gcli.EvtAppInit, func(data ...interface{}) bool {
+		app.On(gcli.EvtAppInit, func(data ...any) bool {
 			// do something...
 			// fmt.Println("init app")
 			return false

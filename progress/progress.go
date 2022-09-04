@@ -23,12 +23,13 @@ type Progresser interface {
 	Advance(steps ...uint)
 	AdvanceTo(step uint)
 	Finish(msg ...string)
-	Bound() interface{}
+	Bound() any
 }
 
 // Progress definition
 // Refer:
-// 	https://github.com/inhere/php-console/blob/master/src/utils/ProgressBar.php
+//
+//	https://github.com/inhere/php-console/blob/master/src/utils/ProgressBar.php
 type Progress struct {
 	// Format string the bar format
 	Format string
@@ -52,7 +53,7 @@ type Progress struct {
 	// current step value
 	step uint
 	// bound user custom data.
-	bound interface{}
+	bound any
 	// mark start status
 	started bool
 	// completed percent. eg: "83.8"
@@ -139,13 +140,13 @@ func (p *Progress) WithMaxSteps(maxSteps ...int) *Progress {
 }
 
 // Binding user custom data to instance
-func (p *Progress) Binding(data interface{}) *Progress {
+func (p *Progress) Binding(data any) *Progress {
 	p.bound = data
 	return p
 }
 
 // Bound get bound sub struct instance
-func (p *Progress) Bound() interface{} {
+func (p *Progress) Bound() any {
 	return p.bound
 }
 

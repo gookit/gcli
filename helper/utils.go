@@ -24,7 +24,7 @@ var (
 )
 
 // RenderText render text template with data
-func RenderText(input string, data interface{}, fns template.FuncMap, isFile ...bool) string {
+func RenderText(input string, data any, fns template.FuncMap, isFile ...bool) string {
 	t := template.New("cli")
 	t.Funcs(template.FuncMap{
 		// don't escape content

@@ -10,7 +10,7 @@ import (
 )
 
 var pdOpts = struct {
-	maxSteps  int
+	maxSteps          int
 	overwrite, random bool
 
 	handlers map[string]func(int)
@@ -31,7 +31,7 @@ var ProgressDemo = &gcli.Command{
 			Desc: "progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
 
 			Required: true,
-			// Validator: func(val interface{}) (interface{}, error) {
+			// Validator: func(val any) (any, error) {
 			// 	name := val.(string)
 			// },
 		})

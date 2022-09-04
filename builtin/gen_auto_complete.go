@@ -93,7 +93,7 @@ func doGen(c *gcli.Command, _ []string) (err error) {
 	}
 
 	// color.Info.Tips("\n  %+v\n", genOpts)
-	data := map[string]interface{}{
+	data := map[string]any{
 		"Shell":    genOpts.shell,
 		"BinName":  genOpts.binName,
 		"FileName": genOpts.output,
@@ -172,7 +172,7 @@ _complete_for_{{.BinName}} () {
 complete -F _complete_for_{{.BinName}} {{.BinName}} {{.BinName}}.exe
 `
 
-func buildForBashShell(app *gcli.App, data map[string]interface{}) map[string]interface{} {
+func buildForBashShell(app *gcli.App, data map[string]any) map[string]any {
 	var cNames []string
 
 	// {cmd name: opts}
@@ -264,7 +264,7 @@ compdef _complete_for_{{.BinName}} {{.BinName}}
 compdef _complete_for_{{.BinName}} {{.BinName}}.exe
 `
 
-func buildForZshShell(app *gcli.App, data map[string]interface{}) map[string]interface{} {
+func buildForZshShell(app *gcli.App, data map[string]any) map[string]any {
 	type opInfos []string
 
 	// {cmd name: cmd des}. in zsh eg: 'build[compile packages and dependencies]'

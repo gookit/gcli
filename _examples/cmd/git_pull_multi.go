@@ -26,7 +26,7 @@ var GitPullMulti = &gcli.Command{
 			true,
 		).
 			WithValue("./").
-			WithValidator(func(v interface{}) (i interface{}, e error) {
+			WithValidator(func(v any) (i any, e error) {
 				if !fsutil.IsDir(v.(string)) {
 					return nil, fmt.Errorf("the base path must be an exist dir")
 				}

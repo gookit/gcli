@@ -29,9 +29,9 @@ type ArgsParser struct {
 	// raw args length
 	length int
 	// parsed longs options. value allow: bool, string, array
-	longOpts map[string]interface{}
+	longOpts map[string]any
 	// parsed shorts options. value allow: bool, string, array
-	shortOpts map[string]interface{}
+	shortOpts map[string]any
 	// parsed arguments
 	args []string
 }
@@ -58,8 +58,8 @@ func ParseArgs(args []string, boolOpts []string, arrayOpts []string) *ArgsParser
 }
 
 // Opts get parsed opts
-func (p *ArgsParser) Opts() map[string]interface{} {
-	return map[string]interface{}{
+func (p *ArgsParser) Opts() map[string]any {
+	return map[string]any{
 		"longs":  p.longOpts,
 		"shorts": p.shortOpts,
 	}
@@ -84,8 +84,8 @@ func (p *ArgsParser) prepare() {
 		p.arrayOpts = p.flipSlice(p.ArrayOpts)
 	}
 
-	p.longOpts = make(map[string]interface{})
-	p.shortOpts = make(map[string]interface{})
+	p.longOpts = make(map[string]any)
+	p.shortOpts = make(map[string]any)
 }
 
 /*************************************************************
@@ -95,13 +95,14 @@ func (p *ArgsParser) prepare() {
 // Parse args list to options
 //
 // Supports options format:
-// 	-e  // bool, short option
-// 	-e <value> // short option
-// 	-e=<value>
-// 	-aux // multi short bool options
-// 	--bool-opt // bool, lang option
-// 	--long-opt <value> // lang option
-// 	--long-opt=<value>
+//
+//	-e  // bool, short option
+//	-e <value> // short option
+//	-e=<value>
+//	-aux // multi short bool options
+//	--bool-opt // bool, lang option
+//	--long-opt <value> // lang option
+//	--long-opt=<value>
 func (p *ArgsParser) Parse(args []string) {
 	p.rawArgs = args
 	p.prepare()
