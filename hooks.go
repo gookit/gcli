@@ -3,7 +3,43 @@ package gcli
 import (
 	"context"
 
+	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/goutil/maputil"
+)
+
+// constants for hooks event, there are default allowed event names
+const (
+	EvtAppInit = events.OnAppInit
+
+	EvtAppPrepareAfter = events.OnAppPrepareAfter
+
+	EvtAppRunBefore = events.OnAppRunBefore
+	EvtAppRunAfter  = events.OnAppRunAfter
+	EvtAppRunError  = events.OnAppRunError
+
+	EvtCmdInit = events.OnCmdInit
+
+	// EvtCmdNotFound app or sub command not found
+	EvtCmdNotFound = events.OnCmdNotFound
+	// EvtAppCmdNotFound app command not found
+	EvtAppCmdNotFound = events.OnAppCmdNotFound
+	// EvtCmdSubNotFound sub command not found
+	EvtCmdSubNotFound = events.OnCmdSubNotFound
+
+	EvtCmdOptParsed = events.OnCmdOptParsed
+
+	// EvtCmdRunBefore cmd run
+	EvtCmdRunBefore = events.OnCmdRunBefore
+	EvtCmdRunAfter  = events.OnCmdRunAfter
+	EvtCmdRunError  = events.OnCmdRunError
+
+	// EvtCmdExecBefore cmd exec
+	EvtCmdExecBefore = events.OnCmdExecBefore
+	EvtCmdExecAfter  = events.OnCmdExecAfter
+	EvtCmdExecError  = events.OnCmdExecError
+
+	EvtGOptionsParsed = events.OnGOptionsParsed
+	// EvtStop   = "stop"
 )
 
 /*************************************************************

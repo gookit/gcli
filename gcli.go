@@ -38,41 +38,6 @@ const (
 	VerbCrazy
 )
 
-// constants for hooks event, there are default allowed event names
-const (
-	EvtAppInit = "app.init"
-
-	EvtAppPrepareAfter = "app.prepare.after"
-
-	EvtAppRunBefore = "app.run.before"
-	EvtAppRunAfter  = "app.run.after"
-	EvtAppRunError  = "app.run.error"
-
-	EvtCmdInit = "cmd.init"
-
-	// EvtCmdNotFound app or sub command not found
-	EvtCmdNotFound = "cmd.not.found"
-	// EvtAppCmdNotFound app command not found
-	EvtAppCmdNotFound = "app.cmd.not.found"
-	// EvtCmdSubNotFound sub command not found
-	EvtCmdSubNotFound = "cmd.sub.not.found"
-
-	EvtCmdOptParsed = "cmd.opts.parsed"
-
-	// EvtCmdRunBefore cmd run
-	EvtCmdRunBefore = "cmd.run.before"
-	EvtCmdRunAfter  = "cmd.run.after"
-	EvtCmdRunError  = "cmd.run.error"
-
-	// EvtCmdExecBefore cmd exec
-	EvtCmdExecBefore = "cmd.exec.before"
-	EvtCmdExecAfter  = "cmd.exec.after"
-	EvtCmdExecError  = "cmd.exec.error"
-
-	EvtGOptionsParsed = "gcli.gopts.parsed"
-	// EvtStop   = "stop"
-)
-
 var (
 	// CLI create an default instance
 	CLI = newCmdLine()

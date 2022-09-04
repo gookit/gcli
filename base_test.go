@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/testutil/assert"
 )
@@ -25,32 +26,32 @@ func TestApp_Hooks_EvtAppInit(t *testing.T) {
 	buf.Reset()
 
 	cli := newNotExitApp()
-	cli.On(gcli.EvtAppInit, func(data ...any) bool {
-		buf.WriteString("trigger " + gcli.EvtAppInit)
+	cli.On(events.OnAppInit, func(ctx *gcli.HookCtx) bool {
+		buf.WriteString("trigger " + events.OnAppInit)
 		return false
 	})
 	cli.Add(simpleCmd)
-	assert.Eq(t, "trigger "+gcli.EvtAppInit, buf.String())
+	assert.Eq(t, "trigger "+events.OnAppInit, buf.String())
 
 	buf.Reset()
-	cli.On(gcli.EvtGOptionsParsed, func(data ...any) bool {
-		buf.WriteString("trigger " + gcli.EvtGOptionsParsed + ", args:" + fmt.Sprintf("%v", data[1]))
+	cli.On(events.OnGOptionsParsed, func(ctx *gcli.HookCtx) bool {
+		buf.WriteString("trigger " + ctx.Name() + ", args:" + fmt.Sprintf("%v", ctx.Strings("args")))
 		return false
 	})
+
 	cli.Run([]string{"simple"})
-	assert.Eq(t, "trigger "+gcli.EvtGOptionsParsed+", args:[simple]", buf.String())
+	assert.Eq(t, "trigger "+events.OnGOptionsParsed+", args:[simple]", buf.String())
 }
 
 func TestApp_Hooks_EvtCmdInit(t *testing.T) {
 	buf.Reset()
 
 	cli := newNotExitApp()
-	cli.On(gcli.EvtCmdInit, func(data ...any) (stop bool) {
-		buf.WriteString(gcli.EvtCmdInit)
+	cli.On(events.OnCmdInit, func(ctx *gcli.HookCtx) (stop bool) {
+		buf.WriteString(events.OnCmdInit)
 		buf.WriteString(":")
 
-		c := data[1].(*gcli.Command)
-		buf.WriteString(c.Name + ";")
+		buf.WriteString(ctx.Cmd.Name + ";")
 		return
 	})
 
@@ -70,9 +71,9 @@ func TestCommand_Hooks_EvtCmdOptParsed(t *testing.T) {
 		Desc: "desc",
 		Config: func(c *gcli.Command) {
 			buf.WriteString("run config;")
-			c.On(gcli.EvtCmdOptParsed, func(data ...any) (stop bool) {
-				dump.P(data[1])
-				buf.WriteString(gcli.EvtCmdOptParsed)
+			c.On(events.OnCmdOptParsed, func(ctx *gcli.HookCtx) (stop bool) {
+				dump.P(ctx.Strings("args"))
+				buf.WriteString(ctx.Name())
 				return
 			})
 		},
@@ -80,7 +81,7 @@ func TestCommand_Hooks_EvtCmdOptParsed(t *testing.T) {
 	assert.Contains(t, buf.String(), "run config;")
 
 	cli.Run([]string{"test"})
-	assert.Contains(t, buf.String(), gcli.EvtCmdOptParsed)
+	assert.Contains(t, buf.String(), events.OnCmdOptParsed)
 }
 
 func TestApp_On_CmdNotFound(t *testing.T) {
@@ -90,9 +91,9 @@ func TestApp_On_CmdNotFound(t *testing.T) {
 	cli.Add(simpleCmd)
 
 	fmt.Println("--------- will print command tips ----------")
-	cli.On(gcli.EvtCmdNotFound, func(data ...any) bool {
-		buf.WriteString("trigger: " + gcli.EvtCmdNotFound)
-		buf.WriteString("; command: " + fmt.Sprint(data[1]))
+	cli.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) bool {
+		buf.WriteString("trigger: " + events.OnCmdNotFound)
+		buf.WriteString("; command: " + ctx.Str("name"))
 		return false
 	})
 
@@ -101,9 +102,9 @@ func TestApp_On_CmdNotFound(t *testing.T) {
 	buf.Reset()
 
 	fmt.Println("--------- dont print command tips ----------")
-	cli.On(gcli.EvtCmdNotFound, func(data ...any) bool {
-		buf.WriteString("trigger: " + gcli.EvtCmdNotFound)
-		buf.WriteString("; command: " + fmt.Sprint(data[1]))
+	cli.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) bool {
+		buf.WriteString("trigger: " + events.OnCmdNotFound)
+		buf.WriteString("; command: " + ctx.Str("name"))
 		return true
 	})
 
@@ -120,13 +121,12 @@ func TestApp_On_CmdNotFound_redirect(t *testing.T) {
 	cli.Add(simpleCmd)
 
 	fmt.Println("--------- redirect to run another command ----------")
-	cli.On(gcli.EvtCmdNotFound, func(data ...any) bool {
-		buf.WriteString("trigger:" + gcli.EvtCmdNotFound)
-		buf.WriteString(" - command:" + fmt.Sprint(data[1]))
+	cli.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) bool {
+		buf.WriteString("trigger:" + events.OnCmdNotFound)
+		buf.WriteString(" - command:" + ctx.Str("name"))
 		buf.WriteString("; redirect:simple - ")
 
-		app := data[0].(*gcli.App)
-		err := app.Exec("simple", nil)
+		err := ctx.App.Exec("simple", nil)
 		assert.NoErr(t, err)
 		buf.WriteString("value:" + simpleCmd.StrValue("simple"))
 		return true
