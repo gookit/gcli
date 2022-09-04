@@ -10,6 +10,8 @@ type StepHandler func(ctx context.Context) error
 
 // StepsRun follow the steps to run
 type StepsRun struct {
+	// record error
+	err error
 	// mark is stopped
 	stopped bool
 	// steps length
@@ -24,8 +26,6 @@ type StepsRun struct {
 	// 	func(ctx context.Context) { do something.}
 	// }
 	Steps []StepHandler
-	// record error
-	err error
 }
 
 // Run all steps
@@ -36,7 +36,7 @@ func (s *StepsRun) Run() {
 
 	s.length = len(s.Steps)
 	if s.length == 0 {
-		s.err = fmt.Errorf("no step need to running")
+		s.err = fmt.Errorf("no step handlers need to running")
 		return
 	}
 

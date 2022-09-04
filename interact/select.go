@@ -16,7 +16,7 @@ type Select struct {
 	// Title message for select. e.g "Your city?"
 	Title string
 	// Options the options data for select. allow: []int,[]string,map[string]string
-	Options interface{}
+	Options any
 	// DefOpt default option when not input answer
 	DefOpt string
 	// DefOpts use for `MultiSelect` is true
@@ -36,11 +36,12 @@ type Select struct {
 // NewSelect instance.
 //
 // Usage:
-// 	s := NewSelect("Your city?", []string{"chengdu", "beijing"})
-// 	r := s.Run()
-// 	key := r.KeyString() // "1"
-// 	val := r.String() // "beijing"
-func NewSelect(title string, options interface{}) *Select {
+//
+//	s := NewSelect("Your city?", []string{"chengdu", "beijing"})
+//	r := s.Run()
+//	key := r.KeyString() // "1"
+//	val := r.String() // "beijing"
+func NewSelect(title string, options any) *Select {
 	return &Select{
 		Title:   title,
 		Options: options,
@@ -54,7 +55,7 @@ func (s *Select) prepare() (keys []string) {
 	}
 
 	s.valMap = make(map[string]string)
-	handleArrItem := func(i int, v interface{}) {
+	handleArrItem := func(i int, v any) {
 		nv := fmt.Sprint(i)
 		s.valMap[nv] = fmt.Sprint(v)
 		keys = append(keys, nv)

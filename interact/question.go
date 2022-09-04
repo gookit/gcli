@@ -9,7 +9,7 @@ import (
 
 // Question definition
 type Question struct {
-	// Q the question string
+	// Q the question message
 	Q string
 	// Func validate user input answer is right.
 	// if not set, will only check answer is empty.
@@ -22,35 +22,19 @@ type Question struct {
 }
 
 // NewQuestion instance.
+//
 // Usage:
-// 	q := NewQuestion("Please input your name?")
-// 	ans := q.Run().String()
+//
+//	q := NewQuestion("Please input your name?")
+//	ans := q.Run().String()
 func NewQuestion(q string, defVal ...string) *Question {
 	if len(defVal) > 0 {
 		return &Question{Q: q, DefVal: defVal[0]}
 	}
-
 	return &Question{Q: q}
 }
 
-func (q *Question) render() {
-	q.Q = strings.TrimSpace(q.Q)
-	if q.Q == "" {
-		exitWithErr("(interact.Question) must provide question message")
-	}
-
-	var defMsg string
-
-	q.DefVal = strings.TrimSpace(q.DefVal)
-	if q.DefVal != "" {
-		defMsg = fmt.Sprintf("[default:%s]", color.Green.Render(q.DefVal))
-	}
-
-	// print question
-	fmt.Printf("%s%s\n", color.Comment.Render(q.Q), defMsg)
-}
-
-// Run run and returns value
+// Run and returns value
 func (q *Question) Run() *Value {
 	q.render()
 	echoErr := color.Error.Println
@@ -64,7 +48,7 @@ DoASK:
 	// don't input
 	if ans == "" {
 		if q.DefVal != "" { // has default value
-			return &Value{q.DefVal}
+			return &Value{V: q.DefVal}
 		}
 
 		q.checkErrTimes()
@@ -82,7 +66,24 @@ DoASK:
 		}
 	}
 
-	return &Value{ans}
+	return &Value{V: ans}
+}
+
+func (q *Question) render() {
+	q.Q = strings.TrimSpace(q.Q)
+	if q.Q == "" {
+		exitWithErr("(interact.Question) must provide question message")
+	}
+
+	var defMsg string
+
+	q.DefVal = strings.TrimSpace(q.DefVal)
+	if q.DefVal != "" {
+		defMsg = fmt.Sprintf("[default:%s]", color.Green.Render(q.DefVal))
+	}
+
+	// print question
+	fmt.Printf("%s%s\n", color.Comment.Render(q.Q), defMsg)
 }
 
 func (q *Question) checkErrTimes() {

@@ -23,14 +23,15 @@ func ReadInput(question string) (string, error) {
 		return "", scanner.Err()
 	}
 
-	answer := scanner.Text()
-	return strings.TrimSpace(answer), nil
+	return strings.TrimSpace(scanner.Text()), nil
 }
 
 // ReadLine read one line from user input.
+//
 // Usage:
-// 	in := ReadLine("")
-// 	ans, _ := ReadLine("your name?")
+//
+//	in := ReadLine("")
+//	ans, _ := ReadLine("your name?")
 func ReadLine(question string) (string, error) {
 	if len(question) > 0 {
 		color.Print(question)
@@ -52,10 +53,12 @@ func ReadFirst(question string) (string, error) {
 }
 
 // AnswerIsYes check user inputted answer is right
+//
 // Usage:
-// 	fmt.Print("are you OK?")
-// 	ok := AnswerIsYes()
-// 	ok := AnswerIsYes(true)
+//
+//	fmt.Print("are you OK?")
+//	ok := AnswerIsYes()
+//	ok := AnswerIsYes(true)
 func AnswerIsYes(defVal ...bool) bool {
 	mark := " [yes|no]: "
 	if len(defVal) > 0 {
@@ -80,7 +83,8 @@ func AnswerIsYes(defVal ...bool) bool {
 		fChar := strings.ToLower(fChar)
 		if fChar == "y" {
 			return true
-		} else if fChar == "n" {
+		}
+		if fChar == "n" {
 			return false
 		}
 	} else if len(defVal) > 0 { // has default value
@@ -92,9 +96,11 @@ func AnswerIsYes(defVal ...bool) bool {
 }
 
 // GetHiddenInput interactively prompts for input without echoing to the terminal.
+//
 // Usage:
-// 	// askPassword
-// 	pwd := GetHiddenInput("Enter Password:")
+//
+//	// askPassword
+//	pwd := GetHiddenInput("Enter Password:")
 func GetHiddenInput(message string, trimmed bool) string {
 	var err error
 	var input string
@@ -114,7 +120,7 @@ func GetHiddenInput(message string, trimmed bool) string {
 		hasResult = true
 	} else if envutil.IsWin() { // at windows cmd.exe
 		// create a temp VB script file
-		vbFile, err := ioutil.TempFile("", "cliapp")
+		vbFile, err := ioutil.TempFile("", "gcli-pwd")
 		if err != nil {
 			return ""
 		}

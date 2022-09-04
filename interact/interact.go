@@ -1,6 +1,29 @@
 package interact
 
-import "github.com/gookit/color"
+import (
+	"io"
+	"os"
+
+	"github.com/gookit/color"
+)
+
+// the global input output stream
+var (
+	Input  io.Reader = os.Stdin
+	Output io.Writer = os.Stdout
+)
+
+// SetInput stream
+func SetInput(in io.Reader) { Input = in }
+
+// SetOutput stream
+func SetOutput(out io.Writer) { Output = out }
+
+// ResetIO stream
+func ResetIO() {
+	Input = os.Stdin
+	Output = os.Stdout
+}
 
 // Interactive definition
 type Interactive struct {
@@ -12,8 +35,8 @@ func New(name string) *Interactive {
 	return &Interactive{Name: name}
 }
 
-// Option definition
-type Option struct {
+// Options definition
+type Options struct {
 	Quit bool
 	// default value
 	DefVal string
@@ -33,9 +56,10 @@ func Unconfirmed(message string, defVal ...bool) bool {
 // Ask a question and return the result of the input.
 //
 // Usage:
-// 	answer := Ask("Your name?", "", nil)
-// 	answer := Ask("Your name?", "tom", nil)
-// 	answer := Ask("Your name?", "", nil, 3)
+//
+//	answer := Ask("Your name?", "", nil)
+//	answer := Ask("Your name?", "tom", nil)
+//	answer := Ask("Your name?", "", nil, 3)
 func Ask(question, defVal string, fn func(ans string) error, maxTimes ...int) string {
 	q := &Question{Q: question, Func: fn, DefVal: defVal}
 	if len(maxTimes) > 0 {
@@ -51,31 +75,33 @@ func Query(question, defVal string, fn func(ans string) error, maxTimes ...int) 
 }
 
 // Choice is alias of method SelectOne()
-func Choice(title string, options interface{}, defOpt string, allowQuit ...bool) string {
+func Choice(title string, options any, defOpt string, allowQuit ...bool) string {
 	return SelectOne(title, options, defOpt, allowQuit...)
 }
 
 // SingleSelect is alias of method SelectOne()
-func SingleSelect(title string, options interface{}, defOpt string, allowQuit ...bool) string {
+func SingleSelect(title string, options any, defOpt string, allowQuit ...bool) string {
 	return SelectOne(title, options, defOpt, allowQuit...)
 }
 
 // SelectOne select one of the options, returns selected option value
 //
-// map options:
-// 	{
-//    // option value => option name
-//    'a' => 'chengdu',
-//    'b' => 'beijing'
-// 	}
+// Map options:
 //
-// array options:
-// 	{
-//    // only name, value will use index
-//    'chengdu',
-//    'beijing'
-// 	}
-func SelectOne(title string, options interface{}, defOpt string, allowQuit ...bool) string {
+//	{
+//	   	// option value => option name
+//	   	'a' => 'chengdu',
+//	   	'b' => 'beijing'
+//	}
+//
+// Array options:
+//
+//	{
+//	   // only name, value will use index
+//	   'chengdu',
+//	   'beijing'
+//	}
+func SelectOne(title string, options any, defOpt string, allowQuit ...bool) string {
 	s := &Select{Title: title, Options: options, DefOpt: defOpt}
 
 	if len(allowQuit) > 0 {
@@ -86,13 +112,13 @@ func SelectOne(title string, options interface{}, defOpt string, allowQuit ...bo
 }
 
 // Checkbox is alias of method MultiSelect()
-func Checkbox(title string, options interface{}, defOpts []string, allowQuit ...bool) []string {
+func Checkbox(title string, options any, defOpts []string, allowQuit ...bool) []string {
 	return MultiSelect(title, options, defOpts, allowQuit...)
 }
 
 // MultiSelect select multi of the options, returns selected option values.
 // like SingleSelect(), but allow select multi option
-func MultiSelect(title string, options interface{}, defOpts []string, allowQuit ...bool) []string {
+func MultiSelect(title string, options any, defOpts []string, allowQuit ...bool) []string {
 	s := &Select{Title: title, Options: options, DefOpts: defOpts, MultiSelect: true}
 
 	if len(allowQuit) > 0 {

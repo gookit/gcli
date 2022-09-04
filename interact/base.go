@@ -4,10 +4,10 @@ package interact
 import (
 	"fmt"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/structs"
 )
 
 const (
@@ -17,64 +17,18 @@ const (
 	ERR = 2
 )
 
+// ComOptions struct
+type ComOptions struct {
+	// ValidFn check input value
+	ValidFn func(val any) (any, error)
+}
+
+// Value alias of structs.Value
+type Value = structs.Value
+
 // RunFace for interact methods
 type RunFace interface {
 	Run() *Value
-}
-
-// Value data store
-type Value struct {
-	val interface{} // the value(s) of the key(s)
-}
-
-// Set val
-func (v Value) Set(val interface{}) {
-	v.val = val
-}
-
-// Val get
-func (v Value) Val() interface{} {
-	return v.val
-}
-
-// Int value
-func (v Value) Int() (val int) {
-	if v.val == nil {
-		return
-	}
-	switch tpVal := v.val.(type) {
-	case int:
-		return tpVal
-	case string:
-		val, err := strconv.Atoi(tpVal)
-		if err == nil {
-			return val
-		}
-	}
-	return
-}
-
-// String value
-func (v Value) String() string {
-	if v.val == nil {
-		return ""
-	}
-
-	return fmt.Sprintf("%v", v.val)
-}
-
-// Strings value
-func (v Value) Strings() (ss []string) {
-	if v.val == nil {
-		return
-	}
-
-	return v.val.([]string)
-}
-
-// IsEmpty value
-func (v Value) IsEmpty() bool {
-	return v.val == nil
 }
 
 /*************************************************************
@@ -89,10 +43,10 @@ type SelectResult struct {
 }
 
 // create SelectResult create
-func newSelectResult(key, val interface{}) *SelectResult {
+func newSelectResult(key, val any) *SelectResult {
 	return &SelectResult{
-		K:     Value{val: key},
-		Value: Value{val: val},
+		K:     Value{V: key},
+		Value: Value{V: val},
 	}
 }
 
@@ -107,12 +61,12 @@ func (sv *SelectResult) KeyStrings() []string {
 }
 
 // Key value get
-func (sv *SelectResult) Key() interface{} {
+func (sv *SelectResult) Key() any {
 	return sv.K.Val()
 }
 
 // WithKey value
-func (sv *SelectResult) WithKey(key interface{}) *SelectResult {
+func (sv *SelectResult) WithKey(key any) *SelectResult {
 	sv.K.Set(key)
 	return sv
 }
@@ -121,12 +75,12 @@ func (sv *SelectResult) WithKey(key interface{}) *SelectResult {
  * helper methods
  *************************************************************/
 
-func exitWithErr(format string, v ...interface{}) {
+func exitWithErr(format string, v ...any) {
 	color.Error.Tips(format, v...)
 	os.Exit(ERR)
 }
 
-func exitWithMsg(exitCode int, messages ...interface{}) {
+func exitWithMsg(exitCode int, messages ...any) {
 	fmt.Println(messages...)
 	os.Exit(exitCode)
 }
