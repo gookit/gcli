@@ -5,35 +5,45 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"os"
 	"text/tabwriter"
 
 	"github.com/gookit/color"
 )
 
+// Output the global input output stream
+var Output io.Writer = os.Stdout
+
+// SetOutput stream
+func SetOutput(out io.Writer) { Output = out }
+
+// ResetOutput stream
+func ResetOutput() { Output = os.Stdout }
+
 // Error tips message print
 func Error(format string, v ...interface{}) int {
-	color.Red.Print("ERROR: ")
-	fmt.Printf(format+"\n", v...)
+	prefix := color.Red.Sprint("ERROR: ")
+	_, _ = fmt.Fprintf(Output, prefix+format+"\n", v...)
 	return ERR
 }
 
 // Success tips message print
 func Success(format string, v ...interface{}) int {
-	color.Green.Print("SUCCESS: ")
-	fmt.Printf(format+"\n", v...)
+	prefix := color.Green.Sprint("SUCCESS: ")
+	_, _ = fmt.Fprintf(Output, prefix+format+"\n", v...)
 	return OK
 }
 
 // JSON print pretty JSON data
-func JSON(v interface{}, settings ...string) int {
+func JSON(v interface{}, prefixAndIndent ...string) int {
 	prefix := ""
 	indent := "    "
 
-	l := len(settings)
+	l := len(prefixAndIndent)
 	if l > 0 {
-		prefix = settings[0]
+		prefix = prefixAndIndent[0]
 		if l > 1 {
-			indent = settings[1]
+			indent = prefixAndIndent[1]
 		}
 	}
 
@@ -42,7 +52,7 @@ func JSON(v interface{}, settings ...string) int {
 		panic(err)
 	}
 
-	fmt.Println(string(bs))
+	_, _ = fmt.Fprintln(Output, string(bs))
 	return OK
 }
 
@@ -72,13 +82,13 @@ func MList(listMap map[string]interface{}, fns ...ListOpFunc) {
 //
 // Usage:
 //
-//	w := TabWriter(os.Stdout, []string{
+//	w := TabWriter([]string{
 //		"a\tb\tc\td\t.",
 //		"123\t12345\t1234567\t123456789\t."
 //	})
 //	w.Flush()
-func TabWriter(outTo io.Writer, rows []string) *tabwriter.Writer {
-	w := tabwriter.NewWriter(outTo, 0, 4, 2, ' ', tabwriter.Debug)
+func TabWriter(rows []string) *tabwriter.Writer {
+	w := tabwriter.NewWriter(Output, 0, 4, 2, ' ', tabwriter.Debug)
 
 	for _, row := range rows {
 		if _, err := fmt.Fprintln(w, row); err != nil {

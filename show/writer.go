@@ -4,17 +4,24 @@ import "io"
 
 // Writer definition
 type Writer struct {
-	output io.Writer
+	// buf bytes.Buffer
+	out io.Writer
 }
 
 // NewWriter create a new writer
 func NewWriter(output io.Writer) *Writer {
-	return &Writer{}
+	if output == nil {
+		output = Output
+	}
+
+	return &Writer{
+		out: output,
+	}
 }
 
-// Write
-func (w *Writer) Write(buf []byte) (n int, err error) {
-	return
+// Write bytes message
+func (w *Writer) Write(p []byte) (n int, err error) {
+	return w.out.Write(p)
 }
 
 // Print data to io.Writer

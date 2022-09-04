@@ -2,7 +2,6 @@ package show
 
 import (
 	"bytes"
-	"os"
 	"reflect"
 
 	"github.com/gookit/color"
@@ -65,7 +64,7 @@ func NewList(title string, data interface{}, fns ...ListOpFunc) *List {
 		title: title,
 		data:  data,
 		// base
-		Base: Base{output: os.Stdout},
+		Base: Base{output: Output},
 		// options
 		Opts: &ListOption{
 			SepChar:    " ",
@@ -209,6 +208,7 @@ type Lists struct {
 // NewLists create lists
 func NewLists(listMap map[string]interface{}, fns ...ListOpFunc) *Lists {
 	ls := &Lists{
+		Base: Base{output: Output},
 		Opts: &ListOption{
 			SepChar:  " ",
 			KeyStyle: "info",

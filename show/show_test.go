@@ -2,7 +2,6 @@ package show_test
 
 import (
 	"fmt"
-	"os"
 	"testing"
 
 	"github.com/gookit/gcli/v3/show"
@@ -73,7 +72,7 @@ func TestTabWriter(t *testing.T) {
 		"aaaa\tbbbb\taligned\t",
 	}
 
-	err := show.TabWriter(os.Stdout, ss).Flush()
+	err := show.TabWriter(ss).Flush()
 	is.NoErr(err)
 }
 

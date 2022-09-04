@@ -56,7 +56,7 @@ func (b *Base) Format() string {
 // Print formatted message
 func (b *Base) Print() {
 	if b.output == nil {
-		b.output = os.Stdout
+		b.output = Output
 	}
 
 	if b.formatted != "" {
