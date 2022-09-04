@@ -7,6 +7,7 @@ import (
 	"text/template"
 
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/strutil"
@@ -15,6 +16,12 @@ import (
 /*************************************************************
  * CLI application
  *************************************************************/
+
+// Commander interface
+type Commander interface {
+	Value(string) (any, bool)
+	SetValue(string, any)
+}
 
 // Handler interface definition
 type Handler interface {
@@ -30,6 +37,12 @@ type Handler interface {
 type Logo struct {
 	Text  string // ASCII logo string
 	Style string // eg "info"
+}
+
+// AppConfig struct
+type AppConfig struct {
+	RunBefore func() bool
+	RunAfter  func() bool
 }
 
 // App the cli app definition
@@ -80,13 +93,13 @@ func New(fns ...func(app *App)) *App {
 //	// Or with a config func
 //	NewApp(func(a *App) {
 //		// do something before init ....
-//		a.Hooks[gcli.EvtInit] = func () {}
+//		a.Hooks[gcli.events.OnInit] = func () {}
 //	})
 func NewApp(fns ...func(app *App)) *App {
 	app := &App{
 		Name: "GCliApp",
 		Desc: "This is my console application",
-		// set a default version
+		// set a default version.
 		// Version: "1.0.0",
 		// config
 		// ExitOnEnd: true,
@@ -128,7 +141,8 @@ func NotExitOnEnd() func(*App) {
 }
 
 // Config the application.
-// Notice: must be called before adding a command
+//
+// Notice: must be called before add command
 func (app *App) Config(fn func(a *App)) {
 	if fn != nil {
 		fn(app)
@@ -179,11 +193,11 @@ func (app *App) initialize() {
 	app.bindingGlobalOpts()
 
 	// add default error handler.
-	if !app.HasHook(EvtAppRunError) {
-		app.On(EvtAppRunError, defaultErrHandler)
+	if !app.HasHook(events.OnAppRunError) {
+		app.On(events.OnAppRunError, defaultErrHandler)
 	}
 
-	app.Fire(EvtAppInit, nil)
+	app.Fire(events.OnAppInit, nil)
 	app.initialized = true
 }
 
@@ -220,7 +234,7 @@ func (app *App) AddCommand(c *Command) {
 		app.hasSubcommands = true
 	}
 
-	app.Fire(EvtCmdInit, c)
+	app.fireWithCmd(events.OnCmdInit, c, nil)
 }
 
 // AddHandler to the application
@@ -276,7 +290,10 @@ func (app *App) parseGlobalOpts(args []string) (ok bool) {
 	}
 
 	app.args = app.gFlags.FSetArgs()
-	app.Fire(EvtGOptionsParsed, app.args)
+	if app.Fire(events.OnGOptionsParsed, map[string]any{"args": app.args}) {
+		Logf(VerbDebug, "stop continue on the event %s return True", events.OnGOptionsParsed)
+		return
+	}
 
 	// check global options
 	if gOpts.showHelp {
@@ -336,12 +353,13 @@ func (app *App) prepareRun() (code int, name string) {
 	// name is not empty, but is not command.
 	if app.inputName == "" {
 		Logf(VerbDebug, "input the command is not an registered: %s", name)
+		hookData := map[string]any{"name": name}
 
 		// fire events
-		if stop := app.Fire(EvtAppCmdNotFound, name); stop {
+		if stop := app.Fire(events.OnAppCmdNotFound, hookData); stop {
 			return
 		}
-		if stop := app.Fire(EvtCmdNotFound, name); stop {
+		if stop := app.Fire(events.OnCmdNotFound, hookData); stop {
 			return
 		}
 
@@ -463,7 +481,7 @@ func (app *App) Run(args []string) (code int) {
 	}
 
 	// trigger event
-	app.Fire(EvtAppPrepareAfter, name)
+	app.Fire(events.OnAppPrepareAfter, map[string]any{"name": name})
 
 	// do run input command
 	code = app.doRunCmd(name, app.args)
@@ -486,16 +504,16 @@ func (app *App) RunCmd(name string, args []string) int {
 
 func (app *App) doRunCmd(name string, args []string) (code int) {
 	cmd := app.GetCommand(name)
-	app.Fire(EvtAppRunBefore, cmd)
 
+	app.fireWithCmd(events.OnAppRunBefore, cmd, map[string]any{"args": args})
 	Debugf("will run app command '%s' with args: %v", name, args)
 
 	// do execute command
 	if err := cmd.innerDispatch(args); err != nil {
 		code = ERR
-		app.Fire(EvtAppRunError, err)
+		app.Fire(events.OnAppRunError, map[string]any{"err": err})
 	} else {
-		app.Fire(EvtAppRunAfter, nil)
+		app.Fire(events.OnAppRunAfter, nil)
 	}
 	return
 }
@@ -507,9 +525,9 @@ func (app *App) doRunFunc(args []string) (code int) {
 	// do execute command
 	if err := app.Func(app, args); err != nil {
 		code = ERR
-		app.Fire(EvtAppRunError, err)
+		app.Fire(events.OnAppRunError, map[string]any{"err": err})
 	} else {
-		app.Fire(EvtAppRunAfter, nil)
+		app.Fire(events.OnAppRunAfter, nil)
 	}
 	return
 }
@@ -596,11 +614,20 @@ func (app *App) On(name string, handler HookFunc) {
 	app.core.On(name, handler)
 }
 
-// Fire hook on the app
-func (app *App) Fire(event string, data any) bool {
+// fire hook on the app. returns False for stop continue run.
+func (app *App) fireWithCmd(event string, cmd *Command, data map[string]any) bool {
 	Debugf("trigger the application event: <green>%s</>", event)
 
-	return app.core.Fire(event, app, data)
+	ctx := newHookCtx(event, cmd, data).WithApp(app)
+	return app.core.Fire(event, ctx)
+}
+
+// Fire hook on the app. returns False for stop continue run.
+func (app *App) Fire(event string, data map[string]any) bool {
+	Debugf("trigger the application event: <green>%s</>", event)
+
+	ctx := newHookCtx(event, nil, data).WithApp(app)
+	return app.core.Fire(event, ctx)
 }
 
 /*************************************************************

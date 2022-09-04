@@ -46,9 +46,9 @@ func logf(level VerbLevel, format string, v ...any) {
 	color.Printf("GCli: [%s] [<gray>%s</>] %s \n", name, logAt, fmt.Sprintf(format, v...))
 }
 
-func defaultErrHandler(data ...any) (stop bool) {
-	if len(data) == 2 && data[1] != nil {
-		if err, ok := data[1].(error); ok {
+func defaultErrHandler(ctx *HookCtx) (stop bool) {
+	if errV := ctx.Get("err"); errV != nil {
+		if err, ok := errV.(error); ok {
 			color.Error.Tips(err.Error())
 			// fmt.Println(color.Red.Render("ERROR:"), err.Error())
 		}

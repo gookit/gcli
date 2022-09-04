@@ -5,6 +5,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/_examples/cmd"
 	"github.com/gookit/gcli/v3/builtin"
+	"github.com/gookit/slog"
 	// "github.com/gookit/gcli/v3/builtin/filewatcher"
 	// "github.com/gookit/gcli/v3/builtin/reverseproxy"
 )
@@ -16,14 +17,15 @@ import (
 //
 // run on windows(cmd, powerShell):
 //
+//	go run ./_examples/cliapp
 //	go build ./_examples/cliapp && ./cliapp
 func main() {
 	app := gcli.NewApp(func(app *gcli.App) {
 		app.Version = "3.0.0"
 		app.Desc = "this is my cli application"
-		app.On(gcli.EvtAppInit, func(data ...any) bool {
+		app.On(gcli.EvtAppInit, func(ctx *gcli.HookCtx) bool {
 			// do something...
-			// fmt.Println("init app")
+			slog.Println("init app event", ctx.Name())
 			return false
 		})
 

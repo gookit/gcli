@@ -9,6 +9,7 @@ import (
 	"text/template"
 
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
@@ -119,6 +120,7 @@ type Command struct {
 }
 
 // NewCommand create a new command instance.
+//
 // Usage:
 //
 //	cmd := NewCommand("my-cmd", "description")
@@ -289,7 +291,7 @@ func (c *Command) initialize() {
 		c.Config(c)
 	}
 
-	c.Fire(EvtCmdInit, nil)
+	c.Fire(events.OnCmdInit, nil)
 }
 
 // init core
@@ -389,8 +391,8 @@ func (c *Command) Run(args []string) (err error) {
 	c.initialize()
 
 	// add default error handler.
-	if !c.HasHook(EvtCmdRunError) {
-		c.On(EvtCmdRunError, defaultErrHandler)
+	if !c.HasHook(events.OnCmdRunError) {
+		c.On(events.OnCmdRunError, defaultErrHandler)
 	}
 
 	// binding global options
@@ -432,10 +434,10 @@ func (c *Command) innerDispatch(args []string) (err error) {
 			return
 		}
 
-		c.Fire(EvtGOptionsParsed, args)
+		c.Fire(events.OnGOptionsParsed, map[string]any{"args": args})
 	}
 
-	c.Fire(EvtCmdOptParsed, args)
+	c.Fire(events.OnCmdOptParsed, map[string]any{"args": args})
 	Debugf("cmd: %s - remaining args on options parsed: %v", c.Name, args)
 
 	// find sub command
@@ -455,10 +457,10 @@ func (c *Command) innerDispatch(args []string) (err error) {
 			// is not a sub command and has no arguments -> error
 			if !c.HasArguments() {
 				// fire events
-				if stop := c.Fire(EvtCmdSubNotFound, name); stop {
+				if stop := c.Fire(events.OnCmdSubNotFound, map[string]any{"name": name}); stop {
 					return
 				}
-				if stop := c.Fire(EvtCmdNotFound, name); stop {
+				if stop := c.Fire(events.OnCmdNotFound, map[string]any{"name": name}); stop {
 					return
 				}
 
@@ -527,12 +529,12 @@ func (c *Command) doExecute(args []string) (err error) {
 	// collect and binding named argument
 	Debugf("cmd: %s - collect and binding named argument", c.Name)
 	if err := c.ParseArgs(args); err != nil {
-		c.Fire(EvtCmdRunError, err)
+		c.Fire(events.OnCmdRunError, map[string]any{"err": err})
 		Logf(VerbCrazy, "binding command '%s' arguments err: <red>%s</>", c.Name, err.Error())
 		return err
 	}
 
-	c.Fire(EvtCmdRunBefore, args)
+	c.Fire(events.OnCmdRunBefore, map[string]any{"args": args})
 
 	// do call command handler func
 	if c.Func == nil {
@@ -543,9 +545,9 @@ func (c *Command) doExecute(args []string) (err error) {
 	}
 
 	if err != nil {
-		c.Fire(EvtCmdRunError, err)
+		c.Fire(events.OnCmdRunError, map[string]any{"err": err})
 	} else {
-		c.Fire(EvtCmdRunAfter, nil)
+		c.Fire(events.OnCmdRunAfter, nil)
 	}
 	return
 }
@@ -734,10 +736,10 @@ func (c *Command) goodName() string {
 }
 
 // Fire event handler by name
-func (c *Command) Fire(event string, data any) (stop bool) {
+func (c *Command) Fire(event string, data map[string]any) (stop bool) {
 	Debugf("cmd: %s - trigger the event: <mga>%s</>", c.Name, event)
 
-	return c.core.Fire(event, c, data)
+	return c.core.Fire(event, newHookCtx(event, c, data))
 }
 
 // On add hook handler for a hook event
@@ -755,7 +757,7 @@ func (c *Command) Copy() *Command {
 	nc := *c
 	// reset some fields
 	nc.Func = nil
-	nc.Hooks.ClearHooks() // TODO bug, will clear c.Hooks
+	nc.Hooks.ResetHooks() // TODO bug, will clear c.Hooks
 	// nc.Flags = flag.FlagSet{}
 
 	return &nc

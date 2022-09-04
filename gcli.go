@@ -143,12 +143,6 @@ func IsGteVerbose(verb VerbLevel) bool { return gOpts.verbose >= verb }
 // IsDebugMode get is debug mode
 func IsDebugMode() bool { return gOpts.verbose >= VerbDebug }
 
-// Commander interface
-type Commander interface {
-	Value(string) (any, bool)
-	SetValue(string, any)
-}
-
 /*************************************************************************
  * global options
  *************************************************************************/
