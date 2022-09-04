@@ -31,31 +31,29 @@ var dnsServers = []string{
 	"208.67.220.220",
 }
 
-// ReverseProxyCommand create command
-func ReverseProxyCommand() *gcli.Command {
-	c := &gcli.Command{
-		Name: "proxy",
-		Func: rp.Run,
-		Desc: "start a reverse proxy http server",
-	}
+// ReverseProxyCmd command
+var ReverseProxyCmd = &gcli.Command{
+	Name: "proxy",
+	Func: rp.Run,
+	Desc: "start a reverse proxy http server",
+	Config: func(c *gcli.Command) {
+		c.StrOpt(
+			&rp.listen,
+			"listen", "s", "127.0.0.1:1180",
+			"local proxy server listen address.",
+		)
+		c.StrOpt(
+			&rp.remote,
+			"remote", "r", "",
+			"the remote reverse proxy server `address`. eg http://site.com:80;true",
+		)
+		c.StrOpt(
+			&rp.remoteIP,
+			"remoteIP", "", "",
+			"the remote reverse proxy server IP address.",
+		)
 
-	c.StrOpt(
-		&rp.listen,
-		"listen", "s", "127.0.0.1:1180",
-		"local proxy server listen address.",
-	)
-	c.StrOpt(
-		&rp.remote,
-		"remote", "r", "",
-		"the remote reverse proxy server `address`. eg http://site.com:80",
-	)
-	c.StrOpt(
-		&rp.remoteIP,
-		"remoteIP", "", "",
-		"the remote reverse proxy server IP address.",
-	)
-
-	return c
+	},
 }
 
 func (rp *reverseProxy) Run(cmd *gcli.Command, args []string) error {
@@ -82,14 +80,15 @@ func (rp *reverseProxy) Run(cmd *gcli.Command, args []string) error {
 
 // ReverseProxy create a global reverse proxy.
 // Usage:
-// 	rp := ReverseProxy(&url.URL{
-// 		Scheme: "http",
-// 		Host:   "localhost:9091",
-// 	}, &url.URL{
-// 		Scheme: "http",
-// 		Host:   "localhost:9092",
-// 	})
-// 	log.Fatal(http.ListenAndServe(":9090", rp))
+//
+//	rp := ReverseProxy(&url.URL{
+//		Scheme: "http",
+//		Host:   "localhost:9091",
+//	}, &url.URL{
+//		Scheme: "http",
+//		Host:   "localhost:9092",
+//	})
+//	log.Fatal(http.ListenAndServe(":9090", rp))
 func ReverseProxy(targets ...*url.URL) *httputil.ReverseProxy {
 	if len(targets) == 0 {
 		panic("Please add at least one remote target server")

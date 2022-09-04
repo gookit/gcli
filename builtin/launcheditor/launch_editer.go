@@ -18,7 +18,6 @@ func getEditor() (string, error) {
 	if GetEditor != nil {
 		return GetEditor()
 	}
-
 	return exec.LookPath(DefaultEditor)
 }
 
@@ -33,11 +32,11 @@ func randomFilename() string {
 
 // LaunchEditor launch the specified editor with a random filename
 func LaunchEditor(editor string) (content []byte, err error) {
-	return LaunchEditorWithFilename(editor, randomFilename())
+	return LaunchWithFilename(editor, randomFilename())
 }
 
-// LaunchEditorWithFilename launch the specified editor with a filename
-func LaunchEditorWithFilename(editor, filename string) (content []byte, err error) {
+// LaunchWithFilename launch the specified editor with a filename
+func LaunchWithFilename(editor, filename string) (content []byte, err error) {
 	cmd := exec.Command(editor, filename)
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -56,6 +55,5 @@ func LaunchEditorWithFilename(editor, filename string) (content []byte, err erro
 	if err != nil {
 		return []byte{}, nil
 	}
-
 	return
 }
