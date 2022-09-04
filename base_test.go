@@ -25,7 +25,7 @@ func TestApp_Hooks_EvtAppInit(t *testing.T) {
 	buf.Reset()
 
 	cli := newNotExitApp()
-	cli.On(gcli.EvtAppInit, func(data ...interface{}) bool {
+	cli.On(gcli.EvtAppInit, func(data ...any) bool {
 		buf.WriteString("trigger " + gcli.EvtAppInit)
 		return false
 	})
@@ -33,7 +33,7 @@ func TestApp_Hooks_EvtAppInit(t *testing.T) {
 	assert.Eq(t, "trigger "+gcli.EvtAppInit, buf.String())
 
 	buf.Reset()
-	cli.On(gcli.EvtGOptionsParsed, func(data ...interface{}) bool {
+	cli.On(gcli.EvtGOptionsParsed, func(data ...any) bool {
 		buf.WriteString("trigger " + gcli.EvtGOptionsParsed + ", args:" + fmt.Sprintf("%v", data[1]))
 		return false
 	})
@@ -45,7 +45,7 @@ func TestApp_Hooks_EvtCmdInit(t *testing.T) {
 	buf.Reset()
 
 	cli := newNotExitApp()
-	cli.On(gcli.EvtCmdInit, func(data ...interface{}) (stop bool) {
+	cli.On(gcli.EvtCmdInit, func(data ...any) (stop bool) {
 		buf.WriteString(gcli.EvtCmdInit)
 		buf.WriteString(":")
 
@@ -70,7 +70,7 @@ func TestCommand_Hooks_EvtCmdOptParsed(t *testing.T) {
 		Desc: "desc",
 		Config: func(c *gcli.Command) {
 			buf.WriteString("run config;")
-			c.On(gcli.EvtCmdOptParsed, func(data ...interface{}) (stop bool) {
+			c.On(gcli.EvtCmdOptParsed, func(data ...any) (stop bool) {
 				dump.P(data[1])
 				buf.WriteString(gcli.EvtCmdOptParsed)
 				return
@@ -90,7 +90,7 @@ func TestApp_On_CmdNotFound(t *testing.T) {
 	cli.Add(simpleCmd)
 
 	fmt.Println("--------- will print command tips ----------")
-	cli.On(gcli.EvtCmdNotFound, func(data ...interface{}) bool {
+	cli.On(gcli.EvtCmdNotFound, func(data ...any) bool {
 		buf.WriteString("trigger: " + gcli.EvtCmdNotFound)
 		buf.WriteString("; command: " + fmt.Sprint(data[1]))
 		return false
@@ -101,7 +101,7 @@ func TestApp_On_CmdNotFound(t *testing.T) {
 	buf.Reset()
 
 	fmt.Println("--------- dont print command tips ----------")
-	cli.On(gcli.EvtCmdNotFound, func(data ...interface{}) bool {
+	cli.On(gcli.EvtCmdNotFound, func(data ...any) bool {
 		buf.WriteString("trigger: " + gcli.EvtCmdNotFound)
 		buf.WriteString("; command: " + fmt.Sprint(data[1]))
 		return true
@@ -120,7 +120,7 @@ func TestApp_On_CmdNotFound_redirect(t *testing.T) {
 	cli.Add(simpleCmd)
 
 	fmt.Println("--------- redirect to run another command ----------")
-	cli.On(gcli.EvtCmdNotFound, func(data ...interface{}) bool {
+	cli.On(gcli.EvtCmdNotFound, func(data ...any) bool {
 		buf.WriteString("trigger:" + gcli.EvtCmdNotFound)
 		buf.WriteString(" - command:" + fmt.Sprint(data[1]))
 		buf.WriteString("; redirect:simple - ")

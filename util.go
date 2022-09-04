@@ -25,17 +25,17 @@ var level2color = map[VerbLevel]color.Color{
 }
 
 // Debugf print log message
-func Debugf(format string, v ...interface{}) {
+func Debugf(format string, v ...any) {
 	logf(VerbDebug, format, v...)
 }
 
 // Logf print log message
-func Logf(level VerbLevel, format string, v ...interface{}) {
+func Logf(level VerbLevel, format string, v ...any) {
 	logf(level, format, v...)
 }
 
 // print log message
-func logf(level VerbLevel, format string, v ...interface{}) {
+func logf(level VerbLevel, format string, v ...any) {
 	if gOpts.verbose < level {
 		return
 	}
@@ -46,7 +46,7 @@ func logf(level VerbLevel, format string, v ...interface{}) {
 	color.Printf("GCli: [%s] [<gray>%s</>] %s \n", name, logAt, fmt.Sprintf(format, v...))
 }
 
-func defaultErrHandler(data ...interface{}) (stop bool) {
+func defaultErrHandler(data ...any) (stop bool) {
 	if len(data) == 2 && data[1] != nil {
 		if err, ok := data[1].(error); ok {
 			color.Error.Tips(err.Error())
@@ -82,21 +82,21 @@ func name2verbLevel(name string) VerbLevel {
  *************************************************************/
 
 // Print messages
-func Print(args ...interface{}) {
+func Print(args ...any) {
 	color.Print(args...)
 }
 
 // Println messages
-func Println(args ...interface{}) {
+func Println(args ...any) {
 	color.Println(args...)
 }
 
 // Printf messages
-func Printf(format string, args ...interface{}) {
+func Printf(format string, args ...any) {
 	color.Printf(format, args...)
 }
 
-func panicf(format string, v ...interface{}) {
+func panicf(format string, v ...any) {
 	panic(fmt.Sprintf("GCli: "+format, v...))
 }
 

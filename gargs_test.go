@@ -136,14 +136,14 @@ func TestArgument_GetValue(t *testing.T) {
 
 	// custom handler
 	assert.NoErr(t, arg.SetValue("a-b-c"))
-	arg.Handler = func(value interface{}) interface{} {
+	arg.Handler = func(value any) any {
 		str := value.(string)
 		return strings.SplitN(str, "-", 2)
 	}
 	assert.Eq(t, []string{"a", "b-c"}, arg.GetValue())
 }
 
-var str2int = func(val interface{}) (interface{}, error) {
+var str2int = func(val any) (any, error) {
 	return strconv.Atoi(val.(string))
 }
 

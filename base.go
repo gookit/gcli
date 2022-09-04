@@ -81,29 +81,29 @@ func (c core) innerHelpVars() map[string]string {
 	}
 }
 
-// simple map[string]interface{} struct
+// simple map[string]any struct
 // TODO use structs.DataStore
 type mapData struct {
-	data map[string]interface{}
+	data map[string]any
 }
 
 // Data get all
-func (md *mapData) Data() map[string]interface{} {
+func (md *mapData) Data() map[string]any {
 	return md.data
 }
 
 // SetData set all data
-func (md *mapData) SetData(data map[string]interface{}) {
+func (md *mapData) SetData(data map[string]any) {
 	md.data = data
 }
 
 // Value get from data
-func (md *mapData) Value(key string) interface{} {
+func (md *mapData) Value(key string) any {
 	return md.data[key]
 }
 
 // GetVal get from data
-func (md *mapData) GetVal(key string) interface{} {
+func (md *mapData) GetVal(key string) any {
 	return md.data[key]
 }
 
@@ -118,9 +118,9 @@ func (md *mapData) IntValue(key string) int {
 }
 
 // SetValue to data
-func (md *mapData) SetValue(key string, val interface{}) {
+func (md *mapData) SetValue(key string, val any) {
 	if md.data == nil {
-		md.data = make(map[string]interface{})
+		md.data = make(map[string]any)
 	}
 	md.data[key] = val
 }
@@ -138,15 +138,15 @@ func (md *mapData) ClearData() {
 //
 // func arguments:
 //
-//	in app, like: func(app *App, data ...interface{})
-//	in cmd, like: func(cmd *Command, data ...interface{})
+//	in app, like: func(app *App, data ...any)
+//	in cmd, like: func(cmd *Command, data ...any)
 //
-// type HookFunc func(obj interface{}, data interface{})
+// type HookFunc func(obj any, data any)
 //
 // return:
 // - True go on handle. default is True
 // - False stop goon handle.
-type HookFunc func(data ...interface{}) (stop bool)
+type HookFunc func(data ...any) (stop bool)
 
 // HookCtx struct
 type HookCtx struct {
@@ -155,7 +155,7 @@ type HookCtx struct {
 	Cmd *Command
 
 	name string
-	data map[string]interface{}
+	data map[string]any
 }
 
 // Name of event
@@ -188,7 +188,7 @@ func (h *Hooks) AddOn(name string, handler HookFunc) {
 }
 
 // Fire event by name, allow with event data
-func (h *Hooks) Fire(event string, data ...interface{}) (stop bool) {
+func (h *Hooks) Fire(event string, data ...any) (stop bool) {
 	if handler, ok := h.hooks[event]; ok {
 		return handler(data...)
 	}

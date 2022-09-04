@@ -145,8 +145,8 @@ func IsDebugMode() bool { return gOpts.verbose >= VerbDebug }
 
 // Commander interface
 type Commander interface {
-	Value(string) (interface{}, bool)
-	SetValue(string, interface{})
+	Value(string) (any, bool)
+	SetValue(string, any)
 }
 
 /*************************************************************************

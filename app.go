@@ -597,7 +597,7 @@ func (app *App) On(name string, handler HookFunc) {
 }
 
 // Fire hook on the app
-func (app *App) Fire(event string, data interface{}) bool {
+func (app *App) Fire(event string, data any) bool {
 	Debugf("trigger the application event: <green>%s</>", event)
 
 	return app.core.Fire(event, app, data)
@@ -655,7 +655,7 @@ func (app *App) showApplicationHelp() {
 
 	// cmdHelpTemplate = color.ReplaceTag(cmdHelpTemplate)
 	// render help text template
-	s := helper.RenderText(AppHelpTemplate, map[string]interface{}{
+	s := helper.RenderText(AppHelpTemplate, map[string]any{
 		"Cs":    app.commands,
 		"GOpts": app.gFlags.String(),
 		// app version

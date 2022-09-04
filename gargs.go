@@ -325,7 +325,7 @@ func (a *Argument) goodArgument() string {
 }
 
 // GetValue get value by custom handler func
-func (a *Argument) GetValue() interface{} {
+func (a *Argument) GetValue() any {
 	val := a.Value.Val()
 	if a.Handler != nil {
 		return a.Handler(val)

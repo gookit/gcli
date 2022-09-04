@@ -658,7 +658,7 @@ func (c *Command) ShowHelp() {
 		c.Help = strings.Join([]string{strings.TrimSpace(c.Help), "\n"}, "")
 	}
 
-	vars := map[string]interface{}{
+	vars := map[string]any{
 		"Cmd":  c,
 		"Subs": c.commands,
 		// global options
@@ -734,7 +734,7 @@ func (c *Command) goodName() string {
 }
 
 // Fire event handler by name
-func (c *Command) Fire(event string, data interface{}) (stop bool) {
+func (c *Command) Fire(event string, data any) (stop bool) {
 	Debugf("cmd: %s - trigger the event: <mga>%s</>", c.Name, event)
 
 	return c.core.Fire(event, c, data)
@@ -782,7 +782,7 @@ func (c *Command) PathNames() []string {
 }
 
 // Errorf format message and add error to the command
-func (c *Command) Errorf(format string, v ...interface{}) error {
+func (c *Command) Errorf(format string, v ...any) error {
 	return fmt.Errorf(format, v...)
 }
 
@@ -790,7 +790,7 @@ func (c *Command) Errorf(format string, v ...interface{}) error {
 func (c *Command) NewErr(msg string) error { return errors.New(msg) }
 
 // NewErrf format message and add error to the command
-func (c *Command) NewErrf(format string, v ...interface{}) error {
+func (c *Command) NewErrf(format string, v ...any) error {
 	return fmt.Errorf(format, v...)
 }
 
@@ -821,6 +821,6 @@ func (c *Command) HelpDesc() (desc string) {
 }
 
 // Logf print log message
-// func (c *Command) Logf(level uint, format string, v ...interface{}) {
+// func (c *Command) Logf(level uint, format string, v ...any) {
 // 	Logf(level, format, v...)
 // }
