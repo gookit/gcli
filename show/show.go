@@ -21,21 +21,21 @@ func SetOutput(out io.Writer) { Output = out }
 func ResetOutput() { Output = os.Stdout }
 
 // Error tips message print
-func Error(format string, v ...interface{}) int {
+func Error(format string, v ...any) int {
 	prefix := color.Red.Sprint("ERROR: ")
 	_, _ = fmt.Fprintf(Output, prefix+format+"\n", v...)
 	return ERR
 }
 
 // Success tips message print
-func Success(format string, v ...interface{}) int {
+func Success(format string, v ...any) int {
 	prefix := color.Green.Sprint("SUCCESS: ")
 	_, _ = fmt.Fprintf(Output, prefix+format+"\n", v...)
 	return OK
 }
 
 // JSON print pretty JSON data
-func JSON(v interface{}, prefixAndIndent ...string) int {
+func JSON(v any, prefixAndIndent ...string) int {
 	prefix := ""
 	indent := "    "
 
@@ -61,7 +61,7 @@ func JSON(v interface{}, prefixAndIndent ...string) int {
 // Usage:
 //
 //	show.AList("some info", map[string]string{"name": "tom"})
-func AList(title string, data interface{}, fns ...ListOpFunc) {
+func AList(title string, data any, fns ...ListOpFunc) {
 	NewList(title, data).WithOptionFns(fns).Println()
 }
 
@@ -73,7 +73,7 @@ func AList(title string, data interface{}, fns ...ListOpFunc) {
 //	show.MList(data, func(opts *ListOption) {
 //		opts.LeftIndent = "    "
 //	})
-func MList(listMap map[string]interface{}, fns ...ListOpFunc) {
+func MList(listMap map[string]any, fns ...ListOpFunc) {
 	NewLists(listMap).WithOptionFns(fns).Println()
 }
 

@@ -17,7 +17,7 @@ type Table struct {
 	// Cols the table head col data
 	Cols []string
 	// Rows table data rows
-	Rows []interface{}
+	Rows []any
 	// options ...
 	// HasBorder show border line
 	HasBorder bool

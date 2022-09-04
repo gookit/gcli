@@ -94,7 +94,7 @@ const (
 type Items struct {
 	List []*Item
 	// raw data
-	data interface{}
+	data any
 	// inner context
 	itemType    string
 	rowNumber   int
@@ -102,7 +102,7 @@ type Items struct {
 }
 
 // NewItems create a Items for data.
-func NewItems(data interface{}) *Items {
+func NewItems(data any) *Items {
 	items := &Items{
 		data:     data,
 		itemType: ItemMap,
@@ -194,11 +194,11 @@ type Item struct {
 	index int
 	// valLen int
 	keyLen int
-	// rawVal interface{}
+	// rawVal any
 	rftVal reflect.Value
 }
 
-func newItem(key interface{}, rv reflect.Value, index int) *Item {
+func newItem(key any, rv reflect.Value, index int) *Item {
 	item := &Item{
 		Key: strutil.QuietString(key),
 		// Val:    fmt.Sprint(value),

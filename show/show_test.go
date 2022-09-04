@@ -28,7 +28,7 @@ func TestList(t *testing.T) {
 }
 
 func TestList_mlevel(t *testing.T) {
-	d := map[string]interface{}{
+	d := map[string]any{
 		"key0":     "list item 0",
 		"key2":     []string{"abc", "def"},
 		"key4":     map[string]int{"abc": 23, "def": 45},
@@ -46,7 +46,7 @@ func TestList_mlevel(t *testing.T) {
 }
 
 func TestLists(t *testing.T) {
-	ls := show.NewLists(map[string]interface{}{
+	ls := show.NewLists(map[string]any{
 		"test list": []string{
 			"list item 0",
 			"list item 1",

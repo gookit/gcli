@@ -44,7 +44,7 @@ type List struct {
 	// Title list title name
 	title string
 	// list data. allow type: struct, slice, array, map
-	data interface{}
+	data any
 	// formatted data buffer
 	buffer *bytes.Buffer
 }
@@ -59,7 +59,7 @@ func (l *List) SetBuffer(buffer *bytes.Buffer) {
 // data allow type:
 //
 //	struct, slice, array, map
-func NewList(title string, data interface{}, fns ...ListOpFunc) *List {
+func NewList(title string, data any, fns ...ListOpFunc) *List {
 	l := &List{
 		title: title,
 		data:  data,
@@ -206,7 +206,7 @@ type Lists struct {
 }
 
 // NewLists create lists
-func NewLists(listMap map[string]interface{}, fns ...ListOpFunc) *Lists {
+func NewLists(listMap map[string]any, fns ...ListOpFunc) *Lists {
 	ls := &Lists{
 		Base: Base{output: Output},
 		Opts: &ListOption{
