@@ -69,7 +69,8 @@ type Flags struct {
 	// Desc message
 	Desc string
 	// ExitFunc for handle exit
-	ExitFunc func(code int)
+	// ExitFunc func(code int)
+	AfterParse func(fs *Flags) error
 
 	// cfg option for the flags
 	cfg *FlagsConfig
@@ -109,7 +110,7 @@ func NewFlags(nameWithDesc ...string) *Flags {
 		out: os.Stdout,
 		cfg: newDefaultFlagConfig(),
 	}
-	fs.ExitFunc = os.Exit
+	// fs.ExitFunc = os.Exit
 
 	fName := "gflag"
 	if num := len(nameWithDesc); num > 0 {
@@ -234,8 +235,11 @@ func (fs *Flags) Parse(args []string) (err error) {
 		return err
 	}
 
-	if gOpts.showHelp {
-		return flag.ErrHelp
+	// after hook
+	if fs.AfterParse != nil {
+		if err := fs.AfterParse(fs); err != nil {
+			return err
+		}
 	}
 
 	// call flags validate

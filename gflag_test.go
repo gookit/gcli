@@ -289,7 +289,7 @@ func TestFlags_Run(t *testing.T) {
 	is := assert.New(t)
 
 	fg := gcli.NewFlags("test", "desc message")
-	fg.ExitFunc = func(code int) {}
+	// fg.ExitFunc = func(code int) {}
 
 	fg.IntOpt(&flagOpts.intv, "intv", "i", 0, "desc message for intv")
 	fg.StrOpt(&flagOpts.strv, "strv", "s", "", "desc message for strv")

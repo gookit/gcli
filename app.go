@@ -9,6 +9,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/strutil"
 )
@@ -41,8 +42,10 @@ type Logo struct {
 
 // AppConfig struct
 type AppConfig struct {
-	RunBefore func() bool
-	RunAfter  func() bool
+	BeforeRun     func() bool
+	AfterRun      func() bool
+	BeforeAddOpts func(opts *Flags)
+	AfterBindOpts func(app *App) bool
 }
 
 // App the cli app definition
@@ -54,6 +57,12 @@ type App struct {
 	core
 	// for manager commands
 	commandBase
+
+	AppConfig
+
+	fs *Flags
+	// app flag options
+	opts *GlobalOpts
 
 	// Name app name
 	Name string
@@ -99,6 +108,7 @@ func NewApp(fns ...func(app *App)) *App {
 	app := &App{
 		Name: "GCliApp",
 		Desc: "This is my console application",
+		opts: newDefaultGlobalOpts(),
 		// set a default version.
 		// Version: "1.0.0",
 		// config
@@ -108,16 +118,21 @@ func NewApp(fns ...func(app *App)) *App {
 		commandBase: newCommandBase(),
 	}
 
+	app.fs = NewFlags("appOptions").WithConfigFn(func(opt *FlagsConfig) {
+		opt.WithoutType = true
+		opt.Alignment = AlignLeft
+	})
+
 	// internal core
 	Logf(VerbCrazy, "create new core on init application")
 	app.core = core{
 		cmdLine: CLI,
 		// init
 		Hooks: &Hooks{},
-		gFlags: NewFlags("app.GOptions").WithConfigFn(func(opt *FlagsConfig) {
-			opt.WithoutType = true
-			opt.Alignment = AlignLeft
-		}),
+		// gFlags: NewFlags("appOptions").WithConfigFn(func(opt *FlagsConfig) {
+		// 	opt.WithoutType = true
+		// 	opt.Alignment = AlignLeft
+		// }),
 	}
 
 	// init commandBase
@@ -153,16 +168,14 @@ func (app *App) Config(fn func(a *App)) {
 func (app *App) bindingGlobalOpts() {
 	Logf(VerbDebug, "will begin binding global options")
 	// global options flag
-	// gf := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
-	gf := app.GlobalFlags()
+	fs := app.fs
 
 	// binding global options
-	// bindingCommonGOpts(gf)
-	gOpts.bindingFlags(gf)
+	app.opts.bindingFlags(fs)
 	// add more ...
-	gf.BoolOpt(&gOpts.showVer, "version", "V", false, "Display app version information")
+	fs.BoolOpt(&gOpts.ShowVersion, "version", "V", false, "Display app version information")
 	// This is a internal option
-	gf.BoolVar(&gOpts.inCompletion, &FlagMeta{
+	fs.BoolVar(&gOpts.inCompletion, &FlagMeta{
 		Name: "in-completion",
 		Desc: "generate completion scripts for bash/zsh",
 		// hidden it
@@ -170,8 +183,8 @@ func (app *App) bindingGlobalOpts() {
 	})
 
 	// support binding custom global options
-	if app.GOptsBinder != nil {
-		app.GOptsBinder(gf)
+	if app.BeforeAddOpts != nil {
+		app.BeforeAddOpts(fs)
 	}
 }
 
@@ -225,7 +238,7 @@ func (app *App) AddCommand(c *Command) {
 	// init command
 	c.app = app
 	// inherit global flags from application
-	c.core.gFlags = app.gFlags
+	// c.core.gFlags = app.gFlags
 
 	// do add command
 	app.commandBase.addCommand(app.Name, c)
@@ -275,46 +288,59 @@ func (app *App) AddAliases(name string, aliases ...string) {
 // }
 
 /*************************************************************
- * run command
+ * parse global options
  *************************************************************/
 
-// parseGlobalOpts parse global options
-func (app *App) parseGlobalOpts(args []string) (ok bool) {
+// parseAppOpts parse global options
+func (app *App) doParseOpts(args []string) error {
+	err := app.fs.Parse(args)
+	if err != nil {
+		if cflag.IsFlagHelpErr(err) {
+			return nil
+		}
+		Logf(VerbWarn, "parse global options err: <red>%s</>", err.Error())
+	}
+
+	return err
+}
+
+// parseAppOpts parse global options
+func (app *App) parseAppOpts(args []string) (ok bool) {
 	Logf(VerbDebug, "will begin parse application options")
 
 	// parse global options
-	err := app.core.doParseGOpts(args)
+	err := app.doParseOpts(args)
 	if err != nil { // has error.
 		color.Error.Tips(err.Error())
 		return
 	}
 
-	app.args = app.gFlags.FSetArgs()
+	app.args = app.fs.FSetArgs()
 	if app.Fire(events.OnGOptionsParsed, map[string]any{"args": app.args}) {
 		Logf(VerbDebug, "stop continue on the event %s return True", events.OnGOptionsParsed)
 		return
 	}
 
 	// check global options
-	if gOpts.showHelp {
+	if app.opts.ShowHelp {
 		app.showApplicationHelp()
 		return
 	}
 
-	if gOpts.showVer {
+	if app.opts.ShowVersion {
 		app.showVersionInfo()
 		return
 	}
 
 	// disable color
-	if gOpts.NoColor {
+	if app.opts.NoColor {
 		color.Enable = false
 	}
 
-	Debugf("global option parsed, verbose level: <mgb>%s</>", gOpts.verbose.String())
+	Debugf("global option parsed, Verbose level: <mgb>%s</>", app.opts.Verbose.String())
 
 	// TODO show auto-completion for bash/zsh
-	if gOpts.inCompletion {
+	if app.opts.inCompletion {
 		app.showAutoCompletion(app.args)
 		return
 	}
@@ -468,7 +494,7 @@ func (app *App) Run(args []string) (code int) {
 	Debugf("will begin run cli application. args: %v", args)
 
 	// parse global flags
-	if false == app.parseGlobalOpts(args) {
+	if false == app.parseAppOpts(args) {
 		return app.exitOnEnd(code)
 	}
 
@@ -684,7 +710,7 @@ func (app *App) showApplicationHelp() {
 	// render help text template
 	s := helper.RenderText(AppHelpTemplate, map[string]any{
 		"Cs":    app.commands,
-		"GOpts": app.gFlags.String(),
+		"GOpts": app.fs.String(),
 		// app version
 		"Version": app.Version,
 		"HasSubs": app.hasSubcommands,

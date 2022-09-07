@@ -10,6 +10,8 @@ import (
 	// "github.com/gookit/gcli/v3/builtin/reverseproxy"
 )
 
+var customGOpt string
+
 // local run:
 //
 //	go run ./_examples/cliapp
@@ -42,10 +44,8 @@ func main() {
 	// disable global options
 	// gcli.GOpts().SetDisable()
 
-	var customGOpt string
-	app.GOptsBinder = func(gf *gcli.Flags) {
-		// gcli.Logf(gcli.VerbInfo, "custom add and global option flag")
-		gf.StrVar(&customGOpt, &gcli.FlagMeta{Name: "custom", Desc: "desc message for the option"})
+	app.BeforeAddOpts = func(opts *gcli.Flags) {
+		opts.StrVar(&customGOpt, &gcli.FlagMeta{Name: "custom", Desc: "desc message for the option"})
 	}
 
 	// app.Strict = true

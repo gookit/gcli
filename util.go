@@ -7,7 +7,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/goutil/arrutil"
-	"github.com/gookit/goutil/common"
+	"github.com/gookit/goutil/comdef"
 	"github.com/gookit/goutil/stdutil"
 	"github.com/gookit/goutil/strutil"
 )
@@ -36,7 +36,7 @@ func Logf(level VerbLevel, format string, v ...any) {
 
 // print log message
 func logf(level VerbLevel, format string, v ...any) {
-	if gOpts.verbose < level {
+	if gOpts.Verbose < level {
 		return
 	}
 
@@ -104,7 +104,7 @@ func sepStr(seps []string) string {
 	if len(seps) > 0 {
 		return seps[0]
 	}
-	return common.DefaultSep
+	return comdef.DefaultSep
 }
 
 // allowed keys on struct tag.

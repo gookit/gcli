@@ -1,6 +1,7 @@
 package gcli
 
 import (
+	"context"
 	"os"
 	"path"
 	"path/filepath"
@@ -11,6 +12,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/cflag"
+	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
@@ -133,6 +135,27 @@ func (md *mapData) ClearData() {
 /*************************************************************
  * Command Line: command data
  *************************************************************/
+
+// Context struct
+type Context struct {
+	maputil.Data
+	context.Context
+	// some common info
+	PID int
+}
+
+// NewCtx instance
+func NewCtx() *Context {
+	return &Context{
+		Data:    make(maputil.Data),
+		Context: context.Background(),
+	}
+}
+
+// Value get by key
+func (ctx *Context) Value(key any) any {
+	return ctx.Data.Get(key.(string))
+}
 
 // cmdLine store common data for CLI
 type cmdLine struct {
@@ -273,7 +296,7 @@ func newCommandBase() commandBase {
 		nameMaxWidth: 12,
 		// cmdAliases:   make(maputil.Aliases),
 		cmdAliases: structs.NewAliases(aliasNameCheck),
-		ExitOnEnd:  true,
+		// ExitOnEnd:  false,
 	}
 }
 

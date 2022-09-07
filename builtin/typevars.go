@@ -1,9 +1,8 @@
-package gcli
+package builtin
 
 import (
 	"fmt"
 	"strconv"
-	"strings"
 
 	"github.com/gookit/goutil/strutil"
 )
@@ -133,65 +132,4 @@ func (s *String) Split(sep string) []string {
 // Ints value to []int
 func (s *String) Ints(sep string) []int {
 	return strutil.Ints(string(*s), sep)
-}
-
-/*************************************************************************
- * verbose level
- *************************************************************************/
-
-// VerbLevel type.
-type VerbLevel uint
-
-// Int verbose level to int.
-func (vl *VerbLevel) Int() int {
-	return int(*vl)
-}
-
-// String verbose level to string.
-func (vl *VerbLevel) String() string {
-	return fmt.Sprintf("%d=%s", *vl, vl.Name())
-}
-
-// Upper verbose level to string.
-func (vl *VerbLevel) Upper() string {
-	return strings.ToUpper(vl.Name())
-}
-
-// Name verbose level to string.
-func (vl *VerbLevel) Name() string {
-	switch *vl {
-	case VerbQuiet:
-		return "quiet"
-	case VerbError:
-		return "error"
-	case VerbWarn:
-		return "warn"
-	case VerbInfo:
-		return "info"
-	case VerbDebug:
-		return "debug"
-	case VerbCrazy:
-		return "crazy"
-	}
-	return "unknown"
-}
-
-// Set value from option binding.
-func (vl *VerbLevel) Set(value string) error {
-	// int: level value.
-	if iv, err := strconv.Atoi(value); err == nil {
-		if iv > int(VerbCrazy) {
-			*vl = VerbCrazy
-		} else if iv < 0 { // fallback to default level.
-			*vl = DefaultVerb
-		} else { // 0 - 5
-			*vl = VerbLevel(iv)
-		}
-
-		return nil
-	}
-
-	// string: level name.
-	*vl = name2verbLevel(value)
-	return nil
 }

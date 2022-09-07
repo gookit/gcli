@@ -71,6 +71,7 @@ type Command struct {
 	// Category for the command
 	Category string
 	// Config func, will call on `initialize`.
+	//
 	// - you can config options and other init works
 	Config func(c *Command)
 	// Hidden the command on render help
@@ -215,8 +216,8 @@ func (c *Command) AddCommand(sub *Command) {
 	sub.parent = c
 	// inherit standalone value
 	sub.standalone = c.standalone
-	// inherit global flags from application
-	sub.core.gFlags = c.gFlags
+	// inherit global flags from parent
+	// sub.core.gFlags = c.gFlags
 
 	// initialize command
 	c.initialize()
@@ -239,7 +240,7 @@ func (c *Command) Match(names []string) *Command {
 	return c.commandBase.Match(names)
 }
 
-// MatchByPath command by path. eg. "top:sub"
+// MatchByPath command by path. eg: "top:sub"
 func (c *Command) MatchByPath(path string) *Command {
 	return c.Match(splitPath2names(path))
 }
@@ -429,7 +430,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 
 	// remaining args
 	if c.standalone {
-		if gOpts.showHelp {
+		if gOpts.ShowHelp {
 			c.ShowHelp()
 			return
 		}

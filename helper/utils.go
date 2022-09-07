@@ -23,7 +23,7 @@ var (
 	// linuxSttyMsgMatch = regexp.MustCompile(linuxSttyMsgPattern)
 )
 
-// RenderText render text template with data
+// RenderText render text template with data. TODO use strutil.RenderText()
 func RenderText(input string, data any, fns template.FuncMap, isFile ...bool) string {
 	t := template.New("cli")
 	t.Funcs(template.FuncMap{
