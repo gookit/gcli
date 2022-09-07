@@ -45,13 +45,7 @@ func (c HandlersChain) Last() RunnerFunc {
 
 // Command a CLI command structure
 type Command struct {
-	// core is internal use
-	core
-	// cmdLine is internal use
-	// *cmdLine
-	// HelpVars
-	// // Hooks can allow setting some hooks func on running.
-	// Hooks // allowed hooks: "init", "before", "after", "error"
+	// internal use
 	commandBase
 
 	// --- provide option and argument parse and binding.
@@ -299,14 +293,14 @@ func (c *Command) initialize() {
 func (c *Command) initCore(cName string) {
 	Logf(VerbCrazy, "init command c.core for the command: %s", cName)
 
-	c.core.cmdLine = CLI
-	if c.core.Hooks == nil {
-		c.core.Hooks = &Hooks{}
+	// c.cmdLine = CLI
+	if c.Hooks == nil {
+		c.Hooks = &Hooks{}
 	}
 
 	binWithPath := c.binName + " " + c.Path()
 
-	c.AddVars(c.innerHelpVars())
+	c.initHelpVars()
 	c.AddVars(map[string]string{
 		"cmd": cName,
 		// binName with command name
@@ -673,9 +667,9 @@ func (c *Command) ShowHelp() {
 		"Desc": c.HelpDesc(),
 	}
 
-	if c.NotStandalone() {
-		vars["GOpts"] = c.GFlags().BuildHelp()
-	}
+	// if c.NotStandalone() {
+	// 	vars["GOpts"] = c.GFlags().BuildHelp()
+	// }
 
 	// render help message
 	str := helper.RenderText(CmdHelpTemplate, vars, template.FuncMap{
@@ -692,23 +686,6 @@ func (c *Command) ShowHelp() {
 /*************************************************************
  * helper methods
  *************************************************************/
-
-// GFlags get global flags
-func (c *Command) GFlags() *Flags {
-	// 如果先注册S子命令到一个命令A中，再将A注册到应用App。此时，S.gFlags 就是空的。
-	// If you first register the S subcommand to a command A, then register A to the application App.
-	// At this time, S.gFlags is empty.
-	if c.gFlags == nil {
-		if c.parent == nil {
-			return nil
-		}
-
-		// inherit from parent command.
-		c.core.gFlags = c.parent.GFlags()
-	}
-
-	return c.gFlags
-}
 
 // IsStandalone running
 func (c *Command) IsStandalone() bool {
@@ -740,7 +717,7 @@ func (c *Command) goodName() string {
 func (c *Command) Fire(event string, data map[string]any) (stop bool) {
 	Debugf("cmd: %s - trigger the event: <mga>%s</>", c.Name, event)
 
-	return c.core.Fire(event, newHookCtx(event, c, data))
+	return c.Hooks.Fire(event, newHookCtx(event, c, data))
 }
 
 // On add hook handler for a hook event

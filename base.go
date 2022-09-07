@@ -11,126 +11,9 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/helper"
-	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/maputil"
-	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/structs"
-	"github.com/gookit/goutil/strutil"
 )
-
-// core definition TODO rename to context ??
-type core struct {
-	color.SimplePrinter
-	*cmdLine
-	// Hooks manage. allowed hooks: "init", "before", "after", "error"
-	*Hooks
-	// HelpVars help template vars.
-	helper.HelpVars
-	// global options flag set
-	gFlags *Flags
-	// GOptsBinder you can be custom binding global options
-	GOptsBinder func(gf *Flags)
-}
-
-// init core
-// func (c core) init(cmdName string) {
-// 	c.cmdLine = CLI
-//
-// 	c.AddVars(c.innerHelpVars())
-// 	c.AddVars(map[string]string{
-// 		"cmd": cmdName,
-// 		// binName with command
-// 		"binWithCmd": c.binName + " " + cmdName,
-// 		// binFile with command
-// 		"fullCmd": c.binFile + " " + cmdName,
-// 	})
-// }
-
-// parse global options
-func (c core) doParseGOpts(args []string) (err error) {
-	if c.gFlags == nil { // skip on nil
-		return
-	}
-
-	err = c.gFlags.Parse(args)
-
-	if err != nil {
-		if cflag.IsFlagHelpErr(err) {
-			return nil
-		}
-		Logf(VerbWarn, "parse global options err: <red>%s</>", err.Error())
-	}
-	return
-}
-
-// GlobalFlags get the app GlobalFlags
-func (c core) GlobalFlags() *Flags {
-	return c.gFlags
-}
-
-// RawOsArgs get the raw os.Args
-func (c core) RawOsArgs() []string {
-	return os.Args
-}
-
-// common basic help vars
-func (c core) innerHelpVars() map[string]string {
-	return map[string]string{
-		"pid":     CLI.PIDString(),
-		"workDir": CLI.workDir,
-		"binFile": CLI.binFile,
-		"binName": CLI.binName,
-	}
-}
-
-// simple map[string]any struct
-// TODO use structs.Data
-type mapData struct {
-	data map[string]any
-}
-
-// Data get all
-func (md *mapData) Data() map[string]any {
-	return md.data
-}
-
-// SetData set all data
-func (md *mapData) SetData(data map[string]any) {
-	md.data = data
-}
-
-// Value get from data
-func (md *mapData) Value(key string) any {
-	return md.data[key]
-}
-
-// GetVal get from data
-func (md *mapData) GetVal(key string) any {
-	return md.data[key]
-}
-
-// StrValue get from data
-func (md *mapData) StrValue(key string) string {
-	return strutil.MustString(md.data[key])
-}
-
-// IntValue get from data
-func (md *mapData) IntValue(key string) int {
-	return mathutil.MustInt(md.data[key])
-}
-
-// SetValue to data
-func (md *mapData) SetValue(key string, val any) {
-	if md.data == nil {
-		md.data = make(map[string]any)
-	}
-	md.data[key] = val
-}
-
-// ClearData all data
-func (md *mapData) ClearData() {
-	md.data = nil
-}
 
 /*************************************************************
  * Command Line: command data
@@ -140,8 +23,20 @@ func (md *mapData) ClearData() {
 type Context struct {
 	maputil.Data
 	context.Context
-	// some common info
-	PID int
+	// PID value
+	pid int
+	// OsName os name.
+	osName string
+	// WorkDir the CLI app work dir path. by `os.Getwd()`
+	workDir string
+	// BinFile bin script file, by `os.Args[0]`. eg "./path/to/cliapp"
+	binFile string
+	// BinDir bin script dir path. eg "./path/to"
+	binDir string
+	// BinName bin script filename. eg "cliapp"
+	binName string
+	// ArgLine os.Args to string, but no binName.
+	argLine string
 }
 
 // NewCtx instance
@@ -157,25 +52,8 @@ func (ctx *Context) Value(key any) any {
 	return ctx.Data.Get(key.(string))
 }
 
-// cmdLine store common data for CLI
-type cmdLine struct {
-	// pid for current application
-	pid int
-	// os name.
-	osName string
-	// the CLI app work dir path. by `os.Getwd()`
-	workDir string
-	// bin script file, by `os.Args[0]`. eg "./path/to/cliapp"
-	binFile string
-	// bin script dir path. eg "./path/to"
-	binDir string
-	// bin script filename. eg "cliapp"
-	binName string
-	// os.Args to string, but no binName.
-	argLine string
-}
-
-func newCmdLine() *cmdLine {
+// Init some common info
+func (ctx *Context) Init() {
 	binFile := os.Args[0]
 	workDir, _ := os.Getwd()
 
@@ -184,68 +62,66 @@ func newCmdLine() *cmdLine {
 	// 	binFile = strings.Replace(CLI.binName, workDir+"\\", "", 1)
 	// }
 
-	return &cmdLine{
-		pid: os.Getpid(),
-		// more info
-		osName:  runtime.GOOS,
-		workDir: workDir,
-		binDir:  filepath.Dir(binFile),
-		binFile: binFile,
-		binName: filepath.Base(binFile),
-		argLine: strings.Join(os.Args[1:], " "),
-	}
+	ctx.pid = os.Getpid()
+	// more info
+	ctx.osName = runtime.GOOS
+	ctx.workDir = workDir
+	ctx.binDir = filepath.Dir(binFile)
+	ctx.binFile = binFile
+	ctx.binName = filepath.Base(binFile)
+	ctx.argLine = strings.Join(os.Args[1:], " ")
 }
 
 // PID get pid
-func (c *cmdLine) PID() int {
-	return c.pid
+func (ctx *Context) PID() int {
+	return ctx.pid
 }
 
 // PIDString get pid as string
-func (c *cmdLine) PIDString() string {
-	return strconv.Itoa(c.pid)
+func (ctx *Context) PIDString() string {
+	return strconv.Itoa(ctx.pid)
 }
 
 // OsName is equals to `runtime.GOOS`
-func (c *cmdLine) OsName() string {
-	return c.osName
+func (ctx *Context) OsName() string {
+	return ctx.osName
 }
 
 // OsArgs is equals to `os.Args`
-func (c *cmdLine) OsArgs() []string {
+func (ctx *Context) OsArgs() []string {
 	return os.Args
 }
 
 // BinFile get bin script file
-func (c *cmdLine) BinFile() string {
-	return c.binFile
+func (ctx *Context) BinFile() string {
+	return ctx.binFile
 }
 
 // BinName get bin script name
-func (c *cmdLine) BinName() string {
-	return c.binName
+func (ctx *Context) BinName() string {
+	return ctx.binName
 }
 
 // BinDir get bin script dirname
-func (c *cmdLine) BinDir() string {
-	return path.Dir(c.binFile)
+func (ctx *Context) BinDir() string {
+	return path.Dir(ctx.binFile)
 }
 
 // WorkDir get work dirname
-func (c *cmdLine) WorkDir() string {
-	return c.workDir
+func (ctx *Context) WorkDir() string {
+	return ctx.workDir
 }
 
 // ArgLine os.Args to string, but no binName.
-func (c *cmdLine) ArgLine() string {
-	return c.argLine
+func (ctx *Context) ArgLine() string {
+	return ctx.argLine
 }
 
-func (c *cmdLine) hasHelpKeywords() bool {
-	if c.argLine == "" {
+func (ctx *Context) hasHelpKeywords() bool {
+	if ctx.argLine == "" {
 		return false
 	}
-	return strings.HasSuffix(c.argLine, " -h") || strings.HasSuffix(c.argLine, " --help")
+	return strings.HasSuffix(ctx.argLine, " -h") || strings.HasSuffix(ctx.argLine, " --help")
 }
 
 /*************************************************************
@@ -254,7 +130,15 @@ func (c *cmdLine) hasHelpKeywords() bool {
 
 // will inject to every Command
 type commandBase struct {
-	mapData
+	// Hooks manage. allowed hooks: "init", "before", "after", "error"
+	*Hooks
+	*Context
+	color.SimplePrinter
+	// HelpVars help template vars.
+	helper.HelpVars
+	// TODO
+	helpData map[string]any
+
 	// Logo ASCII logo setting
 	Logo *Logo
 	// Version app version. like "1.0.1"
@@ -287,7 +171,8 @@ type commandBase struct {
 
 func newCommandBase() commandBase {
 	return commandBase{
-		Logo: &Logo{Style: "info"},
+		Hooks: &Hooks{},
+		Logo:  &Logo{Style: "info"},
 		// init mapping
 		cmdNames: make(map[string]int),
 		// name2idx: make(map[string]int),
@@ -297,7 +182,18 @@ func newCommandBase() commandBase {
 		// cmdAliases:   make(maputil.Aliases),
 		cmdAliases: structs.NewAliases(aliasNameCheck),
 		// ExitOnEnd:  false,
+		helpData: make(map[string]any),
 	}
+}
+
+// init common basic help vars
+func (b *commandBase) initHelpVars() {
+	b.AddVars(map[string]string{
+		"pid":     b.PIDString(),
+		"workDir": b.workDir,
+		"binFile": b.binFile,
+		"binName": b.binName,
+	})
 }
 
 // GetCommand get a command by name

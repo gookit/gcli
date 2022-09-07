@@ -51,11 +51,7 @@ type AppConfig struct {
 // App the cli app definition
 type App struct {
 	// internal use
-	// - *cmdLine
-	// - HelpVars
-	// - Hooks // allow hooks: "init", "before", "after", "error"
-	core
-	// for manager commands
+	// for manage commands
 	commandBase
 
 	AppConfig
@@ -102,7 +98,7 @@ func New(fns ...func(app *App)) *App {
 //	// Or with a config func
 //	NewApp(func(a *App) {
 //		// do something before init ....
-//		a.Hooks[gcli.events.OnInit] = func () {}
+//		a.Hooks[events.OnAppInit] = func () {}
 //	})
 func NewApp(fns ...func(app *App)) *App {
 	app := &App{
@@ -122,18 +118,6 @@ func NewApp(fns ...func(app *App)) *App {
 		opt.WithoutType = true
 		opt.Alignment = AlignLeft
 	})
-
-	// internal core
-	Logf(VerbCrazy, "create new core on init application")
-	app.core = core{
-		cmdLine: CLI,
-		// init
-		Hooks: &Hooks{},
-		// gFlags: NewFlags("appOptions").WithConfigFn(func(opt *FlagsConfig) {
-		// 	opt.WithoutType = true
-		// 	opt.Alignment = AlignLeft
-		// }),
-	}
 
 	// init commandBase
 	Logf(VerbCrazy, "create new commandBase on init application")
@@ -197,10 +181,10 @@ func (app *App) initialize() {
 	Logf(VerbCrazy, "initialize the application")
 
 	// init some vars
-	if app.core.Hooks == nil {
-		app.core.Hooks = &Hooks{}
+	if app.Hooks == nil {
+		app.Hooks = &Hooks{}
 	}
-	app.core.AddVars(app.core.innerHelpVars())
+	app.initHelpVars()
 
 	// binding global options
 	app.bindingGlobalOpts()
@@ -637,7 +621,7 @@ func (app *App) SetDefaultCommand(name string) {
 func (app *App) On(name string, handler HookFunc) {
 	Debugf("register application hook: %s", name)
 
-	app.core.On(name, handler)
+	app.Hooks.On(name, handler)
 }
 
 // fire hook on the app. returns False for stop continue run.
@@ -645,7 +629,7 @@ func (app *App) fireWithCmd(event string, cmd *Command, data map[string]any) boo
 	Debugf("trigger the application event: <green>%s</>", event)
 
 	ctx := newHookCtx(event, cmd, data).WithApp(app)
-	return app.core.Fire(event, ctx)
+	return app.Hooks.Fire(event, ctx)
 }
 
 // Fire hook on the app. returns False for stop continue run.
@@ -653,7 +637,7 @@ func (app *App) Fire(event string, data map[string]any) bool {
 	Debugf("trigger the application event: <green>%s</>", event)
 
 	ctx := newHookCtx(event, nil, data).WithApp(app)
-	return app.core.Fire(event, ctx)
+	return app.Hooks.Fire(event, ctx)
 }
 
 /*************************************************************
