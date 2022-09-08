@@ -1,4 +1,4 @@
-package builtin
+package helper
 
 import (
 	"fmt"
@@ -94,7 +94,7 @@ func (s *EnumString) Set(value string) error {
 	return nil
 }
 
-// String type, a special string
+// String a special string
 //
 // Usage:
 //

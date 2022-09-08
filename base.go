@@ -52,8 +52,8 @@ func (ctx *Context) Value(key any) any {
 	return ctx.Data.Get(key.(string))
 }
 
-// Init some common info
-func (ctx *Context) Init() {
+// InitCtx some common info
+func (ctx *Context) InitCtx() {
 	binFile := os.Args[0]
 	workDir, _ := os.Getwd()
 
@@ -70,6 +70,7 @@ func (ctx *Context) Init() {
 	ctx.binFile = binFile
 	ctx.binName = filepath.Base(binFile)
 	ctx.argLine = strings.Join(os.Args[1:], " ")
+	// return ctx
 }
 
 // PID get pid
@@ -129,7 +130,7 @@ func (ctx *Context) hasHelpKeywords() bool {
  *************************************************************/
 
 // will inject to every Command
-type commandBase struct {
+type base struct {
 	// Hooks manage. allowed hooks: "init", "before", "after", "error"
 	*Hooks
 	*Context
@@ -169,8 +170,8 @@ type commandBase struct {
 	errors []error
 }
 
-func newCommandBase() commandBase {
-	return commandBase{
+func newBase() base {
+	return base{
 		Hooks: &Hooks{},
 		Logo:  &Logo{Style: "info"},
 		// init mapping
@@ -183,11 +184,12 @@ func newCommandBase() commandBase {
 		cmdAliases: structs.NewAliases(aliasNameCheck),
 		// ExitOnEnd:  false,
 		helpData: make(map[string]any),
+		Context:  NewCtx(),
 	}
 }
 
 // init common basic help vars
-func (b *commandBase) initHelpVars() {
+func (b *base) initHelpVars() {
 	b.AddVars(map[string]string{
 		"pid":     b.PIDString(),
 		"workDir": b.workDir,
@@ -197,45 +199,45 @@ func (b *commandBase) initHelpVars() {
 }
 
 // GetCommand get a command by name
-func (b *commandBase) GetCommand(name string) *Command {
+func (b *base) GetCommand(name string) *Command {
 	return b.commands[name]
 }
 
 // Command get a command by name
-func (b *commandBase) Command(name string) (c *Command, exist bool) {
+func (b *base) Command(name string) (c *Command, exist bool) {
 	c, exist = b.commands[name]
 	return
 }
 
 // IsAlias name check
-func (b *commandBase) IsAlias(alias string) bool {
+func (b *base) IsAlias(alias string) bool {
 	return b.cmdAliases.HasAlias(alias)
 }
 
 // ResolveAlias get real command name by alias
-func (b *commandBase) ResolveAlias(alias string) string {
+func (b *base) ResolveAlias(alias string) string {
 	return b.cmdAliases.ResolveAlias(alias)
 }
 
 // HasCommands on the cmd/app
-func (b *commandBase) HasCommands() bool {
+func (b *base) HasCommands() bool {
 	return len(b.cmdNames) > 0
 }
 
 // HasCommand name check
-func (b *commandBase) HasCommand(name string) bool {
+func (b *base) HasCommand(name string) bool {
 	_, has := b.cmdNames[name]
 	return has
 }
 
 // IsCommand name check. alias of the HasCommand()
-func (b *commandBase) IsCommand(name string) bool {
+func (b *base) IsCommand(name string) bool {
 	_, has := b.cmdNames[name]
 	return has
 }
 
 // add Command to the group
-func (b *commandBase) addCommand(pName string, c *Command) {
+func (b *base) addCommand(pName string, c *Command) {
 	// init command
 	c.initialize()
 
@@ -275,7 +277,7 @@ func (b *commandBase) addCommand(pName string, c *Command) {
 }
 
 // Match command by path names. eg. ["top", "sub"]
-func (b *commandBase) Match(names []string) *Command {
+func (b *base) Match(names []string) *Command {
 	ln := len(names)
 	if ln == 0 {
 		panic("the command names is required")
@@ -299,22 +301,22 @@ func (b *commandBase) Match(names []string) *Command {
 }
 
 // FindCommand command by path. eg. "top:sub" or "top sub"
-func (b *commandBase) FindCommand(path string) *Command {
+func (b *base) FindCommand(path string) *Command {
 	return b.Match(splitPath2names(path))
 }
 
 // FindByPath command by path. eg. "top:sub" or "top sub"
-func (b *commandBase) FindByPath(path string) *Command {
+func (b *base) FindByPath(path string) *Command {
 	return b.Match(splitPath2names(path))
 }
 
 // MatchByPath command by path. eg. "top:sub" or "top sub"
-func (b *commandBase) MatchByPath(path string) *Command {
+func (b *base) MatchByPath(path string) *Command {
 	return b.Match(splitPath2names(path))
 }
 
 // SetLogo text and color style
-func (b *commandBase) SetLogo(logo string, style ...string) {
+func (b *base) SetLogo(logo string, style ...string) {
 	b.Logo.Text = logo
 	if len(style) > 0 {
 		b.Logo.Style = style[0]
@@ -322,22 +324,22 @@ func (b *commandBase) SetLogo(logo string, style ...string) {
 }
 
 // AddError to the application
-func (b *commandBase) AddError(err error) {
+func (b *base) AddError(err error) {
 	b.errors = append(b.errors, err)
 }
 
 // Commands get all commands
-func (b *commandBase) Commands() map[string]*Command {
+func (b *base) Commands() map[string]*Command {
 	return b.commands
 }
 
 // CmdNames get all command names
-func (b *commandBase) CmdNames() []string {
+func (b *base) CmdNames() []string {
 	return b.CommandNames()
 }
 
 // CommandNames get all command names
-func (b *commandBase) CommandNames() []string {
+func (b *base) CommandNames() []string {
 	var ss []string
 	for n := range b.cmdNames {
 		ss = append(ss, n)
@@ -346,16 +348,16 @@ func (b *commandBase) CommandNames() []string {
 }
 
 // CmdNameMap get all command names
-func (b *commandBase) CmdNameMap() map[string]int {
+func (b *base) CmdNameMap() map[string]int {
 	return b.cmdNames
 }
 
 // CmdAliases get cmd aliases
-func (b *commandBase) CmdAliases() *structs.Aliases {
+func (b *base) CmdAliases() *structs.Aliases {
 	return b.cmdAliases
 }
 
 // AliasesMapping get cmd aliases mapping
-func (b *commandBase) AliasesMapping() map[string]string {
+func (b *base) AliasesMapping() map[string]string {
 	return b.cmdAliases.Mapping()
 }

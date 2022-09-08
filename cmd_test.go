@@ -289,7 +289,7 @@ func TestCommand_Run_emptyArgs(t *testing.T) {
 	bf.Reset()
 	is := assert.New(t)
 
-	gcli.SetCrazyMode()
+	gcli.SetVerbose(gcli.VerbCrazy)
 	defer gcli.ResetVerbose()
 
 	is.Eq("test", c0.Name)

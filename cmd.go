@@ -46,7 +46,7 @@ func (c HandlersChain) Last() RunnerFunc {
 // Command a CLI command structure
 type Command struct {
 	// internal use
-	commandBase
+	base
 
 	// --- provide option and argument parse and binding.
 
@@ -210,8 +210,8 @@ func (c *Command) AddCommand(sub *Command) {
 	sub.parent = c
 	// inherit standalone value
 	sub.standalone = c.standalone
-	// inherit global flags from parent
-	// sub.core.gFlags = c.gFlags
+	// inherit something from parent
+	sub.Context = c.Context
 
 	// initialize command
 	c.initialize()
@@ -220,7 +220,7 @@ func (c *Command) AddCommand(sub *Command) {
 	sub.pathNames = c.pathNames[0:]
 
 	// do add
-	c.commandBase.addCommand(c.Name, sub)
+	c.base.addCommand(c.Name, sub)
 }
 
 // Match sub command by input names
@@ -231,7 +231,7 @@ func (c *Command) Match(names []string) *Command {
 	if len(names) == 0 { // return self.
 		return c
 	}
-	return c.commandBase.Match(names)
+	return c.base.Match(names)
 }
 
 // MatchByPath command by path. eg: "top:sub"
@@ -252,11 +252,8 @@ func (c *Command) initialize() {
 	c.initialized = true
 	c.pathNames = append(c.pathNames, cName)
 
-	// init core
-	c.initCore(cName)
-
-	// init commandBase
-	c.initCommandBase()
+	// init base
+	c.initCommandBase(cName)
 
 	// load common subs
 	if len(c.Subs) > 0 {
@@ -290,10 +287,9 @@ func (c *Command) initialize() {
 }
 
 // init core
-func (c *Command) initCore(cName string) {
-	Logf(VerbCrazy, "init command c.core for the command: %s", cName)
+func (c *Command) initCommandBase(cName string) {
+	Logf(VerbCrazy, "init command c.base for the command: %s", cName)
 
-	// c.cmdLine = CLI
 	if c.Hooks == nil {
 		c.Hooks = &Hooks{}
 	}
@@ -310,17 +306,13 @@ func (c *Command) initCore(cName string) {
 		// binFile with command
 		"fullCmd": c.binFile + " " + cName,
 	})
-}
 
-func (c *Command) initCommandBase() {
-	Logf(VerbCrazy, "init command c.commandBase for the command: %s", c.Name)
-
-	c.commandBase.cmdNames = make(map[string]int)
-	c.commandBase.commands = make(map[string]*Command)
+	c.base.cmdNames = make(map[string]int)
+	c.base.commands = make(map[string]*Command)
 	// set an default value.
-	c.commandBase.nameMaxWidth = 12
-	// c.commandBase.cmdAliases = make(maputil.Aliases)
-	c.commandBase.cmdAliases = structs.NewAliases(aliasNameCheck)
+	c.base.nameMaxWidth = 12
+	// c.base.cmdAliases = make(maputil.Aliases)
+	c.base.cmdAliases = structs.NewAliases(aliasNameCheck)
 }
 
 // Next TODO processing, run all middleware handlers

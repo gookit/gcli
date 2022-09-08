@@ -52,7 +52,7 @@ type AppConfig struct {
 type App struct {
 	// internal use
 	// for manage commands
-	commandBase
+	base
 
 	AppConfig
 
@@ -104,14 +104,14 @@ func NewApp(fns ...func(app *App)) *App {
 	app := &App{
 		Name: "GCliApp",
 		Desc: "This is my console application",
-		opts: newDefaultGlobalOpts(),
+		opts: newGlobalOpts(),
 		// set a default version.
 		// Version: "1.0.0",
 		// config
 		// ExitOnEnd: true,
 		// group
 		// moduleCommands: make(map[string]map[string]*Command),
-		commandBase: newCommandBase(),
+		base: newBase(),
 	}
 
 	app.fs = NewFlags("appOptions").WithConfigFn(func(opt *FlagsConfig) {
@@ -119,8 +119,8 @@ func NewApp(fns ...func(app *App)) *App {
 		opt.Alignment = AlignLeft
 	})
 
-	// init commandBase
-	Logf(VerbCrazy, "create new commandBase on init application")
+	// init base
+	Logf(VerbCrazy, "create new base on init application")
 	// set a default version
 	app.Version = "1.0.0"
 
@@ -149,15 +149,14 @@ func (app *App) Config(fn func(a *App)) {
 }
 
 // binding global options
-func (app *App) bindingGlobalOpts() {
-	Logf(VerbDebug, "will begin binding global options")
+func (app *App) bindingGOpts() {
+	Logf(VerbDebug, "will begin binding app global options")
 	// global options flag
 	fs := app.fs
 
 	// binding global options
 	app.opts.bindingFlags(fs)
 	// add more ...
-	fs.BoolOpt(&gOpts.ShowVersion, "version", "V", false, "Display app version information")
 	// This is a internal option
 	fs.BoolVar(&gOpts.inCompletion, &FlagMeta{
 		Name: "in-completion",
@@ -180,14 +179,12 @@ func (app *App) initialize() {
 
 	Logf(VerbCrazy, "initialize the application")
 
-	// init some vars
-	if app.Hooks == nil {
-		app.Hooks = &Hooks{}
-	}
+	// init some info
+	app.InitCtx()
 	app.initHelpVars()
 
 	// binding global options
-	app.bindingGlobalOpts()
+	app.bindingGOpts()
 
 	// add default error handler.
 	if !app.HasHook(events.OnAppRunError) {
@@ -221,11 +218,11 @@ func (app *App) AddCommand(c *Command) {
 
 	// init command
 	c.app = app
-	// inherit global flags from application
-	// c.core.gFlags = app.gFlags
+	// inherit some from application
+	c.Context = app.Context
 
 	// do add command
-	app.commandBase.addCommand(app.Name, c)
+	app.base.addCommand(app.Name, c)
 
 	if c.HasCommands() {
 		app.hasSubcommands = true

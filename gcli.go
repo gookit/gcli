@@ -16,7 +16,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gookit/gcli/v3/builtin"
+	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/goutil/envutil"
 )
 
 const (
@@ -31,7 +32,7 @@ const (
 	// HelpCommand name
 	HelpCommand = "help"
 	// VerbEnvName for set gcli debug level
-	VerbEnvName = "GCLI_VERBOSE"
+	VerbEnvName = "GCLI_VERB"
 )
 
 // constants for error level (quiet 0 - 5 crazy)
@@ -45,112 +46,27 @@ const (
 )
 
 var (
-	// CLI create an default instance
-	CLI = newCmdLine()
 	// DefaultVerb the default Verbose level
-	DefaultVerb = VerbError
-
-	cfg = newCliConfig()
-	// global options
-	gOpts = newDefaultGlobalOpts()
+	defaultVerb = VerbError
 	// Version the gcli version
 	version = "3.0.0"
 	// CommitID the gcli last commit ID
 	commitID = "z20210214"
+
+	// global options
+	gOpts = newGlobalOpts()
 )
 
 // init
 func init() {
 	// set Verbose from ENV var.
 	if verb := os.Getenv(VerbEnvName); verb != "" {
-		_ = cfg.Verbose.Set(verb)
+		_ = gOpts.Verbose.Set(verb)
 	}
 }
-
-// CliConfig cli Config config
-type CliConfig struct {
-	NoColor bool
-	// Verbose gcli message report level
-	Verbose VerbLevel
-	// NoProgress dont display progress
-	NoProgress bool
-	// NoInteractive close interactive confirm
-	NoInteractive bool
-}
-
-func newCliConfig() *CliConfig {
-	return &CliConfig{
-		Verbose: VerbError,
-	}
-}
-
-// Config global config
-func Config(fn func(cfg *CliConfig)) {
-	if fn != nil {
-		fn(cfg)
-	}
-}
-
-// ResetConfig global config
-func ResetConfig() {
-	cfg = newCliConfig()
-
-	// set Verbose from ENV var.
-	if verb := os.Getenv(VerbEnvName); verb != "" {
-		_ = cfg.Verbose.Set(verb)
-	}
-}
-
-// GOpts get the global options
-func GOpts() *GlobalOpts {
-	return gOpts
-}
-
-// ResetGOpts instance
-func ResetGOpts() {
-	gOpts = newDefaultGlobalOpts()
-}
-
-// Version of the gcli
-func Version() string {
-	return version
-}
-
-// CommitID of the gcli
-func CommitID() string { return commitID }
-
-// Verbose returns Verbose level
-func Verbose() VerbLevel { return gOpts.Verbose }
-
-// SetCrazyMode level
-func SetCrazyMode() { gOpts.SetVerbose(VerbCrazy) }
-
-// SetDebugMode level
-func SetDebugMode() { gOpts.SetVerbose(VerbDebug) }
-
-// SetQuietMode level
-func SetQuietMode() { gOpts.SetVerbose(VerbQuiet) }
-
-// SetVerbose level
-func SetVerbose(verbose VerbLevel) { gOpts.SetVerbose(verbose) }
-
-// ResetVerbose level
-func ResetVerbose() { gOpts.SetVerbose(DefaultVerb) }
-
-// StrictMode get is strict mode
-func StrictMode() bool { return gOpts.strictMode }
-
-// SetStrictMode for parse flags
-func SetStrictMode(strict bool) { gOpts.SetStrictMode(strict) }
-
-// IsGteVerbose get is strict mode
-func IsGteVerbose(verb VerbLevel) bool { return gOpts.Verbose >= verb }
-
-// IsDebugMode get is debug mode
-func IsDebugMode() bool { return gOpts.Verbose >= VerbDebug }
 
 /*************************************************************************
- * app options
+ * global options
  *************************************************************************/
 
 // GlobalOpts global flag options
@@ -179,13 +95,15 @@ type GlobalOpts struct {
 	inCompletion bool
 }
 
-func newDefaultGlobalOpts() *GlobalOpts {
-	return &GlobalOpts{
+func newGlobalOpts() *GlobalOpts {
+	opts := &GlobalOpts{
 		strictMode: false,
 		// init error level.
-		Verbose: cfg.Verbose,
-		NoColor: cfg.NoColor,
+		Verbose: defaultVerb,
+		NoColor: envutil.GetBool("NO_COLOR", false),
 	}
+
+	return opts
 }
 
 // SetVerbose value
@@ -220,12 +138,66 @@ func (g *GlobalOpts) bindingFlags(fs *Flags) {
 	}
 
 	// up: allow use int and string.
-	fs.VarOpt(&g.Verbose, "Verbose", "", "Set logs reporting level(quiet 0 - 5 crazy)")
-	fs.BoolOpt(&g.inShell, "ishell", "", false, "Run in an interactive shell environment(`TODO`)")
+	fs.VarOpt(&g.Verbose, "verbose", "verb", "Set logs reporting level(quiet 0 - 5 crazy)")
 	fs.BoolOpt(&g.NoColor, "no-color", "nc", g.NoColor, "Disable color when outputting message")
 	fs.BoolOpt(&g.NoProgress, "no-progress", "np", g.NoProgress, "Disable display progress message")
+	fs.BoolOpt(&g.ShowVersion, "version", "V", false, "Display app version information")
 	fs.BoolOpt(&g.NoInteractive, "no-interactive", "ni", g.NoInteractive, "Disable interactive confirmation operation")
+
+	// fs.BoolOpt(&g.inShell, "ishell", "", false, "Run in an interactive shell environment(`TODO`)")
 }
+
+// GOpts get the global options
+func GOpts() *GlobalOpts {
+	return gOpts
+}
+
+// Config global options
+func Config(fn func(opts *GlobalOpts)) {
+	if fn != nil {
+		fn(gOpts)
+	}
+}
+
+// ResetGOpts instance
+func ResetGOpts() {
+	gOpts = newGlobalOpts()
+}
+
+// Version of the gcli
+func Version() string {
+	return version
+}
+
+// CommitID of the gcli
+func CommitID() string { return commitID }
+
+// Verbose returns Verbose level
+func Verbose() VerbLevel { return gOpts.Verbose }
+
+// SetVerbose level
+func SetVerbose(verbose VerbLevel) { gOpts.SetVerbose(verbose) }
+
+// SetDebugMode level
+func SetDebugMode() { SetVerbose(VerbDebug) }
+
+// SetQuietMode level
+func SetQuietMode() { SetVerbose(VerbQuiet) }
+
+// ResetVerbose level
+func ResetVerbose() { SetVerbose(defaultVerb) }
+
+// StrictMode get is strict mode
+func StrictMode() bool { return gOpts.strictMode }
+
+// SetStrictMode for parse flags
+func SetStrictMode(strict bool) { gOpts.SetStrictMode(strict) }
+
+// IsGteVerbose get is strict mode
+func IsGteVerbose(verb VerbLevel) bool { return gOpts.Verbose >= verb }
+
+// IsDebugMode get is debug mode
+func IsDebugMode() bool { return gOpts.Verbose >= VerbDebug }
 
 /*************************************************************************
  * options: some special flag vars
@@ -233,16 +205,16 @@ func (g *GlobalOpts) bindingFlags(fs *Flags) {
  *************************************************************************/
 
 // Ints The int flag list, implemented flag.Value interface
-type Ints = builtin.Ints
+type Ints = helper.Ints
 
 // Strings The string flag list, implemented flag.Value interface
-type Strings = builtin.Strings
+type Strings = helper.Strings
 
 // Booleans The bool flag list, implemented flag.Value interface
-type Booleans = builtin.Booleans
+type Booleans = helper.Booleans
 
 // EnumString The string flag list, implemented flag.Value interface
-type EnumString = builtin.EnumString
+type EnumString = helper.EnumString
 
 // String type, a special string
 //
@@ -261,7 +233,7 @@ type EnumString = builtin.EnumString
 //
 //	--names "23,34,56"
 //	 names.Ints(",") -> []int{23,34,56}
-type String = builtin.String
+type String = helper.String
 
 /*************************************************************************
  * Verbose level
@@ -311,7 +283,7 @@ func (vl *VerbLevel) Set(value string) error {
 		if iv > int(VerbCrazy) {
 			*vl = VerbCrazy
 		} else if iv < 0 { // fallback to default level.
-			*vl = DefaultVerb
+			*vl = defaultVerb
 		} else { // 0 - 5
 			*vl = VerbLevel(iv)
 		}
