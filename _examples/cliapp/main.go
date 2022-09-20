@@ -1,11 +1,12 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/_examples/cmd"
 	"github.com/gookit/gcli/v3/builtin"
-	"github.com/gookit/slog"
 	// "github.com/gookit/gcli/v3/builtin/filewatcher"
 	// "github.com/gookit/gcli/v3/builtin/reverseproxy"
 )
@@ -27,7 +28,7 @@ func main() {
 		app.Desc = "this is my cli application"
 		app.On(gcli.EvtAppInit, func(ctx *gcli.HookCtx) bool {
 			// do something...
-			slog.Println("init app event", ctx.Name())
+			fmt.Println("init app event", ctx.Name())
 			return false
 		})
 
