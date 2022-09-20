@@ -75,14 +75,14 @@ type GlobalOpts struct {
 	NoColor  bool
 	Verbose  VerbLevel // message report level
 	ShowHelp bool
-	// TODO Run application an interactive shell environment
-	inShell bool
 	// ShowVersion show version information
 	ShowVersion bool
 	// NoProgress dont display progress
 	NoProgress bool
 	// NoInteractive close interactive confirm
 	NoInteractive bool
+	// TODO Run application an interactive shell environment
+	inShell bool
 	// TODO auto format shorts `-a` to POSIX or UNIX style.
 	// StrictMode use strict mode for parse flags
 	// If True(default):

@@ -6,11 +6,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"text/template"
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/events"
-	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
 )
@@ -61,7 +60,7 @@ type Command struct {
 	Desc string
 
 	// Aliases is the command name's alias names
-	Aliases []string
+	Aliases arrutil.Strings
 	// Category for the command
 	Category string
 	// Config func, will call on `initialize`.
@@ -601,81 +600,6 @@ func (c *Command) IsSubCommand(name string) bool {
 // }
 
 /*************************************************************
- * command help
- *************************************************************/
-
-// CmdHelpTemplate help template for a command
-var CmdHelpTemplate = `{{.Desc}}
-{{if .Cmd.NotStandalone}}
-<comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.AliasesString}}</>){{end}}{{end}}
-<comment>Usage:</>
-  {$binName} [global options] {{if .Cmd.NotStandalone}}<cyan>{{.Cmd.Path}}</> {{end}}[--options ...] [arguments ...]{{ if .Subs }}
-  {$binName} [global options] {{if .Cmd.NotStandalone}}<cyan>{{.Cmd.Path}}</> {{end}}<cyan>SUBCOMMAND</> [--options ...] [arguments ...]{{end}}
-{{if .GOpts}}
-<comment>Global Options:</>
-{{.GOpts}}{{end}}{{if .Options}}
-<comment>Options:</>
-{{.Options}}{{end}}{{if .Cmd.Args}}
-<comment>Arguments:</>{{range $a := .Cmd.Args}}
-  <info>{{$a.HelpName | printf "%-12s"}}</>{{$a.Desc | ucFirst}}{{if $a.Required}}<red>*</>{{end}}{{end}}
-{{end}}{{ if .Subs }}
-<comment>Sub Commands:</>{{range $n,$c := .Subs}}
-  <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
-{{end}}{{if .Cmd.Examples}}
-<comment>Examples:</>
-{{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}
-<comment>Help:</>
-{{.Cmd.Help}}{{end}}`
-
-// ShowHelp show command help info
-func (c *Command) ShowHelp() {
-	Debugf("render the command '%s' help information", c.Name)
-
-	// custom help render func
-	if c.HelpRender != nil {
-		c.HelpRender(c)
-		return
-	}
-
-	// clear space and empty new line
-	if c.Examples != "" {
-		c.Examples = strings.Trim(c.Examples, "\n") + "\n"
-	}
-
-	// clear space and empty new line
-	if c.Help != "" {
-		c.Help = strings.Join([]string{strings.TrimSpace(c.Help), "\n"}, "")
-	}
-
-	vars := map[string]any{
-		"Cmd":  c,
-		"Subs": c.commands,
-		// global options
-		// - on standalone, will not init c.core.gFlags
-		"GOpts": nil,
-		// parse options to string
-		"Options": c.Flags.BuildHelp(),
-		// always upper first char
-		"Desc": c.HelpDesc(),
-	}
-
-	// if c.NotStandalone() {
-	// 	vars["GOpts"] = c.GFlags().BuildHelp()
-	// }
-
-	// render help message
-	str := helper.RenderText(CmdHelpTemplate, vars, template.FuncMap{
-		"paddingName": func(n string) string {
-			return strutil.PadRight(n, " ", c.nameMaxWidth)
-		},
-	})
-
-	// parse gcli help vars then print help
-	// fmt.Printf("%#v\n", s)
-	color.Print(c.ReplaceVars(str))
-}
-
-/*************************************************************
  * helper methods
  *************************************************************/
 
@@ -764,16 +688,6 @@ func (c *Command) NewErr(msg string) error { return errors.New(msg) }
 // NewErrf format message and add error to the command
 func (c *Command) NewErrf(format string, v ...any) error {
 	return fmt.Errorf(format, v...)
-}
-
-// AliasesString returns aliases string
-func (c *Command) AliasesString(sep ...string) string {
-	s := ","
-	if len(sep) == 1 {
-		s = sep[0]
-	}
-
-	return strings.Join(c.Aliases, s)
 }
 
 // HelpDesc format desc string for render help

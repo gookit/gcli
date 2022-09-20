@@ -4,14 +4,11 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"text/template"
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/events"
-	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/cliutil"
-	"github.com/gookit/goutil/strutil"
 )
 
 /*************************************************************
@@ -124,10 +121,8 @@ func NewApp(fns ...func(app *App)) *App {
 	// set a default version
 	app.Version = "1.0.0"
 
-	if len(fns) > 0 {
-		for _, fn := range fns {
-			fn(app)
-		}
+	for _, fn := range fns {
+		fn(app)
 	}
 	return app
 }
@@ -290,8 +285,7 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 	Logf(VerbDebug, "will begin parse application options")
 
 	// parse global options
-	err := app.doParseOpts(args)
-	if err != nil { // has error.
+	if err := app.doParseOpts(args); err != nil { // has error.
 		color.Error.Tips(err.Error())
 		return
 	}
@@ -329,31 +323,31 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 	return true
 }
 
+/*************************************************************
+ * prepare run
+ *************************************************************/
+
 // prepare to running, parse args, get command name and command args
 func (app *App) prepareRun() (code int, name string) {
 	// find command name.
 	name = app.findCommandName()
-	// is help command name.
 	if name == HelpCommand {
 		if len(app.args) == 0 { // like 'help'
 			app.showApplicationHelp()
-			return
+		} else {
+			// like 'help COMMAND'
+			code = app.showCommandHelp(app.args)
 		}
-
-		// like 'help COMMAND'
-		code = app.showCommandHelp(app.args)
 		return
 	}
 
 	// not input and not set defaultCommand
 	if name == "" {
-		// run app.Func
 		if app.Func != nil {
 			code = app.doRunFunc(app.args)
-			return
+		} else {
+			app.showApplicationHelp()
 		}
-
-		app.showApplicationHelp()
 		return
 	}
 
@@ -381,8 +375,8 @@ func (app *App) prepareRun() (code int, name string) {
 
 func (app *App) findCommandName() (name string) {
 	args := app.args
-	// not input command, will try run app.defaultCommand
 	if len(args) == 0 {
+		// not input command, will try to run app.defaultCommand
 		name = app.defaultCommand
 		if name == "" {
 			return
@@ -446,15 +440,16 @@ func (app *App) findCommandName() (name string) {
 	return rawName
 }
 
-// RunLine manual run an command by command line string.
-//
-// eg: app.RunLine("top --top-opt val0 sub --sub-opt val1 arg0")
-func (app *App) RunLine(argsLine string) int {
-	args := cliutil.ParseLine(argsLine)
-	return app.Run(args)
+/*************************************************************
+ * prepare run
+ *************************************************************/
+
+// QuickRun the application with os.Args
+func (app *App) QuickRun() int {
+	return app.Run(os.Args[1:])
 }
 
-// Run running application
+// Run the application
 //
 // Usage:
 //
@@ -497,7 +492,15 @@ func (app *App) Run(args []string) (code int) {
 	return app.exitOnEnd(code)
 }
 
-// RunCmd running an top command with custom args
+// RunLine manual run an command by command line string.
+//
+// eg: app.RunLine("top --top-opt val0 sub --sub-opt val1 arg0")
+func (app *App) RunLine(argsLine string) int {
+	args := cliutil.ParseLine(argsLine)
+	return app.Run(args)
+}
+
+// RunCmd running a top command with custom args
 //
 // Usage:
 //
@@ -506,6 +509,9 @@ func (app *App) Run(args []string) (code int) {
 //	// can add sub command on args
 //	app.Exec("top", []string{"sub", "-o", "abc"})
 func (app *App) RunCmd(name string, args []string) int {
+	if app.HasCommand(name) {
+		return ERR
+	}
 	return app.doRunCmd(name, args)
 }
 
@@ -539,6 +545,42 @@ func (app *App) doRunFunc(args []string) (code int) {
 	return
 }
 
+// Exec direct exec other command in current command
+//
+// Name can be:
+//   - top command name in the app. 'top'
+//   - command path in the app. 'top sub'
+//
+// Usage:
+//
+//	app.Exec("top")
+//	app.Exec("top:sub")
+//	app.Exec("top sub")
+//	app.Exec("top sub", []string{"-a", "val0", "arg0"})
+func (app *App) Exec(path string, args []string) error {
+	cmd := app.MatchByPath(path)
+	if cmd == nil {
+		return fmt.Errorf("exec unknown command %q", path)
+	}
+
+	Debugf("manual exec the application command: %q", path)
+
+	// parse flags and execute command
+	return cmd.innerExecute(args, false)
+}
+
+/*************************************************************
+ * helper methods
+ *************************************************************/
+
+// Exit get the app GlobalFlags
+func (app *App) Exit(code int) {
+	if app.ExitFunc == nil {
+		os.Exit(code)
+	}
+	app.ExitFunc(code)
+}
+
 func (app *App) exitOnEnd(code int) int {
 	Debugf("application exit with code: %d", code)
 	// if IsGteVerbose(VerbDebug) {
@@ -554,49 +596,6 @@ func (app *App) exitOnEnd(code int) int {
 		app.Exit(code)
 	}
 	return code
-}
-
-// Exec direct exec other command in current command
-//
-// name can be:
-// - top command name in the app. 'top'
-// - command path in the app. 'top sub'
-//
-// Usage:
-//
-//	app.Exec("top")
-//	app.Exec("top:sub")
-//	app.Exec("top sub")
-//	app.Exec("top sub", []string{"-a", "val0", "arg0"})
-func (app *App) Exec(path string, args []string) error {
-	cmd := app.MatchByPath(path)
-	if cmd == nil {
-		return fmt.Errorf("exec unknown command: '%s'", path)
-	}
-
-	Debugf("manual exec the application command: %s", path)
-
-	// parse flags and execute command
-	return cmd.innerExecute(args, false)
-}
-
-// ExecLine manual execute an command by command line string.
-// eg: app.ExecLine("top --top-opt val0 sub --sub-opt val1 arg0")
-// func (app *App) ExecLine(argsLine string) error {
-// 	args := cliutil.ParseLine(argsLine)
-// }
-
-/*************************************************************
- * helper methods
- *************************************************************/
-
-// Exit get the app GlobalFlags
-func (app *App) Exit(code int) {
-	if app.ExitFunc == nil {
-		os.Exit(code)
-	}
-
-	app.ExitFunc(code)
 }
 
 // CommandName get current command name
@@ -635,158 +634,4 @@ func (app *App) Fire(event string, data map[string]any) bool {
 
 	ctx := newHookCtx(event, nil, data).WithApp(app)
 	return app.Hooks.Fire(event, ctx)
-}
-
-/*************************************************************
- * display app help
- *************************************************************/
-
-// display app version info
-func (app *App) showVersionInfo() {
-	Debugf("print application version info")
-
-	color.Printf(
-		"%s\n\nVersion: <cyan>%s</>\n",
-		strutil.UpperFirst(app.Desc),
-		app.Version,
-	)
-
-	if app.Logo.Text != "" {
-		color.Printf("%s\n", color.WrapTag(app.Logo.Text, app.Logo.Style))
-	}
-}
-
-// display unknown input command and similar commands tips
-func (app *App) showCommandTips(name string) {
-	Debugf("will find and show similar command tips")
-
-	color.Error.Tips(`unknown input command "<mga>%s</>"`, name)
-	if ns := app.findSimilarCmd(name); len(ns) > 0 {
-		color.Printf("\nMaybe you mean:\n  <green>%s</>\n", strings.Join(ns, ", "))
-	}
-
-	color.Printf("\nUse <cyan>%s --help</> to see available commands\n", app.binName)
-}
-
-// AppHelpTemplate help template for app(all commands)
-var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
-<comment>Usage:</>
-  {$binName} [global options...] <info>COMMAND</> [--options ...] [arguments ...]{{if .HasSubs }}
-  {$binName} [global options...] <info>COMMAND</> [--options ...] <info>SUBCOMMAND</> [--options ...] [arguments ...]{{end}}
-
-<comment>Global Options:</>
-{{.GOpts}}
-<comment>Available Commands:</>{{range $cmdName, $c := .Cs}}{{if $c.Visible}}
-  <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}{{end}}
-  <info>{{ paddingName "help" }}</> Display help information
-
-Use "<cyan>{$binName} COMMAND -h</>" for more information about a command
-`
-
-// display app help and list all commands. showCommandList()
-func (app *App) showApplicationHelp() {
-	Debugf("render application help and commands list")
-
-	// cmdHelpTemplate = color.ReplaceTag(cmdHelpTemplate)
-	// render help text template
-	s := helper.RenderText(AppHelpTemplate, map[string]any{
-		"Cs":    app.commands,
-		"GOpts": app.fs.String(),
-		// app version
-		"Version": app.Version,
-		"HasSubs": app.hasSubcommands,
-		// always upper first char
-		"Desc": strutil.UpperFirst(app.Desc),
-	}, template.FuncMap{
-		"paddingName": func(n string) string {
-			return strutil.PadRight(n, " ", app.nameMaxWidth)
-		},
-	})
-
-	// parse help vars and render color tags
-	color.Print(app.ReplaceVars(s))
-}
-
-// showCommandHelp display help for an command
-func (app *App) showCommandHelp(list []string) (code int) {
-	binName := app.binName
-	// if len(list) == 0 { TODO support multi level sub command?
-	if len(list) > 1 {
-		color.Error.Tips("Too many arguments given.\n\nUsage: %s help COMMAND", binName)
-		return ERR
-	}
-
-	// get real name
-	name := app.cmdAliases.ResolveAlias(list[0])
-	if name == HelpCommand || name == "-h" {
-		Debugf("render help command information")
-
-		color.Println("Display help message for application or command.\n")
-		color.Printf(`<yellow>Usage:</>
-  <cyan>%s COMMAND --help</>
-  <cyan>%s COMMAND SUBCOMMAND --help</>
-  <cyan>%s COMMAND SUBCOMMAND ... --help</>
-  <cyan>%s help COMMAND</>
-`, binName, binName, binName, binName)
-		return
-	}
-
-	cmd, exist := app.Command(name)
-	if !exist {
-		color.Error.Prompt("Unknown command name '%s'. Run '%s -h' see all commands", name, binName)
-		return ERR
-	}
-
-	// show help for the give command.
-	cmd.ShowHelp()
-	return
-}
-
-// show bash/zsh completion
-func (app *App) showAutoCompletion(_ []string) {
-	// TODO ...
-}
-
-// findSimilarCmd find similar cmd by input string
-func (app *App) findSimilarCmd(input string) []string {
-	var ss []string
-	// ins := strings.Split(input, "")
-	// fmt.Print(input, ins)
-	ln := len(input)
-
-	names := app.CmdNameMap()
-	names["help"] = 4 // add 'help' command
-
-	// find from command names
-	for name := range names {
-		cln := len(name)
-		if cln > ln && strings.Contains(name, input) {
-			ss = append(ss, name)
-		} else if ln > cln && strings.Contains(input, name) {
-			// sns := strings.Split(str, "")
-			ss = append(ss, name)
-		}
-
-		// max find 5 items
-		if len(ss) == 5 {
-			break
-		}
-	}
-
-	// find from aliases
-	for alias := range app.cmdAliases.Mapping() {
-		// max find 5 items
-		if len(ss) >= 5 {
-			break
-		}
-
-		cln := len(alias)
-		if cln > ln && strings.Contains(alias, input) {
-			ss = append(ss, alias)
-		} else if ln > cln && strings.Contains(input, alias) {
-			ss = append(ss, alias)
-		}
-	}
-
-	return ss
 }

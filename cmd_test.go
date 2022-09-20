@@ -34,8 +34,8 @@ func TestNewCommand(t *testing.T) {
 	is.True(c.IsDisabled())
 
 	// is.Eq("", c.ArgLine())
-	is.Eq("alias1,alias2", c.AliasesString())
-	is.Eq("alias1alias2", c.AliasesString(""))
+	is.Eq("alias1,alias2", c.Aliases.String())
+	is.Eq("alias1alias2", c.Aliases.Join(""))
 
 	c = gcli.NewCommand("test1", "desc test")
 	app := gcli.NewApp()
@@ -87,11 +87,10 @@ func TestCommand_Run(t *testing.T) {
 	is.NoErr(err)
 	is.True(c.IsStandalone())
 	is.False(c.NotStandalone())
-	is.Eq("alias1", c.AliasesString(""))
+	is.Eq("alias1", c.Aliases.String())
 
 	err = c.Run([]string{"-h"})
 	is.NoErr(err)
-	is.Eq("alias1", c.AliasesString(""))
 }
 
 func TestNewCommand_Run(t *testing.T) {
@@ -111,11 +110,11 @@ func TestNewCommand_Run(t *testing.T) {
 	is.True(c.IsStandalone())
 	is.False(c.NotStandalone())
 
-	is.Eq("alias1", c.AliasesString(""))
+	is.Eq("alias1", c.Aliases.String())
 
 	err = c.Run([]string{"-h"})
 	is.NoErr(err)
-	is.Eq("alias1", c.AliasesString(""))
+	is.Eq("alias1", c.Aliases.String())
 
 	// error run on app
 	g := gcli.NewApp()
@@ -278,8 +277,8 @@ var c0 = gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
 	c.AddArg("arg1", "arg1 desc")
 	c.Func = func(c *gcli.Command, args []string) error {
 		bf.WriteString("name=" + c.Name)
-		c.SetValue("name", c.Name)
-		c.SetValue("args", args)
+		c.Set("name", c.Name)
+		c.Set("args", args)
 		dump.P(c.ID(), "command Func is exec")
 		return nil
 	}
@@ -338,8 +337,8 @@ func TestCommand_Run_parseOptions(t *testing.T) {
 	err := c0.Run([]string{"--int", "10", "--str=abc", "txt"})
 
 	is.NoErr(err)
-	is.Eq("test", c0.GetVal("name"))
-	is.Eq([]string{"txt"}, c0.GetVal("args"))
+	is.Eq("test", c0.Get("name"))
+	is.Eq([]string{"txt"}, c0.Get("args"))
 
 	is.Eq(10, int0)
 	is.Eq("abc", str0)
