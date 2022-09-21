@@ -42,16 +42,65 @@ const (
 	// EvtStop   = "stop"
 )
 
-/*************************************************************
- * simple events manage
- *************************************************************/
-
 // HookFunc definition.
 //
 // Returns:
 //   - True go on handle. default is True
 //   - False stop continue handle.
 type HookFunc func(ctx *HookCtx) (stop bool)
+
+/*************************************************************
+ * simple events manage
+ *************************************************************/
+
+// Hooks struct. hookManager
+type Hooks struct {
+	// Hooks can set some hooks func on running.
+	hooks map[string]HookFunc
+}
+
+// On register event hook by name
+func (h *Hooks) On(name string, handler HookFunc) {
+	if handler == nil {
+		panicf("event %q handler is nil", name)
+	}
+
+	if h.hooks == nil {
+		h.hooks = make(map[string]HookFunc)
+	}
+	h.hooks[name] = handler
+}
+
+// AddHook register on not exists hook.
+func (h *Hooks) AddHook(name string, handler HookFunc) {
+	if _, ok := h.hooks[name]; !ok {
+		h.On(name, handler)
+	}
+}
+
+// Fire event by name, allow with event data.
+// returns True for stop continue run.
+func (h *Hooks) Fire(event string, ctx *HookCtx) (stop bool) {
+	if handler, ok := h.hooks[event]; ok {
+		return handler(ctx)
+	}
+	return false
+}
+
+// HasHook registered check.
+func (h *Hooks) HasHook(event string) bool {
+	_, ok := h.hooks[event]
+	return ok
+}
+
+// ResetHooks clear all hooks
+func (h *Hooks) ResetHooks() {
+	h.hooks = nil
+}
+
+/*************************************************************
+ * events context
+ *************************************************************/
 
 // HookCtx struct
 type HookCtx struct {
@@ -118,46 +167,4 @@ func (hc *HookCtx) WithData(data map[string]any) *HookCtx {
 func (hc *HookCtx) WithApp(a *App) *HookCtx {
 	hc.App = a
 	return hc
-}
-
-// Hooks struct. hookManager
-type Hooks struct {
-	// Hooks can set some hooks func on running.
-	hooks map[string]HookFunc
-}
-
-// On register event hook by name
-func (h *Hooks) On(name string, handler HookFunc) {
-	if handler != nil {
-		if h.hooks == nil {
-			h.hooks = make(map[string]HookFunc)
-		}
-		h.hooks[name] = handler
-	}
-}
-
-// AddHook register on not exists hook.
-func (h *Hooks) AddHook(name string, handler HookFunc) {
-	if _, ok := h.hooks[name]; !ok {
-		h.On(name, handler)
-	}
-}
-
-// Fire event by name, allow with event data
-func (h *Hooks) Fire(event string, ctx *HookCtx) (stop bool) {
-	if handler, ok := h.hooks[event]; ok {
-		return handler(ctx)
-	}
-	return false
-}
-
-// HasHook register
-func (h *Hooks) HasHook(event string) bool {
-	_, ok := h.hooks[event]
-	return ok
-}
-
-// ResetHooks clear hooks
-func (h *Hooks) ResetHooks() {
-	h.hooks = nil
 }

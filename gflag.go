@@ -136,7 +136,7 @@ func (fs *Flags) InitFlagSet(name string) {
 
 	fs.fSet = flag.NewFlagSet(name, flag.ContinueOnError)
 	// disable output internal error message on parse flags
-	fs.fSet.SetOutput(ioutil.Discard)
+	fs.fSet.SetOutput(io.Discard)
 	// nothing to do ... render usage on after parsed
 	fs.fSet.Usage = func() {}
 }

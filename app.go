@@ -75,8 +75,6 @@ type App struct {
 	// rawFlagArgs []string
 	// clean os.args, not contains bin-name and command-name
 	cleanArgs []string
-	// has sub-commands on the app
-	hasSubcommands bool
 	// the default command name.
 	// if is empty, will render help message.
 	defaultCommand string
@@ -101,25 +99,19 @@ func NewApp(fns ...func(app *App)) *App {
 	app := &App{
 		Name: "GCliApp",
 		Desc: "This is my console application",
-		opts: newGlobalOpts(),
-		// set a default version.
-		// Version: "1.0.0",
-		// config
-		// ExitOnEnd: true,
-		// group
-		// moduleCommands: make(map[string]map[string]*Command),
-		base: newBase(),
 	}
 
-	app.fs = NewFlags("appOptions").WithConfigFn(func(opt *FlagsConfig) {
+	// set a default version
+	app.Version = "1.0.0"
+	app.fs = NewFlags("appOpts").WithConfigFn(func(opt *FlagsConfig) {
 		opt.WithoutType = true
 		opt.Alignment = AlignLeft
 	})
 
 	// init base
-	Logf(VerbCrazy, "create new base on init application")
-	// set a default version
-	app.Version = "1.0.0"
+	Logf(VerbCrazy, "create a new cli application, and create base ")
+	app.base = newBase()
+	app.opts = newGlobalOpts()
 
 	for _, fn := range fns {
 		fn(app)
@@ -152,7 +144,7 @@ func (app *App) bindingGOpts() {
 	// binding global options
 	app.opts.bindingFlags(fs)
 	// add more ...
-	// This is a internal option
+	// This is an internal option
 	fs.BoolVar(&gOpts.inCompletion, &FlagMeta{
 		Name: "in-completion",
 		Desc: "generate completion scripts for bash/zsh",
@@ -217,11 +209,7 @@ func (app *App) AddCommand(c *Command) {
 	c.Context = app.Context
 
 	// do add command
-	app.base.addCommand(app.Name, c)
-
-	if c.HasCommands() {
-		app.hasSubcommands = true
-	}
+	app.addCommand(app.Name, c)
 
 	app.fireWithCmd(events.OnCmdInit, c, nil)
 }
@@ -282,7 +270,7 @@ func (app *App) doParseOpts(args []string) error {
 
 // parseAppOpts parse global options
 func (app *App) parseAppOpts(args []string) (ok bool) {
-	Logf(VerbDebug, "will begin parse application options")
+	Logf(VerbDebug, "will begin parse global options")
 
 	// parse global options
 	if err := app.doParseOpts(args); err != nil { // has error.
@@ -298,13 +286,11 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 
 	// check global options
 	if app.opts.ShowHelp {
-		app.showApplicationHelp()
-		return
+		return app.showApplicationHelp()
 	}
 
 	if app.opts.ShowVersion {
-		app.showVersionInfo()
-		return
+		return app.showVersionInfo()
 	}
 
 	// disable color
@@ -603,11 +589,6 @@ func (app *App) CommandName() string {
 	return app.commandName
 }
 
-// HasSubcommands on the app
-func (app *App) HasSubcommands() bool {
-	return app.hasSubcommands
-}
-
 // SetDefaultCommand set default command name
 func (app *App) SetDefaultCommand(name string) {
 	app.defaultCommand = name
@@ -616,11 +597,10 @@ func (app *App) SetDefaultCommand(name string) {
 // On add hook handler for a hook event
 func (app *App) On(name string, handler HookFunc) {
 	Debugf("register application hook: %s", name)
-
 	app.Hooks.On(name, handler)
 }
 
-// fire hook on the app. returns False for stop continue run.
+// fire hook on the app. returns True for stop continue run.
 func (app *App) fireWithCmd(event string, cmd *Command, data map[string]any) bool {
 	Debugf("trigger the application event: <green>%s</>", event)
 
@@ -628,7 +608,7 @@ func (app *App) fireWithCmd(event string, cmd *Command, data map[string]any) boo
 	return app.Hooks.Fire(event, ctx)
 }
 
-// Fire hook on the app. returns False for stop continue run.
+// Fire hook on the app. returns True for stop continue run.
 func (app *App) Fire(event string, data map[string]any) bool {
 	Debugf("trigger the application event: <green>%s</>", event)
 

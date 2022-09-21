@@ -239,6 +239,8 @@ func (c *Command) MatchByPath(path string) *Command {
 }
 
 // initialize works for the command
+//
+// - sub-cmd
 func (c *Command) initialize() {
 	if c.initialized {
 		return

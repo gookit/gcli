@@ -163,6 +163,8 @@ type base struct {
 	commandName string
 	// the max width for added command names. default set 12.
 	nameMaxWidth int
+	// has sub-commands on the app
+	hasSubcommands bool
 
 	// Whether it has been initialized
 	initialized bool
@@ -219,6 +221,11 @@ func (b *base) ResolveAlias(alias string) string {
 	return b.cmdAliases.ResolveAlias(alias)
 }
 
+// HasSubcommands on the app
+func (b *base) HasSubcommands() bool {
+	return b.hasSubcommands
+}
+
 // HasCommands on the cmd/app
 func (b *base) HasCommands() bool {
 	return len(b.cmdNames) > 0
@@ -259,6 +266,9 @@ func (b *base) addCommand(pName string, c *Command) {
 
 	// add command to app
 	b.cmdNames[cName] = nameLen
+	if c.HasCommands() {
+		b.hasSubcommands = true
+	}
 
 	// record command name max length
 	if nameLen > b.nameMaxWidth {

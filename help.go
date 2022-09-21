@@ -14,7 +14,7 @@ import (
  *************************************************************/
 
 // display app version info
-func (app *App) showVersionInfo() {
+func (app *App) showVersionInfo() bool {
 	Debugf("print application version info")
 
 	color.Printf(
@@ -26,6 +26,7 @@ func (app *App) showVersionInfo() {
 	if app.Logo.Text != "" {
 		color.Printf("%s\n", color.WrapTag(app.Logo.Text, app.Logo.Style))
 	}
+	return false
 }
 
 // display unknown input command and similar commands tips
@@ -56,7 +57,7 @@ Use "<cyan>{$binName} COMMAND -h</>" for more information about a command
 `
 
 // display app help and list all commands. showCommandList()
-func (app *App) showApplicationHelp() {
+func (app *App) showApplicationHelp() bool {
 	Debugf("render application help and commands list")
 
 	// cmdHelpTemplate = color.ReplaceTag(cmdHelpTemplate)
@@ -77,6 +78,7 @@ func (app *App) showApplicationHelp() {
 
 	// parse help vars and render color tags
 	color.Print(app.ReplaceVars(s))
+	return false
 }
 
 // showCommandHelp display help for an command
