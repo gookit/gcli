@@ -2,11 +2,45 @@ package helper
 
 import (
 	"bytes"
+	"fmt"
+	"regexp"
 	"strings"
 	"text/template"
 
 	"github.com/gookit/goutil/strutil"
 )
+
+const (
+	// match a good option, argument name
+	regGoodName = `^[a-zA-Z][\w-]*$`
+	// match a good command name
+	regGoodCmdName = `^[a-zA-Z][\w-]*$`
+	// match command id. eg: "self:init"
+	regGoodCmdId = `^[a-zA-Z][\w:-]*$`
+	// match command path. eg: "self init"
+	// regGoodCmdPath = `^[a-zA-Z][\w -]*$`
+)
+
+var (
+	// GoodName good name for option and argument
+	goodName = regexp.MustCompile(regGoodName)
+	// GoodCmdId match a good command name
+	goodCmdId = regexp.MustCompile(regGoodCmdId)
+	// GoodCmdName match a good command name
+	goodCmdName = regexp.MustCompile(regGoodCmdName)
+)
+
+func IsGoodName(name string) bool {
+	return goodName.MatchString(name)
+}
+
+func IsGoodCmdName(name string) bool {
+	return goodCmdName.MatchString(name)
+}
+
+func IsGoodCmdId(name string) bool {
+	return goodCmdId.MatchString(name)
+}
 
 // exec: `stty -a 2>&1`
 // const (
@@ -22,6 +56,11 @@ var (
 	// macSttyMsgMatch = regexp.MustCompile(macSttyMsgPattern)
 	// linuxSttyMsgMatch = regexp.MustCompile(linuxSttyMsgPattern)
 )
+
+// Panicf message
+func Panicf(format string, v ...any) {
+	panic(fmt.Sprintf("GCli: "+format, v...))
+}
 
 // RenderText render text template with data. TODO use strutil.RenderText()
 func RenderText(input string, data any, fns template.FuncMap, isFile ...bool) string {

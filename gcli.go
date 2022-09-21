@@ -16,7 +16,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/envutil"
 )
 
@@ -63,6 +63,17 @@ func init() {
 	if verb := os.Getenv(VerbEnvName); verb != "" {
 		_ = gOpts.Verbose.Set(verb)
 	}
+}
+
+// Flags alias of the gflag.Flags
+type Flags = gflag.Flags
+
+// FlagMeta alias of the gflag.FlagMeta
+type FlagMeta = gflag.FlagMeta
+
+// NewFlags create new gflag.Flags
+func NewFlags(nameWithDesc ...string) *gflag.Flags {
+	return gflag.New(nameWithDesc...)
 }
 
 /*************************************************************************
@@ -205,16 +216,16 @@ func IsDebugMode() bool { return gOpts.Verbose >= VerbDebug }
  *************************************************************************/
 
 // Ints The int flag list, implemented flag.Value interface
-type Ints = helper.Ints
+type Ints = gflag.Ints
 
 // Strings The string flag list, implemented flag.Value interface
-type Strings = helper.Strings
+type Strings = gflag.Strings
 
 // Booleans The bool flag list, implemented flag.Value interface
-type Booleans = helper.Booleans
+type Booleans = gflag.Booleans
 
 // EnumString The string flag list, implemented flag.Value interface
-type EnumString = helper.EnumString
+type EnumString = gflag.EnumString
 
 // String type, a special string
 //
@@ -233,7 +244,7 @@ type EnumString = helper.EnumString
 //
 //	--names "23,34,56"
 //	 names.Ints(",") -> []int{23,34,56}
-type String = helper.String
+type String = gflag.String
 
 /*************************************************************************
  * Verbose level

@@ -1,4 +1,4 @@
-package gcli_test
+package gflag_test
 
 import (
 	"bytes"
@@ -8,12 +8,13 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/testutil/assert"
 )
 
 func TestFlags_Basic(t *testing.T) {
-	fs := gcli.NewFlags("testFlags")
+	fs := gflag.New("testFlags")
 
 	assert.Len(t, fs.Metas(), 0)
 	assert.Eq(t, 0, fs.Len())

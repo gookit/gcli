@@ -3,6 +3,7 @@ package gcli
 import (
 	"strings"
 
+	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
@@ -108,7 +109,7 @@ func (ags *Arguments) AddArg(name, desc string, requiredAndArrayed ...bool) *Arg
 
 // AddArgByRule add an arg by simple string rule
 func (ags *Arguments) AddArgByRule(name, rule string) *Argument {
-	mp := parseSimpleRule(name, rule)
+	mp := gflag.ParseSimpleRule(name, rule)
 
 	required := strutil.QuietBool(mp["required"])
 	newArg := NewArgument(name, mp["desc"], required)

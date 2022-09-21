@@ -1,4 +1,4 @@
-package gcli
+package gflag
 
 import (
 	"bytes"
@@ -13,6 +13,7 @@ import (
 	"unsafe"
 
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/stdutil"
@@ -104,8 +105,8 @@ func newDefaultFlagConfig() *FlagsConfig {
 	}
 }
 
-// NewFlags create a new Flags
-func NewFlags(nameWithDesc ...string) *Flags {
+// New create a new Flags
+func New(nameWithDesc ...string) *Flags {
 	fs := &Flags{
 		out: os.Stdout,
 		cfg: newDefaultFlagConfig(),
@@ -227,7 +228,7 @@ func (fs *Flags) Parse(args []string) (err error) {
 
 	if len(fs.shorts) > 0 && len(args) > 0 {
 		args = cflag.ReplaceShorts(args, fs.shorts)
-		Debugf("replace shortcuts. now, args: %v", args)
+		// TODO gcli.Debugf("replace shortcuts. now, args: %v", args)
 	}
 
 	// do parsing
@@ -331,7 +332,7 @@ func (fs *Flags) FromStruct(ptr any) error {
 		if fs.cfg.TagRuleType == TagRuleNamed {
 			mp = parseNamedRule(name, str)
 		} else if fs.cfg.TagRuleType == TagRuleSimple {
-			mp = parseSimpleRule(name, str)
+			mp = ParseSimpleRule(name, str)
 		} else {
 			return errTagRuleType
 		}
@@ -619,7 +620,7 @@ func (fs *Flags) Required(names ...string) {
 	for _, name := range names {
 		meta, ok := fs.metas[name]
 		if !ok {
-			panicf("undefined option flag '%s'", name)
+			helper.Panicf("undefined option flag '%s'", name)
 		}
 		meta.Required = true
 	}
@@ -637,7 +638,7 @@ func (fs *Flags) checkFlagInfo(meta *FlagMeta) string {
 	// check flag name
 	name := meta.initCheck()
 	if _, ok := fs.metas[name]; ok {
-		panicf("redefined option flag '%s'", name)
+		helper.Panicf("redefined option flag '%s'", name)
 	}
 
 	// is a short name
@@ -670,15 +671,15 @@ func (fs *Flags) checkShortNames(name string, shorts []string) {
 
 	for _, short := range shorts {
 		if name == short {
-			panicf("short name '%s' has been used as the current option name", short)
+			helper.Panicf("short name '%s' has been used as the current option name", short)
 		}
 
 		if _, ok := fs.names[short]; ok {
-			panicf("short name '%s' has been used as an option name", short)
+			helper.Panicf("short name '%s' has been used as an option name", short)
 		}
 
 		if n, ok := fs.shorts[short]; ok {
-			panicf("short name '%s' has been used by option '%s'", short, n)
+			helper.Panicf("short name '%s' has been used by option '%s'", short, n)
 		}
 
 		// storage short name
@@ -975,11 +976,11 @@ func (m *FlagMeta) initCheck() string {
 func (m *FlagMeta) goodName() string {
 	name := strings.Trim(m.Name, "- ")
 	if name == "" {
-		panicf("option flag name cannot be empty")
+		helper.Panicf("option flag name cannot be empty")
 	}
 
-	if !goodName.MatchString(name) {
-		panicf("option flag name '%s' is invalid, must match: %s", name, regGoodName)
+	if !helper.IsGoodName(name) {
+		helper.Panicf("option flag name '%s' is invalid", name)
 	}
 
 	// update self name

@@ -7,6 +7,8 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/gcli/v3/gflag"
+	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/cliutil"
 )
@@ -103,9 +105,9 @@ func NewApp(fns ...func(app *App)) *App {
 
 	// set a default version
 	app.Version = "1.0.0"
-	app.fs = NewFlags("appOpts").WithConfigFn(func(opt *FlagsConfig) {
+	app.fs = gflag.New("appOpts").WithConfigFn(func(opt *gflag.FlagsConfig) {
 		opt.WithoutType = true
-		opt.Alignment = AlignLeft
+		opt.Alignment = gflag.AlignLeft
 	})
 
 	// init base
@@ -145,7 +147,7 @@ func (app *App) bindingGOpts() {
 	app.opts.bindingFlags(fs)
 	// add more ...
 	// This is an internal option
-	fs.BoolVar(&gOpts.inCompletion, &FlagMeta{
+	fs.BoolVar(&gOpts.inCompletion, &gflag.FlagMeta{
 		Name: "in-completion",
 		Desc: "generate completion scripts for bash/zsh",
 		// hidden it
@@ -383,7 +385,7 @@ func (app *App) findCommandName() (name string) {
 	}
 
 	// check is valid ID/name string.
-	if !goodCmdId.MatchString(name) {
+	if !helper.IsGoodCmdId(name) {
 		Logf(VerbWarn, "the input command name(%s) string is invalid", name)
 		return ""
 	}

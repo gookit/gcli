@@ -9,6 +9,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
@@ -622,7 +623,7 @@ func (c *Command) goodName() string {
 		panicf("the command name can not be empty")
 	}
 
-	if !goodCmdName.MatchString(name) {
+	if !helper.IsGoodCmdName(name) {
 		panicf("the command name '%s' is invalid, must match: %s", name, regGoodCmdName)
 	}
 
