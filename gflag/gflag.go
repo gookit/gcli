@@ -6,7 +6,6 @@ import (
 	"flag"
 	"fmt"
 	"io"
-	"io/ioutil"
 	"os"
 	"reflect"
 	"strings"
@@ -21,11 +20,10 @@ import (
 	"github.com/gookit/goutil/strutil"
 )
 
-// The options text alignment type
-// - Align right, padding left
-// - Align left, padding right
 const (
-	AlignLeft  = strutil.PosRight
+	// AlignLeft Align right, padding left
+	AlignLeft = strutil.PosRight
+	// AlignRight Align left, padding right
 	AlignRight = strutil.PosLeft
 
 	// default desc
@@ -35,6 +33,7 @@ const (
 	//
 	// eg: `flag:"name=int0;shorts=i;required=true;desc=int option message"`
 	TagRuleNamed = 0
+
 	// TagRuleSimple struct tag use simple rule.
 	// format: "desc;required;default;shorts"
 	//
@@ -69,8 +68,7 @@ type OptCategory struct {
 type Flags struct {
 	// Desc message
 	Desc string
-	// ExitFunc for handle exit
-	// ExitFunc func(code int)
+	// AfterParse hook
 	AfterParse func(fs *Flags) error
 
 	// cfg option for the flags
@@ -168,7 +166,7 @@ func (fs *Flags) WithConfigFn(fns ...func(cfg *FlagsConfig)) *Flags {
 //
 // Usage:
 //
-//		gf := gcli.NewFlags()
+//		gf := gflag.New()
 //	 ...
 //		gf.Run(os.Args)
 func (fs *Flags) Run(args []string) {
@@ -206,7 +204,7 @@ func (fs *Flags) Run(args []string) {
 //
 // Usage:
 //
-//	gf := gcli.NewFlags()
+//	gf := gflag.New()
 //	gf.BoolOpt(&debug, "debug", "", defDebug, "open debug mode")
 //	gf.UintOpt(&port, "port", "p", 18081, "the http server port")
 //
@@ -214,10 +212,7 @@ func (fs *Flags) Run(args []string) {
 func (fs *Flags) Parse(args []string) (err error) {
 	defer func() {
 		if err := recover(); err != nil {
-			// if Debug {
-			// 	cliutil.Errorln("recover error on run parse")
-			// }
-			color.Errorln("Panic Error:", err)
+			color.Errorln("Flags.Parse Error:", err)
 		}
 	}()
 
@@ -255,9 +250,6 @@ func (fs *Flags) Parse(args []string) (err error) {
 }
 
 func (fs *Flags) prepare() error {
-	// disable output internal error message on parse flags
-	fs.fSet.SetOutput(ioutil.Discard)
-
 	return nil
 }
 

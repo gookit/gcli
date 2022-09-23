@@ -44,7 +44,7 @@ type AppConfig struct {
 	BeforeRun     func() bool
 	AfterRun      func() bool
 	BeforeAddOpts func(opts *Flags)
-	AfterBindOpts func(app *App) bool
+	AfterAddOpts  func(app *App) bool
 }
 
 // App the cli app definition
@@ -53,7 +53,7 @@ type App struct {
 	// for manage commands
 	base
 
-	AppConfig
+	// AppConfig
 
 	fs *Flags
 	// app flag options
@@ -131,17 +131,50 @@ func NotExitOnEnd() func(*App) {
 // Config the application.
 //
 // Notice: must be called before add command
-func (app *App) Config(fn func(a *App)) {
-	if fn != nil {
-		fn(app)
+func (app *App) Config(fns ...func(a *App)) {
+	for _, fn := range fns {
+		if fn != nil {
+			fn(app)
+		}
 	}
 }
 
-// binding global options
-func (app *App) bindingGOpts() {
+/*************************************************************
+ * app initialize
+ *************************************************************/
+
+// initialize application on: add, run
+func (app *App) initialize() {
+	if app.initialized {
+		return
+	}
+
+	Logf(VerbCrazy, "initialize the cli application")
+	app.Fire(events.OnAppInitBefore, nil)
+
+	// init some info
+	app.InitCtx()
+	app.initHelpVars()
+	app.bindAppOpts()
+
+	// add default error handler.
+	if !app.HasHook(events.OnAppRunError) {
+		app.On(events.OnAppRunError, defaultErrHandler)
+	}
+
+	app.Fire(events.OnAppInitAfter, nil)
+	app.initialized = true
+}
+
+// binding app options
+func (app *App) bindAppOpts() {
 	Logf(VerbDebug, "will begin binding app global options")
 	// global options flag
 	fs := app.fs
+	app.Fire(events.OnAppBindOptsBefore, nil)
+	// if app.BeforeAddOpts != nil {
+	// 	app.BeforeAddOpts(fs)
+	// }
 
 	// binding global options
 	app.opts.bindingFlags(fs)
@@ -155,33 +188,10 @@ func (app *App) bindingGOpts() {
 	})
 
 	// support binding custom global options
-	if app.BeforeAddOpts != nil {
-		app.BeforeAddOpts(fs)
-	}
-}
-
-// initialize application
-func (app *App) initialize() {
-	if app.initialized {
-		return
-	}
-
-	Logf(VerbCrazy, "initialize the application")
-
-	// init some info
-	app.InitCtx()
-	app.initHelpVars()
-
-	// binding global options
-	app.bindingGOpts()
-
-	// add default error handler.
-	if !app.HasHook(events.OnAppRunError) {
-		app.On(events.OnAppRunError, defaultErrHandler)
-	}
-
-	app.Fire(events.OnAppInit, nil)
-	app.initialized = true
+	app.Fire(events.OnAppBindOptsAfter, nil)
+	// if app.AfterAddOpts != nil {
+	// 	app.AfterAddOpts(app)
+	// }
 }
 
 /*************************************************************
@@ -281,8 +291,14 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 	}
 
 	app.args = app.fs.FSetArgs()
-	if app.Fire(events.OnGOptionsParsed, map[string]any{"args": app.args}) {
-		Logf(VerbDebug, "stop continue on the event %s return True", events.OnGOptionsParsed)
+	evtData := map[string]any{"args": app.args}
+	if app.Fire(events.OnAppOptsParsed, evtData) {
+		Logf(VerbDebug, "stop running on the event %s return True", events.OnGlobalOptsParsed)
+		return
+	}
+
+	if app.Fire(events.OnGlobalOptsParsed, evtData) {
+		Logf(VerbDebug, "stop running on the event %s return True", events.OnGlobalOptsParsed)
 		return
 	}
 
@@ -290,7 +306,6 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 	if app.opts.ShowHelp {
 		return app.showApplicationHelp()
 	}
-
 	if app.opts.ShowVersion {
 		return app.showVersionInfo()
 	}
@@ -300,7 +315,7 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 		color.Enable = false
 	}
 
-	Debugf("global option parsed, Verbose level: <mgb>%s</>", app.opts.Verbose.String())
+	Debugf("app options parsed, Verbose level: <mgb>%s</>", app.opts.Verbose.String())
 
 	// TODO show auto-completion for bash/zsh
 	if app.opts.inCompletion {
@@ -315,7 +330,11 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
  * prepare run
  *************************************************************/
 
-// prepare to running, parse args, get command name and command args
+// prepare to running
+//
+//	parse args
+//	check global options
+//	get command name and command args
 func (app *App) prepareRun() (code int, name string) {
 	// find command name.
 	name = app.findCommandName()
@@ -437,13 +456,14 @@ func (app *App) QuickRun() int {
 	return app.Run(os.Args[1:])
 }
 
-// Run the application
+// Run the application with input args
 //
 // Usage:
 //
 //	// run with os.Args
 //	app.Run(nil)
 //	app.Run(os.Args[1:])
+//
 //	// custom args
 //	app.Run([]string{"cmd", "--name", "inhere"})
 func (app *App) Run(args []string) (code int) {
@@ -455,7 +475,7 @@ func (app *App) Run(args []string) (code int) {
 		args = os.Args[1:] // exclude first arg, it's binFile.
 	}
 
-	Debugf("will begin run cli application. args: %v", args)
+	Debugf("will begin run application. args: %v", args)
 
 	// parse global flags
 	if false == app.parseAppOpts(args) {
@@ -480,7 +500,7 @@ func (app *App) Run(args []string) (code int) {
 	return app.exitOnEnd(code)
 }
 
-// RunLine manual run an command by command line string.
+// RunLine manual run a command by command line string.
 //
 // eg: app.RunLine("top --top-opt val0 sub --sub-opt val1 arg0")
 func (app *App) RunLine(argsLine string) int {
@@ -560,6 +580,16 @@ func (app *App) Exec(path string, args []string) error {
 /*************************************************************
  * helper methods
  *************************************************************/
+
+// Opts get
+func (app *App) Opts() *GlobalOpts {
+	return app.opts
+}
+
+// Flags get
+func (app *App) Flags() *Flags {
+	return app.fs
+}
 
 // Exit get the app GlobalFlags
 func (app *App) Exit(code int) {

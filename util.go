@@ -7,7 +7,6 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/helper"
-	"github.com/gookit/goutil/comdef"
 	"github.com/gookit/goutil/stdutil"
 )
 
@@ -99,38 +98,11 @@ func panicf(format string, v ...any) {
 	panic(fmt.Sprintf("GCli: "+format, v...))
 }
 
-func sepStr(seps []string) string {
-	if len(seps) > 0 {
-		return seps[0]
-	}
-	return comdef.DefaultSep
-}
-
-const (
-	// match a good option, argument name
-	regGoodName = `^[a-zA-Z][\w-]*$`
-	// match a good command name
-	regGoodCmdName = `^[a-zA-Z][\w-]*$`
-	// match command id. eg: "self:init"
-	regGoodCmdId = `^[a-zA-Z][\w:-]*$`
-	// match command path. eg: "self init"
-	// regGoodCmdPath = `^[a-zA-Z][\w -]*$`
-)
-
-var (
-	// good name for option and argument
-	goodName = regexp.MustCompile(regGoodName)
-	// match a good command name
-	goodCmdId = regexp.MustCompile(regGoodCmdId)
-	// match a good command name
-	goodCmdName = regexp.MustCompile(regGoodCmdName)
-)
-
 func aliasNameCheck(name string) {
 	if helper.IsGoodCmdName(name) {
 		return
 	}
-	panicf("alias name '%s' is invalid, must match: %s", name, regGoodCmdName)
+	panicf("alias name '%s' is invalid, must match: %s", name, helper.RegGoodCmdName)
 }
 
 // strictFormatArgs

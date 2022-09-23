@@ -34,13 +34,13 @@ func TestApp_Hooks_EvtAppInit(t *testing.T) {
 	assert.Eq(t, "trigger "+events.OnAppInit, buf.String())
 
 	buf.Reset()
-	cli.On(events.OnGOptionsParsed, func(ctx *gcli.HookCtx) bool {
+	cli.On(events.OnGlobalOptsParsed, func(ctx *gcli.HookCtx) bool {
 		buf.WriteString("trigger " + ctx.Name() + ", args:" + fmt.Sprintf("%v", ctx.Strings("args")))
 		return false
 	})
 
 	cli.Run([]string{"simple"})
-	assert.Eq(t, "trigger "+events.OnGOptionsParsed+", args:[simple]", buf.String())
+	assert.Eq(t, "trigger "+events.OnGlobalOptsParsed+", args:[simple]", buf.String())
 }
 
 func TestApp_Hooks_EvtCmdInit(t *testing.T) {

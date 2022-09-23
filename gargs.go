@@ -4,6 +4,7 @@ import (
 	"strings"
 
 	"github.com/gookit/gcli/v3/gflag"
+	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
@@ -310,8 +311,8 @@ func (a *Argument) goodArgument() string {
 		panicf("the command argument name cannot be empty")
 	}
 
-	if !goodName.MatchString(name) {
-		panicf("the argument name '%s' is invalid, must match: %s", name, regGoodName)
+	if !helper.IsGoodName(name) {
+		panicf("the argument name '%s' is invalid, must match: %s", name, helper.RegGoodName)
 	}
 
 	a.Name = name

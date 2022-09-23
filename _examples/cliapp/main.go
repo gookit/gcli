@@ -7,6 +7,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/_examples/cmd"
 	"github.com/gookit/gcli/v3/builtin"
+	"github.com/gookit/gcli/v3/events"
 	// "github.com/gookit/gcli/v3/builtin/filewatcher"
 	// "github.com/gookit/gcli/v3/builtin/reverseproxy"
 )
@@ -45,9 +46,17 @@ func main() {
 	// disable global options
 	// gcli.GOpts().SetDisable()
 
-	app.BeforeAddOpts = func(opts *gcli.Flags) {
-		opts.StrVar(&customGOpt, &gcli.FlagMeta{Name: "custom", Desc: "desc message for the option"})
-	}
+	// app.BeforeAddOpts = func(opts *gcli.Flags) {
+	// 	opts.StrVar(&customGOpt, &gcli.FlagMeta{Name: "custom", Desc: "desc message for the option"})
+	// }
+
+	app.On(events.OnAppBindOptsAfter, func(ctx *gcli.HookCtx) (stop bool) {
+		ctx.App.Flags().StrVar(&customGOpt, &gcli.FlagMeta{
+			Name: "custom",
+			Desc: "desc message for the option",
+		})
+		return false
+	})
 
 	// app.Strict = true
 	app.Add(cmd.GitCmd)

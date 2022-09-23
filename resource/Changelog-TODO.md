@@ -3,10 +3,17 @@
 ## TODO
 
 - hook on set flag value
-- [x] option support multi shorts namex
-- [ ] support flag option category
-- [ ] support command category by `c.Category`
+- [x] option support multi shorts names
+- [ ] cmd support flag option category
+- [ ] app support command category by `c.Category`
 - [ ] print parent's options on subcommand help panel
+- [ ] prompt completion by readline
+- [ ] keyboard and cursor control
+
+refers:
+
+- https://github.com/chzyer/readline/tree/master/example
+- https://github.com/abiosoft/ishell/blob/master/completer.go
 
 ## v3.0.1
 

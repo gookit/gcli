@@ -9,7 +9,7 @@ import (
 
 // constants for hooks event, there are default allowed event names
 const (
-	EvtAppInit = events.OnAppInit
+	EvtAppInit = events.OnAppInitAfter
 
 	EvtAppPrepareAfter = events.OnAppPrepareAfter
 
@@ -38,7 +38,7 @@ const (
 	EvtCmdExecAfter  = events.OnCmdExecAfter
 	EvtCmdExecError  = events.OnCmdExecError
 
-	EvtGOptionsParsed = events.OnGOptionsParsed
+	EvtGOptionsParsed = events.OnGlobalOptsParsed
 	// EvtStop   = "stop"
 )
 

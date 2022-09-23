@@ -2,9 +2,21 @@ package events
 
 // constants for hooks event, there are default allowed event names
 const (
-	OnAppInit = "app.init"
+	OnAppInitBefore = "app.init.before"
+	// OnAppInitAfter On app inited
+	OnAppInitAfter = "app.init.after"
+	// OnAppStop   = "app.stopped"
+
+	OnAppBindOptsBefore = "app.bind.opts.before"
+	OnAppBindOptsAfter  = "app.bind.opts.after"
 
 	OnAppPrepareAfter = "app.prepare.after"
+
+	// OnAppOptsParsed event
+	//
+	// Data:
+	// 	{args: app-args}
+	OnAppOptsParsed = "app.opts.parsed"
 
 	OnAppRunBefore = "app.run.before"
 	OnAppRunAfter  = "app.run.after"
@@ -38,10 +50,9 @@ const (
 	OnCmdExecAfter  = "cmd.exec.after"
 	OnCmdExecError  = "cmd.exec.error"
 
-	// OnGOptionsParsed event
+	// OnGlobalOptsParsed event
 	//
 	// Data:
 	// 	{args: remain-args}
-	OnGOptionsParsed = "gcli.gopts.parsed"
-	// OnStop   = "stop"
+	OnGlobalOptsParsed = "gcli.gopts.parsed"
 )

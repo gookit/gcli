@@ -134,9 +134,8 @@ func (g *GlobalOpts) SetDisable() {
 
 func (g *GlobalOpts) bindingFlags(fs *Flags) {
 	fs.BoolOpt(&g.ShowHelp, "help", "h", false, "Display the help information")
-
-	// return ErrHelp on ShowHelp=true
 	fs.AfterParse = func(_ *Flags) error {
+		// return ErrHelp on ShowHelp=true
 		if g.ShowHelp {
 			return flag.ErrHelp
 		}
@@ -154,7 +153,6 @@ func (g *GlobalOpts) bindingFlags(fs *Flags) {
 	fs.BoolOpt(&g.NoProgress, "no-progress", "np", g.NoProgress, "Disable display progress message")
 	fs.BoolOpt(&g.ShowVersion, "version", "V", false, "Display app version information")
 	fs.BoolOpt(&g.NoInteractive, "no-interactive", "ni", g.NoInteractive, "Disable interactive confirmation operation")
-
 	// fs.BoolOpt(&g.inShell, "ishell", "", false, "Run in an interactive shell environment(`TODO`)")
 }
 

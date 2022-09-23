@@ -423,7 +423,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 			return
 		}
 
-		c.Fire(events.OnGOptionsParsed, map[string]any{"args": args})
+		c.Fire(events.OnGlobalOptsParsed, map[string]any{"args": args})
 	}
 
 	c.Fire(events.OnCmdOptParsed, map[string]any{"args": args})
@@ -624,7 +624,7 @@ func (c *Command) goodName() string {
 	}
 
 	if !helper.IsGoodCmdName(name) {
-		panicf("the command name '%s' is invalid, must match: %s", name, regGoodCmdName)
+		panicf("the command name '%s' is invalid, must match: %s", name, helper.RegGoodCmdName)
 	}
 
 	// update name

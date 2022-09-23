@@ -11,35 +11,38 @@ import (
 )
 
 const (
-	// match a good option, argument name
-	regGoodName = `^[a-zA-Z][\w-]*$`
-	// match a good command name
-	regGoodCmdName = `^[a-zA-Z][\w-]*$`
-	// match command id. eg: "self:init"
-	regGoodCmdId = `^[a-zA-Z][\w:-]*$`
+	// RegGoodName match a good option, argument name
+	RegGoodName = `^[a-zA-Z][\w-]*$`
+	// RegGoodCmdName match a good command name
+	RegGoodCmdName = `^[a-zA-Z][\w-]*$`
+	// RegGoodCmdId match command id. eg: "self:init"
+	RegGoodCmdId = `^[a-zA-Z][\w:-]*$`
 	// match command path. eg: "self init"
-	// regGoodCmdPath = `^[a-zA-Z][\w -]*$`
+	// RegGoodCmdPath = `^[a-zA-Z][\w -]*$`
 )
 
 var (
 	// GoodName good name for option and argument
-	goodName = regexp.MustCompile(regGoodName)
+	goodName = regexp.MustCompile(RegGoodName)
 	// GoodCmdId match a good command name
-	goodCmdId = regexp.MustCompile(regGoodCmdId)
+	goodCmdId = regexp.MustCompile(RegGoodCmdId)
 	// GoodCmdName match a good command name
-	goodCmdName = regexp.MustCompile(regGoodCmdName)
+	goodCmdName = regexp.MustCompile(RegGoodCmdName)
 )
 
+// IsGoodName check
 func IsGoodName(name string) bool {
 	return goodName.MatchString(name)
 }
 
-func IsGoodCmdName(name string) bool {
-	return goodCmdName.MatchString(name)
-}
-
+// IsGoodCmdId check
 func IsGoodCmdId(name string) bool {
 	return goodCmdId.MatchString(name)
+}
+
+// IsGoodCmdName check
+func IsGoodCmdName(name string) bool {
+	return goodCmdName.MatchString(name)
 }
 
 // exec: `stty -a 2>&1`
