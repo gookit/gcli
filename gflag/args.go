@@ -1,9 +1,8 @@
-package gcli
+package gflag
 
 import (
 	"strings"
 
-	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/structs"
@@ -20,10 +19,10 @@ type Arguments struct {
 	name string
 	// args definition for a command.
 	//
-	// eg. {
+	// eg. [
 	// 	{"arg0", "this is first argument", false, false},
 	// 	{"arg1", "this is second argument", false, false},
-	// }
+	// ]
 	args []*Argument
 	// record min length for args
 	// argsMinLen int
@@ -110,7 +109,7 @@ func (ags *Arguments) AddArg(name, desc string, requiredAndArrayed ...bool) *Arg
 
 // AddArgByRule add an arg by simple string rule
 func (ags *Arguments) AddArgByRule(name, rule string) *Argument {
-	mp := gflag.ParseSimpleRule(name, rule)
+	mp := ParseSimpleRule(name, rule)
 
 	required := strutil.QuietBool(mp["required"])
 	newArg := NewArgument(name, mp["desc"], required)
@@ -141,15 +140,15 @@ func (ags *Arguments) AddArgument(arg *Argument) *Argument {
 	// validate argument name
 	name := arg.goodArgument()
 	if _, has := ags.argsIndexes[name]; has {
-		panicf("the argument name '%s' already exists in command '%s'", name, ags.name)
+		helper.Panicf("the argument name '%s' already exists in command '%s'", name, ags.name)
 	}
 
 	if ags.hasArrayArg {
-		panicf("have defined an array argument, you cannot add argument '%s'", name)
+		helper.Panicf("have defined an array argument, you cannot add argument '%s'", name)
 	}
 
 	if arg.Required && ags.hasOptionalArg {
-		panicf("required argument '%s' cannot be defined after optional argument", name)
+		helper.Panicf("required argument '%s' cannot be defined after optional argument", name)
 	}
 
 	// add argument index record
@@ -200,7 +199,7 @@ func (ags *Arguments) HasArguments() bool {
 func (ags *Arguments) Arg(name string) *Argument {
 	i, ok := ags.argsIndexes[name]
 	if !ok {
-		panicf("get not exists argument '%s'", name)
+		helper.Panicf("get not exists argument '%s'", name)
 	}
 	return ags.args[i]
 }
@@ -208,7 +207,7 @@ func (ags *Arguments) Arg(name string) *Argument {
 // ArgByIndex get named arg by index
 func (ags *Arguments) ArgByIndex(i int) *Argument {
 	if i >= len(ags.args) {
-		panicf("get not exists argument #%d", i)
+		helper.Panicf("get not exists argument #%d", i)
 	}
 	return ags.args[i]
 }
@@ -308,11 +307,11 @@ func (a *Argument) Init() *Argument {
 func (a *Argument) goodArgument() string {
 	name := strings.TrimSpace(a.Name)
 	if name == "" {
-		panicf("the command argument name cannot be empty")
+		helper.Panicf("the command argument name cannot be empty")
 	}
 
 	if !helper.IsGoodName(name) {
-		panicf("the argument name '%s' is invalid, must match: %s", name, helper.RegGoodName)
+		helper.Panicf("the argument name '%s' is invalid, must match: %s", name, helper.RegGoodName)
 	}
 
 	a.Name = name

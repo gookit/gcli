@@ -9,6 +9,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/structs"
@@ -50,12 +51,10 @@ type Command struct {
 
 	// --- provide option and argument parse and binding.
 
-	// Flags options for the command
-	Flags
-	// Arguments for the command
-	Arguments
+	// Flags (options+arguments) for the command
+	gflag.Flags
 
-	// Name is the full command name.
+	// Name is the command name.
 	Name string
 	// Desc is the command description message.
 	Desc string

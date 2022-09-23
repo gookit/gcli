@@ -125,6 +125,16 @@ func (ctx *Context) hasHelpKeywords() bool {
 	return strings.HasSuffix(ctx.argLine, " -h") || strings.HasSuffix(ctx.argLine, " --help")
 }
 
+// SetValue to ctx
+func (ctx *Context) SetValue(key string, val any) {
+	ctx.Set(key, val)
+}
+
+// GetVal from ctx
+func (ctx *Context) GetVal(key string) interface{} {
+	return ctx.Get(key)
+}
+
 /*************************************************************
  * command Base
  *************************************************************/

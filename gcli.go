@@ -76,6 +76,17 @@ func NewFlags(nameWithDesc ...string) *gflag.Flags {
 	return gflag.New(nameWithDesc...)
 }
 
+// Argument alias of the gflag.Argument
+type Argument = gflag.Argument
+
+// Arguments alias of the gflag.Arguments
+type Arguments = gflag.Arguments
+
+// NewArgument quick create a new command argument
+func NewArgument(name, desc string, requiredAndArrayed ...bool) *Argument {
+	return gflag.NewArg(name, desc, nil, requiredAndArrayed...)
+}
+
 /*************************************************************************
  * global options
  *************************************************************************/
