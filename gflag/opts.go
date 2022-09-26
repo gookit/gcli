@@ -16,8 +16,11 @@ import (
  * flag options metadata
  ***********************************************************************/
 
-// FlagMeta for an flag(option/argument)
-type FlagMeta struct {
+// FlagMeta alias of flag Option
+type FlagMeta = Option
+
+// Option define for a flag option
+type Option struct {
 	// go flag value
 	flag *flag.Flag
 	// Name of flag and description
@@ -42,8 +45,8 @@ type FlagMeta struct {
 }
 
 // newFlagMeta quick create an FlagMeta
-func newFlagMeta(name, desc string, defVal any, shortcut string) *FlagMeta {
-	return &FlagMeta{
+func newFlagMeta(name, desc string, defVal any, shortcut string) *Option {
+	return &Option{
 		Name: name,
 		Desc: desc,
 		// other info
@@ -52,7 +55,7 @@ func newFlagMeta(name, desc string, defVal any, shortcut string) *FlagMeta {
 	}
 }
 
-func (m *FlagMeta) initCheck() string {
+func (m *Option) initCheck() string {
 	if m.Desc != "" {
 		desc := strings.Trim(m.Desc, "; ")
 		if strings.ContainsRune(desc, ';') {
@@ -79,14 +82,14 @@ func (m *FlagMeta) initCheck() string {
 }
 
 // good name of the flag
-func (m *FlagMeta) goodName() string {
+func (m *Option) goodName() string {
 	name := strings.Trim(m.Name, "- ")
 	if name == "" {
 		helper.Panicf("option flag name cannot be empty")
 	}
 
 	if !helper.IsGoodName(name) {
-		helper.Panicf("option flag name '%s' is invalid", name)
+		helper.Panicf("option flag name '%s' is invalid, must match: %s", name, helper.RegGoodName)
 	}
 
 	// update self name
@@ -95,7 +98,7 @@ func (m *FlagMeta) goodName() string {
 }
 
 // Shorts2String join shorts to a string
-func (m *FlagMeta) Shorts2String(sep ...string) string {
+func (m *Option) Shorts2String(sep ...string) string {
 	if len(m.Shorts) == 0 {
 		return ""
 	}
@@ -103,16 +106,16 @@ func (m *FlagMeta) Shorts2String(sep ...string) string {
 }
 
 // HelpName for show help
-func (m *FlagMeta) HelpName() string {
+func (m *Option) HelpName() string {
 	return cflag.AddPrefixes(m.Name, m.Shorts)
 }
 
-func (m *FlagMeta) helpNameLen() int {
+func (m *Option) helpNameLen() int {
 	return len(m.HelpName())
 }
 
 // Validate the binding value
-func (m *FlagMeta) Validate(val string) error {
+func (m *Option) Validate(val string) error {
 	if m.Required && val == "" {
 		return fmt.Errorf("flag '%s' is required", m.Name)
 	}
@@ -125,12 +128,12 @@ func (m *FlagMeta) Validate(val string) error {
 }
 
 // Flag value
-func (m *FlagMeta) Flag() *flag.Flag {
+func (m *Option) Flag() *flag.Flag {
 	return m.flag
 }
 
 // DValue wrap the default value
-func (m *FlagMeta) DValue() *stdutil.Value {
+func (m *Option) DValue() *stdutil.Value {
 	if m.defVal == nil {
 		m.defVal = &stdutil.Value{V: m.DefVal}
 	}

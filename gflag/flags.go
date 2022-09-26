@@ -37,7 +37,7 @@ type Flags struct {
 	// all option names of the command. {name: length} // TODO delete, move len to meta.
 	names map[string]int
 	// metadata for all options
-	metas map[string]*FlagMeta // TODO support option category
+	metas map[string]*Option // TODO support option category
 	// short names map for options. format: {short: name}
 	// eg. {"n": "name", "o": "opt"}
 	shorts map[string]string
@@ -556,7 +556,7 @@ func (fs *Flags) VarOpt(p flag.Value, name, shorts, desc string) {
 }
 
 // binding option and shorts
-func (fs *Flags) varOpt(p flag.Value, meta *FlagMeta) {
+func (fs *Flags) varOpt(p flag.Value, meta *Option) {
 	name := fs.checkFlagInfo(meta)
 
 	// binding option to flag.FlagSet
@@ -576,11 +576,11 @@ func (fs *Flags) Required(names ...string) {
 }
 
 // check flag option name and short-names
-func (fs *Flags) checkFlagInfo(meta *FlagMeta) string {
+func (fs *Flags) checkFlagInfo(meta *Option) string {
 	// NOTICE: must init some required fields
 	if fs.names == nil {
 		fs.names = map[string]int{}
-		fs.metas = map[string]*FlagMeta{}
+		fs.metas = map[string]*Option{}
 		fs.InitFlagSet("flags-" + meta.Name)
 	}
 
@@ -652,6 +652,11 @@ func (fs *Flags) PrintHelpPanel() {
 	color.Fprint(fs.out, fs.String())
 }
 
+// String for all flag options
+func (fs *Flags) String() string {
+	return fs.BuildHelp()
+}
+
 // BuildHelp string for all flag options
 func (fs *Flags) BuildHelp() string {
 	if fs.buf == nil {
@@ -660,18 +665,33 @@ func (fs *Flags) BuildHelp() string {
 
 	// repeat call the method
 	if fs.buf.Len() < 1 {
-		fs.FSet().VisitAll(fs.formatOneFlag)
+		fs.buf.WriteString("Options:\n")
+		fs.buf.WriteString(fs.BuildOptsHelp())
+		fs.buf.WriteByte('\n')
+
+		if fs.HasArgs() {
+			fs.buf.WriteString("Arguments:\n")
+			fs.buf.WriteString(fs.BuildArgsHelp())
+			fs.buf.WriteByte('\n')
+		}
 	}
 
 	return fs.buf.String()
 }
 
-// String for all flag options
-func (fs *Flags) String() string {
-	return fs.BuildHelp()
+// BuildOptsHelp string.
+func (fs *Flags) BuildOptsHelp() string {
+	var sb strings.Builder
+
+	fs.FSet().VisitAll(func(f *flag.Flag) {
+		sb.WriteString(fs.formatOneFlag(f))
+		sb.WriteByte('\n')
+	})
+
+	return sb.String()
 }
 
-func (fs *Flags) formatOneFlag(f *flag.Flag) {
+func (fs *Flags) formatOneFlag(f *flag.Flag) (s string) {
 	// Skip render:
 	// - meta is not exists(Has ensured that it is not a short name)
 	// - it is hidden flag option
@@ -681,7 +701,7 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 		return
 	}
 
-	var s, fullName string
+	var fullName string
 	name := f.Name
 	// eg: "-V, --version" length is: 13
 	nameLen := fs.names[name]
@@ -730,7 +750,7 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 
 	// flag is required
 	if meta.Required {
-		s += "<red>*</>"
+		s = "<red>*</>" + s
 	}
 
 	s += strings.Replace(strutil.UpperFirst(desc), "\n", nlIndent, -1)
@@ -744,9 +764,7 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) {
 		}
 	}
 
-	// save to buffer
-	fs.buf.WriteString(s)
-	fs.buf.WriteByte('\n')
+	return s
 }
 
 /***********************************************************************
@@ -813,6 +831,9 @@ func (fs *Flags) FlagMeta(name string) *FlagMeta { return fs.metas[name] }
 
 // Metas get all flag metas
 func (fs *Flags) Metas() map[string]*FlagMeta { return fs.metas }
+
+// Opts get all flag options
+func (fs *Flags) Opts() map[string]*Option { return fs.metas }
 
 // Hidden there are given option names
 // func (gf *Flags) Hidden(names ...string) {

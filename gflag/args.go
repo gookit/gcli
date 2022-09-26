@@ -1,10 +1,12 @@
 package gflag
 
 import (
+	"fmt"
 	"strings"
 
 	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
 )
@@ -34,6 +36,8 @@ type Arguments struct {
 	// 	"arg1": 1,
 	// }
 	argsIndexes map[string]int
+	// arg name max width
+	argWidth int
 	// validate the args number is right
 	validateNum bool
 	// mark exists array argument
@@ -134,6 +138,7 @@ func (ags *Arguments) BindArg(arg *Argument) *Argument {
 //   - The (array) argument of multiple values can only be defined at the end
 func (ags *Arguments) AddArgument(arg *Argument) *Argument {
 	if ags.argsIndexes == nil {
+		ags.argWidth = 12 // default width
 		ags.argsIndexes = make(map[string]int)
 	}
 
@@ -154,6 +159,7 @@ func (ags *Arguments) AddArgument(arg *Argument) *Argument {
 	// add argument index record
 	arg.index = len(ags.args)
 	ags.argsIndexes[name] = arg.index
+	ags.argWidth = mathutil.MaxInt(ags.argWidth, len(name))
 
 	// add argument
 	ags.args = append(ags.args, arg)
@@ -210,6 +216,30 @@ func (ags *Arguments) ArgByIndex(i int) *Argument {
 		helper.Panicf("get not exists argument #%d", i)
 	}
 	return ags.args[i]
+}
+
+// String build args help string
+func (ags *Arguments) String() string {
+	return ags.BuildArgsHelp()
+}
+
+// BuildArgsHelp string
+func (ags *Arguments) BuildArgsHelp() string {
+	if len(ags.args) < 1 {
+		return ""
+	}
+
+	var sb strings.Builder
+	for _, arg := range ags.args {
+		sb.WriteString(fmt.Sprintf(
+			"<info>%s</> %s%s\n",
+			strutil.PadRight(arg.HelpName(), " ", ags.argWidth),
+			getRequiredMark(arg.Required),
+			strutil.UpperFirst(arg.Desc),
+		))
+	}
+
+	return sb.String()
 }
 
 /*************************************************************

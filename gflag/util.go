@@ -16,6 +16,13 @@ func sepStr(seps []string) string {
 	return comdef.DefaultSep
 }
 
+func getRequiredMark(must bool) string {
+	if must {
+		return "<red>*</>"
+	}
+	return ""
+}
+
 // allowed keys on struct tag.
 var flagTagKeys = arrutil.Strings{"name", "shorts", "desc", "default", "required"}
 
