@@ -77,6 +77,9 @@ type Flags = gflag.Flags
 // FlagMeta alias of the gflag.Option
 type FlagMeta = gflag.Option
 
+// FlagsConfig alias of the gflag.FlagsConfig
+type FlagsConfig = gflag.FlagsConfig
+
 // NewFlags create new gflag.Flags
 func NewFlags(nameWithDesc ...string) *gflag.Flags {
 	return gflag.New(nameWithDesc...)

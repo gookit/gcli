@@ -746,14 +746,11 @@ func (fs *Flags) formatOneFlag(f *flag.Flag) (s string) {
 	// --- build description
 	if desc == "" {
 		desc = defaultDesc
+	} else {
+		desc = strings.Replace(strutil.UpperFirst(desc), "\n", nlIndent, -1)
 	}
 
-	// flag is required
-	if meta.Required {
-		s = "<red>*</>" + s
-	}
-
-	s += strings.Replace(strutil.UpperFirst(desc), "\n", nlIndent, -1)
+	s += getRequiredMark(meta.Required) + desc
 
 	// ---- append default value
 	if isZero, isStr := cflag.IsZeroValue(f, f.DefValue); !isZero {
