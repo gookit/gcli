@@ -20,7 +20,7 @@ const HelpVarFormat = "{$%s}"
 type HelpVars struct {
 	VarOpen, VarClose string
 
-	// Vars you can add some vars map for render help info
+	// Vars you can add some vars map for render help info. TODO rename replaces/pairs
 	Vars map[string]string
 }
 

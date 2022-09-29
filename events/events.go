@@ -5,6 +5,9 @@ const (
 	OnAppInitBefore = "app.init.before"
 	// OnAppInitAfter On app inited
 	OnAppInitAfter = "app.init.after"
+	// OnAppInit event
+	// Deprecated: please use OnAppInitAfter
+	OnAppInit = OnAppInitAfter
 	// OnAppStop   = "app.stopped"
 
 	OnAppBindOptsBefore = "app.bind.opts.before"
