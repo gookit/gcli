@@ -103,15 +103,18 @@ func NewApp(fns ...func(app *App)) *App {
 		Desc: "This is my console application",
 	}
 
-	// set a default version
-	app.Version = "1.0.0"
-	app.fs = gflag.New("appOpts").WithConfigFn(func(opt *gflag.FlagsConfig) {
+	app.fs = gflag.New("appOpts").WithConfigFn(func(opt *gflag.Config) {
 		opt.WithoutType = true
 		opt.Alignment = gflag.AlignLeft
 	})
 
-	// init base
 	Logf(VerbCrazy, "create a new cli application, and create base ")
+
+	// set a default version
+	app.Version = "1.0.0"
+	app.Context = gCtx
+
+	// init base
 	app.base = newBase()
 	app.opts = newGlobalOpts()
 
@@ -153,7 +156,6 @@ func (app *App) initialize() {
 	app.Fire(events.OnAppInitBefore, nil)
 
 	// init some info
-	app.InitCtx()
 	app.initHelpVars()
 	app.bindAppOpts()
 

@@ -53,8 +53,9 @@ var (
 	// CommitID the gcli last commit ID
 	commitID = "z20210214"
 
-	// global options
+	// global vars
 	gOpts = newGlobalOpts()
+	gCtx  = NewCtx().InitCtx()
 )
 
 // init
@@ -65,11 +66,16 @@ func init() {
 	}
 }
 
+// GCtx get the global ctx
+func GCtx() *Context {
+	return gCtx
+}
+
 // Flags alias of the gflag.Flags
 type Flags = gflag.Flags
 
-// FlagMeta alias of the gflag.FlagMeta
-type FlagMeta = gflag.FlagMeta
+// FlagMeta alias of the gflag.Option
+type FlagMeta = gflag.Option
 
 // NewFlags create new gflag.Flags
 func NewFlags(nameWithDesc ...string) *gflag.Flags {
@@ -117,17 +123,6 @@ type GlobalOpts struct {
 	inCompletion bool
 }
 
-func newGlobalOpts() *GlobalOpts {
-	opts := &GlobalOpts{
-		strictMode: false,
-		// init error level.
-		Verbose: defaultVerb,
-		NoColor: envutil.GetBool("NO_COLOR", false),
-	}
-
-	return opts
-}
-
 // SetVerbose value
 func (g *GlobalOpts) SetVerbose(verbose VerbLevel) {
 	g.Verbose = verbose
@@ -167,6 +162,17 @@ func (g *GlobalOpts) bindingFlags(fs *Flags) {
 	// fs.BoolOpt(&g.inShell, "ishell", "", false, "Run in an interactive shell environment(`TODO`)")
 }
 
+func newGlobalOpts() *GlobalOpts {
+	opts := &GlobalOpts{
+		strictMode: false,
+		// init error level.
+		Verbose: defaultVerb,
+		NoColor: envutil.GetBool("NO_COLOR", false),
+	}
+
+	return opts
+}
+
 // GOpts get the global options
 func GOpts() *GlobalOpts {
 	return gOpts
@@ -181,7 +187,7 @@ func Config(fn func(opts *GlobalOpts)) {
 
 // ResetGOpts instance
 func ResetGOpts() {
-	gOpts = newGlobalOpts()
+	*gOpts = *newGlobalOpts()
 }
 
 // Version of the gcli

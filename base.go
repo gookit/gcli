@@ -53,7 +53,7 @@ func (ctx *Context) Value(key any) any {
 }
 
 // InitCtx some common info
-func (ctx *Context) InitCtx() {
+func (ctx *Context) InitCtx() *Context {
 	binFile := os.Args[0]
 	workDir, _ := os.Getwd()
 
@@ -70,7 +70,7 @@ func (ctx *Context) InitCtx() {
 	ctx.binFile = binFile
 	ctx.binName = filepath.Base(binFile)
 	ctx.argLine = strings.Join(os.Args[1:], " ")
-	// return ctx
+	return ctx
 }
 
 // PID get pid
@@ -135,6 +135,11 @@ func (ctx *Context) GetVal(key string) interface{} {
 	return ctx.Get(key)
 }
 
+// ResetData from ctx
+func (ctx *Context) ResetData() {
+	ctx.Data = make(maputil.Data)
+}
+
 /*************************************************************
  * command Base
  *************************************************************/
@@ -145,10 +150,10 @@ type base struct {
 	*Hooks
 	*Context
 	color.SimplePrinter
-	// HelpVars help template vars.
+	// HelpVars help message replace vars.
 	helper.HelpVars
-	// TODO
-	helpData map[string]any
+	// TODO tplVars for render help template text.
+	tplVars map[string]any
 
 	// Logo ASCII logo setting
 	Logo *Logo
@@ -195,8 +200,8 @@ func newBase() base {
 		// cmdAliases:   make(maputil.Aliases),
 		cmdAliases: structs.NewAliases(aliasNameCheck),
 		// ExitOnEnd:  false,
-		helpData: make(map[string]any),
-		Context:  NewCtx(),
+		tplVars: make(map[string]any),
+		Context: NewCtx(),
 	}
 }
 
@@ -208,6 +213,13 @@ func (b *base) initHelpVars() {
 		"binFile": b.binFile,
 		"binName": b.binName,
 	})
+}
+
+// ResetData from ctx
+func (b *base) ResetData() {
+	if b.Context != nil {
+		b.Context.ResetData()
+	}
 }
 
 // GetCommand get a command by name
@@ -330,7 +342,7 @@ func (b *base) FindByPath(path string) *Command {
 	return b.Match(splitPath2names(path))
 }
 
-// MatchByPath command by path. eg. "top:sub" or "top sub"
+// MatchByPath command by path. eg: "top:sub" or "top sub"
 func (b *base) MatchByPath(path string) *Command {
 	return b.Match(splitPath2names(path))
 }
@@ -380,4 +392,9 @@ func (b *base) CmdAliases() *structs.Aliases {
 // AliasesMapping get cmd aliases mapping
 func (b *base) AliasesMapping() map[string]string {
 	return b.cmdAliases.Mapping()
+}
+
+// AddTplVar to instance.
+func (b *base) AddTplVar(key string, val any) {
+	b.tplVars[key] = val
 }

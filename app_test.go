@@ -234,7 +234,7 @@ func TestApp_Run_command_withArguments(t *testing.T) {
 
 	err = app.Exec("not-exists", []string{})
 	is.Err(err)
-	is.Eq("exec unknown command: 'not-exists'", err.Error())
+	is.Eq(`exec unknown command "not-exists"`, err.Error())
 	// other
 	// app.AddError(fmt.Errorf("test error"))
 }

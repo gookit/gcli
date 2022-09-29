@@ -194,7 +194,7 @@ var r = &gcli.Command{
 	},
 	Func: func(c *gcli.Command, args []string) error {
 		bf.WriteString("command path: " + c.Path())
-		dump.Println(c.Path(), args)
+		// dump.Println(c.Path(), args)
 		return nil
 	},
 }
@@ -270,7 +270,7 @@ func TestCommand_Run_moreLevelSub(t *testing.T) {
 var int0 int
 var str0 string
 
-var c0 = gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
+var c0 = gcli.NewCommand("test", "desc for test command", func(c *gcli.Command) {
 	c.IntOpt(&int0, "int", "", 0, "int desc")
 	c.StrOpt(&str0, "str", "", "", "str desc")
 	c.AddArg("arg0", "arg0 desc")
@@ -279,15 +279,21 @@ var c0 = gcli.NewCommand("test", "desc test", func(c *gcli.Command) {
 		bf.WriteString("name=" + c.Name)
 		c.Set("name", c.Name)
 		c.Set("args", args)
-		dump.P(c.ID(), "command Func is exec")
+		// dump.P(c.ID(), "command Func is exec")
 		return nil
 	}
 })
+
+func resetCmd(c *gcli.Command) {
+	c.ResetData()
+	gcli.ResetGOpts()
+}
 
 func TestCommand_Run_emptyArgs(t *testing.T) {
 	bf.Reset()
 	is := assert.New(t)
 
+	resetCmd(c0)
 	gcli.SetVerbose(gcli.VerbCrazy)
 	defer gcli.ResetVerbose()
 
@@ -302,40 +308,54 @@ func TestCommand_Run_emptyArgs(t *testing.T) {
 	is.Eq("arg0", c0.Arg("arg0").Name)
 }
 
-func TestCommand_Run_parseHelp(t *testing.T) {
-	bf.Reset()
+func TestCommand_Run_XshowHelp1(t *testing.T) {
 	is := assert.New(t)
 
+	bf.Reset()
+	resetCmd(c0)
+	gcli.Config(func(opts *gcli.GlobalOpts) {
+		opts.SetDisable()
+	})
 	err := c0.Run([]string{"-h"})
 	is.NoErr(err)
+}
+
+func TestCommand_Run_showHelp2(t *testing.T) {
+	is := assert.New(t)
+
+	bf.Reset()
+	resetCmd(c0)
 
 	// no color
 	color.Disable()
 	color.SetOutput(bf)
 	defer color.ResetOptions()
 
-	err = c0.Run([]string{"--help"})
+	err := c0.Run([]string{"--help"})
+	is.NoErr(err)
 	str := bf.String()
 	is.Contains(str, "Int desc")
 	is.Contains(str, "--str string")
 	is.Contains(str, "Str desc")
 	is.Contains(str, "Display the help information")
-	is.Contains(str, "arg0        Arg0 desc")
-	is.Contains(str, "arg1        Arg1 desc")
+	is.StrContains(str, "Arg0 desc")
+	is.StrContains(str, "Arg1 desc")
 }
 
-func TestCommand_Run_parseOptions(t *testing.T) {
+func TestCommand_Run_XparseOptions(t *testing.T) {
 	bf.Reset()
 	is := assert.New(t)
 
-	gcli.ResetGOpts()
+	resetCmd(c0)
 	gcli.SetDebugMode()
 	defer gcli.ResetVerbose()
 
 	is.Eq("test", c0.Name)
 
+	dump.P(gcli.GOpts())
 	err := c0.Run([]string{"--int", "10", "--str=abc", "txt"})
 
+	dump.P(gcli.GOpts(), c0.Context)
 	is.NoErr(err)
 	is.Eq("test", c0.Get("name"))
 	is.Eq([]string{"txt"}, c0.Get("args"))
@@ -355,8 +375,7 @@ func TestCommand_Run_parseOptions(t *testing.T) {
 		c.IntOpt(&int0, "int", "", 0, "desc")
 		c.IntOpt(&co.maxSteps, "max-step", "", 0, "setting the max step value")
 		c.AddArg("arg0", "arg0 desc")
-	})
-	c1.SetFunc(func(c *gcli.Command, args []string) error {
+	}).WithFunc(func(c *gcli.Command, args []string) error {
 		is.Eq("[txt]", fmt.Sprint(args))
 		return nil
 	})

@@ -64,7 +64,7 @@ func (app *App) showApplicationHelp() bool {
 	// render help text template
 	s := helper.RenderText(AppHelpTemplate, map[string]any{
 		"Cs":    app.commands,
-		"GOpts": app.fs.String(),
+		"GOpts": app.fs.BuildOptsHelp(),
 		// app version
 		"Version": app.Version,
 		"HasSubs": app.hasSubcommands,
@@ -180,9 +180,9 @@ var CmdHelpTemplate = `{{.Desc}}
 <comment>Global Options:</>
 {{.GOpts}}{{end}}{{if .Options}}
 <comment>Options:</>
-{{.Options}}{{end}}{{if .Cmd.Args}}
+{{.Options}}{{end}}{{if .Cmd.HasArgs}}
 <comment>Arguments:</>{{range $a := .Cmd.Args}}
-  <info>{{$a.HelpName | printf "%-12s"}}</>{{$a.Desc | ucFirst}}{{if $a.Required}}<red>*</>{{end}}{{end}}
+  <info>{{$a.HelpName | printf "%-12s"}}</> {{if $a.Required}}<red>*</>{{end}}{{$a.Desc | ucFirst}}{{end}}
 {{end}}{{ if .Subs }}
 <comment>Sub Commands:</>{{range $n,$c := .Subs}}
   <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
@@ -209,17 +209,17 @@ func (c *Command) ShowHelp() {
 
 	// clear space and empty new line
 	if c.Help != "" {
-		c.Help = strings.Join([]string{strings.TrimSpace(c.Help), "\n"}, "")
+		c.Help = strings.TrimSpace(c.Help) + "\n"
 	}
 
 	vars := map[string]any{
 		"Cmd":  c,
 		"Subs": c.commands,
 		// global options
-		// - on standalone, will not init c.core.gFlags
+		// - on standalone
 		"GOpts": nil,
 		// parse options to string
-		"Options": c.Flags.BuildHelp(),
+		"Options": c.Flags.BuildOptsHelp(),
 		// always upper first char
 		"Desc": c.HelpDesc(),
 	}

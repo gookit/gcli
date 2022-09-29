@@ -80,7 +80,7 @@ func TestNewCtx(t *testing.T) {
 	is := assert.New(t)
 
 	ctx := gcli.NewCtx()
-	ctx.Init()
+	ctx.InitCtx()
 
 	is.True(ctx.PID() > 0)
 	is.Eq(runtime.GOOS, ctx.OsName())

@@ -82,6 +82,10 @@ type Command struct {
 	// path names of the command. 'parent current'
 	pathNames []string
 
+	// command is inject to the App
+	app  *App
+	root bool // is root command
+
 	// Parent parent command
 	parent *Command
 
@@ -102,14 +106,11 @@ type Command struct {
 	// HelpRender custom render cmd help message
 	HelpRender func(c *Command)
 
-	// command is inject to the App
-	app  *App
-	root bool // is root command
-	// mark is disabled. if true will skip register to cli-app.
+	// mark is disabled. if true will skip register to app.
 	disabled bool
 	// command is standalone running.
 	standalone bool
-	// global option binding on standalone.
+	// global option binding on standalone. deny error on repeat run.
 	goptBounded bool
 }
 
@@ -121,7 +122,7 @@ type Command struct {
 //	// OR with an config func
 //	cmd := NewCommand("my-cmd", "description", func(c *Command) { ... })
 //	app.Add(cmd) // OR cmd.AttachTo(app)
-func NewCommand(name, desc string, fn ...func(c *Command)) *Command {
+func NewCommand(name, desc string, setFn ...func(c *Command)) *Command {
 	c := &Command{
 		Name: name,
 		Desc: desc,
@@ -129,8 +130,8 @@ func NewCommand(name, desc string, fn ...func(c *Command)) *Command {
 	}
 
 	// has config func
-	if len(fn) > 0 {
-		c.Config = fn[0]
+	if len(setFn) > 0 {
+		c.Config = setFn[0]
 	}
 
 	// set name
@@ -240,6 +241,7 @@ func (c *Command) MatchByPath(path string) *Command {
 
 // initialize works for the command
 //
+// - ctx
 // - sub-cmd
 func (c *Command) initialize() {
 	if c.initialized {
@@ -287,7 +289,7 @@ func (c *Command) initialize() {
 	c.Fire(events.OnCmdInit, nil)
 }
 
-// init core
+// init base, ctx
 func (c *Command) initCommandBase(cName string) {
 	Logf(VerbCrazy, "init command c.base for the command: %s", cName)
 
@@ -295,9 +297,14 @@ func (c *Command) initCommandBase(cName string) {
 		c.Hooks = &Hooks{}
 	}
 
-	binWithPath := c.binName + " " + c.Path()
+	if c.Context == nil {
+		Logf(VerbDebug, "cmd: %s - use the gCtx as command context", cName)
+		c.Context = gCtx
+	}
 
 	c.initHelpVars()
+
+	binWithPath := c.binName + " " + c.Path()
 	c.AddVars(map[string]string{
 		"cmd": cName,
 		// binName with command name
@@ -385,10 +392,10 @@ func (c *Command) Run(args []string) (err error) {
 
 	// binding global options
 	if !c.goptBounded {
-		c.goptBounded = true
-		Debugf("global options will binding to c.Flags on standalone mode")
+		Debugf("cmd: %s - binding global options on standalone mode", c.Name)
 		// bindingCommonGOpts(&c.Flags)
 		gOpts.bindingFlags(&c.Flags)
+		c.goptBounded = true
 	}
 
 	// dispatch and parse flags and execute command
@@ -404,8 +411,8 @@ func (c *Command) innerDispatch(args []string) (err error) {
 	// parse command flags
 	args, err = c.parseOptions(args)
 	if err != nil {
-		// ignore flag.ErrHelp error
 		if err == flag.ErrHelp {
+			Debugf("cmd: %s - parse opts return flag.ErrHelp, render command help", c.Name)
 			c.ShowHelp()
 			return nil
 		}
@@ -418,6 +425,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 	// remaining args
 	if c.standalone {
 		if gOpts.ShowHelp {
+			Debugf("cmd: %s - gOpts.ShowHelp is True, render command help", c.Name)
 			c.ShowHelp()
 			return
 		}
@@ -568,7 +576,7 @@ func (c *Command) SetParent(parent *Command) {
 	c.parent = parent
 }
 
-// Module name of the grouped command
+// ParentName name of the parent command
 func (c *Command) ParentName() string {
 	if c.parent != nil {
 		return c.parent.Name
