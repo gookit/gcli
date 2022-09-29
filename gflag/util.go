@@ -24,7 +24,7 @@ func getRequiredMark(must bool) string {
 }
 
 // allowed keys on struct tag.
-var flagTagKeys = arrutil.Strings{"name", "shorts", "desc", "default", "required"}
+var flagTagKeys = arrutil.Strings{"name", "desc", "required", "default", "shorts"}
 
 // parse tag named k-v value. item split by ';'
 //
@@ -37,6 +37,8 @@ var flagTagKeys = arrutil.Strings{"name", "shorts", "desc", "default", "required
 //	shorts
 //	required
 //	default
+//
+// TODO use structs.ParseTagValueNamed()
 func parseNamedRule(name, rule string) (mp map[string]string) {
 	ss := strutil.Split(rule, ";")
 	if len(ss) == 0 {
@@ -62,12 +64,13 @@ func parseNamedRule(name, rule string) (mp map[string]string) {
 
 // ParseSimpleRule struct tag value use simple rule. each item split by ';'
 //
+//   - format: "name;desc;required;default;shorts"
 //   - format: "desc;required;default;shorts"
 //
 // eg:
 //
 //	"int option message;required;i"
-//	"int option message;;a,b"
+//	"opt-name;int option message;;a,b"
 //	"int option message;;a,b;23"
 //
 // returns field name:
@@ -77,6 +80,8 @@ func parseNamedRule(name, rule string) (mp map[string]string) {
 //	shorts
 //	required
 //	default
+//
+// TODO use structs.ParseTagValueDefine() and support name.
 func ParseSimpleRule(name, rule string) (mp map[string]string) {
 	ss := strutil.SplitNTrimmed(rule, ";", 4)
 	ln := len(ss)

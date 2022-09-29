@@ -42,10 +42,12 @@ type Option struct {
 	Required bool
 	// Validator support validate the option flag value
 	Validator func(val string) error
+	// TODO interactive question for collect value
+	Question string
 }
 
-// newFlagMeta quick create an FlagMeta
-func newFlagMeta(name, desc string, defVal any, shortcut string) *Option {
+// newFlagOpt quick create an FlagMeta
+func newFlagOpt(name, desc string, defVal any, shortcut string) *Option {
 	return &Option{
 		Name: name,
 		Desc: desc,

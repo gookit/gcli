@@ -28,8 +28,11 @@ const (
 // FlagTagName default tag name on struct
 var FlagTagName = "flag"
 
-// FlagsConfig for render help information
-type FlagsConfig struct {
+// FlagsConfig alias of Config
+type FlagsConfig = Config
+
+// Config for render help information
+type Config struct {
 	// WithoutType don't display flag data type on print help
 	WithoutType bool
 	// DescNewline flag desc at new line on print help
@@ -48,4 +51,8 @@ type FlagsConfig struct {
 type OptCategory struct {
 	Name, Title string
 	OptNames    []string
+}
+
+// Parser struct. Parser, Binder, Manager TODO remove flag.FlagSet
+type Parser struct {
 }
