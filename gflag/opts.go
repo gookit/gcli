@@ -60,7 +60,7 @@ func (ops *CliOpts) InitFlagSet(name string) {
 
 // Bool binding a bool option flag, return pointer
 func (ops *CliOpts) Bool(name, shorts string, defVal bool, desc string) *bool {
-	opt := newFlagOpt(name, desc, defVal, shorts)
+	opt := newCliOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
@@ -75,7 +75,7 @@ func (ops *CliOpts) BoolVar(ptr *bool, opt *CliOpt) { ops.boolOpt(ptr, opt) }
 
 // BoolOpt binding a bool option
 func (ops *CliOpts) BoolOpt(ptr *bool, name, shorts string, defVal bool, desc string) {
-	ops.boolOpt(ptr, newFlagOpt(name, desc, defVal, shorts))
+	ops.boolOpt(ptr, newCliOpt(name, desc, defVal, shorts))
 }
 
 // binding option and shorts
@@ -95,7 +95,7 @@ func (ops *CliOpts) Float64Var(ptr *float64, opt *CliOpt) { ops.float64Opt(ptr, 
 
 // Float64Opt binding a float64 option
 func (ops *CliOpts) Float64Opt(p *float64, name, shorts string, defVal float64, desc string) {
-	ops.float64Opt(p, newFlagOpt(name, desc, defVal, shorts))
+	ops.float64Opt(p, newCliOpt(name, desc, defVal, shorts))
 }
 
 func (ops *CliOpts) float64Opt(p *float64, opt *CliOpt) {
@@ -111,7 +111,7 @@ func (ops *CliOpts) float64Opt(p *float64, opt *CliOpt) {
 
 // Str binding an string option flag, return pointer
 func (ops *CliOpts) Str(name, shorts string, defValue, desc string) *string {
-	opt := newFlagOpt(name, desc, defValue, shorts)
+	opt := newCliOpt(name, desc, defValue, shorts)
 	name = ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
@@ -126,7 +126,7 @@ func (ops *CliOpts) StrVar(p *string, opt *CliOpt) { ops.strOpt(p, opt) }
 
 // StrOpt binding an string option
 func (ops *CliOpts) StrOpt(p *string, name, shorts, defValue, desc string) {
-	ops.strOpt(p, newFlagOpt(name, desc, defValue, shorts))
+	ops.strOpt(p, newCliOpt(name, desc, defValue, shorts))
 }
 
 // binding option and shorts
@@ -143,36 +143,36 @@ func (ops *CliOpts) strOpt(p *string, opt *CliOpt) {
 
 // Int binding an int option flag, return pointer
 func (ops *CliOpts) Int(name, shorts string, defValue int, desc string) *int {
-	opt := newFlagOpt(name, desc, defValue, shorts)
+	opt := newCliOpt(name, desc, defValue, shorts)
 	name = ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
-	p := ops.fSet.Int(name, defValue, opt.Desc)
+	ptr := ops.fSet.Int(name, defValue, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 
-	return p
+	return ptr
 }
 
 // IntVar binding an int option flag
-func (ops *CliOpts) IntVar(p *int, opt *CliOpt) { ops.intOpt(p, opt) }
+func (ops *CliOpts) IntVar(ptr *int, opt *CliOpt) { ops.intOpt(ptr, opt) }
 
 // IntOpt binding an int option
-func (ops *CliOpts) IntOpt(p *int, name, shorts string, defValue int, desc string) {
-	ops.intOpt(p, newFlagOpt(name, desc, defValue, shorts))
+func (ops *CliOpts) IntOpt(ptr *int, name, shorts string, defValue int, desc string) {
+	ops.intOpt(ptr, newCliOpt(name, desc, defValue, shorts))
 }
 
-func (ops *CliOpts) intOpt(p *int, opt *CliOpt) {
+func (ops *CliOpts) intOpt(ptr *int, opt *CliOpt) {
 	defValue := opt.DValue().Int()
 	name := ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
-	ops.fSet.IntVar(p, name, defValue, opt.Desc)
+	ops.fSet.IntVar(ptr, name, defValue, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 }
 
 // Int64 binding an int64 option flag, return pointer
 func (ops *CliOpts) Int64(name, shorts string, defValue int64, desc string) *int64 {
-	opt := newFlagOpt(name, desc, defValue, shorts)
+	opt := newCliOpt(name, desc, defValue, shorts)
 	name = ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
@@ -183,19 +183,19 @@ func (ops *CliOpts) Int64(name, shorts string, defValue int64, desc string) *int
 }
 
 // Int64Var binding an int64 option flag
-func (ops *CliOpts) Int64Var(p *int64, opt *CliOpt) { ops.int64Opt(p, opt) }
+func (ops *CliOpts) Int64Var(ptr *int64, opt *CliOpt) { ops.int64Opt(ptr, opt) }
 
 // Int64Opt binding an int64 option
-func (ops *CliOpts) Int64Opt(p *int64, name, shorts string, defValue int64, desc string) {
-	ops.int64Opt(p, newFlagOpt(name, desc, defValue, shorts))
+func (ops *CliOpts) Int64Opt(ptr *int64, name, shorts string, defValue int64, desc string) {
+	ops.int64Opt(ptr, newCliOpt(name, desc, defValue, shorts))
 }
 
-func (ops *CliOpts) int64Opt(p *int64, opt *CliOpt) {
+func (ops *CliOpts) int64Opt(ptr *int64, opt *CliOpt) {
 	defVal := opt.DValue().Int64()
 	name := ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
-	ops.fSet.Int64Var(p, name, defVal, opt.Desc)
+	ops.fSet.Int64Var(ptr, name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 }
 
@@ -203,64 +203,64 @@ func (ops *CliOpts) int64Opt(p *int64, opt *CliOpt) {
 
 // Uint binding an int option flag, return pointer
 func (ops *CliOpts) Uint(name, shorts string, defVal uint, desc string) *uint {
-	opt := newFlagOpt(name, desc, defVal, shorts)
+	opt := newCliOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
-	p := ops.fSet.Uint(name, defVal, opt.Desc)
+	ptr := ops.fSet.Uint(name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 
-	return p
+	return ptr
 }
 
 // UintVar binding an uint option flag
-func (ops *CliOpts) UintVar(p *uint, opt *CliOpt) { ops.uintOpt(p, opt) }
+func (ops *CliOpts) UintVar(ptr *uint, opt *CliOpt) { ops.uintOpt(ptr, opt) }
 
 // UintOpt binding an uint option
-func (ops *CliOpts) UintOpt(p *uint, name, shorts string, defValue uint, desc string) {
-	ops.uintOpt(p, newFlagOpt(name, desc, defValue, shorts))
+func (ops *CliOpts) UintOpt(ptr *uint, name, shorts string, defValue uint, desc string) {
+	ops.uintOpt(ptr, newCliOpt(name, desc, defValue, shorts))
 }
 
-func (ops *CliOpts) uintOpt(p *uint, opt *CliOpt) {
+func (ops *CliOpts) uintOpt(ptr *uint, opt *CliOpt) {
 	defVal := opt.DValue().Int()
 	name := ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
-	ops.fSet.UintVar(p, name, uint(defVal), opt.Desc)
+	ops.fSet.UintVar(ptr, name, uint(defVal), opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 }
 
 // Uint64 binding an int option flag, return pointer
 func (ops *CliOpts) Uint64(name, shorts string, defVal uint64, desc string) *uint64 {
-	opt := newFlagOpt(name, desc, defVal, shorts)
+	opt := newCliOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
-	p := ops.fSet.Uint64(name, defVal, opt.Desc)
+	ptr := ops.fSet.Uint64(name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 
-	return p
+	return ptr
 }
 
 // Uint64Var binding an uint option flag
-func (ops *CliOpts) Uint64Var(p *uint64, opt *CliOpt) { ops.uint64Opt(p, opt) }
+func (ops *CliOpts) Uint64Var(ptr *uint64, opt *CliOpt) { ops.uint64Opt(ptr, opt) }
 
 // Uint64Opt binding an uint64 option
-func (ops *CliOpts) Uint64Opt(p *uint64, name, shorts string, defVal uint64, desc string) {
-	ops.uint64Opt(p, newFlagOpt(name, desc, defVal, shorts))
+func (ops *CliOpts) Uint64Opt(ptr *uint64, name, shorts string, defVal uint64, desc string) {
+	ops.uint64Opt(ptr, newCliOpt(name, desc, defVal, shorts))
 }
 
 // binding option and shorts
-func (ops *CliOpts) uint64Opt(p *uint64, opt *CliOpt) {
+func (ops *CliOpts) uint64Opt(ptr *uint64, opt *CliOpt) {
 	defVal := opt.DValue().Int64()
 	name := ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
-	ops.fSet.Uint64Var(p, name, uint64(defVal), opt.Desc)
+	ops.fSet.Uint64Var(ptr, name, uint64(defVal), opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 }
 
 // Var binding an custom var option flag
-func (ops *CliOpts) Var(p flag.Value, opt *CliOpt) { ops.varOpt(p, opt) }
+func (ops *CliOpts) Var(ptr flag.Value, opt *CliOpt) { ops.varOpt(ptr, opt) }
 
 // VarOpt binding a custom var option
 //
@@ -268,16 +268,16 @@ func (ops *CliOpts) Var(p flag.Value, opt *CliOpt) { ops.varOpt(p, opt) }
 //
 //	var names gcli.Strings
 //	cmd.VarOpt(&names, "tables", "t", "description ...")
-func (ops *CliOpts) VarOpt(p flag.Value, name, shorts, desc string) {
-	ops.varOpt(p, newFlagOpt(name, desc, nil, shorts))
+func (ops *CliOpts) VarOpt(v flag.Value, name, shorts, desc string) {
+	ops.varOpt(v, newCliOpt(name, desc, nil, shorts))
 }
 
 // binding option and shorts
-func (ops *CliOpts) varOpt(p flag.Value, opt *CliOpt) {
+func (ops *CliOpts) varOpt(v flag.Value, opt *CliOpt) {
 	name := ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
-	ops.fSet.Var(p, name, opt.Desc)
+	ops.fSet.Var(v, name, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 }
 
@@ -400,9 +400,6 @@ func (ops *CliOpts) Opts() map[string]*CliOpt { return ops.opts }
  * flag options metadata
  ***********************************************************************/
 
-// FlagMeta alias of flag CliOpt
-type FlagMeta = CliOpt
-
 // CliOpt define for a flag option
 type CliOpt struct {
 	// go flag value
@@ -430,8 +427,8 @@ type CliOpt struct {
 	Question string
 }
 
-// newFlagOpt quick create an CliOpt
-func newFlagOpt(name, desc string, defVal any, shortcut string) *CliOpt {
+// newCliOpt quick create an CliOpt
+func newCliOpt(name, desc string, defVal any, shortcut string) *CliOpt {
 	return &CliOpt{
 		Name: name,
 		Desc: desc,

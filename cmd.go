@@ -35,7 +35,7 @@ const maxFunc = 64
 // HandlersChain middleware handlers chain definition
 type HandlersChain []RunnerFunc
 
-// Last returns the last handler in the chain. ie. the last handler is the main own.
+// Last returns the last handler in the chain. tip: the last handler is the main own.
 func (c HandlersChain) Last() RunnerFunc {
 	length := len(c)
 	if length > 0 {
@@ -49,9 +49,7 @@ type Command struct {
 	// internal use
 	base
 
-	// --- provide option and argument parse and binding.
-
-	// Flags (options+arguments) for the command
+	// Flags cli (options+arguments) parse and manage for the command
 	gflag.Flags
 
 	// Name is the command name.
@@ -111,7 +109,7 @@ type Command struct {
 	// command is standalone running.
 	standalone bool
 	// global option binding on standalone. deny error on repeat run.
-	goptBounded bool
+	gOptBounded bool
 }
 
 // NewCommand create a new command instance.
@@ -126,7 +124,6 @@ func NewCommand(name, desc string, setFn ...func(c *Command)) *Command {
 	c := &Command{
 		Name: name,
 		Desc: desc,
-		// Flags: *NewFlags(name, desc),
 	}
 
 	// has config func
@@ -269,8 +266,8 @@ func (c *Command) initialize() {
 	c.Arguments.SetName(cName)
 	// c.Arguments.SetValidateNum(gOpts.strictMode)
 
-	// init for cmd Flags
-	c.Flags.InitFlagSet(cName)
+	// init for cmd flags
+	c.InitFlagSet(cName)
 
 	// format description
 	if len(c.Desc) > 0 {
@@ -391,11 +388,10 @@ func (c *Command) Run(args []string) (err error) {
 	}
 
 	// binding global options
-	if !c.goptBounded {
+	if !c.gOptBounded {
 		Debugf("cmd: %s - binding global options on standalone mode", c.Name)
-		// bindingCommonGOpts(&c.Flags)
-		gOpts.bindingFlags(&c.Flags)
-		c.goptBounded = true
+		gOpts.bindingOpts(&c.Flags)
+		c.gOptBounded = true
 	}
 
 	// dispatch and parse flags and execute command
@@ -512,7 +508,7 @@ func (c *Command) parseOptions(args []string) (ss []string, err error) {
 	}
 
 	// remaining args
-	return c.Flags.RawArgs(), nil
+	return c.RawArgs(), nil
 }
 
 // prepare: before execute the command
@@ -662,7 +658,6 @@ func (c *Command) Copy() *Command {
 	// reset some fields
 	nc.Func = nil
 	nc.Hooks.ResetHooks() // TODO bug, will clear c.Hooks
-	// nc.Flags = flag.FlagSet{}
 
 	return &nc
 }

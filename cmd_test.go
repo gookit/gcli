@@ -303,7 +303,7 @@ func TestCommand_Run_emptyArgs(t *testing.T) {
 
 	is.NoErr(err)
 	is.Eq("name=test", bf.String())
-	is.Eq("int desc", c0.FlagMeta("int").Desc)
+	is.Eq("int desc", c0.Opt("int").Desc)
 	is.NotEmpty(c0.Args())
 	is.Eq("arg0", c0.Arg("arg0").Name)
 }

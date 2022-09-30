@@ -71,14 +71,14 @@ func GCtx() *Context {
 	return gCtx
 }
 
-// Flags alias of the gflag.Flags
-type Flags = gflag.Flags
+// Flags alias of the gflag.Parser
+type Flags = gflag.Parser
 
-// FlagMeta alias of the gflag.Option
-type FlagMeta = gflag.Option
+// FlagMeta alias of the gflag.CliOpt
+type FlagMeta = gflag.CliOpt
 
-// FlagsConfig alias of the gflag.FlagsConfig
-type FlagsConfig = gflag.FlagsConfig
+// FlagsConfig alias of the gflag.Config
+type FlagsConfig = gflag.Config
 
 // NewFlags create new gflag.Flags
 func NewFlags(nameWithDesc ...string) *gflag.Flags {
@@ -141,9 +141,9 @@ func (g *GlobalOpts) SetDisable() {
 	g.Disable = true
 }
 
-func (g *GlobalOpts) bindingFlags(fs *Flags) {
+func (g *GlobalOpts) bindingOpts(fs *gflag.Parser) {
 	fs.BoolOpt(&g.ShowHelp, "help", "h", false, "Display the help information")
-	fs.AfterParse = func(_ *Flags) error {
+	fs.AfterParse = func(_ *gflag.Parser) error {
 		// return ErrHelp on ShowHelp=true
 		if g.ShowHelp {
 			return flag.ErrHelp

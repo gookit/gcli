@@ -179,10 +179,10 @@ func (app *App) bindAppOpts() {
 	// }
 
 	// binding global options
-	app.opts.bindingFlags(fs)
+	app.opts.bindingOpts(fs)
 	// add more ...
 	// This is an internal option
-	fs.BoolVar(&gOpts.inCompletion, &gflag.FlagMeta{
+	fs.BoolVar(&gOpts.inCompletion, &gflag.CliOpt{
 		Name: "in-completion",
 		Desc: "generate completion scripts for bash/zsh",
 		// hidden it

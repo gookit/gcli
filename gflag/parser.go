@@ -280,7 +280,7 @@ func (p *Parser) FromStruct(ptr any) error {
 			optName = strutil.SnakeCase(name, "-")
 		}
 
-		opt := newFlagOpt(optName, mp["desc"], mp["default"], mp["shorts"])
+		opt := newCliOpt(optName, mp["desc"], mp["default"], mp["shorts"])
 		if must, has := mp["required"]; has {
 			opt.Required = strutil.MustBool(must)
 		}
