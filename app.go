@@ -56,7 +56,7 @@ type App struct {
 	// AppConfig
 
 	fs *Flags
-	// app flag options
+	// cli input options for app
 	opts *GlobalOpts
 
 	// Name app name
@@ -103,20 +103,20 @@ func NewApp(fns ...func(app *App)) *App {
 		Desc: "This is my console application",
 	}
 
-	app.fs = gflag.New("appOpts").WithConfigFn(func(opt *gflag.Config) {
+	app.fs = gflag.New(app.Name).WithConfigFn(func(opt *gflag.Config) {
 		opt.WithoutType = true
 		opt.Alignment = gflag.AlignLeft
 	})
 
 	Logf(VerbCrazy, "create a new cli application, and create base ")
 
-	// set a default version
-	app.Version = "1.0.0"
-	app.Context = gCtx
-
 	// init base
 	app.base = newBase()
 	app.opts = newGlobalOpts()
+
+	// set a default version
+	app.Version = "1.0.0"
+	app.Context = gCtx
 
 	for _, fn := range fns {
 		fn(app)
@@ -224,7 +224,6 @@ func (app *App) AddCommand(c *Command) {
 
 	// do add command
 	app.addCommand(app.Name, c)
-
 	app.fireWithCmd(events.OnCmdInit, c, nil)
 }
 

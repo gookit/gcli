@@ -16,9 +16,13 @@ import (
 
 // CliOpts cli options manage TODO
 type CliOpts struct {
+	// name inherited from gcli.Command
+	name string
+
 	// the options flag set TODO remove flag.FlagSet, custom implement parse
 	fSet *flag.FlagSet
-	// all option names of the command. {name: length} // TODO delete, move len to opts.
+	// all cli option names.
+	// format: {name: length} // TODO delete, move len to opts.
 	names map[string]int
 	// metadata for all options
 	opts map[string]*CliOpt // TODO support option category
@@ -31,7 +35,7 @@ type CliOpts struct {
 	// eg: "-V, --version" length is 13
 	optMaxLen int
 	// exist short names. useful for render help
-	existShort bool
+	hasShort bool
 }
 
 // InitFlagSet create and init flag.FlagSet
@@ -44,11 +48,17 @@ func (ops *CliOpts) InitFlagSet(name string) {
 	// 	ops.cfg = newDefaultFlagConfig()
 	// }
 
+	ops.name = name
 	ops.fSet = flag.NewFlagSet(name, flag.ContinueOnError)
 	// disable output internal error message on parse flags
 	ops.fSet.SetOutput(io.Discard)
 	// nothing to do ... render usage on after parsed
 	ops.fSet.Usage = func() {}
+}
+
+// SetName for Arguments
+func (ops *CliOpts) SetName(name string) {
+	ops.name = name
 }
 
 /***********************************************************************
@@ -319,7 +329,7 @@ func (ops *CliOpts) checkShortNames(name string, shorts []string) {
 		return
 	}
 
-	ops.existShort = true
+	ops.hasShort = true
 	if ops.shorts == nil {
 		ops.shorts = map[string]string{}
 	}

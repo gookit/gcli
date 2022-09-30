@@ -126,13 +126,13 @@ func NewCommand(name, desc string, setFn ...func(c *Command)) *Command {
 		Desc: desc,
 	}
 
+	// init set name
+	c.Flags.SetName(name)
+
 	// has config func
 	if len(setFn) > 0 {
 		c.Config = setFn[0]
 	}
-
-	// set name
-	c.Arguments.SetName(name)
 	return c
 }
 
@@ -263,8 +263,7 @@ func (c *Command) initialize() {
 	}
 
 	// init for cmd Arguments
-	c.Arguments.SetName(cName)
-	// c.Arguments.SetValidateNum(gOpts.strictMode)
+	c.Flags.SetName(cName)
 
 	// init for cmd flags
 	c.InitFlagSet(cName)

@@ -201,7 +201,7 @@ func newBase() base {
 		cmdAliases: structs.NewAliases(aliasNameCheck),
 		// ExitOnEnd:  false,
 		tplVars: make(map[string]any),
-		Context: NewCtx(),
+		// Context: NewCtx(),
 	}
 }
 

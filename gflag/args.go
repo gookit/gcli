@@ -17,7 +17,7 @@ import (
 
 // Arguments definition
 type Arguments struct {
-	// Inherited from Command
+	// name inherited from gcli.Command
 	name string
 	// args definition for a command.
 	//

@@ -31,6 +31,7 @@ type Parser struct {
 	// --- cli arguments ---
 	Arguments
 
+	name string
 	// Desc message
 	Desc string
 	// AfterParse options hook
@@ -71,6 +72,13 @@ func New(nameWithDesc ...string) *Parser {
 
 	p.InitFlagSet(fName)
 	return p
+}
+
+// SetName for parser
+func (p *Parser) SetName(name string) {
+	p.name = name
+	p.CliOpts.SetName(name)
+	p.Arguments.SetName(name)
 }
 
 // SetConfig for the object.

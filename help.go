@@ -6,6 +6,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -58,7 +59,7 @@ Use "<cyan>{$binName} COMMAND -h</>" for more information about a command
 
 // display app help and list all commands. showCommandList()
 func (app *App) showApplicationHelp() bool {
-	Debugf("render application help and commands list")
+	Debugf("render application help and commands list, help.pairs=%s", maputil.ToString2(app.Vars))
 
 	// cmdHelpTemplate = color.ReplaceTag(cmdHelpTemplate)
 	// render help text template
