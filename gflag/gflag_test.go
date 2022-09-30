@@ -16,13 +16,12 @@ import (
 func TestFlags_Basic(t *testing.T) {
 	fs := gflag.New("testFlags")
 
-	assert.Len(t, fs.Metas(), 0)
+	assert.Len(t, fs.Opts(), 0)
 	assert.Eq(t, 0, fs.Len())
 	assert.Eq(t, "testFlags", fs.Name())
 
 	assert.Nil(t, fs.LookupFlag("opt1"))
 	assert.Len(t, fs.ShortNames("opt"), 0)
-	assert.False(t, fs.HasFlag("opt1"))
 	assert.False(t, fs.HasOption("opt1"))
 
 	var s1, s2 string
@@ -65,7 +64,7 @@ func TestFlags_BoolOpt(t *testing.T) {
 
 func TestFlags_StrOpt(t *testing.T) {
 	fs := gcli.NewFlags("testFlags")
-	assert.Len(t, fs.Metas(), 0)
+	assert.Len(t, fs.Opts(), 0)
 
 	var str string
 	fs.StrVar(&str, &gcli.FlagMeta{
@@ -73,9 +72,9 @@ func TestFlags_StrOpt(t *testing.T) {
 		Desc: "test desc",
 	})
 
-	assert.True(t, fs.HasFlagMeta("test"))
-	assert.False(t, fs.HasFlagMeta("not-exist"))
-	assert.Len(t, fs.Metas(), 1)
+	assert.True(t, fs.IsOption("test"))
+	assert.False(t, fs.IsOption("not-exist"))
+	assert.Len(t, fs.Opts(), 1)
 
 	f := fs.LookupFlag("test")
 	assert.NotEmpty(t, f)
@@ -183,7 +182,7 @@ func TestFlags_Uint64Opt(t *testing.T) {
 		Shorts: []string{"c", "", "f"},
 	})
 
-	fm2 := fs.FlagMeta("uint2")
+	fm2 := fs.Opt("uint2")
 	assert.Len(t, fm2.Shorts, 2)
 	assert.Eq(t, "c,f", fm2.Shorts2String())
 
@@ -247,17 +246,17 @@ func TestFlags_CheckShorts(t *testing.T) {
 		// "+" has been filtered by func: splitShortcut()
 		fs.Float64Opt(&fv, "float", "+", 0, "desc")
 
-		fm := fs.FlagMeta("float")
+		fm := fs.Opt("float")
 		assert.Len(t, fm.Shorts, 0)
 	})
 
 	var fv float64
 	fs := gcli.NewFlags()
-	fs.Float64Var(&fv, &gcli.FlagMeta{
+	fs.Float64Var(&fv, &gflag.CliOpt{
 		Name:   "float",
 		Shorts: []string{"+", "-"},
 	})
-	fm := fs.FlagMeta("float")
+	fm := fs.Opt("float")
 	assert.Empty(t, fm.Shorts)
 
 	assert.PanicsMsg(t, func() {
@@ -374,7 +373,7 @@ func TestFlags_FromStruct_simple(t *testing.T) {
 	err := fs.FromStruct(opt)
 	assert.NoErr(t, err)
 	assert.True(t, opt.Bol)
-	assert.True(t, fs.HasFlagMeta("bol"))
+	assert.True(t, fs.HasOption("bol"))
 
 	fs.PrintHelpPanel()
 
@@ -438,8 +437,8 @@ func TestFlags_FromStruct_noNameStruct(t *testing.T) {
 	err := fs.FromStruct(&logOpts)
 
 	assert.NoErr(t, err)
-	assert.True(t, fs.HasFlag("abbrev"))
-	assert.True(t, fs.HasFlagMeta("abbrev"))
+	assert.True(t, fs.HasOption("abbrev"))
+	assert.True(t, fs.IsOption("abbrev"))
 }
 
 func TestFlags_FromStruct(t *testing.T) {
