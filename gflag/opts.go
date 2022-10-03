@@ -44,10 +44,6 @@ func (ops *CliOpts) InitFlagSet(name string) {
 		return
 	}
 
-	// if ops.cfg == nil {
-	// 	ops.cfg = newDefaultFlagConfig()
-	// }
-
 	ops.name = name
 	ops.fSet = flag.NewFlagSet(name, flag.ContinueOnError)
 	// disable output internal error message on parse flags
