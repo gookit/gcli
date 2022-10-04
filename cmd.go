@@ -263,7 +263,7 @@ func (c *Command) initialize() {
 	}
 
 	// init for cmd flags parser
-	c.InitParser(cName)
+	c.Flags.Init(cName)
 
 	// format description
 	if len(c.Desc) > 0 {

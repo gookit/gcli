@@ -494,14 +494,13 @@ func TestFlags_PrintHelpPanel(t *testing.T) {
 }
 
 func TestFlagMeta_Validate(t *testing.T) {
-	fm := gcli.FlagMeta{
+	fm := gflag.CliOpt{
 		Name:     "opt1",
 		Required: true,
 		Validator: func(val string) error {
 			if len(val) < 5 {
 				return errors.New("flag value min len is 5")
 			}
-
 			return nil
 		},
 	}

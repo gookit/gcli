@@ -74,11 +74,13 @@ func New(nameWithDesc ...string) *Parser {
 	return p
 }
 
-// InitParser for parser
-func (p *Parser) InitParser(name string) {
-	if p.out == nil {
-		p.out = os.Stdout
+// Init for parser
+func (p *Parser) Init(name string) {
+	if p.out != nil {
+		return
 	}
+
+	p.out = os.Stdout
 	if p.cfg == nil {
 		p.cfg = newDefaultFlagConfig()
 	}

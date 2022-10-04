@@ -19,3 +19,4 @@ contains `section, panel, padding, helpPanel, table, tree, title, list, multiLis
 - https://github.com/InVisionApp/tabular
 - https://github.com/gosuri/uitable
 - https://github.com/tomlazar/table
+- https://github.com/nwidger/jsoncolor

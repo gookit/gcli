@@ -15,6 +15,9 @@ import (
  * Arguments definition
  *************************************************************/
 
+// CliArgs alias of Arguments
+type CliArgs = Arguments
+
 // Arguments definition
 type Arguments struct {
 	// name inherited from gcli.Command
@@ -26,6 +29,8 @@ type Arguments struct {
 	// 	{"arg1", "this is second argument", false, false},
 	// ]
 	args []*Argument
+	// arg name max width
+	argWidth int
 	// record min length for args
 	// argsMinLen int
 	// record argument names and defined positional relationships
@@ -36,8 +41,6 @@ type Arguments struct {
 	// 	"arg1": 1,
 	// }
 	argsIndexes map[string]int
-	// arg name max width
-	argWidth int
 	// validate the args number is right
 	validateNum bool
 	// mark exists array argument
@@ -245,6 +248,9 @@ func (ags *Arguments) BuildArgsHelp() string {
 /*************************************************************
  * Argument definition
  *************************************************************/
+
+// CliArg alias of Argument
+type CliArg = Argument
 
 // Argument a command argument definition
 type Argument struct {
