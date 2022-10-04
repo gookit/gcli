@@ -308,7 +308,7 @@ func TestCommand_Run_emptyArgs(t *testing.T) {
 	is.Eq("arg0", c0.Arg("arg0").Name)
 }
 
-func TestCommand_Run_XshowHelp1(t *testing.T) {
+func TestCommand_Run_showHelp1(t *testing.T) {
 	is := assert.New(t)
 
 	bf.Reset()
@@ -342,7 +342,7 @@ func TestCommand_Run_showHelp2(t *testing.T) {
 	is.StrContains(str, "Arg1 desc")
 }
 
-func TestCommand_Run_XparseOptions(t *testing.T) {
+func TestCommand_Run_parseOptions(t *testing.T) {
 	bf.Reset()
 	is := assert.New(t)
 
@@ -355,7 +355,7 @@ func TestCommand_Run_XparseOptions(t *testing.T) {
 	dump.P(gcli.GOpts())
 	err := c0.Run([]string{"--int", "10", "--str=abc", "txt"})
 
-	dump.P(gcli.GOpts(), c0.Context)
+	// dump.P(gcli.GOpts(), c0.Context)
 	is.NoErr(err)
 	is.Eq("test", c0.Get("name"))
 	is.Eq([]string{"txt"}, c0.Get("args"))

@@ -210,6 +210,7 @@ func (app *App) Add(c *Command, more ...*Command) {
 func (app *App) AddCommand(c *Command) {
 	// initialize application before add command
 	app.initialize()
+	app.fireWithCmd(events.OnAppCmdAdd, c, nil)
 
 	// init command
 	c.app = app

@@ -247,7 +247,6 @@ func (c *Command) initialize() {
 
 	// check command name
 	cName := c.goodName()
-	c.Fire(events.OnCmdInitBefore, nil)
 	Debugf("initialize the command '%s': init flags, run config func", cName)
 
 	c.initialized = true
@@ -255,6 +254,7 @@ func (c *Command) initialize() {
 
 	// init base
 	c.initCommandBase(cName)
+	c.Fire(events.OnCmdInitBefore, nil)
 
 	// load common subs
 	if len(c.Subs) > 0 {

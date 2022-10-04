@@ -43,23 +43,22 @@ func TestApp_Hooks_EvtAppInit(t *testing.T) {
 	assert.Eq(t, "trigger "+events.OnGlobalOptsParsed+", args:[simple]", buf.String())
 }
 
-func TestApp_Hooks_EvtCmdInit(t *testing.T) {
+func TestApp_Hooks_OnAppCmdAdd(t *testing.T) {
 	buf.Reset()
 
 	cli := newNotExitApp()
-	cli.On(events.OnCmdInitAfter, func(ctx *gcli.HookCtx) (stop bool) {
-		buf.WriteString(events.OnCmdInitAfter)
-		buf.WriteString(":")
-
+	cli.On(events.OnAppCmdAdd, func(ctx *gcli.HookCtx) (stop bool) {
+		buf.WriteString(ctx.Name())
+		buf.WriteString(" - ")
 		buf.WriteString(ctx.Cmd.Name + ";")
 		return
 	})
 
 	cli.Add(emptyCmd)
-	assert.Eq(t, "cmd.init:empty;", buf.String())
+	assert.Eq(t, "app.cmd.add.before - empty;", buf.String())
 
 	cli.Add(simpleCmd)
-	assert.Eq(t, "cmd.init:empty;cmd.init:simple;", buf.String())
+	assert.Eq(t, "app.cmd.add.before - empty;app.cmd.add.before - simple;", buf.String())
 }
 
 func TestCommand_Hooks_EvtCmdOptParsed(t *testing.T) {

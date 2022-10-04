@@ -15,6 +15,9 @@ const (
 	OnAppBindOptsBefore = "app.bind.opts.before"
 	OnAppBindOptsAfter  = "app.bind.opts.after"
 
+	// OnAppCmdAdd on app cmd add
+	OnAppCmdAdd = "app.cmd.add.before"
+
 	// OnAppCmdAdded on app cmd added
 	OnAppCmdAdded = "app.cmd.added"
 
