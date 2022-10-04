@@ -11,13 +11,13 @@ import (
 const (
 	EvtAppInit = events.OnAppInitAfter
 
-	EvtAppPrepareAfter = events.OnAppPrepareAfter
+	EvtAppPrepareAfter = events.OnAppPrepared
 
 	EvtAppRunBefore = events.OnAppRunBefore
 	EvtAppRunAfter  = events.OnAppRunAfter
 	EvtAppRunError  = events.OnAppRunError
 
-	EvtCmdInit = events.OnCmdInit
+	EvtCmdInit = events.OnCmdInitAfter
 
 	// EvtCmdNotFound app or sub command not found
 	EvtCmdNotFound = events.OnCmdNotFound

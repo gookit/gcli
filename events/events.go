@@ -2,18 +2,21 @@ package events
 
 // constants for hooks event, there are default allowed event names
 const (
+	// OnAppInitBefore On app init before
 	OnAppInitBefore = "app.init.before"
-	// OnAppInitAfter On app inited
+	// OnAppInitAfter On app init after
 	OnAppInitAfter = "app.init.after"
 	// OnAppInit event
 	// Deprecated: please use OnAppInitAfter
 	OnAppInit = OnAppInitAfter
 	// OnAppStop   = "app.stopped"
 
+	// OnAppBindOptsBefore bind app options
 	OnAppBindOptsBefore = "app.bind.opts.before"
 	OnAppBindOptsAfter  = "app.bind.opts.after"
 
-	OnAppPrepareAfter = "app.prepare.after"
+	// OnAppCmdAdded on app cmd added
+	OnAppCmdAdded = "app.cmd.added"
 
 	// OnAppOptsParsed event
 	//
@@ -21,11 +24,15 @@ const (
 	// 	{args: app-args}
 	OnAppOptsParsed = "app.opts.parsed"
 
+	// OnAppPrepared prepare for run
+	OnAppPrepared = "app.run.prepared"
+
 	OnAppRunBefore = "app.run.before"
 	OnAppRunAfter  = "app.run.after"
 	OnAppRunError  = "app.run.error"
 
-	OnCmdInit = "cmd.init"
+	OnCmdInitBefore = "cmd.init.before"
+	OnCmdInitAfter  = "cmd.init.after"
 
 	// OnCmdNotFound app or sub command not found.
 	//

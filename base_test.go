@@ -47,8 +47,8 @@ func TestApp_Hooks_EvtCmdInit(t *testing.T) {
 	buf.Reset()
 
 	cli := newNotExitApp()
-	cli.On(events.OnCmdInit, func(ctx *gcli.HookCtx) (stop bool) {
-		buf.WriteString(events.OnCmdInit)
+	cli.On(events.OnCmdInitAfter, func(ctx *gcli.HookCtx) (stop bool) {
+		buf.WriteString(events.OnCmdInitAfter)
 		buf.WriteString(":")
 
 		buf.WriteString(ctx.Cmd.Name + ";")

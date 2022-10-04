@@ -152,8 +152,9 @@ func (app *App) initialize() {
 		return
 	}
 
-	Logf(VerbCrazy, "initialize the cli application")
+	app.initialized = true
 	app.Fire(events.OnAppInitBefore, nil)
+	Logf(VerbCrazy, "initialize the cli application")
 
 	// init some info
 	app.initHelpVars()
@@ -165,7 +166,6 @@ func (app *App) initialize() {
 	}
 
 	app.Fire(events.OnAppInitAfter, nil)
-	app.initialized = true
 }
 
 // binding app options
@@ -174,9 +174,6 @@ func (app *App) bindAppOpts() {
 	// global options flag
 	fs := app.fs
 	app.Fire(events.OnAppBindOptsBefore, nil)
-	// if app.BeforeAddOpts != nil {
-	// 	app.BeforeAddOpts(fs)
-	// }
 
 	// binding global options
 	app.opts.bindingOpts(fs)
@@ -191,9 +188,6 @@ func (app *App) bindAppOpts() {
 
 	// support binding custom global options
 	app.Fire(events.OnAppBindOptsAfter, nil)
-	// if app.AfterAddOpts != nil {
-	// 	app.AfterAddOpts(app)
-	// }
 }
 
 /*************************************************************
@@ -224,7 +218,7 @@ func (app *App) AddCommand(c *Command) {
 
 	// do add command
 	app.addCommand(app.Name, c)
-	app.fireWithCmd(events.OnCmdInit, c, nil)
+	app.fireWithCmd(events.OnAppCmdAdded, c, nil)
 }
 
 // AddHandler to the application
@@ -491,8 +485,7 @@ func (app *App) Run(args []string) (code int) {
 		return app.exitOnEnd(code)
 	}
 
-	// trigger event
-	app.Fire(events.OnAppPrepareAfter, map[string]any{"name": name})
+	app.Fire(events.OnAppPrepared, map[string]any{"name": name})
 
 	// do run input command
 	code = app.doRunCmd(name, app.args)
@@ -526,7 +519,6 @@ func (app *App) RunCmd(name string, args []string) int {
 
 func (app *App) doRunCmd(name string, args []string) (code int) {
 	cmd := app.GetCommand(name)
-
 	app.fireWithCmd(events.OnAppRunBefore, cmd, map[string]any{"args": args})
 	Debugf("will run app command '%s' with args: %v", name, args)
 

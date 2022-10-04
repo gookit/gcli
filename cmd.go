@@ -247,6 +247,7 @@ func (c *Command) initialize() {
 
 	// check command name
 	cName := c.goodName()
+	c.Fire(events.OnCmdInitBefore, nil)
 	Debugf("initialize the command '%s': init flags, run config func", cName)
 
 	c.initialized = true
@@ -274,12 +275,12 @@ func (c *Command) initialize() {
 		}
 	}
 
-	// call Config func
+	// call config func
 	if c.Config != nil {
 		c.Config(c)
 	}
 
-	c.Fire(events.OnCmdInit, nil)
+	c.Fire(events.OnCmdInitAfter, nil)
 }
 
 // init base, ctx
@@ -295,9 +296,9 @@ func (c *Command) initCommandBase(cName string) {
 		c.Context = gCtx
 	}
 
-	c.initHelpVars()
-
 	binWithPath := c.binName + " " + c.Path()
+
+	c.initHelpVars()
 	c.AddVars(map[string]string{
 		"cmd": cName,
 		// binName with command name
@@ -334,9 +335,6 @@ func (c *Command) Next() {
 /*************************************************************
  * standalone running
  *************************************************************/
-
-// var errCallRunOnApp = errors.New("c.Run() method can only be called in standalone mode")
-// var errCallRunOnSub = errors.New("c.Run() cannot allow call at subcommand")
 
 // MustRun Alone the current command, will panic on error
 //
@@ -405,8 +403,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 	if err != nil {
 		if err == flag.ErrHelp {
 			Debugf("cmd: %s - parse opts return flag.ErrHelp, render command help", c.Name)
-			c.ShowHelp()
-			return nil
+			return c.ShowHelp()
 		}
 
 		Debugf("cmd: %s - command options parse error", c.Name)
@@ -418,8 +415,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 	if c.standalone {
 		if gOpts.ShowHelp {
 			Debugf("cmd: %s - gOpts.ShowHelp is True, render command help", c.Name)
-			c.ShowHelp()
-			return
+			return c.ShowHelp()
 		}
 
 		c.Fire(events.OnGlobalOptsParsed, map[string]any{"args": args})
@@ -438,17 +434,18 @@ func (c *Command) innerDispatch(args []string) (err error) {
 
 			// is valid sub command
 			if sub, has := c.Command(name); has {
-				// loop find sub...command and run it.
+				// TIP: loop find sub...command and run it.
 				return sub.innerDispatch(args[1:])
 			}
 
 			// is not a sub command and has no arguments -> error
 			if !c.HasArguments() {
 				// fire events
-				if stop := c.Fire(events.OnCmdSubNotFound, map[string]any{"name": name}); stop {
+				hookData := map[string]any{"name": name}
+				if c.Fire(events.OnCmdSubNotFound, hookData) {
 					return
 				}
-				if stop := c.Fire(events.OnCmdNotFound, map[string]any{"name": name}); stop {
+				if c.Fire(events.OnCmdNotFound, hookData) {
 					return
 				}
 
@@ -460,8 +457,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 	// not set command func and has sub commands.
 	if c.Func == nil && len(c.commands) > 0 {
 		Logf(VerbWarn, "cmd: %s - c.Func is empty, but has subcommands, render help", c.Name)
-		c.ShowHelp()
-		return err
+		return c.ShowHelp()
 	}
 
 	// do execute current command
@@ -528,7 +524,6 @@ func (c *Command) doExecute(args []string) (err error) {
 	if c.Func == nil {
 		Logf(VerbWarn, "the command '%s' no handler func to running", c.Name)
 	} else {
-		// err := c.Func.Run(c, args)
 		err = c.Func(c, args)
 	}
 

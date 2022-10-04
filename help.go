@@ -194,7 +194,7 @@ var CmdHelpTemplate = `{{.Desc}}
 {{.Cmd.Help}}{{end}}`
 
 // ShowHelp show command help info
-func (c *Command) ShowHelp() {
+func (c *Command) ShowHelp() (err error) {
 	Debugf("render the command '%s' help information", c.Name)
 
 	// custom help render func
@@ -239,4 +239,5 @@ func (c *Command) ShowHelp() {
 	// parse gcli help vars then print help
 	// fmt.Printf("%#v\n", s)
 	color.Print(c.ReplaceVars(str))
+	return
 }

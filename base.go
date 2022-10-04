@@ -301,9 +301,7 @@ func (b *base) addCommand(pName string, c *Command) {
 	Logf(VerbCrazy, "register command '%s'(parent: %s), aliases: %v", cName, pName, c.Aliases)
 	b.cmdAliases.AddAliases(c.Name, c.Aliases)
 
-	// c.app = app
 	// inherit global flags from application
-	// c.core.gFlags = app.gFlags
 	// append
 	b.commands[cName] = c
 }
