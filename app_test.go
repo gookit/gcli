@@ -431,9 +431,8 @@ func TestApp_showCommandTips(t *testing.T) {
 // 	assert.False(t, app.IsCommand("cmd1"))
 // }
 
-func TestApp_AddCommander(t *testing.T) {
+func TestApp_AddHandler(t *testing.T) {
 	app := gcli.NewApp()
-
 	app.AddHandler(&UserCommand{})
 
 	assert.True(t, app.HasCommand("test"))

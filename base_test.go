@@ -26,12 +26,12 @@ func TestApp_Hooks_EvtAppInit(t *testing.T) {
 	buf.Reset()
 
 	cli := newNotExitApp()
-	cli.On(events.OnAppInit, func(ctx *gcli.HookCtx) bool {
-		buf.WriteString("trigger " + events.OnAppInit)
+	cli.On(events.OnAppInitAfter, func(ctx *gcli.HookCtx) bool {
+		buf.WriteString("trigger " + ctx.Name())
 		return false
 	})
 	cli.Add(simpleCmd)
-	assert.Eq(t, "trigger "+events.OnAppInit, buf.String())
+	assert.Eq(t, "trigger "+events.OnAppInitAfter, buf.String())
 
 	buf.Reset()
 	cli.On(events.OnGlobalOptsParsed, func(ctx *gcli.HookCtx) bool {

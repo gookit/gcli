@@ -1,3 +1,4 @@
+// Package gflag provide command line options and arguments binding, parse, management.
 package gflag
 
 import (

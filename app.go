@@ -17,12 +17,6 @@ import (
  * CLI application
  *************************************************************/
 
-// Commander interface
-type Commander interface {
-	Value(string) (any, bool)
-	SetValue(string, any)
-}
-
 // Handler interface definition
 type Handler interface {
 	// Creator for create new command
@@ -95,7 +89,7 @@ func New(fns ...func(app *App)) *App {
 //	// Or with a config func
 //	NewApp(func(a *App) {
 //		// do something before init ....
-//		a.Hooks[events.OnAppInit] = func () {}
+//		a.Hooks[events.OnAppInitAfter] = func () {}
 //	})
 func NewApp(fns ...func(app *App)) *App {
 	app := &App{

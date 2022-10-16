@@ -6,9 +6,6 @@ const (
 	OnAppInitBefore = "app.init.before"
 	// OnAppInitAfter On app init after
 	OnAppInitAfter = "app.init.after"
-	// OnAppInit event
-	// Deprecated: please use OnAppInitAfter
-	OnAppInit = OnAppInitAfter
 	// OnAppStop   = "app.stopped"
 
 	// OnAppBindOptsBefore bind app options
@@ -37,14 +34,14 @@ const (
 	OnCmdInitBefore = "cmd.init.before"
 	OnCmdInitAfter  = "cmd.init.after"
 
-	// OnCmdNotFound app or sub command not found.
+	// OnCmdNotFound on app-command or subcommand not found.
 	//
 	// Data:
 	// 	{name: command-name}
 	OnCmdNotFound = "cmd.not.found"
-	// OnAppCmdNotFound app command not found
+	// OnAppCmdNotFound on app command not found
 	OnAppCmdNotFound = "app.cmd.not.found"
-	// OnCmdSubNotFound sub command not found
+	// OnCmdSubNotFound on subcommand not found
 	OnCmdSubNotFound = "cmd.sub.not.found"
 
 	// OnCmdOptParsed event

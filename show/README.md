@@ -14,6 +14,16 @@ contains `section, panel, padding, helpPanel, table, tree, title, list, multiLis
 - markdown
 - json
 
+## GoDoc
+
+Please see https://pkg.go.dev/github.com/gookit/gcli/v2/show
+
+## Install
+
+```shell
+go get github.com/gookit/gcli/v2/show
+```
+
 ## Related
 
 - https://github.com/InVisionApp/tabular
