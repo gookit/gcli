@@ -14,7 +14,7 @@ import (
 	"github.com/gookit/goutil/strutil"
 )
 
-// CliOpts cli options manage TODO
+// CliOpts cli options management
 type CliOpts struct {
 	// name inherited from gcli.Command
 	name string
@@ -116,12 +116,12 @@ func (ops *CliOpts) float64Opt(p *float64, opt *CliOpt) {
 // --- string option
 
 // Str binding an string option flag, return pointer
-func (ops *CliOpts) Str(name, shorts string, defValue, desc string) *string {
-	opt := newCliOpt(name, desc, defValue, shorts)
+func (ops *CliOpts) Str(name, shorts string, defVal, desc string) *string {
+	opt := newCliOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
-	p := ops.fSet.String(name, defValue, opt.Desc)
+	p := ops.fSet.String(name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 
 	return p
@@ -131,8 +131,17 @@ func (ops *CliOpts) Str(name, shorts string, defValue, desc string) *string {
 func (ops *CliOpts) StrVar(p *string, opt *CliOpt) { ops.strOpt(p, opt) }
 
 // StrOpt binding an string option
-func (ops *CliOpts) StrOpt(p *string, name, shorts, defValue, desc string) {
-	ops.strOpt(p, newCliOpt(name, desc, defValue, shorts))
+func (ops *CliOpts) StrOpt(p *string, name, shorts string, defValWithDesc ...string) {
+	var defVal, desc string
+	if ln := len(defValWithDesc); ln > 0 {
+		if ln >= 2 {
+			defVal, desc = defValWithDesc[0], defValWithDesc[1]
+		} else { // only one as desc
+			desc = defValWithDesc[0]
+		}
+	}
+
+	ops.strOpt(p, newCliOpt(name, desc, defVal, shorts))
 }
 
 // binding option and shorts
@@ -148,12 +157,12 @@ func (ops *CliOpts) strOpt(p *string, opt *CliOpt) {
 // --- intX option
 
 // Int binding an int option flag, return pointer
-func (ops *CliOpts) Int(name, shorts string, defValue int, desc string) *int {
-	opt := newCliOpt(name, desc, defValue, shorts)
+func (ops *CliOpts) Int(name, shorts string, defVal int, desc string) *int {
+	opt := newCliOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
-	ptr := ops.fSet.Int(name, defValue, opt.Desc)
+	ptr := ops.fSet.Int(name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 
 	return ptr
@@ -163,26 +172,26 @@ func (ops *CliOpts) Int(name, shorts string, defValue int, desc string) *int {
 func (ops *CliOpts) IntVar(ptr *int, opt *CliOpt) { ops.intOpt(ptr, opt) }
 
 // IntOpt binding an int option
-func (ops *CliOpts) IntOpt(ptr *int, name, shorts string, defValue int, desc string) {
-	ops.intOpt(ptr, newCliOpt(name, desc, defValue, shorts))
+func (ops *CliOpts) IntOpt(ptr *int, name, shorts string, defVal int, desc string) {
+	ops.intOpt(ptr, newCliOpt(name, desc, defVal, shorts))
 }
 
 func (ops *CliOpts) intOpt(ptr *int, opt *CliOpt) {
-	defValue := opt.DValue().Int()
+	defVal := opt.DValue().Int()
 	name := ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
-	ops.fSet.IntVar(ptr, name, defValue, opt.Desc)
+	ops.fSet.IntVar(ptr, name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 }
 
 // Int64 binding an int64 option flag, return pointer
-func (ops *CliOpts) Int64(name, shorts string, defValue int64, desc string) *int64 {
-	opt := newCliOpt(name, desc, defValue, shorts)
+func (ops *CliOpts) Int64(name, shorts string, defVal int64, desc string) *int64 {
+	opt := newCliOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
-	p := ops.fSet.Int64(name, defValue, opt.Desc)
+	p := ops.fSet.Int64(name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 
 	return p
