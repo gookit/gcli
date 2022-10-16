@@ -6,10 +6,8 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
-	"github.com/gookit/goutil/arrutil"
-	"github.com/gookit/goutil/common"
+	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/stdutil"
-	"github.com/gookit/goutil/strutil"
 )
 
 /*************************************************************
@@ -36,7 +34,7 @@ func Logf(level VerbLevel, format string, v ...any) {
 
 // print log message
 func logf(level VerbLevel, format string, v ...any) {
-	if gOpts.verbose < level {
+	if gOpts.Verbose < level {
 		return
 	}
 
@@ -46,9 +44,9 @@ func logf(level VerbLevel, format string, v ...any) {
 	color.Printf("GCli: [%s] [<gray>%s</>] %s \n", name, logAt, fmt.Sprintf(format, v...))
 }
 
-func defaultErrHandler(data ...any) (stop bool) {
-	if len(data) == 2 && data[1] != nil {
-		if err, ok := data[1].(error); ok {
+func defaultErrHandler(ctx *HookCtx) (stop bool) {
+	if errV := ctx.Get("err"); errV != nil {
+		if err, ok := errV.(error); ok {
 			color.Error.Tips(err.Error())
 			// fmt.Println(color.Red.Render("ERROR:"), err.Error())
 		}
@@ -74,7 +72,7 @@ func name2verbLevel(name string) VerbLevel {
 	}
 
 	// default level
-	return DefaultVerb
+	return defaultVerb
 }
 
 /*************************************************************
@@ -100,135 +98,11 @@ func panicf(format string, v ...any) {
 	panic(fmt.Sprintf("GCli: "+format, v...))
 }
 
-func sepStr(seps []string) string {
-	if len(seps) > 0 {
-		return seps[0]
-	}
-	return common.DefaultSep
-}
-
-// allowed keys on struct tag.
-var flagTagKeys = arrutil.Strings{"name", "shorts", "desc", "default", "required"}
-
-// parse tag named k-v value. item split by ';'
-//
-// eg: "name=int0;shorts=i;required=true;desc=int option message"
-//
-// supported field name:
-//
-//	name
-//	desc
-//	shorts
-//	required
-//	default
-func parseNamedRule(name, rule string) (mp map[string]string) {
-	ss := strutil.Split(rule, ";")
-	if len(ss) == 0 {
-		return
-	}
-
-	mp = make(map[string]string, len(flagTagKeys))
-	for _, s := range ss {
-		if strings.ContainsRune(s, '=') == false {
-			panicf("parse tag error on field '%s': item must match `KEY=VAL`", name)
-		}
-
-		kvNodes := strings.SplitN(s, "=", 2)
-		key, val := kvNodes[0], strings.TrimSpace(kvNodes[1])
-		if !flagTagKeys.Has(key) {
-			panicf("parse tag error on field '%s': invalid key name '%s'", name, key)
-		}
-
-		mp[key] = val
-	}
-	return
-}
-
-// struct tag value use simple rule. each item split by ';'
-//
-//   - format: "desc;required;default;shorts"
-//
-// eg:
-//
-//	"int option message;required;i"
-//	"int option message;;a,b"
-//	"int option message;;a,b;23"
-//
-// returns field name:
-//
-//	name
-//	desc
-//	shorts
-//	required
-//	default
-func parseSimpleRule(name, rule string) (mp map[string]string) {
-	ss := strutil.SplitNTrimmed(rule, ";", 4)
-	ln := len(ss)
-	if ln == 0 {
-		return
-	}
-
-	mp = make(map[string]string, ln)
-	mp["desc"] = ss[0]
-	if ln == 1 {
-		return
-	}
-
-	required := ss[1]
-	if required == "required" {
-		required = "true"
-	}
-
-	mp["required"] = required
-
-	// has shorts and default
-	if ln > 3 {
-		mp["default"], mp["shorts"] = ss[2], ss[3]
-	} else if ln > 2 {
-		mp["default"] = ss[2]
-	}
-	return
-}
-
-const (
-	// match a good option, argument name
-	regGoodName = `^[a-zA-Z][\w-]*$`
-	// match a good command name
-	regGoodCmdName = `^[a-zA-Z][\w-]*$`
-	// match command id. eg: "self:init"
-	regGoodCmdId = `^[a-zA-Z][\w:-]*$`
-	// match command path. eg: "self init"
-	// regGoodCmdPath = `^[a-zA-Z][\w -]*$`
-)
-
-var (
-	// good name for option and argument
-	goodName = regexp.MustCompile(regGoodName)
-	// match a good command name
-	goodCmdId = regexp.MustCompile(regGoodCmdId)
-	// match a good command name
-	goodCmdName = regexp.MustCompile(regGoodCmdName)
-)
-
-func isValidCmdName(name string) bool {
-	if name[0] == '-' { // is option name.
-		return false
-	}
-	return goodCmdName.MatchString(name)
-}
-
-func isValidCmdId(name string) bool {
-	if name[0] == '-' { // is option name.
-		return false
-	}
-	return goodCmdId.MatchString(name)
-}
-
 func aliasNameCheck(name string) {
-	if goodCmdName.MatchString(name) {
+	if helper.IsGoodCmdName(name) {
 		return
 	}
-	panicf("alias name '%s' is invalid, must match: %s", name, regGoodCmdName)
+	panicf("alias name '%s' is invalid, must match: %s", name, helper.RegGoodCmdName)
 }
 
 // strictFormatArgs

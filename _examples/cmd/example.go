@@ -8,7 +8,7 @@ import (
 	"github.com/gookit/goutil/dump"
 )
 
-// The string flag list, implemented flag.Value interface
+// Names The string flag list, implemented flag.Value interface
 type Names []string
 
 func (ns *Names) String() string {
@@ -64,7 +64,8 @@ var Example = &gcli.Command{
 
 // command running
 // example run:
-// 	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
+//
+//	go run ./_examples/cliapp.go ex -c some.txt -d ./dir --id 34 -n tom -n john val0 val1 val2 arrVal0 arrVal1 arrVal2
 func exampleExecute(c *gcli.Command, args []string) error {
 	color.Infoln("hello, in example command")
 

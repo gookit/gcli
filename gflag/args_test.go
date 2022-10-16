@@ -1,4 +1,4 @@
-package gcli_test
+package gflag_test
 
 import (
 	"strconv"
@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/testutil/assert"
 )
 
@@ -124,7 +125,7 @@ func TestArgument(t *testing.T) {
 	is.Eq([]string{"a", "b"}, arg.Array())
 
 	// required and is-array
-	arg = gcli.NewArgument("arg1", "arg desc", true, true)
+	arg = gflag.NewArgument("arg1", "arg desc", true, true)
 	arg.Init()
 	is.True(arg.Arrayed)
 	is.True(arg.Required)
@@ -149,7 +150,7 @@ var str2int = func(val any) (any, error) {
 
 func TestArgument_WithConfig(t *testing.T) {
 	arg := gcli.NewArgument("arg0", "arg desc").WithFn(func(arg *gcli.Argument) {
-		arg.SetValue(23)
+		_ = arg.SetValue(23)
 		arg.Init()
 	})
 

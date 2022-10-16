@@ -4,7 +4,7 @@
 [![Actions Status](https://github.com/gookit/gcli/workflows/action-tests/badge.svg)](https://github.com/gookit/gcli/actions)
 [![GitHub tag (latest SemVer)](https://img.shields.io/github/tag/gookit/gcli)](https://github.com/gookit/gcli)
 [![Codacy Badge](https://app.codacy.com/project/badge/Grade/4f071e6858fb4117b6c1376c9316d8ef)](https://www.codacy.com/gh/gookit/gcli/dashboard?utm_source=github.com&amp;utm_medium=referral&amp;utm_content=gookit/gcli&amp;utm_campaign=Badge_Grade)
-[![GoDoc](https://godoc.org/github.com/gookit/gcli?status.svg)](https://pkg.go.dev/github.com/gookit/gcli/v3)
+[![Go Reference](https://pkg.go.dev/badge/github.com/gookit/goutil.svg)](https://pkg.go.dev/github.com/gookit/goutil)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gcli)](https://goreportcard.com/report/github.com/gookit/gcli)
 [![Coverage Status](https://coveralls.io/repos/github/gookit/gcli/badge.svg?branch=master)](https://coveralls.io/github/gookit/gcli?branch=master)
 

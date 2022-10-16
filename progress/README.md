@@ -10,12 +10,12 @@ Package progress provide terminal progress bar display. Such as: `Txt`, `Bar`, `
 
 ## GoDoc
 
-please see https://godoc.org/github.com/gookit/gcli/progress
+Please see https://pkg.go.dev/github.com/gookit/gcli/v2/progress
 
 ## Install
 
 ```bash
-go get -u github.com/gookit/gcli/v3
+go get github.com/gookit/gcli/v3/progress
 ```
 
 ## Usage

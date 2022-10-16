@@ -1,7 +1,7 @@
 package gcli
 
 import (
-	"fmt"
+	"context"
 	"os"
 	"path"
 	"path/filepath"
@@ -10,225 +10,50 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
-	"github.com/gookit/goutil/cflag"
-	"github.com/gookit/goutil/mathutil"
+	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/structs"
-	"github.com/gookit/goutil/strutil"
 )
-
-// core definition TODO rename to context ??
-type core struct {
-	color.SimplePrinter
-	*cmdLine
-	// Hooks manage. allowed hooks: "init", "before", "after", "error"
-	*Hooks
-	// HelpVars help template vars.
-	HelpVars
-	// global options flag set
-	gFlags *Flags
-	// GOptsBinder you can be custom binding global options
-	GOptsBinder func(gf *Flags)
-}
-
-// init core
-// func (c core) init(cmdName string) {
-// 	c.cmdLine = CLI
-//
-// 	c.AddVars(c.innerHelpVars())
-// 	c.AddVars(map[string]string{
-// 		"cmd": cmdName,
-// 		// binName with command
-// 		"binWithCmd": c.binName + " " + cmdName,
-// 		// binFile with command
-// 		"fullCmd": c.binFile + " " + cmdName,
-// 	})
-// }
-
-// parse global options
-func (c core) doParseGOpts(args []string) (err error) {
-	if c.gFlags == nil { // skip on nil
-		return
-	}
-
-	err = c.gFlags.Parse(args)
-
-	if err != nil {
-		if cflag.IsFlagHelpErr(err) {
-			return nil
-		}
-		Logf(VerbWarn, "parse global options err: <red>%s</>", err.Error())
-	}
-	return
-}
-
-// GlobalFlags get the app GlobalFlags
-func (c core) GlobalFlags() *Flags {
-	return c.gFlags
-}
-
-// RawOsArgs get the raw os.Args
-func (c core) RawOsArgs() []string {
-	return os.Args
-}
-
-// common basic help vars
-func (c core) innerHelpVars() map[string]string {
-	return map[string]string{
-		"pid":     CLI.PIDString(),
-		"workDir": CLI.workDir,
-		"binFile": CLI.binFile,
-		"binName": CLI.binName,
-	}
-}
-
-// simple map[string]any struct
-// TODO use structs.DataStore
-type mapData struct {
-	data map[string]any
-}
-
-// Data get all
-func (md *mapData) Data() map[string]any {
-	return md.data
-}
-
-// SetData set all data
-func (md *mapData) SetData(data map[string]any) {
-	md.data = data
-}
-
-// Value get from data
-func (md *mapData) Value(key string) any {
-	return md.data[key]
-}
-
-// GetVal get from data
-func (md *mapData) GetVal(key string) any {
-	return md.data[key]
-}
-
-// StrValue get from data
-func (md *mapData) StrValue(key string) string {
-	return strutil.MustString(md.data[key])
-}
-
-// IntValue get from data
-func (md *mapData) IntValue(key string) int {
-	return mathutil.MustInt(md.data[key])
-}
-
-// SetValue to data
-func (md *mapData) SetValue(key string, val any) {
-	if md.data == nil {
-		md.data = make(map[string]any)
-	}
-	md.data[key] = val
-}
-
-// ClearData all data
-func (md *mapData) ClearData() {
-	md.data = nil
-}
-
-/*************************************************************
- * simple events manage
- *************************************************************/
-
-// HookFunc definition.
-//
-// func arguments:
-//
-//	in app, like: func(app *App, data ...any)
-//	in cmd, like: func(cmd *Command, data ...any)
-//
-// type HookFunc func(obj any, data any)
-//
-// return:
-// - True go on handle. default is True
-// - False stop goon handle.
-type HookFunc func(data ...any) (stop bool)
-
-// HookCtx struct
-type HookCtx struct {
-	mapData
-	App *App
-	Cmd *Command
-
-	name string
-	data map[string]any
-}
-
-// Name of event
-func (hc *HookCtx) Name() string {
-	return hc.name
-}
-
-// Hooks struct. hookManager
-type Hooks struct {
-	// Hooks can set some hooks func on running.
-	hooks map[string]HookFunc
-}
-
-// On register event hook by name
-func (h *Hooks) On(name string, handler HookFunc) {
-	if handler != nil {
-		if h.hooks == nil {
-			h.hooks = make(map[string]HookFunc)
-		}
-
-		h.hooks[name] = handler
-	}
-}
-
-// AddOn register on not exists hook.
-func (h *Hooks) AddOn(name string, handler HookFunc) {
-	if _, ok := h.hooks[name]; !ok {
-		h.On(name, handler)
-	}
-}
-
-// Fire event by name, allow with event data
-func (h *Hooks) Fire(event string, data ...any) (stop bool) {
-	if handler, ok := h.hooks[event]; ok {
-		return handler(data...)
-	}
-	return false
-}
-
-// HasHook register
-func (h *Hooks) HasHook(event string) bool {
-	_, ok := h.hooks[event]
-	return ok
-}
-
-// ClearHooks clear hooks data
-func (h *Hooks) ClearHooks() {
-	h.hooks = nil
-}
 
 /*************************************************************
  * Command Line: command data
  *************************************************************/
 
-// cmdLine store common data for CLI
-type cmdLine struct {
-	// pid for current application
+// Context struct
+type Context struct {
+	maputil.Data
+	context.Context
+	// PID value
 	pid int
-	// os name.
+	// OsName os name.
 	osName string
-	// the CLI app work dir path. by `os.Getwd()`
+	// WorkDir the CLI app work dir path. by `os.Getwd()`
 	workDir string
-	// bin script file, by `os.Args[0]`. eg "./path/to/cliapp"
+	// BinFile bin script file, by `os.Args[0]`. eg "./path/to/cliapp"
 	binFile string
-	// bin script dir path. eg "./path/to"
+	// BinDir bin script dir path. eg "./path/to"
 	binDir string
-	// bin script filename. eg "cliapp"
+	// BinName bin script filename. eg "cliapp"
 	binName string
-	// os.Args to string, but no binName.
+	// ArgLine os.Args to string, but no binName.
 	argLine string
 }
 
-func newCmdLine() *cmdLine {
+// NewCtx instance
+func NewCtx() *Context {
+	return &Context{
+		Data:    make(maputil.Data),
+		Context: context.Background(),
+	}
+}
+
+// Value get by key
+func (ctx *Context) Value(key any) any {
+	return ctx.Data.Get(key.(string))
+}
+
+// InitCtx some common info
+func (ctx *Context) InitCtx() *Context {
 	binFile := os.Args[0]
 	workDir, _ := os.Getwd()
 
@@ -237,129 +62,82 @@ func newCmdLine() *cmdLine {
 	// 	binFile = strings.Replace(CLI.binName, workDir+"\\", "", 1)
 	// }
 
-	return &cmdLine{
-		pid: os.Getpid(),
-		// more info
-		osName:  runtime.GOOS,
-		workDir: workDir,
-		binDir:  filepath.Dir(binFile),
-		binFile: binFile,
-		binName: filepath.Base(binFile),
-		argLine: strings.Join(os.Args[1:], " "),
-	}
+	ctx.pid = os.Getpid()
+	// more info
+	ctx.osName = runtime.GOOS
+	ctx.workDir = workDir
+	ctx.binDir = filepath.Dir(binFile)
+	ctx.binFile = binFile
+	ctx.binName = filepath.Base(binFile)
+	ctx.argLine = strings.Join(os.Args[1:], " ")
+	return ctx
 }
 
 // PID get pid
-func (c *cmdLine) PID() int {
-	return c.pid
+func (ctx *Context) PID() int {
+	return ctx.pid
 }
 
 // PIDString get pid as string
-func (c *cmdLine) PIDString() string {
-	return strconv.Itoa(c.pid)
+func (ctx *Context) PIDString() string {
+	return strconv.Itoa(ctx.pid)
 }
 
 // OsName is equals to `runtime.GOOS`
-func (c *cmdLine) OsName() string {
-	return c.osName
+func (ctx *Context) OsName() string {
+	return ctx.osName
 }
 
 // OsArgs is equals to `os.Args`
-func (c *cmdLine) OsArgs() []string {
+func (ctx *Context) OsArgs() []string {
 	return os.Args
 }
 
 // BinFile get bin script file
-func (c *cmdLine) BinFile() string {
-	return c.binFile
+func (ctx *Context) BinFile() string {
+	return ctx.binFile
 }
 
 // BinName get bin script name
-func (c *cmdLine) BinName() string {
-	return c.binName
+func (ctx *Context) BinName() string {
+	return ctx.binName
 }
 
 // BinDir get bin script dirname
-func (c *cmdLine) BinDir() string {
-	return path.Dir(c.binFile)
+func (ctx *Context) BinDir() string {
+	return path.Dir(ctx.binFile)
 }
 
 // WorkDir get work dirname
-func (c *cmdLine) WorkDir() string {
-	return c.workDir
+func (ctx *Context) WorkDir() string {
+	return ctx.workDir
 }
 
 // ArgLine os.Args to string, but no binName.
-func (c *cmdLine) ArgLine() string {
-	return c.argLine
+func (ctx *Context) ArgLine() string {
+	return ctx.argLine
 }
 
-func (c *cmdLine) hasHelpKeywords() bool {
-	if c.argLine == "" {
+func (ctx *Context) hasHelpKeywords() bool {
+	if ctx.argLine == "" {
 		return false
 	}
-
-	return strings.HasSuffix(c.argLine, " -h") || strings.HasSuffix(c.argLine, " --help")
+	return strings.HasSuffix(ctx.argLine, " -h") || strings.HasSuffix(ctx.argLine, " --help")
 }
 
-/*************************************************************
- * app/cmd help vars
- *************************************************************/
-
-// HelpVarFormat allow var replace on render help info.
-//
-// Default support:
-//
-//	"{$binName}" "{$cmd}" "{$fullCmd}" "{$workDir}"
-const HelpVarFormat = "{$%s}"
-
-// HelpVars struct. provide string var function for render help template.
-type HelpVars struct {
-	// varLeft, varRight string
-	// varFormat string
-	// Vars you can add some vars map for render help info
-	Vars map[string]string
+// SetValue to ctx
+func (ctx *Context) SetValue(key string, val any) {
+	ctx.Set(key, val)
 }
 
-// AddVar get command name
-func (hv *HelpVars) AddVar(name, value string) {
-	if hv.Vars == nil {
-		hv.Vars = make(map[string]string)
-	}
-
-	hv.Vars[name] = value
+// GetVal from ctx
+func (ctx *Context) GetVal(key string) interface{} {
+	return ctx.Get(key)
 }
 
-// AddVars add multi tpl vars
-func (hv *HelpVars) AddVars(vars map[string]string) {
-	for n, v := range vars {
-		hv.AddVar(n, v)
-	}
-}
-
-// GetVar get a help var by name
-func (hv *HelpVars) GetVar(name string) string {
-	return hv.Vars[name]
-}
-
-// GetVars get all tpl vars
-func (hv *HelpVars) GetVars() map[string]string {
-	return hv.Vars
-}
-
-// ReplaceVars replace vars in the input string.
-func (hv *HelpVars) ReplaceVars(input string) string {
-	// if not use var
-	if !strings.Contains(input, "{$") {
-		return input
-	}
-
-	var ss []string
-	for n, v := range hv.Vars {
-		ss = append(ss, fmt.Sprintf(HelpVarFormat, n), v)
-	}
-
-	return strings.NewReplacer(ss...).Replace(input)
+// ResetData from ctx
+func (ctx *Context) ResetData() {
+	ctx.Data = make(maputil.Data)
 }
 
 /*************************************************************
@@ -367,8 +145,16 @@ func (hv *HelpVars) ReplaceVars(input string) string {
  *************************************************************/
 
 // will inject to every Command
-type commandBase struct {
-	mapData
+type base struct {
+	// Hooks manage. allowed hooks: "init", "before", "after", "error"
+	*Hooks
+	*Context
+	color.SimplePrinter
+	// HelpVars help message replace vars.
+	helper.HelpVars
+	// TODO tplVars for render help template text.
+	tplVars map[string]any
+
 	// Logo ASCII logo setting
 	Logo *Logo
 	// Version app version. like "1.0.1"
@@ -392,6 +178,8 @@ type commandBase struct {
 	commandName string
 	// the max width for added command names. default set 12.
 	nameMaxWidth int
+	// has sub-commands on the app
+	hasSubcommands bool
 
 	// Whether it has been initialized
 	initialized bool
@@ -399,9 +187,10 @@ type commandBase struct {
 	errors []error
 }
 
-func newCommandBase() commandBase {
-	return commandBase{
-		Logo: &Logo{Style: "info"},
+func newBase() base {
+	return base{
+		Hooks: &Hooks{},
+		Logo:  &Logo{Style: "info"},
 		// init mapping
 		cmdNames: make(map[string]int),
 		// name2idx: make(map[string]int),
@@ -410,50 +199,74 @@ func newCommandBase() commandBase {
 		nameMaxWidth: 12,
 		// cmdAliases:   make(maputil.Aliases),
 		cmdAliases: structs.NewAliases(aliasNameCheck),
-		ExitOnEnd:  true,
+		// ExitOnEnd:  false,
+		tplVars: make(map[string]any),
+		// Context: NewCtx(),
+	}
+}
+
+// init common basic help vars
+func (b *base) initHelpVars() {
+	b.AddVars(map[string]string{
+		"pid":     b.PIDString(),
+		"workDir": b.workDir,
+		"binFile": b.binFile,
+		"binName": b.binName,
+	})
+}
+
+// ResetData from ctx
+func (b *base) ResetData() {
+	if b.Context != nil {
+		b.Context.ResetData()
 	}
 }
 
 // GetCommand get a command by name
-func (b *commandBase) GetCommand(name string) *Command {
+func (b *base) GetCommand(name string) *Command {
 	return b.commands[name]
 }
 
 // Command get a command by name
-func (b *commandBase) Command(name string) (c *Command, exist bool) {
+func (b *base) Command(name string) (c *Command, exist bool) {
 	c, exist = b.commands[name]
 	return
 }
 
 // IsAlias name check
-func (b *commandBase) IsAlias(alias string) bool {
+func (b *base) IsAlias(alias string) bool {
 	return b.cmdAliases.HasAlias(alias)
 }
 
 // ResolveAlias get real command name by alias
-func (b *commandBase) ResolveAlias(alias string) string {
+func (b *base) ResolveAlias(alias string) string {
 	return b.cmdAliases.ResolveAlias(alias)
 }
 
+// HasSubcommands on the app
+func (b *base) HasSubcommands() bool {
+	return b.hasSubcommands
+}
+
 // HasCommands on the cmd/app
-func (b *commandBase) HasCommands() bool {
+func (b *base) HasCommands() bool {
 	return len(b.cmdNames) > 0
 }
 
 // HasCommand name check
-func (b *commandBase) HasCommand(name string) bool {
+func (b *base) HasCommand(name string) bool {
 	_, has := b.cmdNames[name]
 	return has
 }
 
 // IsCommand name check. alias of the HasCommand()
-func (b *commandBase) IsCommand(name string) bool {
+func (b *base) IsCommand(name string) bool {
 	_, has := b.cmdNames[name]
 	return has
 }
 
 // add Command to the group
-func (b *commandBase) addCommand(pName string, c *Command) {
+func (b *base) addCommand(pName string, c *Command) {
 	// init command
 	c.initialize()
 
@@ -475,6 +288,9 @@ func (b *commandBase) addCommand(pName string, c *Command) {
 
 	// add command to app
 	b.cmdNames[cName] = nameLen
+	if c.HasCommands() {
+		b.hasSubcommands = true
+	}
 
 	// record command name max length
 	if nameLen > b.nameMaxWidth {
@@ -485,15 +301,13 @@ func (b *commandBase) addCommand(pName string, c *Command) {
 	Logf(VerbCrazy, "register command '%s'(parent: %s), aliases: %v", cName, pName, c.Aliases)
 	b.cmdAliases.AddAliases(c.Name, c.Aliases)
 
-	// c.app = app
 	// inherit global flags from application
-	// c.core.gFlags = app.gFlags
 	// append
 	b.commands[cName] = c
 }
 
 // Match command by path names. eg. ["top", "sub"]
-func (b *commandBase) Match(names []string) *Command {
+func (b *base) Match(names []string) *Command {
 	ln := len(names)
 	if ln == 0 {
 		panic("the command names is required")
@@ -517,22 +331,22 @@ func (b *commandBase) Match(names []string) *Command {
 }
 
 // FindCommand command by path. eg. "top:sub" or "top sub"
-func (b *commandBase) FindCommand(path string) *Command {
+func (b *base) FindCommand(path string) *Command {
 	return b.Match(splitPath2names(path))
 }
 
 // FindByPath command by path. eg. "top:sub" or "top sub"
-func (b *commandBase) FindByPath(path string) *Command {
+func (b *base) FindByPath(path string) *Command {
 	return b.Match(splitPath2names(path))
 }
 
-// MatchByPath command by path. eg. "top:sub" or "top sub"
-func (b *commandBase) MatchByPath(path string) *Command {
+// MatchByPath command by path. eg: "top:sub" or "top sub"
+func (b *base) MatchByPath(path string) *Command {
 	return b.Match(splitPath2names(path))
 }
 
 // SetLogo text and color style
-func (b *commandBase) SetLogo(logo string, style ...string) {
+func (b *base) SetLogo(logo string, style ...string) {
 	b.Logo.Text = logo
 	if len(style) > 0 {
 		b.Logo.Style = style[0]
@@ -540,22 +354,22 @@ func (b *commandBase) SetLogo(logo string, style ...string) {
 }
 
 // AddError to the application
-func (b *commandBase) AddError(err error) {
+func (b *base) AddError(err error) {
 	b.errors = append(b.errors, err)
 }
 
 // Commands get all commands
-func (b *commandBase) Commands() map[string]*Command {
+func (b *base) Commands() map[string]*Command {
 	return b.commands
 }
 
 // CmdNames get all command names
-func (b *commandBase) CmdNames() []string {
+func (b *base) CmdNames() []string {
 	return b.CommandNames()
 }
 
 // CommandNames get all command names
-func (b *commandBase) CommandNames() []string {
+func (b *base) CommandNames() []string {
 	var ss []string
 	for n := range b.cmdNames {
 		ss = append(ss, n)
@@ -564,16 +378,21 @@ func (b *commandBase) CommandNames() []string {
 }
 
 // CmdNameMap get all command names
-func (b *commandBase) CmdNameMap() map[string]int {
+func (b *base) CmdNameMap() map[string]int {
 	return b.cmdNames
 }
 
 // CmdAliases get cmd aliases
-func (b *commandBase) CmdAliases() *structs.Aliases {
+func (b *base) CmdAliases() *structs.Aliases {
 	return b.cmdAliases
 }
 
 // AliasesMapping get cmd aliases mapping
-func (b *commandBase) AliasesMapping() map[string]string {
+func (b *base) AliasesMapping() map[string]string {
 	return b.cmdAliases.Mapping()
+}
+
+// AddTplVar to instance.
+func (b *base) AddTplVar(key string, val any) {
+	b.tplVars[key] = val
 }

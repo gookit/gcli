@@ -76,21 +76,24 @@ func TestStrictMode(t *testing.T) {
 	is.True(gcli.StrictMode())
 }
 
-func TestCmdLine(t *testing.T) {
+func TestNewCtx(t *testing.T) {
 	is := assert.New(t)
 
-	is.True(gcli.CLI.PID() > 0)
-	is.Eq(runtime.GOOS, gcli.CLI.OsName())
-	is.NotEmpty(gcli.CLI.BinName())
-	is.NotEmpty(gcli.CLI.WorkDir())
+	ctx := gcli.NewCtx()
+	ctx.InitCtx()
 
-	args := gcli.CLI.OsArgs()
+	is.True(ctx.PID() > 0)
+	is.Eq(runtime.GOOS, ctx.OsName())
+	is.NotEmpty(ctx.BinName())
+	is.NotEmpty(ctx.WorkDir())
+
+	args := ctx.OsArgs()
 	is.NotEmpty(args)
 
 	if len(args) > 1 {
-		is.NotEmpty(gcli.CLI.ArgLine())
+		is.NotEmpty(ctx.ArgLine())
 	} else {
-		is.Empty(gcli.CLI.ArgLine())
+		is.Empty(ctx.ArgLine())
 	}
 }
 

@@ -280,7 +280,7 @@ func buildForZshShell(app *gcli.App, data map[string]any) map[string]any {
 		if n == genOpts._selfName {
 			continue
 		}
-		nameDes[c.Name] = fmtDes(c.Desc) + "(alias " + c.AliasesString() + ")"
+		nameDes[c.Name] = fmtDes(c.Desc) + "(alias " + c.Aliases.String() + ")"
 
 		ops := c.FlagNames()
 		oplen := len(ops)

@@ -2,17 +2,26 @@
 
 ## TODO
 
-- [x] flag option support alias name. 
-  - It isn't shorts name. eg: `name='dry-run' alias='dr'`
-- [ ] support flag option category
-- [ ] support command category by `c.Category`
+- [ ] hook on set flag value
+- [x] option support multi shorts names
+- [ ] cmd support flag option category
+- [ ] app support command category by `c.Category`
 - [ ] print parent's options on subcommand help panel
+- [ ] prompt completion by readline
+- [ ] keyboard and cursor control on terminal
+- [ ] refactor gflag.Flags, remove dep the `flag.FlagSet`
+- [ ] collect option/argument value by interactive `Option.Question`
+- [ ] support all command docs to markdown
+
+readline refers:
+
+- https://github.com/chzyer/readline/tree/master/example
+- https://github.com/abiosoft/ishell/blob/master/completer.go
 
 ## v3.0.1
 
 **new**
 
-- [ ] support all command docs to markdown
 - [x] add some special flag type vars
 - [x] support hidden command on render help by `c.Hidden=true`
 

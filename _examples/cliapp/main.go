@@ -1,13 +1,18 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/_examples/cmd"
 	"github.com/gookit/gcli/v3/builtin"
+	"github.com/gookit/gcli/v3/events"
 	// "github.com/gookit/gcli/v3/builtin/filewatcher"
 	// "github.com/gookit/gcli/v3/builtin/reverseproxy"
 )
+
+var customGOpt string
 
 // local run:
 //
@@ -16,14 +21,15 @@ import (
 //
 // run on windows(cmd, powerShell):
 //
+//	go run ./_examples/cliapp
 //	go build ./_examples/cliapp && ./cliapp
 func main() {
 	app := gcli.NewApp(func(app *gcli.App) {
 		app.Version = "3.0.0"
 		app.Desc = "this is my cli application"
-		app.On(gcli.EvtAppInit, func(data ...any) bool {
+		app.On(gcli.EvtAppInit, func(ctx *gcli.HookCtx) bool {
 			// do something...
-			// fmt.Println("init app")
+			fmt.Println("init app event", ctx.Name())
 			return false
 		})
 
@@ -40,11 +46,17 @@ func main() {
 	// disable global options
 	// gcli.GOpts().SetDisable()
 
-	var customGOpt string
-	app.GOptsBinder = func(gf *gcli.Flags) {
-		// gcli.Logf(gcli.VerbInfo, "custom add and global option flag")
-		gf.StrVar(&customGOpt, &gcli.FlagMeta{Name: "custom", Desc: "desc message for the option"})
-	}
+	// app.BeforeAddOpts = func(opts *gcli.Flags) {
+	// 	opts.StrVar(&customGOpt, &gcli.FlagMeta{Name: "custom", Desc: "desc message for the option"})
+	// }
+
+	app.On(events.OnAppBindOptsAfter, func(ctx *gcli.HookCtx) (stop bool) {
+		ctx.App.Flags().StrVar(&customGOpt, &gcli.FlagMeta{
+			Name: "custom",
+			Desc: "desc message for the option",
+		})
+		return false
+	})
 
 	// app.Strict = true
 	app.Add(cmd.GitCmd)

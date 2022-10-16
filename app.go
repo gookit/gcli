@@ -4,12 +4,13 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"text/template"
 
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/cliutil"
-	"github.com/gookit/goutil/strutil"
 )
 
 /*************************************************************
@@ -32,15 +33,25 @@ type Logo struct {
 	Style string // eg "info"
 }
 
+// AppConfig struct
+type AppConfig struct {
+	BeforeRun     func() bool
+	AfterRun      func() bool
+	BeforeAddOpts func(opts *Flags)
+	AfterAddOpts  func(app *App) bool
+}
+
 // App the cli app definition
 type App struct {
 	// internal use
-	// - *cmdLine
-	// - HelpVars
-	// - Hooks // allow hooks: "init", "before", "after", "error"
-	core
-	// for manager commands
-	commandBase
+	// for manage commands
+	base
+
+	// AppConfig
+
+	fs *Flags
+	// cli input options for app
+	opts *GlobalOpts
 
 	// Name app name
 	Name string
@@ -60,8 +71,6 @@ type App struct {
 	// rawFlagArgs []string
 	// clean os.args, not contains bin-name and command-name
 	cleanArgs []string
-	// has sub-commands on the app
-	hasSubcommands bool
 	// the default command name.
 	// if is empty, will render help message.
 	defaultCommand string
@@ -80,42 +89,31 @@ func New(fns ...func(app *App)) *App {
 //	// Or with a config func
 //	NewApp(func(a *App) {
 //		// do something before init ....
-//		a.Hooks[gcli.EvtInit] = func () {}
+//		a.Hooks[events.OnAppInitAfter] = func () {}
 //	})
 func NewApp(fns ...func(app *App)) *App {
 	app := &App{
 		Name: "GCliApp",
 		Desc: "This is my console application",
-		// set a default version
-		// Version: "1.0.0",
-		// config
-		// ExitOnEnd: true,
-		// group
-		// moduleCommands: make(map[string]map[string]*Command),
-		commandBase: newCommandBase(),
 	}
 
-	// internal core
-	Logf(VerbCrazy, "create new core on init application")
-	app.core = core{
-		cmdLine: CLI,
-		// init
-		Hooks: &Hooks{},
-		gFlags: NewFlags("app.GOptions").WithConfigFn(func(opt *FlagsConfig) {
-			opt.WithoutType = true
-			opt.Alignment = AlignLeft
-		}),
-	}
+	app.fs = gflag.New(app.Name).WithConfigFn(func(opt *gflag.Config) {
+		opt.WithoutType = true
+		opt.Alignment = gflag.AlignLeft
+	})
 
-	// init commandBase
-	Logf(VerbCrazy, "create new commandBase on init application")
+	Logf(VerbCrazy, "create a new cli application, and create base ")
+
+	// init base
+	app.base = newBase()
+	app.opts = newGlobalOpts()
+
 	// set a default version
 	app.Version = "1.0.0"
+	app.Context = gCtx
 
-	if len(fns) > 0 {
-		for _, fn := range fns {
-			fn(app)
-		}
+	for _, fn := range fns {
+		fn(app)
 	}
 	return app
 }
@@ -128,27 +126,54 @@ func NotExitOnEnd() func(*App) {
 }
 
 // Config the application.
-// Notice: must be called before adding a command
-func (app *App) Config(fn func(a *App)) {
-	if fn != nil {
-		fn(app)
+//
+// Notice: must be called before add command
+func (app *App) Config(fns ...func(a *App)) {
+	for _, fn := range fns {
+		if fn != nil {
+			fn(app)
+		}
 	}
 }
 
-// binding global options
-func (app *App) bindingGlobalOpts() {
-	Logf(VerbDebug, "will begin binding global options")
+/*************************************************************
+ * app initialize
+ *************************************************************/
+
+// initialize application on: add, run
+func (app *App) initialize() {
+	if app.initialized {
+		return
+	}
+
+	app.initialized = true
+	app.Fire(events.OnAppInitBefore, nil)
+	Logf(VerbCrazy, "initialize the cli application")
+
+	// init some info
+	app.initHelpVars()
+	app.bindAppOpts()
+
+	// add default error handler.
+	if !app.HasHook(events.OnAppRunError) {
+		app.On(events.OnAppRunError, defaultErrHandler)
+	}
+
+	app.Fire(events.OnAppInitAfter, nil)
+}
+
+// binding app options
+func (app *App) bindAppOpts() {
+	Logf(VerbDebug, "will begin binding app global options")
 	// global options flag
-	// gf := flag.NewFlagSet(app.Args[0], flag.ContinueOnError)
-	gf := app.GlobalFlags()
+	fs := app.fs
+	app.Fire(events.OnAppBindOptsBefore, nil)
 
 	// binding global options
-	// bindingCommonGOpts(gf)
-	gOpts.bindingFlags(gf)
+	app.opts.bindingOpts(fs)
 	// add more ...
-	gf.BoolOpt(&gOpts.showVer, "version", "V", false, "Display app version information")
-	// This is a internal option
-	gf.BoolVar(&gOpts.inCompletion, &FlagMeta{
+	// This is an internal option
+	fs.BoolVar(&gOpts.inCompletion, &gflag.CliOpt{
 		Name: "in-completion",
 		Desc: "generate completion scripts for bash/zsh",
 		// hidden it
@@ -156,35 +181,7 @@ func (app *App) bindingGlobalOpts() {
 	})
 
 	// support binding custom global options
-	if app.GOptsBinder != nil {
-		app.GOptsBinder(gf)
-	}
-}
-
-// initialize application
-func (app *App) initialize() {
-	if app.initialized {
-		return
-	}
-
-	Logf(VerbCrazy, "initialize the application")
-
-	// init some vars
-	if app.core.Hooks == nil {
-		app.core.Hooks = &Hooks{}
-	}
-	app.core.AddVars(app.core.innerHelpVars())
-
-	// binding global options
-	app.bindingGlobalOpts()
-
-	// add default error handler.
-	if !app.HasHook(EvtAppRunError) {
-		app.On(EvtAppRunError, defaultErrHandler)
-	}
-
-	app.Fire(EvtAppInit, nil)
-	app.initialized = true
+	app.Fire(events.OnAppBindOptsAfter, nil)
 }
 
 /*************************************************************
@@ -207,20 +204,16 @@ func (app *App) Add(c *Command, more ...*Command) {
 func (app *App) AddCommand(c *Command) {
 	// initialize application before add command
 	app.initialize()
+	app.fireWithCmd(events.OnAppCmdAdd, c, nil)
 
 	// init command
 	c.app = app
-	// inherit global flags from application
-	c.core.gFlags = app.gFlags
+	// inherit some from application
+	c.Context = app.Context
 
 	// do add command
-	app.commandBase.addCommand(app.Name, c)
-
-	if c.HasCommands() {
-		app.hasSubcommands = true
-	}
-
-	app.Fire(EvtCmdInit, c)
+	app.addCommand(app.Name, c)
+	app.fireWithCmd(events.OnAppCmdAdded, c, nil)
 }
 
 // AddHandler to the application
@@ -261,43 +254,61 @@ func (app *App) AddAliases(name string, aliases ...string) {
 // }
 
 /*************************************************************
- * run command
+ * parse global options
  *************************************************************/
 
-// parseGlobalOpts parse global options
-func (app *App) parseGlobalOpts(args []string) (ok bool) {
-	Logf(VerbDebug, "will begin parse application options")
+// parseAppOpts parse global options
+func (app *App) doParseOpts(args []string) error {
+	err := app.fs.Parse(args)
+	if err != nil {
+		if cflag.IsFlagHelpErr(err) {
+			return nil
+		}
+		Logf(VerbWarn, "parse global options err: <red>%s</>", err.Error())
+	}
+
+	return err
+}
+
+// parseAppOpts parse global options
+func (app *App) parseAppOpts(args []string) (ok bool) {
+	Logf(VerbDebug, "will begin parse global options")
 
 	// parse global options
-	err := app.core.doParseGOpts(args)
-	if err != nil { // has error.
+	if err := app.doParseOpts(args); err != nil { // has error.
 		color.Error.Tips(err.Error())
 		return
 	}
 
-	app.args = app.gFlags.FSetArgs()
-	app.Fire(EvtGOptionsParsed, app.args)
-
-	// check global options
-	if gOpts.showHelp {
-		app.showApplicationHelp()
+	app.args = app.fs.FSetArgs()
+	evtData := map[string]any{"args": app.args}
+	if app.Fire(events.OnAppOptsParsed, evtData) {
+		Logf(VerbDebug, "stop running on the event %s return True", events.OnGlobalOptsParsed)
 		return
 	}
 
-	if gOpts.showVer {
-		app.showVersionInfo()
+	if app.Fire(events.OnGlobalOptsParsed, evtData) {
+		Logf(VerbDebug, "stop running on the event %s return True", events.OnGlobalOptsParsed)
 		return
+	}
+
+	// check global options
+	if app.opts.ShowHelp {
+		return app.showApplicationHelp()
+	}
+	if app.opts.ShowVersion {
+		return app.showVersionInfo()
 	}
 
 	// disable color
-	if gOpts.NoColor {
+	if app.opts.NoColor {
 		color.Enable = false
 	}
 
-	Debugf("global option parsed, verbose level: <mgb>%s</>", gOpts.verbose.String())
+	Debugf("app options parsed, Verbose level: <mgb>%s</>", app.opts.Verbose.String())
 
 	// TODO show auto-completion for bash/zsh
-	if gOpts.inCompletion {
+	if app.opts.inCompletion {
 		app.showAutoCompletion(app.args)
 		return
 	}
@@ -305,43 +316,48 @@ func (app *App) parseGlobalOpts(args []string) (ok bool) {
 	return true
 }
 
-// prepare to running, parse args, get command name and command args
+/*************************************************************
+ * prepare run
+ *************************************************************/
+
+// prepare to running
+//
+//	parse args
+//	check global options
+//	get command name and command args
 func (app *App) prepareRun() (code int, name string) {
 	// find command name.
 	name = app.findCommandName()
-	// is help command name.
 	if name == HelpCommand {
 		if len(app.args) == 0 { // like 'help'
 			app.showApplicationHelp()
-			return
+		} else {
+			// like 'help COMMAND'
+			code = app.showCommandHelp(app.args)
 		}
-
-		// like 'help COMMAND'
-		code = app.showCommandHelp(app.args)
 		return
 	}
 
 	// not input and not set defaultCommand
 	if name == "" {
-		// run app.Func
 		if app.Func != nil {
 			code = app.doRunFunc(app.args)
-			return
+		} else {
+			app.showApplicationHelp()
 		}
-
-		app.showApplicationHelp()
 		return
 	}
 
 	// name is not empty, but is not command.
 	if app.inputName == "" {
 		Logf(VerbDebug, "input the command is not an registered: %s", name)
+		hookData := map[string]any{"name": name}
 
 		// fire events
-		if stop := app.Fire(EvtAppCmdNotFound, name); stop {
+		if stop := app.Fire(events.OnAppCmdNotFound, hookData); stop {
 			return
 		}
-		if stop := app.Fire(EvtCmdNotFound, name); stop {
+		if stop := app.Fire(events.OnCmdNotFound, hookData); stop {
 			return
 		}
 
@@ -356,8 +372,8 @@ func (app *App) prepareRun() (code int, name string) {
 
 func (app *App) findCommandName() (name string) {
 	args := app.args
-	// not input command, will try run app.defaultCommand
 	if len(args) == 0 {
+		// not input command, will try to run app.defaultCommand
 		name = app.defaultCommand
 		if name == "" {
 			return
@@ -378,7 +394,7 @@ func (app *App) findCommandName() (name string) {
 	}
 
 	// check is valid ID/name string.
-	if !goodCmdId.MatchString(name) {
+	if !helper.IsGoodCmdId(name) {
 		Logf(VerbWarn, "the input command name(%s) string is invalid", name)
 		return ""
 	}
@@ -421,21 +437,23 @@ func (app *App) findCommandName() (name string) {
 	return rawName
 }
 
-// RunLine manual run an command by command line string.
-//
-// eg: app.RunLine("top --top-opt val0 sub --sub-opt val1 arg0")
-func (app *App) RunLine(argsLine string) int {
-	args := cliutil.ParseLine(argsLine)
-	return app.Run(args)
+/*************************************************************
+ * prepare run
+ *************************************************************/
+
+// QuickRun the application with os.Args
+func (app *App) QuickRun() int {
+	return app.Run(os.Args[1:])
 }
 
-// Run running application
+// Run the application with input args
 //
 // Usage:
 //
 //	// run with os.Args
 //	app.Run(nil)
 //	app.Run(os.Args[1:])
+//
 //	// custom args
 //	app.Run([]string{"cmd", "--name", "inhere"})
 func (app *App) Run(args []string) (code int) {
@@ -447,10 +465,10 @@ func (app *App) Run(args []string) (code int) {
 		args = os.Args[1:] // exclude first arg, it's binFile.
 	}
 
-	Debugf("will begin run cli application. args: %v", args)
+	Debugf("will begin run application. args: %v", args)
 
 	// parse global flags
-	if false == app.parseGlobalOpts(args) {
+	if false == app.parseAppOpts(args) {
 		return app.exitOnEnd(code)
 	}
 
@@ -462,8 +480,7 @@ func (app *App) Run(args []string) (code int) {
 		return app.exitOnEnd(code)
 	}
 
-	// trigger event
-	app.Fire(EvtAppPrepareAfter, name)
+	app.Fire(events.OnAppPrepared, map[string]any{"name": name})
 
 	// do run input command
 	code = app.doRunCmd(name, app.args)
@@ -472,7 +489,15 @@ func (app *App) Run(args []string) (code int) {
 	return app.exitOnEnd(code)
 }
 
-// RunCmd running an top command with custom args
+// RunLine manual run a command by command line string.
+//
+// eg: app.RunLine("top --top-opt val0 sub --sub-opt val1 arg0")
+func (app *App) RunLine(argsLine string) int {
+	args := cliutil.ParseLine(argsLine)
+	return app.Run(args)
+}
+
+// RunCmd running a top command with custom args
 //
 // Usage:
 //
@@ -481,21 +506,23 @@ func (app *App) Run(args []string) (code int) {
 //	// can add sub command on args
 //	app.Exec("top", []string{"sub", "-o", "abc"})
 func (app *App) RunCmd(name string, args []string) int {
+	if app.HasCommand(name) {
+		return ERR
+	}
 	return app.doRunCmd(name, args)
 }
 
 func (app *App) doRunCmd(name string, args []string) (code int) {
 	cmd := app.GetCommand(name)
-	app.Fire(EvtAppRunBefore, cmd)
-
+	app.fireWithCmd(events.OnAppRunBefore, cmd, map[string]any{"args": args})
 	Debugf("will run app command '%s' with args: %v", name, args)
 
 	// do execute command
 	if err := cmd.innerDispatch(args); err != nil {
 		code = ERR
-		app.Fire(EvtAppRunError, err)
+		app.Fire(events.OnAppRunError, map[string]any{"err": err})
 	} else {
-		app.Fire(EvtAppRunAfter, nil)
+		app.Fire(events.OnAppRunAfter, nil)
 	}
 	return
 }
@@ -507,11 +534,57 @@ func (app *App) doRunFunc(args []string) (code int) {
 	// do execute command
 	if err := app.Func(app, args); err != nil {
 		code = ERR
-		app.Fire(EvtAppRunError, err)
+		app.Fire(events.OnAppRunError, map[string]any{"err": err})
 	} else {
-		app.Fire(EvtAppRunAfter, nil)
+		app.Fire(events.OnAppRunAfter, nil)
 	}
 	return
+}
+
+// Exec direct exec other command in current command
+//
+// Name can be:
+//   - top command name in the app. 'top'
+//   - command path in the app. 'top sub'
+//
+// Usage:
+//
+//	app.Exec("top")
+//	app.Exec("top:sub")
+//	app.Exec("top sub")
+//	app.Exec("top sub", []string{"-a", "val0", "arg0"})
+func (app *App) Exec(path string, args []string) error {
+	cmd := app.MatchByPath(path)
+	if cmd == nil {
+		return fmt.Errorf("exec unknown command %q", path)
+	}
+
+	Debugf("manual exec the application command: %q", path)
+
+	// parse flags and execute command
+	return cmd.innerExecute(args, false)
+}
+
+/*************************************************************
+ * helper methods
+ *************************************************************/
+
+// Opts get
+func (app *App) Opts() *GlobalOpts {
+	return app.opts
+}
+
+// Flags get
+func (app *App) Flags() *Flags {
+	return app.fs
+}
+
+// Exit get the app GlobalFlags
+func (app *App) Exit(code int) {
+	if app.ExitFunc == nil {
+		os.Exit(code)
+	}
+	app.ExitFunc(code)
 }
 
 func (app *App) exitOnEnd(code int) int {
@@ -531,57 +604,9 @@ func (app *App) exitOnEnd(code int) int {
 	return code
 }
 
-// Exec direct exec other command in current command
-//
-// name can be:
-// - top command name in the app. 'top'
-// - command path in the app. 'top sub'
-//
-// Usage:
-//
-//	app.Exec("top")
-//	app.Exec("top:sub")
-//	app.Exec("top sub")
-//	app.Exec("top sub", []string{"-a", "val0", "arg0"})
-func (app *App) Exec(path string, args []string) error {
-	cmd := app.MatchByPath(path)
-	if cmd == nil {
-		return fmt.Errorf("exec unknown command: '%s'", path)
-	}
-
-	Debugf("manual exec the application command: %s", path)
-
-	// parse flags and execute command
-	return cmd.innerExecute(args, false)
-}
-
-// ExecLine manual execute an command by command line string.
-// eg: app.ExecLine("top --top-opt val0 sub --sub-opt val1 arg0")
-// func (app *App) ExecLine(argsLine string) error {
-// 	args := cliutil.ParseLine(argsLine)
-// }
-
-/*************************************************************
- * helper methods
- *************************************************************/
-
-// Exit get the app GlobalFlags
-func (app *App) Exit(code int) {
-	if app.ExitFunc == nil {
-		os.Exit(code)
-	}
-
-	app.ExitFunc(code)
-}
-
 // CommandName get current command name
 func (app *App) CommandName() string {
 	return app.commandName
-}
-
-// HasSubcommands on the app
-func (app *App) HasSubcommands() bool {
-	return app.hasSubcommands
 }
 
 // SetDefaultCommand set default command name
@@ -592,167 +617,21 @@ func (app *App) SetDefaultCommand(name string) {
 // On add hook handler for a hook event
 func (app *App) On(name string, handler HookFunc) {
 	Debugf("register application hook: %s", name)
-
-	app.core.On(name, handler)
+	app.Hooks.On(name, handler)
 }
 
-// Fire hook on the app
-func (app *App) Fire(event string, data any) bool {
+// fire hook on the app. returns True for stop continue run.
+func (app *App) fireWithCmd(event string, cmd *Command, data map[string]any) bool {
 	Debugf("trigger the application event: <green>%s</>", event)
 
-	return app.core.Fire(event, app, data)
+	ctx := newHookCtx(event, cmd, data).WithApp(app)
+	return app.Hooks.Fire(event, ctx)
 }
 
-/*************************************************************
- * display app help
- *************************************************************/
+// Fire hook on the app. returns True for stop continue run.
+func (app *App) Fire(event string, data map[string]any) bool {
+	Debugf("trigger the application event: <green>%s</>", event)
 
-// display app version info
-func (app *App) showVersionInfo() {
-	Debugf("print application version info")
-
-	color.Printf(
-		"%s\n\nVersion: <cyan>%s</>\n",
-		strutil.UpperFirst(app.Desc),
-		app.Version,
-	)
-
-	if app.Logo.Text != "" {
-		color.Printf("%s\n", color.WrapTag(app.Logo.Text, app.Logo.Style))
-	}
-}
-
-// display unknown input command and similar commands tips
-func (app *App) showCommandTips(name string) {
-	Debugf("will find and show similar command tips")
-
-	color.Error.Tips(`unknown input command "<mga>%s</>"`, name)
-	if ns := app.findSimilarCmd(name); len(ns) > 0 {
-		color.Printf("\nMaybe you mean:\n  <green>%s</>\n", strings.Join(ns, ", "))
-	}
-
-	color.Printf("\nUse <cyan>%s --help</> to see available commands\n", app.binName)
-}
-
-// AppHelpTemplate help template for app(all commands)
-var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
-<comment>Usage:</>
-  {$binName} [global options...] <info>COMMAND</> [--options ...] [arguments ...]{{if .HasSubs }}
-  {$binName} [global options...] <info>COMMAND</> [--options ...] <info>SUBCOMMAND</> [--options ...] [arguments ...]{{end}}
-
-<comment>Global Options:</>
-{{.GOpts}}
-<comment>Available Commands:</>{{range $cmdName, $c := .Cs}}{{if $c.Visible}}
-  <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}{{end}}
-  <info>{{ paddingName "help" }}</> Display help information
-
-Use "<cyan>{$binName} COMMAND -h</>" for more information about a command
-`
-
-// display app help and list all commands. showCommandList()
-func (app *App) showApplicationHelp() {
-	Debugf("render application help and commands list")
-
-	// cmdHelpTemplate = color.ReplaceTag(cmdHelpTemplate)
-	// render help text template
-	s := helper.RenderText(AppHelpTemplate, map[string]any{
-		"Cs":    app.commands,
-		"GOpts": app.gFlags.String(),
-		// app version
-		"Version": app.Version,
-		"HasSubs": app.hasSubcommands,
-		// always upper first char
-		"Desc": strutil.UpperFirst(app.Desc),
-	}, template.FuncMap{
-		"paddingName": func(n string) string {
-			return strutil.PadRight(n, " ", app.nameMaxWidth)
-		},
-	})
-
-	// parse help vars and render color tags
-	color.Print(app.ReplaceVars(s))
-}
-
-// showCommandHelp display help for an command
-func (app *App) showCommandHelp(list []string) (code int) {
-	binName := app.binName
-	// if len(list) == 0 { TODO support multi level sub command?
-	if len(list) > 1 {
-		color.Error.Tips("Too many arguments given.\n\nUsage: %s help COMMAND", binName)
-		return ERR
-	}
-
-	// get real name
-	name := app.cmdAliases.ResolveAlias(list[0])
-	if name == HelpCommand || name == "-h" {
-		Debugf("render help command information")
-
-		color.Println("Display help message for application or command.\n")
-		color.Printf(`<yellow>Usage:</>
-  <cyan>%s COMMAND --help</>
-  <cyan>%s COMMAND SUBCOMMAND --help</>
-  <cyan>%s COMMAND SUBCOMMAND ... --help</>
-  <cyan>%s help COMMAND</>
-`, binName, binName, binName, binName)
-		return
-	}
-
-	cmd, exist := app.Command(name)
-	if !exist {
-		color.Error.Prompt("Unknown command name '%s'. Run '%s -h' see all commands", name, binName)
-		return ERR
-	}
-
-	// show help for the give command.
-	cmd.ShowHelp()
-	return
-}
-
-// show bash/zsh completion
-func (app *App) showAutoCompletion(_ []string) {
-	// TODO ...
-}
-
-// findSimilarCmd find similar cmd by input string
-func (app *App) findSimilarCmd(input string) []string {
-	var ss []string
-	// ins := strings.Split(input, "")
-	// fmt.Print(input, ins)
-	ln := len(input)
-
-	names := app.CmdNameMap()
-	names["help"] = 4 // add 'help' command
-
-	// find from command names
-	for name := range names {
-		cln := len(name)
-		if cln > ln && strings.Contains(name, input) {
-			ss = append(ss, name)
-		} else if ln > cln && strings.Contains(input, name) {
-			// sns := strings.Split(str, "")
-			ss = append(ss, name)
-		}
-
-		// max find 5 items
-		if len(ss) == 5 {
-			break
-		}
-	}
-
-	// find from aliases
-	for alias := range app.cmdAliases.Mapping() {
-		// max find 5 items
-		if len(ss) >= 5 {
-			break
-		}
-
-		cln := len(alias)
-		if cln > ln && strings.Contains(alias, input) {
-			ss = append(ss, alias)
-		} else if ln > cln && strings.Contains(input, alias) {
-			ss = append(ss, alias)
-		}
-	}
-
-	return ss
+	ctx := newHookCtx(event, nil, data).WithApp(app)
+	return app.Hooks.Fire(event, ctx)
 }

@@ -12,6 +12,16 @@ command-line interactive util methods
 - `MultiSelect/Checkbox`
 - `ReadPassword`
 
+## GoDoc
+
+Please see https://pkg.go.dev/github.com/gookit/gcli/v2/interact
+
+## Install
+
+```shell
+go get github.com/gookit/gcli/v2/interact
+```
+
 ## Select & Choice
 
 Usage:

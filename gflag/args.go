@@ -1,9 +1,12 @@
-package gcli
+package gflag
 
 import (
+	"fmt"
 	"strings"
 
+	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
 )
@@ -12,17 +15,22 @@ import (
  * Arguments definition
  *************************************************************/
 
+// CliArgs alias of Arguments
+type CliArgs = Arguments
+
 // Arguments definition
 type Arguments struct {
-	// Inherited from Command
+	// name inherited from gcli.Command
 	name string
 	// args definition for a command.
 	//
-	// eg. {
+	// eg. [
 	// 	{"arg0", "this is first argument", false, false},
 	// 	{"arg1", "this is second argument", false, false},
-	// }
+	// ]
 	args []*Argument
+	// arg name max width
+	argWidth int
 	// record min length for args
 	// argsMinLen int
 	// record argument names and defined positional relationships
@@ -108,7 +116,7 @@ func (ags *Arguments) AddArg(name, desc string, requiredAndArrayed ...bool) *Arg
 
 // AddArgByRule add an arg by simple string rule
 func (ags *Arguments) AddArgByRule(name, rule string) *Argument {
-	mp := parseSimpleRule(name, rule)
+	mp := ParseSimpleRule(name, rule)
 
 	required := strutil.QuietBool(mp["required"])
 	newArg := NewArgument(name, mp["desc"], required)
@@ -133,26 +141,28 @@ func (ags *Arguments) BindArg(arg *Argument) *Argument {
 //   - The (array) argument of multiple values can only be defined at the end
 func (ags *Arguments) AddArgument(arg *Argument) *Argument {
 	if ags.argsIndexes == nil {
+		ags.argWidth = 12 // default width
 		ags.argsIndexes = make(map[string]int)
 	}
 
 	// validate argument name
 	name := arg.goodArgument()
 	if _, has := ags.argsIndexes[name]; has {
-		panicf("the argument name '%s' already exists in command '%s'", name, ags.name)
+		helper.Panicf("the argument name '%s' already exists in command '%s'", name, ags.name)
 	}
 
 	if ags.hasArrayArg {
-		panicf("have defined an array argument, you cannot add argument '%s'", name)
+		helper.Panicf("have defined an array argument, you cannot add argument '%s'", name)
 	}
 
 	if arg.Required && ags.hasOptionalArg {
-		panicf("required argument '%s' cannot be defined after optional argument", name)
+		helper.Panicf("required argument '%s' cannot be defined after optional argument", name)
 	}
 
 	// add argument index record
 	arg.index = len(ags.args)
 	ags.argsIndexes[name] = arg.index
+	ags.argWidth = mathutil.MaxInt(ags.argWidth, len(name))
 
 	// add argument
 	ags.args = append(ags.args, arg)
@@ -198,7 +208,7 @@ func (ags *Arguments) HasArguments() bool {
 func (ags *Arguments) Arg(name string) *Argument {
 	i, ok := ags.argsIndexes[name]
 	if !ok {
-		panicf("get not exists argument '%s'", name)
+		helper.Panicf("get not exists argument '%s'", name)
 	}
 	return ags.args[i]
 }
@@ -206,14 +216,41 @@ func (ags *Arguments) Arg(name string) *Argument {
 // ArgByIndex get named arg by index
 func (ags *Arguments) ArgByIndex(i int) *Argument {
 	if i >= len(ags.args) {
-		panicf("get not exists argument #%d", i)
+		helper.Panicf("get not exists argument #%d", i)
 	}
 	return ags.args[i]
+}
+
+// String build args help string
+func (ags *Arguments) String() string {
+	return ags.BuildArgsHelp()
+}
+
+// BuildArgsHelp string
+func (ags *Arguments) BuildArgsHelp() string {
+	if len(ags.args) < 1 {
+		return ""
+	}
+
+	var sb strings.Builder
+	for _, arg := range ags.args {
+		sb.WriteString(fmt.Sprintf(
+			"<info>%s</> %s%s\n",
+			strutil.PadRight(arg.HelpName(), " ", ags.argWidth),
+			getRequiredMark(arg.Required),
+			strutil.UpperFirst(arg.Desc),
+		))
+	}
+
+	return sb.String()
 }
 
 /*************************************************************
  * Argument definition
  *************************************************************/
+
+// CliArg alias of Argument
+type CliArg = Argument
 
 // Argument a command argument definition
 type Argument struct {
@@ -306,11 +343,11 @@ func (a *Argument) Init() *Argument {
 func (a *Argument) goodArgument() string {
 	name := strings.TrimSpace(a.Name)
 	if name == "" {
-		panicf("the command argument name cannot be empty")
+		helper.Panicf("the command argument name cannot be empty")
 	}
 
-	if !goodName.MatchString(name) {
-		panicf("the argument name '%s' is invalid, must match: %s", name, regGoodName)
+	if !helper.IsGoodName(name) {
+		helper.Panicf("the argument name '%s' is invalid, must match: %s", name, helper.RegGoodName)
 	}
 
 	a.Name = name
