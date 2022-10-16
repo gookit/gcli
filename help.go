@@ -182,7 +182,7 @@ var CmdHelpTemplate = `{{.Desc}}
 {{.GOpts}}{{end}}{{if .Options}}
 <comment>Options:</>
 {{.Options}}{{end}}{{if .Cmd.HasArgs}}
-<comment>Arguments:</>{{range $a := .Cmd.Args}}
+<comment>CliArgs:</>{{range $a := .Cmd.Args}}
   <info>{{$a.HelpName | printf "%-12s"}}</> {{if $a.Required}}<red>*</>{{end}}{{$a.Desc | ucFirst}}{{end}}
 {{end}}{{ if .Subs }}
 <comment>Sub Commands:</>{{range $n,$c := .Subs}}

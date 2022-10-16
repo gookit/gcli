@@ -77,6 +77,9 @@ type Flags = gflag.Parser
 // FlagMeta alias of the gflag.CliOpt
 type FlagMeta = gflag.CliOpt
 
+// CliOpt alias of the gflag.CliOpt
+type CliOpt = gflag.CliOpt
+
 // FlagsConfig alias of the gflag.Config
 type FlagsConfig = gflag.Config
 
@@ -85,11 +88,17 @@ func NewFlags(nameWithDesc ...string) *gflag.Flags {
 	return gflag.New(nameWithDesc...)
 }
 
-// Argument alias of the gflag.Argument
-type Argument = gflag.Argument
+// CliArg alias of the gflag.CliArg
+type CliArg = gflag.CliArg
 
-// Arguments alias of the gflag.Arguments
-type Arguments = gflag.Arguments
+// Argument alias of the gflag.CliArg
+type Argument = gflag.CliArg
+
+// CliArgs alias of the gflag.CliArgs
+type CliArgs = gflag.CliArgs
+
+// Arguments alias of the gflag.CliArgs
+type Arguments = gflag.CliArgs
 
 // NewArgument quick create a new command argument
 func NewArgument(name, desc string, requiredAndArrayed ...bool) *Argument {

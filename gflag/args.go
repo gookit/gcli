@@ -12,14 +12,14 @@ import (
 )
 
 /*************************************************************
- * Arguments definition
+ * Cli Arguments definition
  *************************************************************/
 
-// CliArgs alias of Arguments
-type CliArgs = Arguments
+// Arguments alias of CliArgs
+type Arguments = CliArgs
 
-// Arguments definition
-type Arguments struct {
+// CliArgs definition
+type CliArgs struct {
 	// name inherited from gcli.Command
 	name string
 	// args definition for a command.
@@ -28,7 +28,7 @@ type Arguments struct {
 	// 	{"arg0", "this is first argument", false, false},
 	// 	{"arg1", "this is second argument", false, false},
 	// ]
-	args []*Argument
+	args []*CliArg
 	// arg name max width
 	argWidth int
 	// record min length for args
@@ -49,18 +49,18 @@ type Arguments struct {
 	hasOptionalArg bool
 }
 
-// SetName for Arguments
-func (ags *Arguments) SetName(name string) {
+// SetName for CliArgs
+func (ags *CliArgs) SetName(name string) {
 	ags.name = name
 }
 
 // SetValidateNum check
-func (ags *Arguments) SetValidateNum(validateNum bool) {
+func (ags *CliArgs) SetValidateNum(validateNum bool) {
 	ags.validateNum = validateNum
 }
 
-// ParseArgs for Arguments
-func (ags *Arguments) ParseArgs(args []string) (err error) {
+// ParseArgs for CliArgs
+func (ags *CliArgs) ParseArgs(args []string) (err error) {
 	var num int
 	inNum := len(args)
 
@@ -109,13 +109,13 @@ func (ags *Arguments) ParseArgs(args []string) (err error) {
 //	cmd.AddArg("name", "description")
 //	cmd.AddArg("name", "description", true) // required
 //	cmd.AddArg("names", "description", true, true) // required and is arrayed
-func (ags *Arguments) AddArg(name, desc string, requiredAndArrayed ...bool) *Argument {
+func (ags *CliArgs) AddArg(name, desc string, requiredAndArrayed ...bool) *CliArg {
 	newArg := NewArgument(name, desc, requiredAndArrayed...)
 	return ags.AddArgument(newArg)
 }
 
 // AddArgByRule add an arg by simple string rule
-func (ags *Arguments) AddArgByRule(name, rule string) *Argument {
+func (ags *CliArgs) AddArgByRule(name, rule string) *CliArg {
 	mp := ParseSimpleRule(name, rule)
 
 	required := strutil.QuietBool(mp["required"])
@@ -129,7 +129,7 @@ func (ags *Arguments) AddArgByRule(name, rule string) *Argument {
 }
 
 // BindArg alias of the AddArgument()
-func (ags *Arguments) BindArg(arg *Argument) *Argument {
+func (ags *CliArgs) BindArg(arg *CliArg) *CliArg {
 	return ags.AddArgument(arg)
 }
 
@@ -139,7 +139,7 @@ func (ags *Arguments) BindArg(arg *Argument) *Argument {
 //   - Required argument cannot be defined after optional argument
 //   - Only one array parameter is allowed
 //   - The (array) argument of multiple values can only be defined at the end
-func (ags *Arguments) AddArgument(arg *Argument) *Argument {
+func (ags *CliArgs) AddArgument(arg *CliArg) *CliArg {
 	if ags.argsIndexes == nil {
 		ags.argWidth = 12 // default width
 		ags.argsIndexes = make(map[string]int)
@@ -178,23 +178,23 @@ func (ags *Arguments) AddArgument(arg *Argument) *Argument {
 }
 
 // Args get all defined argument
-func (ags *Arguments) Args() []*Argument {
+func (ags *CliArgs) Args() []*CliArg {
 	return ags.args
 }
 
 // HasArg check named argument is defined
-func (ags *Arguments) HasArg(name string) bool {
+func (ags *CliArgs) HasArg(name string) bool {
 	_, ok := ags.argsIndexes[name]
 	return ok
 }
 
 // HasArgs defined. alias of the HasArguments()
-func (ags *Arguments) HasArgs() bool {
+func (ags *CliArgs) HasArgs() bool {
 	return len(ags.argsIndexes) > 0
 }
 
 // HasArguments defined
-func (ags *Arguments) HasArguments() bool {
+func (ags *CliArgs) HasArguments() bool {
 	return len(ags.argsIndexes) > 0
 }
 
@@ -205,7 +205,7 @@ func (ags *Arguments) HasArguments() bool {
 //	intVal := ags.Arg("name").Int()
 //	strVal := ags.Arg("name").String()
 //	arrVal := ags.Arg("names").Array()
-func (ags *Arguments) Arg(name string) *Argument {
+func (ags *CliArgs) Arg(name string) *CliArg {
 	i, ok := ags.argsIndexes[name]
 	if !ok {
 		helper.Panicf("get not exists argument '%s'", name)
@@ -214,7 +214,7 @@ func (ags *Arguments) Arg(name string) *Argument {
 }
 
 // ArgByIndex get named arg by index
-func (ags *Arguments) ArgByIndex(i int) *Argument {
+func (ags *CliArgs) ArgByIndex(i int) *CliArg {
 	if i >= len(ags.args) {
 		helper.Panicf("get not exists argument #%d", i)
 	}
@@ -222,12 +222,12 @@ func (ags *Arguments) ArgByIndex(i int) *Argument {
 }
 
 // String build args help string
-func (ags *Arguments) String() string {
+func (ags *CliArgs) String() string {
 	return ags.BuildArgsHelp()
 }
 
 // BuildArgsHelp string
-func (ags *Arguments) BuildArgsHelp() string {
+func (ags *CliArgs) BuildArgsHelp() string {
 	if len(ags.args) < 1 {
 		return ""
 	}
@@ -246,14 +246,14 @@ func (ags *Arguments) BuildArgsHelp() string {
 }
 
 /*************************************************************
- * Argument definition
+ * Cli Argument definition
  *************************************************************/
 
-// CliArg alias of Argument
-type CliArg = Argument
+// Argument alias of CliArg
+type Argument = CliArg
 
-// Argument a command argument definition
-type Argument struct {
+// CliArg a command argument definition
+type CliArg struct {
 	*structs.Value
 	// Name argument name. it's required
 	Name string
@@ -278,7 +278,7 @@ type Argument struct {
 }
 
 // NewArg quick create a new command argument
-func NewArg(name, desc string, val any, requiredAndArrayed ...bool) *Argument {
+func NewArg(name, desc string, val any, requiredAndArrayed ...bool) *CliArg {
 	var arrayed, required bool
 	if ln := len(requiredAndArrayed); ln > 0 {
 		required = requiredAndArrayed[0]
@@ -287,7 +287,7 @@ func NewArg(name, desc string, val any, requiredAndArrayed ...bool) *Argument {
 		}
 	}
 
-	return &Argument{
+	return &CliArg{
 		Name:  name,
 		Desc:  desc,
 		Value: structs.NewValue(val),
@@ -299,24 +299,24 @@ func NewArg(name, desc string, val any, requiredAndArrayed ...bool) *Argument {
 }
 
 // NewArgument quick create a new command argument
-func NewArgument(name, desc string, requiredAndArrayed ...bool) *Argument {
+func NewArgument(name, desc string, requiredAndArrayed ...bool) *CliArg {
 	return NewArg(name, desc, nil, requiredAndArrayed...)
 }
 
 // SetArrayed the argument
-func (a *Argument) SetArrayed() *Argument {
+func (a *CliArg) SetArrayed() *CliArg {
 	a.Arrayed = true
 	return a
 }
 
 // WithValue to the argument
-func (a *Argument) WithValue(val any) *Argument {
+func (a *CliArg) WithValue(val any) *CliArg {
 	a.Value.Set(val)
 	return a
 }
 
 // WithFn a func for config the argument
-func (a *Argument) WithFn(fn func(arg *Argument)) *Argument {
+func (a *CliArg) WithFn(fn func(arg *CliArg)) *CliArg {
 	if fn != nil {
 		fn(a)
 	}
@@ -324,23 +324,23 @@ func (a *Argument) WithFn(fn func(arg *Argument)) *Argument {
 }
 
 // WithValidator set a value validator of the argument
-func (a *Argument) WithValidator(fn func(any) (any, error)) *Argument {
+func (a *CliArg) WithValidator(fn func(any) (any, error)) *CliArg {
 	a.Validator = fn
 	return a
 }
 
 // SetValue set an validated value
-func (a *Argument) SetValue(val any) error {
+func (a *CliArg) SetValue(val any) error {
 	return a.bindValue(val)
 }
 
 // Init the argument
-func (a *Argument) Init() *Argument {
+func (a *CliArg) Init() *CliArg {
 	a.goodArgument()
 	return a
 }
 
-func (a *Argument) goodArgument() string {
+func (a *CliArg) goodArgument() string {
 	name := strings.TrimSpace(a.Name)
 	if name == "" {
 		helper.Panicf("the command argument name cannot be empty")
@@ -362,7 +362,7 @@ func (a *Argument) goodArgument() string {
 }
 
 // GetValue get value by custom handler func
-func (a *Argument) GetValue() any {
+func (a *CliArg) GetValue() any {
 	val := a.Value.Val()
 	if a.Handler != nil {
 		return a.Handler(val)
@@ -371,22 +371,22 @@ func (a *Argument) GetValue() any {
 }
 
 // Array alias of the Strings()
-func (a *Argument) Array() (ss []string) {
+func (a *CliArg) Array() (ss []string) {
 	return a.Strings()
 }
 
 // HasValue value is empty
-func (a *Argument) HasValue() bool {
+func (a *CliArg) HasValue() bool {
 	return a.V != nil
 }
 
 // Index get argument index in the command
-func (a *Argument) Index() int {
+func (a *CliArg) Index() int {
 	return a.index
 }
 
 // HelpName for render help message
-func (a *Argument) HelpName() string {
+func (a *CliArg) HelpName() string {
 	if a.Arrayed {
 		return a.ShowName + "..."
 	}
@@ -394,7 +394,7 @@ func (a *Argument) HelpName() string {
 }
 
 // bind a value to the argument
-func (a *Argument) bindValue(val any) (err error) {
+func (a *CliArg) bindValue(val any) (err error) {
 	if a.Validator != nil {
 		val, err = a.Validator(val)
 		if err != nil {

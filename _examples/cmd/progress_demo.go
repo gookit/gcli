@@ -24,9 +24,9 @@ var ProgressDemo = &gcli.Command{
 	Config: func(c *gcli.Command) {
 		c.IntOpt(&pdOpts.maxSteps, "max-step", "", 100, "setting the max step value")
 		c.BoolOpt(&pdOpts.overwrite, "overwrite", "o", true, "setting overwrite progress bar line")
-		c.BoolVar(&pdOpts.random, &gcli.FlagMeta{Name: "random", Desc: "use random style for progress bar"})
+		c.BoolVar(&pdOpts.random, &gcli.CliOpt{Name: "random", Desc: "use random style for progress bar"})
 
-		c.BindArg(&gcli.Argument{
+		c.BindArg(&gcli.CliArg{
 			Name: "name",
 			Desc: "progress bar type name. allow: bar,txt,dtxt,loading,roundTrip",
 

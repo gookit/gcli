@@ -52,7 +52,7 @@ func (ops *CliOpts) InitFlagSet(name string) {
 	ops.fSet.Usage = func() {}
 }
 
-// SetName for Arguments
+// SetName for CliArgs
 func (ops *CliOpts) SetName(name string) {
 	ops.name = name
 }

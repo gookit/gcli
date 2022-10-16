@@ -29,7 +29,7 @@ type Parser struct {
 	CliOpts
 
 	// --- cli arguments ---
-	Arguments
+	CliArgs
 
 	name string
 	// Desc message
@@ -93,7 +93,7 @@ func (p *Parser) Init(name string) {
 func (p *Parser) SetName(name string) {
 	p.name = name
 	p.CliOpts.SetName(name)
-	p.Arguments.SetName(name)
+	p.CliArgs.SetName(name)
 }
 
 // SetConfig for the object.
@@ -147,7 +147,7 @@ func (p *Parser) Run(args []string) {
 		}
 
 		color.Comment.Println("Usage:")
-		color.Cyan.Println(" ", binFile, "[--Options...] [Arguments...]\n")
+		color.Cyan.Println(" ", binFile, "[--Options...] [CliArgs...]\n")
 
 		p.PrintHelpPanel()
 	})
@@ -389,7 +389,7 @@ func (p *Parser) BuildHelp() string {
 		p.buf.WriteByte('\n')
 
 		if p.HasArgs() {
-			p.buf.WriteString("Arguments:\n")
+			p.buf.WriteString("CliArgs:\n")
 			p.buf.WriteString(p.BuildArgsHelp())
 			p.buf.WriteByte('\n')
 		}

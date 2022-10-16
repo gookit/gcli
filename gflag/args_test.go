@@ -149,7 +149,7 @@ var str2int = func(val any) (any, error) {
 }
 
 func TestArgument_WithConfig(t *testing.T) {
-	arg := gcli.NewArgument("arg0", "arg desc").WithFn(func(arg *gcli.Argument) {
+	arg := gcli.NewArgument("arg0", "arg desc").WithFn(func(arg *gcli.CliArg) {
 		_ = arg.SetValue(23)
 		arg.Init()
 	})
