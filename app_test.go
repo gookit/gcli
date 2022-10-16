@@ -217,7 +217,7 @@ func TestApp_Run_command_withArguments(t *testing.T) {
 		},
 	})
 
-	// run an command
+	// run a command
 	code := app.Run([]string{"test"})
 	is.Eq(0, code)
 	is.Eq("", argStr)

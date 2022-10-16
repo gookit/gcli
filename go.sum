@@ -3,8 +3,8 @@ github.com/davecgh/go-spew v1.1.1 h1:vj9j/u1bqnvCEfJOwUhtlOARqs3+rkHYY13jYWTU97c
 github.com/davecgh/go-spew v1.1.1/go.mod h1:J7Y8YcW2NihsgmVo/mv3lAwl/skON4iLHjSsI+c5H38=
 github.com/gookit/color v1.5.2 h1:uLnfXcaFjlrDnQDT+NCBcfhrXqYTx/rcCa6xn01Y8yI=
 github.com/gookit/color v1.5.2/go.mod h1:w8h4bGiHeeBpvQVePTutdbERIUf3oJE5lZ8HM0UgXyg=
-github.com/gookit/goutil v0.5.14 h1:8TicCMSkpARD11SpiGJnRzUt2z3CTu+0YAq/zj2Yoag=
-github.com/gookit/goutil v0.5.14/go.mod h1:ozPE16eJS9f89aVbVk05ocEJsia3KPrYUqPTs8GvUTw=
+github.com/gookit/goutil v0.5.15 h1:FaRyj0uVqi7j92QHsG+2Sc1VZ7/7ma77UD3/wBpwyTc=
+github.com/gookit/goutil v0.5.15/go.mod h1:ozPE16eJS9f89aVbVk05ocEJsia3KPrYUqPTs8GvUTw=
 github.com/mattn/go-isatty v0.0.16 h1:bq3VjFmv/sOjHtdEhmkEV4x1AJtvUvOJ2PFAZ5+peKQ=
 github.com/mattn/go-isatty v0.0.16/go.mod h1:kYGgaQfpe5nmfYZH+SKPsOc2e4SrIfOl2e/yFXSvRLM=
 github.com/pmezard/go-difflib v1.0.0 h1:4DBwDE0NGyQoBHbLQYPwSUPoCMWR5BEzIk/f1lZbAQM=

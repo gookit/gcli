@@ -403,8 +403,11 @@ func (p *Parser) BuildOptsHelp() string {
 	var sb strings.Builder
 
 	p.fSet.VisitAll(func(f *flag.Flag) {
-		sb.WriteString(p.formatOneFlag(f))
-		sb.WriteByte('\n')
+		line := p.formatOneFlag(f)
+		if line != "" {
+			sb.WriteString(line)
+			sb.WriteByte('\n')
+		}
 	})
 
 	return sb.String()
