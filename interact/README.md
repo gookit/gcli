@@ -14,12 +14,12 @@ command-line interactive util methods
 
 ## GoDoc
 
-Please see https://pkg.go.dev/github.com/gookit/gcli/v2/interact
+Please see https://pkg.go.dev/github.com/gookit/gcli/v3/interact
 
 ## Install
 
 ```shell
-go get github.com/gookit/gcli/v2/interact
+go get github.com/gookit/gcli/v3/interact
 ```
 
 ## Select & Choice

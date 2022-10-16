@@ -10,7 +10,7 @@ Package progress provide terminal progress bar display. Such as: `Txt`, `Bar`, `
 
 ## GoDoc
 
-Please see https://pkg.go.dev/github.com/gookit/gcli/v2/progress
+Please see https://pkg.go.dev/github.com/gookit/gcli/v3/progress
 
 ## Install
 

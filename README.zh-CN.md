@@ -44,8 +44,7 @@ The english introduction please ses **[README](README.md)**
 
 ## GoDoc
 
-- [godoc for gopkg](https://pkg.go.dev/gopkg.in/gookit/gcli.v2)
-- [godoc for github](https://pkg.go.dev/github.com/gookit/gcli/v3)
+- [godoc](https://pkg.go.dev/github.com/gookit/gcli/v3)
 
 ## 安装
 

@@ -58,8 +58,7 @@ Including running commands, color styles, data display, progress display, intera
 
 ## GoDoc
 
-- [godoc for gopkg](https://pkg.go.dev/gopkg.in/gookit/gcli.v2)
-- [godoc for github](https://pkg.go.dev/github.com/gookit/gcli/v3)
+- [godoc](https://pkg.go.dev/github.com/gookit/gcli/v3)
 
 ## Install
 
