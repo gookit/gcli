@@ -17,6 +17,7 @@ import (
 	"strings"
 
 	"github.com/gookit/gcli/v3/gflag"
+	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/envutil"
 )
 
@@ -243,16 +244,16 @@ func IsDebugMode() bool { return gOpts.Verbose >= VerbDebug }
  *************************************************************************/
 
 // Ints The int flag list, implemented flag.Value interface
-type Ints = gflag.Ints
+type Ints = cflag.Ints
 
 // Strings The string flag list, implemented flag.Value interface
-type Strings = gflag.Strings
+type Strings = cflag.Strings
 
 // Booleans The bool flag list, implemented flag.Value interface
-type Booleans = gflag.Booleans
+type Booleans = cflag.Booleans
 
 // EnumString The string flag list, implemented flag.Value interface
-type EnumString = gflag.EnumString
+type EnumString = cflag.EnumString
 
 // String type, a special string
 //
@@ -271,7 +272,7 @@ type EnumString = gflag.EnumString
 //
 //	--names "23,34,56"
 //	 names.Ints(",") -> []int{23,34,56}
-type String = gflag.String
+type String = cflag.String
 
 /*************************************************************************
  * Verbose level

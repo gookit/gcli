@@ -2,6 +2,7 @@
 package gflag
 
 import (
+	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -50,3 +51,15 @@ type OptCategory struct {
 	Name, Title string
 	OptNames    []string
 }
+
+// Ints The int flag list, implemented flag.Value interface
+type Ints = cflag.Ints
+
+// Strings The string flag list, implemented flag.Value interface
+type Strings = cflag.Strings
+
+// Booleans The bool flag list, implemented flag.Value interface
+type Booleans = cflag.Booleans
+
+// EnumString The string flag list, implemented flag.Value interface
+type EnumString = cflag.EnumString
