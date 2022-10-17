@@ -104,13 +104,13 @@ func NewApp(fns ...func(app *App)) *App {
 
 	Logf(VerbCrazy, "create a new cli application, and create base ")
 
-	// init base
-	app.Ctx = gCtx
+	// init
 	app.base = newBase()
 	app.opts = newGlobalOpts()
 
-	// set a default version
+	// set a default value
 	app.Version = "1.0.0"
+	app.base.Ctx = gCtx
 
 	for _, fn := range fns {
 		fn(app)

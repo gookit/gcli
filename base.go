@@ -205,6 +205,15 @@ func (b *base) initHelpReplacer() {
 	})
 }
 
+// BinName get bin script name
+func (b *base) BinName() string { return b.Ctx.binName }
+
+// BinDir get bin script dirname
+func (b *base) BinDir() string { return b.Ctx.BinDir() }
+
+// WorkDir get work dirname
+func (b *base) WorkDir() string { return b.Ctx.workDir }
+
 // ResetData from ctx
 func (b *base) ResetData() {
 	if b.Ctx != nil {

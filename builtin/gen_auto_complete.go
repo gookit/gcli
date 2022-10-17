@@ -76,7 +76,7 @@ func GenAutoComplete() *gcli.Command {
 
 func doGen(c *gcli.Command, _ []string) (err error) {
 	if len(genOpts.binName) == 0 {
-		genOpts.binName = c.BinName()
+		genOpts.binName = c.Ctx.BinName()
 	}
 
 	genOpts.binName = strings.TrimSuffix(strings.Trim(genOpts.binName, "./"), ".exe")
