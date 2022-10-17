@@ -22,7 +22,7 @@ var (
 		Desc: "an simple command",
 		Func: func(c *gcli.Command, args []string) error {
 			dump.Println(c.Path(), args)
-			c.Set("simple", "simple command")
+			c.Ctx.Set("simple", "simple command")
 			return nil
 		},
 	}
@@ -45,7 +45,7 @@ var (
 					Name: "sub1",
 					Desc: "desc for top1.sub1",
 					Func: func(c *gcli.Command, args []string) error {
-						c.Set("msg", c.App().Get("top1:sub1"))
+						c.Ctx.Set("msg", c.App().Ctx.Get("top1:sub1"))
 						return nil
 					},
 				},
@@ -291,23 +291,23 @@ func TestApp_Run_subcommand(t *testing.T) {
 	is := assert.New(t)
 	id := "top1:sub1"
 
-	appWithMl.Set(id, "TestApp_Run_subcommand")
+	appWithMl.Ctx.Set(id, "TestApp_Run_subcommand")
 	appWithMl.Run([]string{"top1", "sub1"})
 
 	c := appWithMl.FindCommand(id)
 	is.NotEmpty(c)
-	is.Eq("TestApp_Run_subcommand", c.Get("msg"))
+	is.Eq("TestApp_Run_subcommand", c.Ctx.Get("msg"))
 }
 
 func TestApp_Run_by_cmd_ID(t *testing.T) {
 	is := assert.New(t)
 
-	appWithMl.SetValue("top1:sub1", "TestApp_Run_by_cmd_ID")
+	appWithMl.Ctx.Set("top1:sub1", "TestApp_Run_by_cmd_ID")
 	appWithMl.Run([]string{"top1:sub1"})
 
 	c := appWithMl.FindCommand("top1:sub1")
 	is.NotEmpty(c)
-	is.Eq("TestApp_Run_by_cmd_ID", c.GetVal("msg"))
+	is.Eq("TestApp_Run_by_cmd_ID", c.Ctx.Get("msg"))
 }
 
 func TestApp_AddAliases_and_run(t *testing.T) {
@@ -315,12 +315,12 @@ func TestApp_AddAliases_and_run(t *testing.T) {
 	id := "top1:sub1"
 
 	appWithMl.AddAliases(id, "ts1")
-	appWithMl.SetValue(id, "TestApp_AddAliases_and_run")
+	appWithMl.Ctx.Set(id, "TestApp_AddAliases_and_run")
 	appWithMl.Run([]string{"ts1"})
 
 	c := appWithMl.FindCommand(id)
 	is.NotEmpty(c)
-	is.Eq("TestApp_AddAliases_and_run", c.GetVal("msg"))
+	is.Eq("TestApp_AddAliases_and_run", c.Ctx.Get("msg"))
 }
 
 func TestApp_showCommandHelp(t *testing.T) {

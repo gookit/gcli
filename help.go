@@ -39,7 +39,7 @@ func (app *App) showCommandTips(name string) {
 		color.Printf("\nMaybe you mean:\n  <green>%s</>\n", strings.Join(ns, ", "))
 	}
 
-	color.Printf("\nUse <cyan>%s --help</> to see available commands\n", app.binName)
+	color.Printf("\nUse <cyan>%s --help</> to see available commands\n", app.Ctx.binName)
 }
 
 // AppHelpTemplate help template for app(all commands)
@@ -59,7 +59,7 @@ Use "<cyan>{$binName} COMMAND -h</>" for more information about a command
 
 // display app help and list all commands. showCommandList()
 func (app *App) showApplicationHelp() bool {
-	Debugf("render application help and commands list, help.pairs=%s", maputil.ToString2(app.Vars))
+	Debugf("render application help and commands list, replaces=%s", maputil.ToString2(app.Replaces()))
 
 	// cmdHelpTemplate = color.ReplaceTag(cmdHelpTemplate)
 	// render help text template
@@ -71,6 +71,8 @@ func (app *App) showApplicationHelp() bool {
 		"HasSubs": app.hasSubcommands,
 		// always upper first char
 		"Desc": strutil.UpperFirst(app.Desc),
+		// user custom help vars
+		"Vars": app.helpVars,
 	}, template.FuncMap{
 		"paddingName": func(n string) string {
 			return strutil.PadRight(n, " ", app.nameMaxWidth)
@@ -78,13 +80,13 @@ func (app *App) showApplicationHelp() bool {
 	})
 
 	// parse help vars and render color tags
-	color.Print(app.ReplaceVars(s))
+	color.Print(app.ReplacePairs(s))
 	return false
 }
 
-// showCommandHelp display help for an command
+// showCommandHelp display help for a command
 func (app *App) showCommandHelp(list []string) (code int) {
-	binName := app.binName
+	binName := app.Ctx.binName
 	// if len(list) == 0 { TODO support multi level sub command?
 	if len(list) > 1 {
 		color.Error.Tips("Too many arguments given.\n\nUsage: %s help COMMAND", binName)
@@ -113,7 +115,7 @@ func (app *App) showCommandHelp(list []string) (code int) {
 	}
 
 	// show help for the give command.
-	cmd.ShowHelp()
+	_ = cmd.ShowHelp()
 	return
 }
 
@@ -223,6 +225,8 @@ func (c *Command) ShowHelp() (err error) {
 		"Options": c.Flags.BuildOptsHelp(),
 		// always upper first char
 		"Desc": c.HelpDesc(),
+		// user custom help vars
+		"Vars": c.helpVars,
 	}
 
 	// if c.NotStandalone() {
@@ -238,6 +242,6 @@ func (c *Command) ShowHelp() (err error) {
 
 	// parse gcli help vars then print help
 	// fmt.Printf("%#v\n", s)
-	color.Print(c.ReplaceVars(str))
+	color.Print(c.ReplacePairs(str))
 	return
 }

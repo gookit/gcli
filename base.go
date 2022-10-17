@@ -10,7 +10,6 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/structs"
 )
@@ -125,36 +124,27 @@ func (ctx *Context) hasHelpKeywords() bool {
 	return strings.HasSuffix(ctx.argLine, " -h") || strings.HasSuffix(ctx.argLine, " --help")
 }
 
-// SetValue to ctx
-func (ctx *Context) SetValue(key string, val any) {
-	ctx.Set(key, val)
-}
-
-// GetVal from ctx
-func (ctx *Context) GetVal(key string) interface{} {
-	return ctx.Get(key)
-}
-
 // ResetData from ctx
 func (ctx *Context) ResetData() {
 	ctx.Data = make(maputil.Data)
 }
 
 /*************************************************************
- * command Base
+ * command base
  *************************************************************/
 
 // will inject to every Command
 type base struct {
+	color.SimplePrinter
 	// Hooks manage. allowed hooks: "init", "before", "after", "error"
 	*Hooks
-	*Context
-	color.SimplePrinter
-	// HelpVars help message replace vars.
-	helper.HelpVars
-	// TODO tplVars for render help template text.
-	tplVars map[string]any
+	// HelpReplacer help message replace pairs.
+	HelpReplacer
+	// helpVars custom add vars for render help template.
+	helpVars map[string]any
 
+	// Ctx for command
+	Ctx *Context
 	// Logo ASCII logo setting
 	Logo *Logo
 	// Version app version. like "1.0.1"
@@ -200,25 +190,25 @@ func newBase() base {
 		// cmdAliases:   make(maputil.Aliases),
 		cmdAliases: structs.NewAliases(aliasNameCheck),
 		// ExitOnEnd:  false,
-		tplVars: make(map[string]any),
+		helpVars: make(map[string]any),
 		// Context: NewCtx(),
 	}
 }
 
 // init common basic help vars
-func (b *base) initHelpVars() {
-	b.AddVars(map[string]string{
-		"pid":     b.PIDString(),
-		"workDir": b.workDir,
-		"binFile": b.binFile,
-		"binName": b.binName,
+func (b *base) initHelpReplacer() {
+	b.AddReplaces(map[string]string{
+		"pid":     b.Ctx.PIDString(),
+		"workDir": b.Ctx.workDir,
+		"binFile": b.Ctx.binFile,
+		"binName": b.Ctx.binName,
 	})
 }
 
 // ResetData from ctx
 func (b *base) ResetData() {
-	if b.Context != nil {
-		b.Context.ResetData()
+	if b.Ctx != nil {
+		b.Ctx.ResetData()
 	}
 }
 
@@ -392,7 +382,7 @@ func (b *base) AliasesMapping() map[string]string {
 	return b.cmdAliases.Mapping()
 }
 
-// AddTplVar to instance.
-func (b *base) AddTplVar(key string, val any) {
-	b.tplVars[key] = val
+// AddHelpVar to instance.
+func (b *base) AddHelpVar(key string, val any) {
+	b.helpVars[key] = val
 }

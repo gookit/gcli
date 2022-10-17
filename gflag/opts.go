@@ -130,14 +130,16 @@ func (ops *CliOpts) Str(name, shorts string, defVal, desc string) *string {
 // StrVar binding an string option flag
 func (ops *CliOpts) StrVar(p *string, opt *CliOpt) { ops.strOpt(p, opt) }
 
-// StrOpt binding an string option
-func (ops *CliOpts) StrOpt(p *string, name, shorts string, defValWithDesc ...string) {
+// StrOpt binding a string option.
+//
+// If defValAndDesc only one elem, will as desc message.
+func (ops *CliOpts) StrOpt(p *string, name, shorts string, defValAndDesc ...string) {
 	var defVal, desc string
-	if ln := len(defValWithDesc); ln > 0 {
+	if ln := len(defValAndDesc); ln > 0 {
 		if ln >= 2 {
-			defVal, desc = defValWithDesc[0], defValWithDesc[1]
+			defVal, desc = defValAndDesc[0], defValAndDesc[1]
 		} else { // only one as desc
-			desc = defValWithDesc[0]
+			desc = defValAndDesc[0]
 		}
 	}
 

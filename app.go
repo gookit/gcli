@@ -105,12 +105,12 @@ func NewApp(fns ...func(app *App)) *App {
 	Logf(VerbCrazy, "create a new cli application, and create base ")
 
 	// init base
+	app.Ctx = gCtx
 	app.base = newBase()
 	app.opts = newGlobalOpts()
 
 	// set a default version
 	app.Version = "1.0.0"
-	app.Context = gCtx
 
 	for _, fn := range fns {
 		fn(app)
@@ -151,7 +151,7 @@ func (app *App) initialize() {
 	Logf(VerbCrazy, "initialize the cli application")
 
 	// init some info
-	app.initHelpVars()
+	app.initHelpReplacer()
 	app.bindAppOpts()
 
 	// add default error handler.
@@ -209,7 +209,7 @@ func (app *App) AddCommand(c *Command) {
 	// init command
 	c.app = app
 	// inherit some from application
-	c.Context = app.Context
+	c.Ctx = app.Ctx
 
 	// do add command
 	app.addCommand(app.Name, c)
@@ -472,7 +472,7 @@ func (app *App) Run(args []string) (code int) {
 		return app.exitOnEnd(code)
 	}
 
-	Logf(VerbCrazy, "begin run console application, PID: %d", app.PID())
+	Logf(VerbCrazy, "begin run console application, PID: %d", app.Ctx.PID())
 
 	var name string
 	code, name = app.prepareRun()
@@ -528,9 +528,6 @@ func (app *App) doRunCmd(name string, args []string) (code int) {
 }
 
 func (app *App) doRunFunc(args []string) (code int) {
-	// app bind args TODO
-	// app.ParseArgs(args)
-
 	// do execute command
 	if err := app.Func(app, args); err != nil {
 		code = ERR

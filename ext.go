@@ -2,6 +2,8 @@ package gcli
 
 import (
 	"context"
+	"fmt"
+	"strings"
 
 	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/goutil/maputil"
@@ -167,4 +169,63 @@ func (hc *HookCtx) WithData(data map[string]any) *HookCtx {
 func (hc *HookCtx) WithApp(a *App) *HookCtx {
 	hc.App = a
 	return hc
+}
+
+/*************************************************************
+ * app/cmd help string-var replacer
+ *************************************************************/
+
+// HelpVarFormat allow string replace on render help info.
+//
+// Default support:
+//
+//	"{$binName}" "{$cmd}" "{$fullCmd}" "{$workDir}"
+const HelpVarFormat = "{$%s}"
+
+// HelpReplacer provide string var replace for render help template.
+type HelpReplacer struct {
+	VarOpen, VarClose string
+
+	// replaces you can add string-var map for render help info.
+	replaces map[string]string
+}
+
+// AddReplace get command name. AddReplace
+func (hv *HelpReplacer) AddReplace(name, value string) {
+	if hv.replaces == nil {
+		hv.replaces = make(map[string]string)
+	}
+	hv.replaces[name] = value
+}
+
+// AddReplaces add multi tpl vars.
+func (hv *HelpReplacer) AddReplaces(vars map[string]string) {
+	for n, v := range vars {
+		hv.AddReplace(n, v)
+	}
+}
+
+// GetReplace get a help var by name
+func (hv *HelpReplacer) GetReplace(name string) string {
+	return hv.replaces[name]
+}
+
+// Replaces get all tpl vars.
+func (hv *HelpReplacer) Replaces() map[string]string {
+	return hv.replaces
+}
+
+// ReplacePairs replace string vars in the input text.
+func (hv *HelpReplacer) ReplacePairs(input string) string {
+	// if not use var
+	if !strings.Contains(input, "{$") {
+		return input
+	}
+
+	var ss []string
+	for n, v := range hv.replaces {
+		ss = append(ss, fmt.Sprintf(HelpVarFormat, n), v)
+	}
+
+	return strings.NewReplacer(ss...).Replace(input)
 }

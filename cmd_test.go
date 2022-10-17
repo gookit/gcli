@@ -21,7 +21,7 @@ func TestNewCommand(t *testing.T) {
 	})
 
 	is.NotEmpty(c)
-	is.False(c.Runnable())
+	is.False(c.IsRunnable())
 	is.Nil(c.App())
 
 	err := c.Run([]string{})
@@ -55,7 +55,7 @@ func TestCommand_NewErrf(t *testing.T) {
 	})
 
 	is.NotEmpty(c)
-	is.True(c.Runnable())
+	is.True(c.IsRunnable())
 
 	err := c.Run(simpleArgs)
 	is.Err(err)
@@ -277,8 +277,8 @@ var c0 = gcli.NewCommand("test", "desc for test command", func(c *gcli.Command) 
 	c.AddArg("arg1", "arg1 desc")
 	c.Func = func(c *gcli.Command, args []string) error {
 		bf.WriteString("name=" + c.Name)
-		c.Set("name", c.Name)
-		c.Set("args", args)
+		c.Ctx.Set("name", c.Name)
+		c.Ctx.Set("args", args)
 		// dump.P(c.ID(), "command Func is exec")
 		return nil
 	}
@@ -357,8 +357,8 @@ func TestCommand_Run_parseOptions(t *testing.T) {
 
 	// dump.P(gcli.GOpts(), c0.Context)
 	is.NoErr(err)
-	is.Eq("test", c0.Get("name"))
-	is.Eq([]string{"txt"}, c0.Get("args"))
+	is.Eq("test", c0.Ctx.Get("name"))
+	is.Eq([]string{"txt"}, c0.Ctx.Get("args"))
 
 	is.Eq(10, int0)
 	is.Eq("abc", str0)

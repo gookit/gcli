@@ -115,7 +115,7 @@ func TestApp_On_CmdNotFound_redirect(t *testing.T) {
 	buf.Reset()
 	simpleCmd.Init()
 	simpleCmd.ResetData()
-	assert.Eq(t, nil, simpleCmd.GetVal("simple"))
+	assert.Eq(t, nil, simpleCmd.Ctx.Get("simple"))
 
 	cli := newNotExitApp()
 	cli.Add(simpleCmd)
@@ -128,7 +128,7 @@ func TestApp_On_CmdNotFound_redirect(t *testing.T) {
 
 		err := ctx.App.Exec(simpleCmd.Name, nil)
 		assert.NoErr(t, err)
-		buf.WriteString("value:" + simpleCmd.Data.Str("simple"))
+		buf.WriteString("value:" + simpleCmd.Ctx.Str("simple"))
 		return true
 	})
 

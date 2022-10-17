@@ -178,9 +178,9 @@ func (c *Command) IsDisabled() bool {
 	return c.disabled
 }
 
-// Runnable reports whether the command can be run; otherwise
+// IsRunnable reports whether the command can be run; otherwise
 // it is a documentation pseudo-command such as import path.
-func (c *Command) Runnable() bool {
+func (c *Command) IsRunnable() bool {
 	return c.Func != nil
 }
 
@@ -208,7 +208,7 @@ func (c *Command) AddCommand(sub *Command) {
 	// inherit standalone value
 	sub.standalone = c.standalone
 	// inherit something from parent
-	sub.Context = c.Context
+	sub.Ctx = c.Ctx
 
 	// initialize command
 	c.initialize()
@@ -291,22 +291,22 @@ func (c *Command) initCommandBase(cName string) {
 		c.Hooks = &Hooks{}
 	}
 
-	if c.Context == nil {
+	if c.Ctx == nil {
 		Logf(VerbDebug, "cmd: %s - use the gCtx as command context", cName)
-		c.Context = gCtx
+		c.Ctx = gCtx
 	}
 
-	binWithPath := c.binName + " " + c.Path()
+	binWithPath := c.Ctx.binName + " " + c.Path()
 
-	c.initHelpVars()
-	c.AddVars(map[string]string{
+	c.initHelpReplacer()
+	c.AddReplaces(map[string]string{
 		"cmd": cName,
 		// binName with command name
 		"binWithCmd": binWithPath,
 		// binName with command path
 		"binWithPath": binWithPath,
 		// binFile with command
-		"fullCmd": c.binFile + " " + cName,
+		"fullCmd": c.Ctx.binFile + " " + cName,
 	})
 
 	c.base.cmdNames = make(map[string]int)
