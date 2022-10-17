@@ -70,7 +70,7 @@ func exampleExecute(c *gcli.Command, args []string) error {
 	color.Infoln("hello, in example command")
 
 	if exampleOpts.showErr {
-		return c.Errorf("OO, An error has occurred!!")
+		return c.NewErrf("OO, An error has occurred!!")
 	}
 
 	magentaln := color.Magenta.Println

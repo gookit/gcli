@@ -59,7 +59,7 @@ func interactDemo(c *gcli.Command, _ []string) error {
 	if handler, ok := funcMap[name]; ok {
 		handler(c)
 	} else {
-		return c.Errorf("want run unknown demo method: %s", name)
+		return c.NewErrf("want run unknown demo method: %s", name)
 	}
 
 	return nil

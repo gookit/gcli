@@ -41,7 +41,7 @@ roundTrip spinner:
 		case "rt", "roundTrip":
 			spOpts.runRoundTripSpinner()
 		default:
-			return c.Errorf("the spinner type name only allow: loading,roundTrip. input is: %s", name)
+			return c.NewErrf("the spinner type name only allow: loading,roundTrip. input is: %s", name)
 		}
 		return nil
 	},

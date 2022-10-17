@@ -28,7 +28,7 @@ var DaemonRun = &gcli.Command{
 
 func handleDaemonRun(c *gcli.Command, _ []string) (err error) {
 	if bgrOpts.deamon {
-		newArgs := clearDaemonOpt("--daemon", "-d", c.OsArgs()[1:])
+		newArgs := clearDaemonOpt("--daemon", "-d", c.Ctx.OsArgs()[1:])
 		newCmd := exec.Command(c.BinName(), newArgs...)
 
 		if err = newCmd.Start(); err != nil {

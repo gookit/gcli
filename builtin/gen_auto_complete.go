@@ -111,7 +111,7 @@ func doGen(c *gcli.Command, _ []string) (err error) {
 	} else if genOpts.shell == ZshShell {
 		data = buildForZshShell(c.App(), data)
 	} else {
-		return c.Errorf("--shell option only allow: zsh,bash")
+		return c.NewErrf("--shell option only allow: zsh,bash")
 	}
 
 	str := helper.RenderText(shellTpls[genOpts.shell], &data, nil)
@@ -127,7 +127,7 @@ func doGen(c *gcli.Command, _ []string) (err error) {
 	// Open the file for reading and writing, if it does not exist, create it
 	err = ioutil.WriteFile(genOpts.output, []byte(str), 0664)
 	if err != nil {
-		return c.Errorf("Write file error: %s", err.Error())
+		return c.NewErrf("Write file error: %s", err.Error())
 	}
 
 	color.Success.Println("\nOK, auto-complete file generate successful")

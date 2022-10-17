@@ -59,7 +59,7 @@ Image progress bar:
 		case "rt", "roundTrip":
 			runRoundTripBar(max)
 		default:
-			return c.Errorf("the progress bar type name only allow: bar,txt,dtxt,loading,roundTrip. input is: %s", name)
+			return c.NewErrf("the progress bar type name only allow: bar,txt,dtxt,loading,roundTrip. input is: %s", name)
 		}
 		return nil
 	},
