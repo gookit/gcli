@@ -5,9 +5,11 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
+	"syscall"
 	"text/template"
 
 	"github.com/gookit/goutil/strutil"
+	"golang.org/x/term"
 )
 
 const (
@@ -59,6 +61,23 @@ var (
 	// macSttyMsgMatch = regexp.MustCompile(macSttyMsgPattern)
 	// linuxSttyMsgMatch = regexp.MustCompile(linuxSttyMsgPattern)
 )
+
+// GetTerminalSize for current console terminal.
+func GetTerminalSize(refresh ...bool) (w int, h int) {
+	if terminalWidth > 0 && len(refresh) > 0 && !refresh[0] {
+		return terminalWidth, terminalHeight
+	}
+
+	var err error
+	w, h, err = term.GetSize(syscall.Stdin)
+	if err != nil {
+		return
+	}
+
+	// cache result
+	terminalWidth, terminalHeight = w, h
+	return
+}
 
 // Panicf message
 func Panicf(format string, v ...any) {
