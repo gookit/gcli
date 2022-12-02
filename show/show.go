@@ -11,7 +11,7 @@ import (
 	"github.com/gookit/color"
 )
 
-// Output the global input output stream
+// Output the global input out stream
 var Output io.Writer = os.Stdout
 
 // SetOutput stream

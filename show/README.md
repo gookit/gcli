@@ -26,7 +26,10 @@ go get github.com/gookit/gcli/v3/show
 
 ## Related
 
+- https://github.com/jedib0t/go-pretty
+- https://github.com/alexeyco/simpletable
 - https://github.com/InVisionApp/tabular
 - https://github.com/gosuri/uitable
+- https://github.com/rodaine/table
 - https://github.com/tomlazar/table
 - https://github.com/nwidger/jsoncolor

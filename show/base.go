@@ -1,8 +1,9 @@
 package show
 
 import (
+	"bytes"
+	"fmt"
 	"io"
-	"os"
 	"reflect"
 	"strings"
 	"unicode/utf8"
@@ -19,15 +20,29 @@ const (
 	ERR = 2
 )
 
+// PosFlag type
+type PosFlag = strutil.PosFlag
+
+// some position constants
+const (
+	PosLeft PosFlag = iota
+	PosRight
+	PosMiddle
+)
+
 // var errInvalidType = errors.New("invalid input data type")
 
 // FormatterFace interface
 type FormatterFace interface {
-	Format() string
+	Format()
 }
 
 // ShownFace shown interface
 type ShownFace interface {
+	// io.WriterTo TODO
+	// Format()
+	// Buffer()
+
 	// String data to string
 	String() string
 	// Print print current message
@@ -38,45 +53,62 @@ type ShownFace interface {
 
 // Base formatter
 type Base struct {
-	output io.Writer
+	// TODO lock sync.Mutex
+	out io.Writer
 	// formatted string
-	formatted string
+	buf *bytes.Buffer
+	err error
 }
 
 // SetOutput for print message
-func (b *Base) SetOutput(output io.Writer) {
-	b.output = output
+func (b *Base) SetOutput(out io.Writer) {
+	b.out = out
+}
+
+// SetBuffer field
+func (b *Base) SetBuffer(buf *bytes.Buffer) {
+	b.buf = buf
+}
+
+// Buffer get
+func (b *Base) Buffer() *bytes.Buffer {
+	if b.buf == nil {
+		b.buf = new(bytes.Buffer)
+	}
+	return b.buf
+}
+
+// String format given data to string
+func (b *Base) String() string {
+	panic("please implement the method")
 }
 
 // Format given data to string
-func (b *Base) Format() string {
+func (b *Base) Format() {
 	panic("please implement the method")
+}
+
+// Err get
+func (b *Base) Err() error {
+	return b.err
 }
 
 // Print formatted message
 func (b *Base) Print() {
-	if b.output == nil {
-		b.output = Output
+	if b.out == nil {
+		b.out = Output
 	}
 
-	if b.formatted != "" {
-		color.Fprint(b.output, b.formatted)
-		// clear data
-		b.formatted = ""
+	if b.buf != nil && b.buf.Len() > 0 {
+		color.Fprint(b.out, b.buf.String())
+		b.buf.Reset()
 	}
 }
 
 // Println formatted message and print newline
 func (b *Base) Println() {
-	if b.output == nil {
-		b.output = os.Stdout
-	}
-
-	if b.formatted != "" {
-		color.Fprintln(b.output, b.formatted)
-		// clear data
-		b.formatted = ""
-	}
+	b.Print()
+	fmt.Println()
 }
 
 /*************************************************************

@@ -45,13 +45,6 @@ type List struct {
 	title string
 	// list data. allow type: struct, slice, array, map
 	data any
-	// formatted data buffer
-	buffer *bytes.Buffer
-}
-
-// SetBuffer field
-func (l *List) SetBuffer(buffer *bytes.Buffer) {
-	l.buffer = buffer
 }
 
 // NewList instance.
@@ -64,7 +57,7 @@ func NewList(title string, data any, fns ...ListOpFunc) *List {
 		title: title,
 		data:  data,
 		// base
-		Base: Base{output: Output},
+		Base: Base{out: Output},
 		// options
 		Opts: &ListOption{
 			SepChar:    " ",
@@ -96,18 +89,18 @@ func (l *List) WithOptions(fns ...ListOpFunc) *List {
 }
 
 // Format as string
-func (l *List) Format() string {
-	if l.data == nil || l.formatted != "" {
-		return l.formatted
+func (l *List) Format() {
+	if l.data == nil {
+		return
 	}
 
-	if l.buffer == nil {
-		l.buffer = new(bytes.Buffer)
+	if l.buf == nil {
+		l.buf = new(bytes.Buffer)
 	}
 
 	if l.title != "" { // has title
 		title := strutil.UpperWord(l.title)
-		l.buffer.WriteString(color.WrapTag(title, l.Opts.TitleStyle) + "\n")
+		l.buf.WriteString(color.WrapTag(title, l.Opts.TitleStyle) + "\n")
 	}
 
 	items := NewItems(l.data) // build items
@@ -126,14 +119,14 @@ func (l *List) Format() string {
 		}
 
 		if l.Opts.LeftIndent != "" {
-			l.buffer.WriteString(l.Opts.LeftIndent)
+			l.buf.WriteString(l.Opts.LeftIndent)
 		}
 
 		// format key - parsed from map, struct
 		if items.itemType == ItemMap {
 			key := strutil.PadRight(item.Key, " ", keyWidth)
 			key = color.WrapTag(key, l.Opts.KeyStyle)
-			l.buffer.WriteString(key + l.Opts.SepChar)
+			l.buf.WriteString(key + l.Opts.SepChar)
 		}
 
 		// format value
@@ -142,34 +135,32 @@ func (l *List) Format() string {
 				f.Indent = mlIndent
 				f.ClosePrefix = "  "
 				// f.AfterReset = true
-				f.SetOutput(l.buffer)
+				f.SetOutput(l.buf)
 			}).Format()
-			l.buffer.WriteByte('\n')
+			l.buf.WriteByte('\n')
 		} else if item.Kind() == reflect.Map {
 			maputil.NewFormatter(item.rftVal).WithFn(func(f *maputil.MapFormatter) {
 				f.Indent = mlIndent
 				f.ClosePrefix = "  "
 				// f.AfterReset = true
-				f.SetOutput(l.buffer)
+				f.SetOutput(l.buf)
 			}).Format()
-			l.buffer.WriteByte('\n')
+			l.buf.WriteByte('\n')
 		} else {
 			val := item.ValString()
 			if l.Opts.UpperFirst {
 				val = strutil.UpperFirst(val)
 			}
-			l.buffer.WriteString(val + "\n")
+			l.buf.WriteString(val + "\n")
 		}
 
 	}
-
-	l.formatted = l.buffer.String()
-	return l.formatted
 }
 
 // String returns formatted string
 func (l *List) String() string {
-	return l.Format()
+	l.Format()
+	return l.buf.String()
 }
 
 // Print formatted message
@@ -187,8 +178,6 @@ func (l *List) Println() {
 // Flush formatted message to console
 func (l *List) Flush() {
 	l.Println()
-	l.buffer.Reset()
-	l.formatted = ""
 }
 
 /*************************************************************
@@ -208,7 +197,7 @@ type Lists struct {
 // NewLists create lists
 func NewLists(listMap map[string]any, fns ...ListOpFunc) *Lists {
 	ls := &Lists{
-		Base: Base{output: Output},
+		Base: Base{out: Output},
 		Opts: &ListOption{
 			SepChar:  " ",
 			KeyStyle: "info",
@@ -240,9 +229,9 @@ func (ls *Lists) WithOptions(fns ...ListOpFunc) *Lists {
 }
 
 // Format as string
-func (ls *Lists) Format() string {
-	if len(ls.rows) == 0 || ls.formatted != "" {
-		return ls.formatted
+func (ls *Lists) Format() {
+	if len(ls.rows) == 0 {
+		return
 	}
 
 	ls.buffer = new(bytes.Buffer)
@@ -252,14 +241,12 @@ func (ls *Lists) Format() string {
 		list.SetBuffer(ls.buffer)
 		list.Format()
 	}
-
-	ls.formatted = ls.buffer.String()
-	return ls.formatted
 }
 
 // String returns formatted string
 func (ls *Lists) String() string {
-	return ls.Format()
+	ls.Format()
+	return ls.buf.String()
 }
 
 // Print formatted message
@@ -277,6 +264,4 @@ func (ls *Lists) Println() {
 // Flush formatted message to console
 func (ls *Lists) Flush() {
 	ls.Println()
-	ls.buffer.Reset()
-	ls.formatted = ""
 }
