@@ -35,6 +35,8 @@ type Select struct {
 
 // NewSelect instance.
 //
+// - items allow: []int, []string, map[string]string
+//
 // Usage:
 //
 //	s := NewSelect("Your city?", []string{"chengdu", "beijing"})
@@ -153,7 +155,6 @@ DoSelect:
 		if s.DefOpt != "" { // has default option
 			return newSelectResult(s.DefOpt, defVal)
 		}
-
 		goto DoSelect // retry ...
 	}
 
@@ -235,6 +236,12 @@ DoSelect:
 	}
 
 	return newSelectResult(keys, values)
+}
+
+// EnableMulti select
+func (s *Select) EnableMulti() *Select {
+	s.MultiSelect = true
+	return s
 }
 
 // Run select and receive use input answer

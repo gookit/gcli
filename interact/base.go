@@ -4,7 +4,6 @@ package interact
 import (
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/gookit/color"
 	"github.com/gookit/goutil/structs"
@@ -29,6 +28,12 @@ type Value = structs.Value
 // RunFace for interact methods
 type RunFace interface {
 	Run() *Value
+}
+
+// ItemFace for interact methods
+type ItemFace interface {
+	Name() string
+	Value() string
 }
 
 /*************************************************************
@@ -83,36 +88,4 @@ func exitWithErr(format string, v ...any) {
 func exitWithMsg(exitCode int, messages ...any) {
 	fmt.Println(messages...)
 	os.Exit(exitCode)
-}
-
-func intsToMap(is []int) map[string]string {
-	ms := make(map[string]string, len(is))
-	for i, val := range is {
-		k := fmt.Sprint(i)
-		ms[k] = fmt.Sprint(val)
-	}
-
-	return ms
-}
-
-func stringToArr(str, sep string) (arr []string) {
-	str = strings.TrimSpace(str)
-	ss := strings.Split(str, sep)
-	for _, val := range ss {
-		if val = strings.TrimSpace(val); val != "" {
-			arr = append(arr, val)
-		}
-	}
-
-	return arr
-}
-
-func stringsToMap(ss []string) map[string]string {
-	ms := make(map[string]string, len(ss))
-	for i, val := range ss {
-		k := fmt.Sprint(i)
-		ms[k] = val
-	}
-
-	return ms
 }

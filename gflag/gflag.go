@@ -37,7 +37,7 @@ type Config struct {
 	// DescNewline flag desc at new line on print help
 	DescNewline bool
 	// Alignment flag name align left or right. default is: left
-	Alignment uint8
+	Alignment strutil.PosFlag
 	// TagName on struct
 	TagName string
 	// TagRuleType for struct tag value. default is TagRuleNamed
