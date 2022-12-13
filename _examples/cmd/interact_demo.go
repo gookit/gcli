@@ -7,17 +7,25 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/interact"
+	"github.com/gookit/gcli/v3/interact/cparam"
 	"github.com/gookit/gcli/v3/show/emoji"
+	"github.com/gookit/goutil"
+	"github.com/gookit/goutil/dump"
+	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/strutil"
 )
 
+// InteractDemo command
 var InteractDemo = &gcli.Command{
-	Name:    "interact",
-	Func:    interactDemo,
+	Name: "interact",
+	Func: interactDemo,
+	Desc: "the command will show some interactive methods",
+	Subs: []*gcli.Command{InteractCollectCmd},
+
 	Aliases: []string{"itt"},
 	Config: func(c *gcli.Command) {
 		c.AddArg("name", "want running interact method name", true)
 	},
-	Desc: "the command will show some interactive methods",
 	Examples: `{$fullCmd} confirm
   {$fullCmd} select
 `,
@@ -66,7 +74,7 @@ func interactDemo(c *gcli.Command, _ []string) error {
 }
 
 func demoSelect(_ *gcli.Command) {
-	color.Green.Println("This's An Select Demo")
+	color.Green.Println("Thies's An Select Demo")
 	fmt.Println("----------------------------------------------------------")
 
 	ans := interact.SelectOne(
@@ -101,7 +109,7 @@ func demoSelect(_ *gcli.Command) {
 }
 
 func demoMultiSelect(_ *gcli.Command) {
-	color.Green.Println("This's An MultiSelect Demo")
+	color.Green.Println("Thies's An MultiSelect Demo")
 
 	ans := interact.MultiSelect(
 		"Your city name(use array)?",
@@ -120,7 +128,7 @@ func demoMultiSelect(_ *gcli.Command) {
 }
 
 func demoConfirm(_ *gcli.Command) {
-	color.Green.Println("This's An Confirm Demo")
+	color.Green.Println("Thies's An Confirm Demo")
 
 	if interact.Confirm("Ensure continue") {
 		fmt.Println(emoji.Render(":smile: Confirmed"))
@@ -130,7 +138,7 @@ func demoConfirm(_ *gcli.Command) {
 }
 
 func demoPassword(_ *gcli.Command) {
-	color.Green.Println("This's An ReadPassword Demo")
+	color.Green.Println("Thies's An ReadPassword Demo")
 	// hiddenInputTest()
 	// return
 	// pwd := interact.GetHiddenInput("Enter Password:", true)
@@ -162,4 +170,35 @@ func demoAnswerIsYes(_ *gcli.Command) {
 func demoQuestion(_ *gcli.Command) {
 	ans := interact.Ask("Your name? ", "", nil, 3)
 	color.Comment.Println("Your answer is:", ans)
+}
+
+// InteractCollectCmd instance.
+var InteractCollectCmd = &gcli.Command{
+	Name: "collect",
+	Desc: "collect multi input params at once",
+	Func: func(c *gcli.Command, args []string) error {
+
+		vc := interact.NewCollector()
+		err := vc.AddParams(
+			cparam.NewStringParam("title", "title name").Config(func(p *cparam.StringParam) {
+				p.ValidFn = func(val string) error {
+					return goutil.ErrOnFail(strutil.IsBlank(val), errorx.Raw("title is required"))
+				}
+			}),
+			cparam.NewChoiceParam("projects", "select projects").
+				WithChoices([]string{"user", "order", "goods"}),
+		)
+		if err != nil {
+			return err
+		}
+
+		if err = vc.Run(); err != nil {
+			return err
+		}
+
+		c.Println("Result:")
+		dump.P(vc.Results())
+
+		return nil
+	},
 }
