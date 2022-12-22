@@ -1,9 +1,11 @@
 package table
 
 import (
+	"fmt"
 	"io"
 	"strings"
 
+	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/comdef"
 	"github.com/gookit/goutil/strutil"
 )
@@ -35,8 +37,8 @@ type OpFunc func(opts *Options)
 
 // Table a cli Table show
 type Table struct {
-	Base // use for internal
-	out  comdef.ByteStringWriter
+	show.Base // use for internal
+	out       comdef.ByteStringWriter
 
 	// Title for the table
 	Title string
@@ -52,8 +54,8 @@ type Table struct {
 	colAlign map[int]strutil.PosFlag
 }
 
-// NewTable create table
-func NewTable(title string, fns ...OpFunc) *Table {
+// New create table
+func New(title string, fns ...OpFunc) *Table {
 	t := &Table{
 		Title: title,
 		opts: &Options{
@@ -108,7 +110,7 @@ func (t *Table) SetRows(rs any) *Table {
 // String format as string
 func (t *Table) String() string {
 	t.Format()
-	return t.buf.String()
+	return t.Buffer().String()
 }
 
 // Print formatted message
@@ -172,8 +174,8 @@ func (t *Table) formatHeader() {
 
 // Format as string
 func (t *Table) formatBody() {
-	for i, row := range t.Rows {
-
+	for _, row := range t.Rows {
+		fmt.Println(row)
 	}
 
 	panic("implement me")
@@ -187,7 +189,7 @@ func (t *Table) formatFooter() {
 // WriteTo format table to string and write to w.
 func (t *Table) WriteTo(w io.Writer) (int64, error) {
 	t.Format()
-	return t.buf.WriteTo(w)
+	return t.Buffer().WriteTo(w)
 }
 
 // Row represents a row in a table
