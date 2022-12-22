@@ -12,5 +12,5 @@ func TestNewTable(t *testing.T) {
 		// TODO ...
 	})
 
-	tb.Println()
+	// tb.Println()
 }

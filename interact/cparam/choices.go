@@ -10,7 +10,7 @@ type ChoiceParam struct {
 	InputParam
 	// Choices for select
 	Choices  []string
-	selected []string
+	selected string
 }
 
 // NewChoiceParam instance
@@ -31,8 +31,8 @@ func (p *ChoiceParam) WithChoices(Choices []string) *ChoiceParam {
 }
 
 // Selected values get
-func (p *ChoiceParam) Selected() []string {
-	return p.val.Strings()
+func (p *ChoiceParam) Selected() string {
+	return p.val.String()
 }
 
 // Set value
@@ -41,7 +41,7 @@ func (p *ChoiceParam) Set(v string) error {
 		return err
 	}
 
-	p.selected = append(p.selected, v)
+	p.selected = v
 	p.val.Set(p.selected)
 	return nil
 }
@@ -53,7 +53,7 @@ func (p *ChoiceParam) Run() (err error) {
 	}
 
 	s := interact.NewSelect(p.Desc(), p.Choices)
-	s.EnableMulti()
+	// s.EnableMulti()
 
 	sr := s.Run()
 	p.val.Set(sr.Val())
