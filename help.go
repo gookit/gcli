@@ -184,10 +184,10 @@ var CmdHelpTemplate = `{{.Desc}}
 {{.GOpts}}{{end}}{{if .Options}}
 <comment>Options:</>
 {{.Options}}{{end}}{{if .Cmd.HasArgs}}
-<comment>CliArgs:</>{{range $a := .Cmd.Args}}
+<comment>Arguments:</>{{range $a := .Cmd.Args}}
   <info>{{$a.HelpName | printf "%-12s"}}</> {{if $a.Required}}<red>*</>{{end}}{{$a.Desc | ucFirst}}{{end}}
 {{end}}{{ if .Subs }}
-<comment>Sub Commands:</>{{range $n,$c := .Subs}}
+<comment>Subcommands:</>{{range $n,$c := .Subs}}
   <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
 {{end}}{{if .Cmd.Examples}}
 <comment>Examples:</>

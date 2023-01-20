@@ -357,7 +357,6 @@ func (ops *CliOpts) checkShortNames(name string, shorts []string) {
 		// storage short name
 		ops.shorts[short] = name
 	}
-
 }
 
 /***********************************************************************

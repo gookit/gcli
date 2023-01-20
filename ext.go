@@ -47,8 +47,8 @@ const (
 // HookFunc definition.
 //
 // Returns:
-//   - True go on handle. default is True
-//   - False stop continue handle.
+//   - True  for stop continue run.
+//   - False continue handle next logic.
 type HookFunc func(ctx *HookCtx) (stop bool)
 
 /*************************************************************

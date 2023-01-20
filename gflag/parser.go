@@ -305,7 +305,7 @@ func (p *Parser) FromStruct(ptr any) error {
 
 		opt := newCliOpt(optName, mp["desc"], mp["default"], mp["shorts"])
 		if must, has := mp["required"]; has {
-			opt.Required = strutil.MustBool(must)
+			opt.Required = strutil.QuietBool(must)
 		}
 
 		// field is implements flag.Value
@@ -389,7 +389,7 @@ func (p *Parser) BuildHelp() string {
 		p.buf.WriteByte('\n')
 
 		if p.HasArgs() {
-			p.buf.WriteString("CliArgs:\n")
+			p.buf.WriteString("Arguments:\n")
 			p.buf.WriteString(p.BuildArgsHelp())
 			p.buf.WriteByte('\n')
 		}
