@@ -138,7 +138,7 @@ func (l *List) Format() {
 				f.SetOutput(l.buf)
 			}).Format()
 			l.buf.WriteByte('\n')
-		} else if item.Kind() == reflect.Map {
+		} else if item.IsKind(reflect.Map) {
 			maputil.NewFormatter(item.rftVal).WithFn(func(f *maputil.MapFormatter) {
 				f.Indent = mlIndent
 				f.ClosePrefix = "  "

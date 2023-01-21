@@ -252,6 +252,11 @@ func (item *Item) Kind() reflect.Kind {
 	return item.rftVal.Kind()
 }
 
+// IsKind check
+func (item *Item) IsKind(kind reflect.Kind) bool {
+	return item.rftVal.Kind() == kind
+}
+
 // IsArray get is array, slice
 func (item *Item) IsArray() bool {
 	return item.rftVal.Kind() == reflect.Array || item.rftVal.Kind() == reflect.Slice

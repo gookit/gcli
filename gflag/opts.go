@@ -14,6 +14,11 @@ import (
 	"github.com/gookit/goutil/strutil"
 )
 
+const (
+	shortSepRune = ','
+	shortSepChar = ","
+)
+
 // CliOpts cli options management
 type CliOpts struct {
 	// name inherited from gcli.Command
@@ -143,7 +148,20 @@ func (ops *CliOpts) StrOpt(p *string, name, shorts string, defValAndDesc ...stri
 		}
 	}
 
-	ops.strOpt(p, newCliOpt(name, desc, defVal, shorts))
+	ops.StrOpt2(p, name, desc, func(opt *CliOpt) {
+		opt.DefVal = defVal
+		opt.Shorts = strings.Split(shorts, shortSepChar)
+	})
+}
+
+// StrOpt2 binding a string option, and allow with CliOptFn for config option.
+func (ops *CliOpts) StrOpt2(p *string, nameWithShorts, desc string, confFuncs ...CliOptFn) {
+	opt := &CliOpt{Name: nameWithShorts, Desc: desc, DefVal: ""}
+	for _, optFn := range confFuncs {
+		optFn(opt)
+	}
+
+	ops.strOpt(p, opt)
 }
 
 // binding option and shorts
@@ -171,11 +189,21 @@ func (ops *CliOpts) Int(name, shorts string, defVal int, desc string) *int {
 }
 
 // IntVar binding an int option flag
-func (ops *CliOpts) IntVar(ptr *int, opt *CliOpt) { ops.intOpt(ptr, opt) }
+func (ops *CliOpts) IntVar(p *int, opt *CliOpt) { ops.intOpt(p, opt) }
 
 // IntOpt binding an int option
-func (ops *CliOpts) IntOpt(ptr *int, name, shorts string, defVal int, desc string) {
-	ops.intOpt(ptr, newCliOpt(name, desc, defVal, shorts))
+func (ops *CliOpts) IntOpt(p *int, name, shorts string, defVal int, desc string) {
+	ops.intOpt(p, newCliOpt(name, desc, defVal, shorts))
+}
+
+// IntOpt2 binding an int option and with config func.
+func (ops *CliOpts) IntOpt2(p *int, nameWithShorts, desc string, confFuncs ...CliOptFn) {
+	opt := &CliOpt{Name: nameWithShorts, Desc: desc, DefVal: 0}
+	for _, optFn := range confFuncs {
+		optFn(opt)
+	}
+
+	ops.intOpt(p, opt)
 }
 
 func (ops *CliOpts) intOpt(ptr *int, opt *CliOpt) {
@@ -300,17 +328,17 @@ func (ops *CliOpts) varOpt(v flag.Value, opt *CliOpt) {
 
 // check flag option name and short-names
 func (ops *CliOpts) checkFlagInfo(opt *CliOpt) string {
+	// check flag name
+	name := opt.initCheck()
+	if _, ok := ops.opts[name]; ok {
+		helper.Panicf("redefined option flag '%s'", name)
+	}
+
 	// NOTICE: must init some required fields
 	if ops.names == nil {
 		ops.names = map[string]int{}
 		ops.opts = map[string]*CliOpt{}
 		ops.InitFlagSet("flags-" + opt.Name)
-	}
-
-	// check flag name
-	name := opt.initCheck()
-	if _, ok := ops.opts[name]; ok {
-		helper.Panicf("redefined option flag '%s'", name)
 	}
 
 	// is a short name
@@ -416,6 +444,9 @@ func (ops *CliOpts) Opts() map[string]*CliOpt { return ops.opts }
  * flag options metadata
  ***********************************************************************/
 
+// CliOptFn type
+type CliOptFn func(opt *CliOpt)
+
 // CliOpt define for a flag option
 type CliOpt struct {
 	// go flag value
@@ -450,11 +481,18 @@ func newCliOpt(name, desc string, defVal any, shortcut string) *CliOpt {
 		Desc: desc,
 		// other info
 		DefVal: defVal,
-		Shorts: strings.Split(shortcut, ","),
+		Shorts: strings.Split(shortcut, shortSepChar),
 	}
 }
 
 func (m *CliOpt) initCheck() string {
+	// feat: support add shorts by option name. eg: "name,n"
+	if strings.ContainsRune(m.Name, shortSepRune) {
+		ss := strings.Split(m.Name, shortSepChar)
+		m.Name = ss[0]
+		m.Shorts = append(m.Shorts, ss[1:]...)
+	}
+
 	if m.Desc != "" {
 		desc := strings.Trim(m.Desc, "; ")
 		if strings.ContainsRune(desc, ';') {

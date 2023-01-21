@@ -2,7 +2,7 @@ package builtin
 
 import (
 	"fmt"
-	"io/ioutil"
+	"os"
 	"strings"
 
 	"github.com/gookit/color"
@@ -34,8 +34,8 @@ var shellTpls = map[string]string{
 }
 
 // GenAutoComplete create command
-func GenAutoComplete() *gcli.Command {
-	c := gcli.Command{
+func GenAutoComplete(fns ...func(c *gcli.Command)) *gcli.Command {
+	c := &gcli.Command{
 		Func:    doGen,
 		Name:    "genac",
 		Aliases: []string{"gen-ac"},
@@ -71,7 +71,10 @@ func GenAutoComplete() *gcli.Command {
 		"output shell auto completion script file name.",
 	)
 
-	return &c
+	for _, fn := range fns {
+		fn(c)
+	}
+	return c
 }
 
 func doGen(c *gcli.Command, _ []string) (err error) {
@@ -125,7 +128,7 @@ func doGen(c *gcli.Command, _ []string) (err error) {
 	}
 
 	// Open the file for reading and writing, if it does not exist, create it
-	err = ioutil.WriteFile(genOpts.output, []byte(str), 0664)
+	err = os.WriteFile(genOpts.output, []byte(str), 0664)
 	if err != nil {
 		return c.NewErrf("Write file error: %s", err.Error())
 	}
