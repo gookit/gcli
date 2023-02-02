@@ -89,6 +89,16 @@ func (ops *CliOpts) BoolOpt(ptr *bool, name, shorts string, defVal bool, desc st
 	ops.boolOpt(ptr, newCliOpt(name, desc, defVal, shorts))
 }
 
+// BoolOpt2 binding a bool option, and allow with CliOptFn for config option.
+func (ops *CliOpts) BoolOpt2(p *bool, nameWithShorts, desc string, confFuncs ...CliOptFn) {
+	opt := &CliOpt{Name: nameWithShorts, Desc: desc, DefVal: false}
+	for _, optFn := range confFuncs {
+		optFn(opt)
+	}
+
+	ops.boolOpt(p, opt)
+}
+
 // binding option and shorts
 func (ops *CliOpts) boolOpt(ptr *bool, opt *CliOpt) {
 	defVal := opt.DValue().Bool()

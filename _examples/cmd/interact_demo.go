@@ -182,7 +182,7 @@ var InteractCollectCmd = &gcli.Command{
 		err := vc.AddParams(
 			cparam.NewStringParam("title", "title name").Config(func(p *cparam.StringParam) {
 				p.ValidFn = func(val string) error {
-					return goutil.ErrOnFail(strutil.IsBlank(val), errorx.Raw("title is required"))
+					return goutil.OrError(strutil.IsBlank(val), errorx.Raw("title is required"))
 				}
 			}),
 			cparam.NewChoiceParam("projects", "select projects").
