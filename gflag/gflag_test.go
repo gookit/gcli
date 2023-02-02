@@ -464,7 +464,7 @@ func TestFlags_FromStruct(t *testing.T) {
 	assert.NoErr(t, err)
 
 	help := fs.String()
-	assert.Contains(t, help, "-o, -h, --str1")
+	assert.Contains(t, help, "-h, -o, --str1")
 
 	fmt.Println("Flag Help:")
 	fs.PrintHelpPanel()
