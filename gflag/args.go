@@ -255,6 +255,8 @@ type Argument = CliArg
 // CliArg a command argument definition
 type CliArg struct {
 	*structs.Value
+	// the argument position index in all arguments(cmd.args[index])
+	index int
 	// Name argument name. it's required
 	Name string
 	// Desc argument description message
@@ -273,8 +275,6 @@ type CliArg struct {
 	Handler func(val any) any
 	// Validator you can add a validator, will call it on binding argument value
 	Validator func(val any) (any, error)
-	// the argument position index in all arguments(cmd.args[index])
-	index int
 }
 
 // NewArg quick create a new command argument

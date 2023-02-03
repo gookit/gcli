@@ -71,7 +71,7 @@ func (ops *CliOpts) SetName(name string) {
 
 // Bool binding a bool option flag, return pointer
 func (ops *CliOpts) Bool(name, shorts string, defVal bool, desc string) *bool {
-	opt := newCliOpt(name, desc, defVal, shorts)
+	opt := newOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
@@ -86,17 +86,12 @@ func (ops *CliOpts) BoolVar(ptr *bool, opt *CliOpt) { ops.boolOpt(ptr, opt) }
 
 // BoolOpt binding a bool option
 func (ops *CliOpts) BoolOpt(ptr *bool, name, shorts string, defVal bool, desc string) {
-	ops.boolOpt(ptr, newCliOpt(name, desc, defVal, shorts))
+	ops.boolOpt(ptr, newOpt(name, desc, defVal, shorts))
 }
 
 // BoolOpt2 binding a bool option, and allow with CliOptFn for config option.
-func (ops *CliOpts) BoolOpt2(p *bool, nameWithShorts, desc string, confFuncs ...CliOptFn) {
-	opt := &CliOpt{Name: nameWithShorts, Desc: desc, DefVal: false}
-	for _, optFn := range confFuncs {
-		optFn(opt)
-	}
-
-	ops.boolOpt(p, opt)
+func (ops *CliOpts) BoolOpt2(p *bool, nameWithShorts, desc string, setFns ...CliOptFn) {
+	ops.boolOpt(p, NewOpt(nameWithShorts, desc, false, setFns...))
 }
 
 // binding option and shorts
@@ -116,7 +111,7 @@ func (ops *CliOpts) Float64Var(ptr *float64, opt *CliOpt) { ops.float64Opt(ptr, 
 
 // Float64Opt binding a float64 option
 func (ops *CliOpts) Float64Opt(p *float64, name, shorts string, defVal float64, desc string) {
-	ops.float64Opt(p, newCliOpt(name, desc, defVal, shorts))
+	ops.float64Opt(p, newOpt(name, desc, defVal, shorts))
 }
 
 func (ops *CliOpts) float64Opt(p *float64, opt *CliOpt) {
@@ -132,7 +127,7 @@ func (ops *CliOpts) float64Opt(p *float64, opt *CliOpt) {
 
 // Str binding an string option flag, return pointer
 func (ops *CliOpts) Str(name, shorts string, defVal, desc string) *string {
-	opt := newCliOpt(name, desc, defVal, shorts)
+	opt := newOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
@@ -160,18 +155,13 @@ func (ops *CliOpts) StrOpt(p *string, name, shorts string, defValAndDesc ...stri
 
 	ops.StrOpt2(p, name, desc, func(opt *CliOpt) {
 		opt.DefVal = defVal
-		opt.Shorts = strings.Split(shorts, shortSepChar)
+		opt.Shorts = strutil.Split(shorts, shortSepChar)
 	})
 }
 
 // StrOpt2 binding a string option, and allow with CliOptFn for config option.
-func (ops *CliOpts) StrOpt2(p *string, nameWithShorts, desc string, confFuncs ...CliOptFn) {
-	opt := &CliOpt{Name: nameWithShorts, Desc: desc, DefVal: ""}
-	for _, optFn := range confFuncs {
-		optFn(opt)
-	}
-
-	ops.strOpt(p, opt)
+func (ops *CliOpts) StrOpt2(p *string, nameWithShorts, desc string, setFns ...CliOptFn) {
+	ops.strOpt(p, NewOpt(nameWithShorts, desc, "", setFns...))
 }
 
 // binding option and shorts
@@ -188,7 +178,7 @@ func (ops *CliOpts) strOpt(p *string, opt *CliOpt) {
 
 // Int binding an int option flag, return pointer
 func (ops *CliOpts) Int(name, shorts string, defVal int, desc string) *int {
-	opt := newCliOpt(name, desc, defVal, shorts)
+	opt := newOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
@@ -203,17 +193,14 @@ func (ops *CliOpts) IntVar(p *int, opt *CliOpt) { ops.intOpt(p, opt) }
 
 // IntOpt binding an int option
 func (ops *CliOpts) IntOpt(p *int, name, shorts string, defVal int, desc string) {
-	ops.intOpt(p, newCliOpt(name, desc, defVal, shorts))
+	ops.intOpt(p, newOpt(name, desc, defVal, shorts))
 }
 
 // IntOpt2 binding an int option and with config func.
-func (ops *CliOpts) IntOpt2(p *int, nameWithShorts, desc string, confFuncs ...CliOptFn) {
-	opt := &CliOpt{Name: nameWithShorts, Desc: desc, DefVal: 0}
-	for _, optFn := range confFuncs {
-		optFn(opt)
-	}
+func (ops *CliOpts) IntOpt2(p *int, nameWithShorts, desc string, setFns ...CliOptFn) {
+	opt := newOpt(nameWithShorts, desc, 0, "")
 
-	ops.intOpt(p, opt)
+	ops.intOpt(p, opt.WithOptFns(setFns...))
 }
 
 func (ops *CliOpts) intOpt(ptr *int, opt *CliOpt) {
@@ -227,7 +214,7 @@ func (ops *CliOpts) intOpt(ptr *int, opt *CliOpt) {
 
 // Int64 binding an int64 option flag, return pointer
 func (ops *CliOpts) Int64(name, shorts string, defVal int64, desc string) *int64 {
-	opt := newCliOpt(name, desc, defVal, shorts)
+	opt := newOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
@@ -242,7 +229,7 @@ func (ops *CliOpts) Int64Var(ptr *int64, opt *CliOpt) { ops.int64Opt(ptr, opt) }
 
 // Int64Opt binding an int64 option
 func (ops *CliOpts) Int64Opt(ptr *int64, name, shorts string, defValue int64, desc string) {
-	ops.int64Opt(ptr, newCliOpt(name, desc, defValue, shorts))
+	ops.int64Opt(ptr, newOpt(name, desc, defValue, shorts))
 }
 
 func (ops *CliOpts) int64Opt(ptr *int64, opt *CliOpt) {
@@ -258,7 +245,7 @@ func (ops *CliOpts) int64Opt(ptr *int64, opt *CliOpt) {
 
 // Uint binding an int option flag, return pointer
 func (ops *CliOpts) Uint(name, shorts string, defVal uint, desc string) *uint {
-	opt := newCliOpt(name, desc, defVal, shorts)
+	opt := newOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
@@ -273,7 +260,7 @@ func (ops *CliOpts) UintVar(ptr *uint, opt *CliOpt) { ops.uintOpt(ptr, opt) }
 
 // UintOpt binding an uint option
 func (ops *CliOpts) UintOpt(ptr *uint, name, shorts string, defValue uint, desc string) {
-	ops.uintOpt(ptr, newCliOpt(name, desc, defValue, shorts))
+	ops.uintOpt(ptr, newOpt(name, desc, defValue, shorts))
 }
 
 func (ops *CliOpts) uintOpt(ptr *uint, opt *CliOpt) {
@@ -287,7 +274,7 @@ func (ops *CliOpts) uintOpt(ptr *uint, opt *CliOpt) {
 
 // Uint64 binding an int option flag, return pointer
 func (ops *CliOpts) Uint64(name, shorts string, defVal uint64, desc string) *uint64 {
-	opt := newCliOpt(name, desc, defVal, shorts)
+	opt := newOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
 	ptr := ops.fSet.Uint64(name, defVal, opt.Desc)
@@ -301,7 +288,7 @@ func (ops *CliOpts) Uint64Var(ptr *uint64, opt *CliOpt) { ops.uint64Opt(ptr, opt
 
 // Uint64Opt binding an uint64 option
 func (ops *CliOpts) Uint64Opt(ptr *uint64, name, shorts string, defVal uint64, desc string) {
-	ops.uint64Opt(ptr, newCliOpt(name, desc, defVal, shorts))
+	ops.uint64Opt(ptr, newOpt(name, desc, defVal, shorts))
 }
 
 // binding option and shorts
@@ -324,7 +311,7 @@ func (ops *CliOpts) Var(ptr flag.Value, opt *CliOpt) { ops.varOpt(ptr, opt) }
 //	var names gcli.Strings
 //	cmd.VarOpt(&names, "tables", "t", "description ...")
 func (ops *CliOpts) VarOpt(v flag.Value, name, shorts, desc string) {
-	ops.varOpt(v, newCliOpt(name, desc, nil, shorts))
+	ops.varOpt(v, newOpt(name, desc, nil, shorts))
 }
 
 // binding option and shorts
@@ -454,8 +441,33 @@ func (ops *CliOpts) Opts() map[string]*CliOpt { return ops.opts }
  * flag options metadata
  ***********************************************************************/
 
-// CliOptFn type
+// CliOptFn opt config func type
 type CliOptFn func(opt *CliOpt)
+
+// WithRequired setting for option
+func WithRequired() CliOptFn {
+	return func(opt *CliOpt) { opt.Required = true }
+}
+
+// WithDefault value setting for option
+func WithDefault(defVal any) CliOptFn {
+	return func(opt *CliOpt) { opt.DefVal = defVal }
+}
+
+// WithShorts setting for option
+func WithShorts(shorts ...string) CliOptFn {
+	return func(opt *CliOpt) { opt.Shorts = shorts }
+}
+
+// WithShortcut setting for option
+func WithShortcut(shortcut string) CliOptFn {
+	return func(opt *CliOpt) { opt.Shorts = strutil.Split(shortcut, shortSepChar) }
+}
+
+// WithValidator setting for option
+func WithValidator(fn func(val string) error) CliOptFn {
+	return func(opt *CliOpt) { opt.Validator = fn }
+}
 
 // CliOpt define for a flag option
 type CliOpt struct {
@@ -484,15 +496,28 @@ type CliOpt struct {
 	Question string
 }
 
-// newCliOpt quick create an CliOpt
-func newCliOpt(name, desc string, defVal any, shortcut string) *CliOpt {
+// NewOpt quick create an CliOpt instance
+func NewOpt(nameWithShorts, desc string, defVal any, setFns ...CliOptFn) *CliOpt {
+	return newOpt(nameWithShorts, desc, defVal, "").WithOptFns(setFns...)
+}
+
+// newOpt quick create an CliOpt instance
+func newOpt(nameWithShorts, desc string, defVal any, shortcut string) *CliOpt {
 	return &CliOpt{
-		Name: name,
+		Name: nameWithShorts,
 		Desc: desc,
 		// other info
 		DefVal: defVal,
-		Shorts: strings.Split(shortcut, shortSepChar),
+		Shorts: strutil.Split(shortcut, shortSepChar),
 	}
+}
+
+// WithOptFns set for current option
+func (m *CliOpt) WithOptFns(fns ...CliOptFn) *CliOpt {
+	for _, fn := range fns {
+		fn(m)
+	}
+	return m
 }
 
 func (m *CliOpt) initCheck() string {
@@ -545,7 +570,10 @@ func (m *CliOpt) goodName() string {
 }
 
 // Shorts2String join shorts to a string
-func (m *CliOpt) Shorts2String(sep ...string) string {
+func (m *CliOpt) Shorts2String(sep ...string) string { return m.ShortsString(sep...) }
+
+// ShortsString join shorts to a string
+func (m *CliOpt) ShortsString(sep ...string) string {
 	if len(m.Shorts) == 0 {
 		return ""
 	}

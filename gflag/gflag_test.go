@@ -492,27 +492,3 @@ func TestFlags_PrintHelpPanel(t *testing.T) {
 	fs.BoolOpt(&testOpts.opt2, "bol", "ab", false, "opt2 desc")
 	fs.PrintHelpPanel()
 }
-
-func TestFlagMeta_Validate(t *testing.T) {
-	fm := gflag.CliOpt{
-		Name:     "opt1",
-		Required: true,
-		Validator: func(val string) error {
-			if len(val) < 5 {
-				return errors.New("flag value min len is 5")
-			}
-			return nil
-		},
-	}
-
-	err := fm.Validate("")
-	assert.Err(t, err)
-	assert.Eq(t, "flag 'opt1' is required", err.Error())
-
-	err = fm.Validate("val")
-	assert.Err(t, err)
-	assert.Eq(t, "flag value min len is 5", err.Error())
-
-	err = fm.Validate("value")
-	assert.NoErr(t, err)
-}
