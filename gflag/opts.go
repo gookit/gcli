@@ -90,8 +90,8 @@ func (ops *CliOpts) BoolOpt(ptr *bool, name, shorts string, defVal bool, desc st
 }
 
 // BoolOpt2 binding a bool option, and allow with CliOptFn for config option.
-func (ops *CliOpts) BoolOpt2(p *bool, nameWithShorts, desc string, setFns ...CliOptFn) {
-	ops.boolOpt(p, NewOpt(nameWithShorts, desc, false, setFns...))
+func (ops *CliOpts) BoolOpt2(p *bool, nameAndShorts, desc string, setFns ...CliOptFn) {
+	ops.boolOpt(p, NewOpt(nameAndShorts, desc, false, setFns...))
 }
 
 // binding option and shorts
@@ -160,8 +160,8 @@ func (ops *CliOpts) StrOpt(p *string, name, shorts string, defValAndDesc ...stri
 }
 
 // StrOpt2 binding a string option, and allow with CliOptFn for config option.
-func (ops *CliOpts) StrOpt2(p *string, nameWithShorts, desc string, setFns ...CliOptFn) {
-	ops.strOpt(p, NewOpt(nameWithShorts, desc, "", setFns...))
+func (ops *CliOpts) StrOpt2(p *string, nameAndShorts, desc string, setFns ...CliOptFn) {
+	ops.strOpt(p, NewOpt(nameAndShorts, desc, "", setFns...))
 }
 
 // binding option and shorts
@@ -197,8 +197,8 @@ func (ops *CliOpts) IntOpt(p *int, name, shorts string, defVal int, desc string)
 }
 
 // IntOpt2 binding an int option and with config func.
-func (ops *CliOpts) IntOpt2(p *int, nameWithShorts, desc string, setFns ...CliOptFn) {
-	opt := newOpt(nameWithShorts, desc, 0, "")
+func (ops *CliOpts) IntOpt2(p *int, nameAndShorts, desc string, setFns ...CliOptFn) {
+	opt := newOpt(nameAndShorts, desc, 0, "")
 
 	ops.intOpt(p, opt.WithOptFns(setFns...))
 }
@@ -497,14 +497,14 @@ type CliOpt struct {
 }
 
 // NewOpt quick create an CliOpt instance
-func NewOpt(nameWithShorts, desc string, defVal any, setFns ...CliOptFn) *CliOpt {
-	return newOpt(nameWithShorts, desc, defVal, "").WithOptFns(setFns...)
+func NewOpt(nameAndShorts, desc string, defVal any, setFns ...CliOptFn) *CliOpt {
+	return newOpt(nameAndShorts, desc, defVal, "").WithOptFns(setFns...)
 }
 
 // newOpt quick create an CliOpt instance
-func newOpt(nameWithShorts, desc string, defVal any, shortcut string) *CliOpt {
+func newOpt(nameAndShorts, desc string, defVal any, shortcut string) *CliOpt {
 	return &CliOpt{
-		Name: nameWithShorts,
+		Name: nameAndShorts,
 		Desc: desc,
 		// other info
 		DefVal: defVal,

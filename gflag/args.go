@@ -47,6 +47,8 @@ type CliArgs struct {
 	hasArrayArg bool
 	// mark exists optional argument
 	hasOptionalArg bool
+	// remain extra args after parse named arguments
+	remainArgs []string
 }
 
 // SetName for CliArgs
@@ -90,6 +92,8 @@ func (ags *CliArgs) ParseArgs(args []string) (err error) {
 	if ags.validateNum && inNum > num {
 		return errorx.Rawf("entered too many arguments: %v", args[num:])
 	}
+
+	ags.remainArgs = args[num:]
 	return
 }
 
@@ -243,6 +247,11 @@ func (ags *CliArgs) BuildArgsHelp() string {
 	}
 
 	return sb.String()
+}
+
+// ExtraArgs remain extra args after collect parse.
+func (ags *CliArgs) ExtraArgs() []string {
+	return ags.remainArgs
 }
 
 /*************************************************************

@@ -329,7 +329,7 @@ func (b *base) Match(names []string) *Command {
 	return c
 }
 
-// FindCommand command by path. eg. "top:sub" or "top sub"
+// FindCommand command by path. eg: "top:sub" or "top sub"
 func (b *base) FindCommand(path string) *Command {
 	return b.Match(splitPath2names(path))
 }

@@ -33,7 +33,7 @@ const (
 	// HelpCommand name
 	HelpCommand = "help"
 	// VerbEnvName for set gcli debug level
-	VerbEnvName = "GCLI_VERB"
+	VerbEnvName = "GCLI_VERBOSE"
 )
 
 // constants for error level (quiet 0 - 5 crazy)

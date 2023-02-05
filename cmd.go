@@ -499,7 +499,7 @@ func (c *Command) parseOptions(args []string) (ss []string, err error) {
 		return
 	}
 
-	// remaining args
+	// remaining args, next use for parse arguments
 	return c.RawArgs(), nil
 }
 
@@ -511,20 +511,22 @@ func (c *Command) prepare(_ []string) (status int, err error) {
 // do execute the command
 func (c *Command) doExecute(args []string) (err error) {
 	// collect and binding named argument
-	Debugf("cmd: %s - collect and binding named argument", c.Name)
+	Debugf("cmd: %s - collect and binding named arguments", c.Name)
 	if err := c.ParseArgs(args); err != nil {
 		c.Fire(events.OnCmdRunError, map[string]any{"err": err})
-		Logf(VerbCrazy, "binding command '%s' arguments err: <red>%s</>", c.Name, err.Error())
+		Logf(VerbError, "binding command '%s' arguments err: <red>%s</>", c.Name, err.Error())
 		return err
 	}
 
-	c.Fire(events.OnCmdRunBefore, map[string]any{"args": args})
+	fnArgs := c.ExtraArgs()
+	c.Fire(events.OnCmdRunBefore, map[string]any{"args": fnArgs})
+	Debugf("cmd: %s - run command func with extra-args %v", c.Name, fnArgs)
 
 	// do call command handler func
 	if c.Func == nil {
 		Logf(VerbWarn, "the command '%s' no handler func to running", c.Name)
 	} else {
-		err = c.Func(c, args)
+		err = c.Func(c, fnArgs)
 	}
 
 	if err != nil {
