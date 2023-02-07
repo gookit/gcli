@@ -63,7 +63,7 @@ func (ags *CliArgs) SetValidateNum(validateNum bool) {
 
 // ParseArgs for CliArgs
 func (ags *CliArgs) ParseArgs(args []string) (err error) {
-	var num int
+	var num int // parsed num
 	inNum := len(args)
 
 	for i, arg := range ags.args {
@@ -73,6 +73,7 @@ func (ags *CliArgs) ParseArgs(args []string) (err error) {
 			if arg.Required {
 				return errorx.Rawf("must set value for the argument: %s(position#%d)", arg.ShowName, arg.index)
 			}
+			num = i
 			break
 		}
 
@@ -89,11 +90,12 @@ func (ags *CliArgs) ParseArgs(args []string) (err error) {
 		}
 	}
 
-	if ags.validateNum && inNum > num {
-		return errorx.Rawf("entered too many arguments: %v", args[num:])
+	if inNum > num {
+		if ags.validateNum {
+			return errorx.Rawf("entered too many arguments: %v", args[num:])
+		}
+		ags.remainArgs = args[num:]
 	}
-
-	ags.remainArgs = args[num:]
 	return
 }
 

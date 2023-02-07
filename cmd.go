@@ -441,7 +441,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 			// is not a sub command and has no arguments -> error
 			if !c.HasArguments() {
 				// fire events
-				hookData := map[string]any{"name": name}
+				hookData := map[string]any{"name": name, "args": args[1:]}
 				if c.Fire(events.OnCmdSubNotFound, hookData) {
 					return
 				}
@@ -449,7 +449,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 					return
 				}
 
-				color.Error.Tips("subcommand '%s' - not found on the command", name)
+				color.Error.Tips("%s - subcommand '%s' is not found", c.Name, name)
 			}
 		}
 	}
@@ -508,6 +508,15 @@ func (c *Command) prepare(_ []string) (status int, err error) {
 	return
 }
 
+type panicErr struct {
+	val any
+}
+
+// Error string
+func (p panicErr) Error() string {
+	return fmt.Sprint(p.val)
+}
+
 // do execute the command
 func (c *Command) doExecute(args []string) (err error) {
 	// collect and binding named argument
@@ -520,21 +529,40 @@ func (c *Command) doExecute(args []string) (err error) {
 
 	fnArgs := c.ExtraArgs()
 	c.Fire(events.OnCmdRunBefore, map[string]any{"args": fnArgs})
-	Debugf("cmd: %s - run command func with extra-args %v", c.Name, fnArgs)
 
 	// do call command handler func
 	if c.Func == nil {
 		Logf(VerbWarn, "the command '%s' no handler func to running", c.Name)
-	} else {
-		err = c.Func(c, fnArgs)
+		c.Fire(events.OnCmdRunAfter, nil)
+		return
 	}
 
+	Debugf("cmd: %s - run command func with extra-args %v", c.Name, fnArgs)
+
+	// recover panics
+	if re := recover(); re != nil {
+		var ok bool
+		err, ok = re.(error)
+		if !ok {
+			err = panicErr{val: re}
+		}
+
+		c.fireAfterExec(err)
+		return
+	}
+
+	// do run func
+	err = c.Func(c, fnArgs)
+	c.fireAfterExec(err)
+	return
+}
+
+func (c *Command) fireAfterExec(err error) {
 	if err != nil {
 		c.Fire(events.OnCmdRunError, map[string]any{"err": err})
 	} else {
 		c.Fire(events.OnCmdRunAfter, nil)
 	}
-	return
 }
 
 /*************************************************************

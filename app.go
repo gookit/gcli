@@ -351,7 +351,7 @@ func (app *App) prepareRun() (code int, name string) {
 	// name is not empty, but is not command.
 	if app.inputName == "" {
 		Logf(VerbDebug, "input the command is not an registered: %s", name)
-		hookData := map[string]any{"name": name}
+		hookData := map[string]any{"name": name, "args": app.args}
 
 		// fire events
 		if stop := app.Fire(events.OnAppCmdNotFound, hookData); stop {

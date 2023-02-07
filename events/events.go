@@ -34,12 +34,13 @@ const (
 	OnCmdInitBefore = "cmd.init.before"
 	OnCmdInitAfter  = "cmd.init.after"
 
-	// OnCmdNotFound on app-command or subcommand not found.
+	// OnCmdNotFound on top-command or subcommand not found.
 	//
 	// Data:
 	// 	{name: command-name}
 	OnCmdNotFound = "cmd.not.found"
-	// OnAppCmdNotFound on app command not found
+
+	// OnAppCmdNotFound on top command not found
 	OnAppCmdNotFound = "app.cmd.not.found"
 	// OnCmdSubNotFound on subcommand not found
 	OnCmdSubNotFound = "cmd.sub.not.found"
@@ -52,15 +53,16 @@ const (
 
 	// OnCmdRunBefore cmd run
 	OnCmdRunBefore = "cmd.run.before"
-	OnCmdRunAfter  = "cmd.run.after"
-	OnCmdRunError  = "cmd.run.error"
+	// OnCmdRunAfter after cmd success run
+	OnCmdRunAfter = "cmd.run.after"
+	OnCmdRunError = "cmd.run.error"
 
 	// OnCmdExecBefore cmd exec
 	OnCmdExecBefore = "cmd.exec.before"
 	OnCmdExecAfter  = "cmd.exec.after"
 	OnCmdExecError  = "cmd.exec.error"
 
-	// OnGlobalOptsParsed event
+	// OnGlobalOptsParsed app or cmd parsed the global options
 	//
 	// Data:
 	// 	{args: remain-args}
