@@ -36,13 +36,15 @@ const (
 
 	// OnCmdNotFound on top-command or subcommand not found.
 	//
-	// Data:
-	// 	{name: command-name}
+	// Ctx:
+	// 	{"name": name, "args": []string}
 	OnCmdNotFound = "cmd.not.found"
 
-	// OnAppCmdNotFound on top command not found
+	// OnAppCmdNotFound on top command not found.
+	// ctx: {"name": name, "args": []string}
 	OnAppCmdNotFound = "app.cmd.not.found"
-	// OnCmdSubNotFound on subcommand not found
+	// OnCmdSubNotFound on subcommand not found.
+	// ctx: {"name": name, "args": []string}
 	OnCmdSubNotFound = "cmd.sub.not.found"
 
 	// OnCmdOptParsed event

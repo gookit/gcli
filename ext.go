@@ -121,13 +121,18 @@ func newHookCtx(name string, c *Command, data map[string]any) *HookCtx {
 		data = make(maputil.Data)
 	}
 
-	return &HookCtx{
+	hc := &HookCtx{
 		name: name,
 		Cmd:  c,
 		Data: data,
 		// with empty context
 		Context: context.Background(),
 	}
+
+	if c != nil {
+		hc.App = c.app
+	}
+	return hc
 }
 
 // Err of event

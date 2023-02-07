@@ -320,6 +320,12 @@ func (a *CliArg) SetArrayed() *CliArg {
 	return a
 }
 
+// WithDefault value to the argument
+func (a *CliArg) WithDefault(val any) *CliArg {
+	a.Value.Set(val)
+	return a
+}
+
 // WithValue to the argument
 func (a *CliArg) WithValue(val any) *CliArg {
 	a.Value.Set(val)

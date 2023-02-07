@@ -95,6 +95,7 @@ func TestArgument(t *testing.T) {
 	is.Eq(0, arg.Int())
 	is.Eq("", arg.String())
 	is.Eq("ab", arg.WithValue("ab").String())
+	is.Eq("abc", arg.WithDefault("abc").String())
 
 	// add value
 	err := arg.SetValue("ab,cd")

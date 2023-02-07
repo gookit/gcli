@@ -703,13 +703,6 @@ func (c *Command) PathNames() []string {
 	return c.pathNames
 }
 
-// Errorf format message and add error to the command
-//
-// Deprecated: please use NewErrf()
-func (c *Command) Errorf(format string, v ...any) error {
-	return fmt.Errorf(format, v...)
-}
-
 // NewErr format message and add error to the command
 func (c *Command) NewErr(msg string) error { return errors.New(msg) }
 
