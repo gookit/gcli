@@ -143,7 +143,7 @@ type base struct {
 	// helpVars custom add vars for render help template.
 	helpVars map[string]any
 
-	// Ctx for command
+	// Ctx data for command, allow add custom context data.
 	Ctx *Context
 	// Logo ASCII logo setting
 	Logo *Logo

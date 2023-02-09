@@ -19,6 +19,9 @@ const (
 	shortSepChar = ","
 )
 
+// DefaultOptWidth for render help
+var DefaultOptWidth = 20
+
 // CliOpts cli options management
 type CliOpts struct {
 	// name inherited from gcli.Command
@@ -55,6 +58,7 @@ func (ops *CliOpts) InitFlagSet(name string) {
 	ops.fSet.SetOutput(io.Discard)
 	// nothing to do ... render usage on after parsed
 	ops.fSet.Usage = func() {}
+	ops.optMaxLen = DefaultOptWidth
 }
 
 // SetName for CliArgs
@@ -342,7 +346,8 @@ func (ops *CliOpts) checkFlagInfo(opt *CliOpt) string {
 	helpLen := opt.helpNameLen()
 	// fix: must exclude Hidden option
 	if !opt.Hidden {
-		ops.optMaxLen = mathutil.MaxInt(ops.optMaxLen, helpLen)
+		// +7: type placeholder width
+		ops.optMaxLen = mathutil.MaxInt(ops.optMaxLen, helpLen+6)
 	}
 
 	// check short names

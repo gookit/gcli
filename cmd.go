@@ -55,6 +55,7 @@ type Command struct {
 	// Name is the command name.
 	Name string
 	// Desc is the command description message.
+	// Can use string-var in contents, eg: {$cmd}
 	Desc string
 
 	// Aliases is the command name's alias names
@@ -100,6 +101,7 @@ type Command struct {
 	// Func is the command handler func. Func Runner
 	Func RunnerFunc
 	// Help is the long help message text
+	// Can use string-var in contents, eg: {$cmd}
 	Help string
 	// HelpRender custom render cmd help message
 	HelpRender func(c *Command)
@@ -574,7 +576,6 @@ func (c *Command) Root() *Command {
 	if c.parent != nil {
 		return c.parent.Root()
 	}
-
 	return c
 }
 
@@ -598,7 +599,6 @@ func (c *Command) ParentName() string {
 	if c.parent != nil {
 		return c.parent.Name
 	}
-
 	return ""
 }
 

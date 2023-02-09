@@ -238,14 +238,26 @@ func (ags *CliArgs) BuildArgsHelp() string {
 		return ""
 	}
 
+	indent := strutil.Repeat(" ", ags.argWidth+3)
+
 	var sb strings.Builder
 	for _, arg := range ags.args {
 		sb.WriteString(fmt.Sprintf(
-			"<info>%s</> %s%s\n",
+			"  <info>%s</> %s",
 			strutil.PadRight(arg.HelpName(), " ", ags.argWidth),
 			getRequiredMark(arg.Required),
-			strutil.UpperFirst(arg.Desc),
 		))
+
+		// multi lines
+		if strings.ContainsRune(arg.Desc, '\n') {
+			first, other := strutil.QuietCut(arg.Desc, "\n")
+			sb.WriteString(strutil.UpperFirst(first))
+			sb.WriteByte('\n')
+			sb.WriteString(strutil.Indent(other, indent))
+		} else {
+			sb.WriteString(strutil.UpperFirst(arg.Desc))
+		}
+		sb.WriteByte('\n')
 	}
 
 	return sb.String()

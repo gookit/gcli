@@ -183,10 +183,9 @@ var CmdHelpTemplate = `{{.Desc}}
 <comment>Global Options:</>
 {{.GOpts}}{{end}}{{if .Options}}
 <comment>Options:</>
-{{.Options}}{{end}}{{if .Cmd.HasArgs}}
-<comment>Arguments:</>{{range $a := .Cmd.Args}}
-  <info>{{$a.HelpName | printf "%-12s"}}</> {{if $a.Required}}<red>*</>{{end}}{{$a.Desc | ucFirst}}{{end}}
-{{end}}{{ if .Subs }}
+{{.Options}}{{end}}{{if .ArgsHelp}}
+<comment>Arguments:</>
+{{.ArgsHelp}}{{end}}{{ if .Subs }}
 <comment>Subcommands:</>{{range $n,$c := .Subs}}
   <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
 {{end}}{{if .Cmd.Examples}}
@@ -223,6 +222,8 @@ func (c *Command) ShowHelp() (err error) {
 		"GOpts": nil,
 		// parse options to string
 		"Options": c.Flags.BuildOptsHelp(),
+		// parse options to string
+		"ArgsHelp": c.Flags.BuildArgsHelp(),
 		// always upper first char
 		"Desc": c.HelpDesc(),
 		// user custom help vars
