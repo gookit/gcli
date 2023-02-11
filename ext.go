@@ -41,7 +41,6 @@ const (
 	EvtCmdExecError  = events.OnCmdExecError
 
 	EvtGOptionsParsed = events.OnGlobalOptsParsed
-	// EvtStop   = "stop"
 )
 
 // HookFunc definition.

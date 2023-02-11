@@ -211,7 +211,7 @@ type Cell struct {
 	Align strutil.PosFlag
 
 	// Val is the cell data
-	Val interface{}
+	Val any
 	str string // string cache of Val
 }
 

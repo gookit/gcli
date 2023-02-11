@@ -53,7 +53,7 @@ const (
 	// 	{args: command-args}
 	OnCmdOptParsed = "cmd.opts.parsed"
 
-	// OnCmdRunBefore cmd run
+	// OnCmdRunBefore cmd run, flags has been parsed.
 	OnCmdRunBefore = "cmd.run.before"
 	// OnCmdRunAfter after cmd success run
 	OnCmdRunAfter = "cmd.run.after"

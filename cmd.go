@@ -658,9 +658,24 @@ func (c *Command) goodName() string {
 
 // Fire event handler by name
 func (c *Command) Fire(event string, data map[string]any) (stop bool) {
+	hookCtx := newHookCtx(event, c, data)
 	Debugf("cmd: %s - trigger the event: <mga>%s</>", c.Name, event)
 
-	return c.Hooks.Fire(event, newHookCtx(event, c, data))
+	// notify all parent commands
+	p := c.parent
+	for p != nil {
+		if p.Hooks.Fire(event, hookCtx) {
+			return true
+		}
+		p = p.parent
+	}
+
+	// notify to app
+	if c.app != nil && c.app.Hooks.Fire(event, hookCtx) {
+		return
+	}
+
+	return c.Hooks.Fire(event, hookCtx)
 }
 
 // On add hook handler for a hook event
