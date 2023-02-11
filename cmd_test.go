@@ -50,7 +50,7 @@ func TestCommand_NewErrf(t *testing.T) {
 		c.AddArg("arg0", "desc message")
 	})
 	c.SetFunc(func(c *gcli.Command, args []string) error {
-		is.Eq([]string{"hi"}, args)
+		is.Eq("hi", c.Arg("arg0").String())
 		return c.NewErrf("error message")
 	})
 
@@ -358,7 +358,8 @@ func TestCommand_Run_parseOptions(t *testing.T) {
 	// dump.P(gcli.GOpts(), c0.Context)
 	is.NoErr(err)
 	is.Eq("test", c0.Ctx.Get("name"))
-	is.Eq([]string{"txt"}, c0.Ctx.Get("args"))
+	is.Eq("txt", c0.Arg("arg0").String())
+	is.Empty(c0.Ctx.Get("args"))
 
 	is.Eq(10, int0)
 	is.Eq("abc", str0)
@@ -376,7 +377,8 @@ func TestCommand_Run_parseOptions(t *testing.T) {
 		c.IntOpt(&co.maxSteps, "max-step", "", 0, "setting the max step value")
 		c.AddArg("arg0", "arg0 desc")
 	}).WithFunc(func(c *gcli.Command, args []string) error {
-		is.Eq("[txt]", fmt.Sprint(args))
+		is.Eq("txt", c.Arg("arg0").String())
+		is.Empty(args)
 		return nil
 	})
 

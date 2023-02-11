@@ -227,10 +227,10 @@ func TestApp_Run_command_withArguments(t *testing.T) {
 	argStr = ""
 	cmdRet = ""
 
-	err := app.Exec("test", []string{"val0", "val1"})
+	err := app.Exec("test", []string{"val0", "val1", "val2"})
 	is.NoErr(err)
 	is.Eq("test", cmdRet)
-	is.Eq("val0,val1", argStr)
+	is.Eq("val2", argStr)
 
 	err = app.Exec("not-exists", []string{})
 	is.Err(err)
