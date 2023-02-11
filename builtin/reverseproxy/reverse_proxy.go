@@ -58,7 +58,7 @@ var ReverseProxyCmd = &gcli.Command{
 
 func (rp *reverseProxy) Run(cmd *gcli.Command, args []string) error {
 	if rp.remote == "" {
-		return cmd.Errorf("must be setting the remote server by -r, --remote ")
+		return cmd.NewErrf("must be setting the remote server by -r, --remote ")
 	}
 
 	urlObj, err := url.Parse(rp.remote)
