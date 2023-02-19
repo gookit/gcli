@@ -15,9 +15,11 @@ wget -qO- https://unicode.org/Public/emoji/11.0/emoji-test.txt | cut -f 1 -d ' '
 
 ## data links:
 
-- https://www.unicode.org/Public/emoji/11.0/
+- https://unicode.org/Public/emoji/15.0/emoji-sequences.txt
 - https://raw.githubusercontent.com/github/gemoji/master/db/emoji.json
-- https://raw.githubusercontent.com/muan/emoji/gh-pages/javascripts/emojilib/emojis.json
+- https://github.com/muan/emojilib/blob/main/dist/emoji-en-US.json
+- https://github.com/muan/unicode-emoji-json/blob/main/data-by-emoji.json
+- https://www.unicode.org/Public/emoji/11.0/
 
 ## sites
 
