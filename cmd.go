@@ -703,7 +703,7 @@ func (c *Command) App() *App {
 	return c.app
 }
 
-// ID get command ID string
+// ID get command ID string. return like: git:branch:create
 func (c *Command) ID() string {
 	return strings.Join(c.pathNames, CommandSep)
 }

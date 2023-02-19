@@ -255,6 +255,9 @@ type Booleans = cflag.Booleans
 // EnumString The string flag list, implemented flag.Value interface
 type EnumString = cflag.EnumString
 
+// ConfString The config-string flag, INI format, like nginx-config
+type ConfString = cflag.ConfString
+
 // String type, a special string
 //
 // Usage:

@@ -5,11 +5,9 @@ import (
 	"fmt"
 	"regexp"
 	"strings"
-	"syscall"
 	"text/template"
 
 	"github.com/gookit/goutil/strutil"
-	"golang.org/x/term"
 )
 
 const (
@@ -45,38 +43,6 @@ func IsGoodCmdId(name string) bool {
 // IsGoodCmdName check
 func IsGoodCmdName(name string) bool {
 	return goodCmdName.MatchString(name)
-}
-
-// exec: `stty -a 2>&1`
-// const (
-// mac: speed 9600 baud; 97 rows; 362 columns;
-// macSttyMsgPattern = `(\d+)\s+rows;\s*(\d+)\s+columns;`
-// linux: speed 38400 baud; rows 97; columns 362; line = 0;
-// linuxSttyMsgPattern = `rows\s+(\d+);\s*columns\s+(\d+);`
-// )
-
-var (
-	terminalWidth, terminalHeight int
-
-	// macSttyMsgMatch = regexp.MustCompile(macSttyMsgPattern)
-	// linuxSttyMsgMatch = regexp.MustCompile(linuxSttyMsgPattern)
-)
-
-// GetTerminalSize for current console terminal.
-func GetTerminalSize(refresh ...bool) (w int, h int) {
-	if terminalWidth > 0 && len(refresh) > 0 && !refresh[0] {
-		return terminalWidth, terminalHeight
-	}
-
-	var err error
-	w, h, err = term.GetSize(syscall.Stdin)
-	if err != nil {
-		return
-	}
-
-	// cache result
-	terminalWidth, terminalHeight = w, h
-	return
 }
 
 // Panicf message

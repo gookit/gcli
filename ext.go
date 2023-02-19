@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/maputil"
 )
 
@@ -42,6 +43,27 @@ const (
 
 	EvtGOptionsParsed = events.OnGlobalOptsParsed
 )
+
+// runErr struct
+type runErr struct {
+	code int
+	err  error
+}
+
+// newRunErr instance
+func newRunErr(code int, err error) errorx.ErrorCoder {
+	return &runErr{code: code, err: err}
+}
+
+// Code for error
+func (e *runErr) Code() int {
+	return e.code
+}
+
+// Error string
+func (e *runErr) Error() string {
+	return fmt.Sprintf("%v with code %d", e.err, e.code)
+}
 
 // HookFunc definition.
 //

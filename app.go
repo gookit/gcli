@@ -11,6 +11,7 @@ import (
 	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/cliutil"
+	"github.com/gookit/goutil/errorx"
 )
 
 /*************************************************************
@@ -483,10 +484,16 @@ func (app *App) Run(args []string) (code int) {
 	app.Fire(events.OnAppPrepared, map[string]any{"name": name})
 
 	// do run input command
-	code = app.doRunCmd(name, app.args)
+	var exCode int
+	err := app.doRunCmd(name, app.args)
+	if err != nil {
+		if ec, ok := err.(errorx.ErrorCoder); ok {
+			exCode = ec.Code()
+		}
+	}
 
-	Debugf("command '%s' run complete, exit with code: %d", name, code)
-	return app.exitOnEnd(code)
+	Debugf("command '%s' run complete, exit with code: %d", name, exCode)
+	return app.exitOnEnd(exCode)
 }
 
 // RunLine manual run a command by command line string.
@@ -505,21 +512,22 @@ func (app *App) RunLine(argsLine string) int {
 //	app.Exec("top", []string{"-a", "val0", "arg0"})
 //	// can add sub command on args
 //	app.Exec("top", []string{"sub", "-o", "abc"})
-func (app *App) RunCmd(name string, args []string) int {
-	if app.HasCommand(name) {
-		return ERR
+func (app *App) RunCmd(name string, args []string) error {
+	if !app.HasCommand(name) {
+		return errorx.Failf(ERR, "command %q not exists", name)
 	}
+
 	return app.doRunCmd(name, args)
 }
 
-func (app *App) doRunCmd(name string, args []string) (code int) {
+func (app *App) doRunCmd(name string, args []string) (err error) {
 	cmd := app.GetCommand(name)
 	app.fireWithCmd(events.OnAppRunBefore, cmd, map[string]any{"args": args})
 	Debugf("will run app command '%s' with args: %v", name, args)
 
 	// do execute command
-	if err := cmd.innerDispatch(args); err != nil {
-		code = ERR
+	if err = cmd.innerDispatch(args); err != nil {
+		err = newRunErr(ERR, err)
 		app.Fire(events.OnAppRunError, map[string]any{"err": err})
 	} else {
 		app.Fire(events.OnAppRunAfter, nil)
