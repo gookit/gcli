@@ -120,9 +120,11 @@ func (ags *CliArgs) AddArg(name, desc string, requiredAndArrayed ...bool) *CliAr
 	return ags.AddArgument(newArg)
 }
 
-// AddArgByRule add an arg by simple string rule
+// AddArgByRule add an arg by simple string rule.
+//
+// Format: desc;required;default
 func (ags *CliArgs) AddArgByRule(name, rule string) *CliArg {
-	mp := ParseSimpleRule(name, rule)
+	mp := structs.ParseTagValueQuick(rule, flagArgKeys)
 
 	required := strutil.QuietBool(mp["required"])
 	newArg := NewArgument(name, mp["desc"], required)
@@ -298,6 +300,8 @@ type CliArg struct {
 	Handler func(val any) any
 	// Validator you can add a validator, will call it on binding argument value
 	Validator func(val any) (any, error)
+	// AfterFn after bind value listen func
+	AfterFn func(a *CliArg) error
 }
 
 // NewArg quick create a new command argument
@@ -349,6 +353,12 @@ func (a *CliArg) WithFn(fn func(arg *CliArg)) *CliArg {
 	if fn != nil {
 		fn(a)
 	}
+	return a
+}
+
+// WithAfterFn a func to the argument
+func (a *CliArg) WithAfterFn(fn func(a *CliArg) error) *CliArg {
+	a.AfterFn = fn
 	return a
 }
 
@@ -422,7 +432,7 @@ func (a *CliArg) HelpName() string {
 	return a.ShowName
 }
 
-// bind a value to the argument
+// bind a value(string, []string) to the argument
 func (a *CliArg) bindValue(val any) (err error) {
 	if a.Validator != nil {
 		val, err = a.Validator(val)
@@ -436,5 +446,9 @@ func (a *CliArg) bindValue(val any) (err error) {
 	}
 
 	a.Value.V = val
+
+	if a.AfterFn != nil {
+		err = a.AfterFn(a)
+	}
 	return
 }

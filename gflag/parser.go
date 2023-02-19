@@ -14,6 +14,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/cflag"
+	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -234,7 +235,7 @@ var (
 )
 
 // FromStruct from struct tag binding options
-func (p *Parser) FromStruct(ptr any) error {
+func (p *Parser) FromStruct(ptr any) (err error) {
 	v := reflect.ValueOf(ptr)
 	if v.Kind() != reflect.Ptr {
 		return errNotPtrValue
@@ -289,10 +290,15 @@ func (p *Parser) FromStruct(ptr any) error {
 			fv = fv.Elem()
 		}
 
+		// eg: "name=int0;shorts=i;required=true;desc=int option message"
 		if p.cfg.TagRuleType == TagRuleNamed {
-			mp = parseNamedRule(name, str)
+			// mp = parseNamedRule(name, str)
+			mp, err = structs.ParseTagValueNamed(name, str, flagTagKeys...)
+			if err != nil {
+				return err
+			}
 		} else if p.cfg.TagRuleType == TagRuleSimple {
-			mp = ParseSimpleRule(name, str)
+			mp = parseSimpleRule(str)
 		} else {
 			return errTagRuleType
 		}
