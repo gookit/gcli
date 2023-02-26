@@ -1,6 +1,7 @@
 package gcli
 
 import (
+	"fmt"
 	"strings"
 	"text/template"
 
@@ -8,6 +9,7 @@ import (
 	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/sysutil"
 )
 
 /*************************************************************
@@ -81,6 +83,9 @@ func (app *App) showApplicationHelp() bool {
 
 	// parse help vars and render color tags
 	color.Print(app.ReplacePairs(s))
+	if sysutil.IsLinux() {
+		fmt.Println()
+	}
 	return false
 }
 
@@ -244,5 +249,8 @@ func (c *Command) ShowHelp() (err error) {
 	// parse gcli help vars then print help
 	// fmt.Printf("%#v\n", s)
 	color.Print(c.ReplacePairs(str))
+	if sysutil.IsLinux() {
+		fmt.Println()
+	}
 	return
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/structs"
+	"github.com/gookit/goutil/sysutil"
 )
 
 /*************************************************************
@@ -56,18 +57,25 @@ func (ctx *Context) InitCtx() *Context {
 	binFile := os.Args[0]
 	workDir, _ := os.Getwd()
 
-	// binName will contain work dir path on Windows
-	// if envutil.IsWin() {
-	// 	binFile = strings.Replace(CLI.binName, workDir+"\\", "", 1)
-	// }
-
 	ctx.pid = os.Getpid()
 	// more info
 	ctx.osName = runtime.GOOS
 	ctx.workDir = workDir
-	ctx.binDir = filepath.Dir(binFile)
 	ctx.binFile = binFile
-	ctx.binName = filepath.Base(binFile)
+
+	// with path
+	if strings.ContainsRune(binFile, os.PathSeparator) {
+		ctx.binDir = filepath.Dir(binFile)
+		ctx.binName = filepath.Base(binFile)
+	} else {
+		ctx.binName = binFile
+
+		if fpath, err := sysutil.FindExecutable(binFile); err == nil {
+			ctx.binFile = fpath
+			ctx.binDir = filepath.Dir(fpath)
+		}
+	}
+
 	ctx.argLine = strings.Join(os.Args[1:], " ")
 	return ctx
 }

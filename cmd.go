@@ -308,7 +308,7 @@ func (c *Command) initCommandBase(cName string) {
 		// binName with command path
 		"binWithPath": binWithPath,
 		// binFile with command
-		"fullCmd": c.Ctx.binFile + " " + cName,
+		"fullCmd": binWithPath,
 	})
 
 	c.base.cmdNames = make(map[string]int)
