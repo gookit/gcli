@@ -318,6 +318,11 @@ func (ops *CliOpts) VarOpt(v flag.Value, name, shorts, desc string) {
 	ops.varOpt(v, newOpt(name, desc, nil, shorts))
 }
 
+// VarOpt2 binding an int option and with config func.
+func (ops *CliOpts) VarOpt2(v flag.Value, nameAndShorts, desc string, setFns ...CliOptFn) {
+	ops.varOpt(v, NewOpt(nameAndShorts, desc, nil, setFns...))
+}
+
 // binding option and shorts
 func (ops *CliOpts) varOpt(v flag.Value, opt *CliOpt) {
 	name := ops.checkFlagInfo(opt)

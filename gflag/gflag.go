@@ -55,6 +55,12 @@ type OptCategory struct {
 // Ints The int flag list, implemented flag.Value interface
 type Ints = cflag.Ints
 
+// IntsString implemented flag.Value interface
+type IntsString = cflag.IntsString
+
+// String The special string flag, implemented flag.Value interface
+type String = cflag.String
+
 // Strings The string flag list, implemented flag.Value interface
 type Strings = cflag.Strings
 

@@ -244,40 +244,23 @@ func IsDebugMode() bool { return gOpts.Verbose >= VerbDebug }
  *************************************************************************/
 
 // Ints The int flag list, implemented flag.Value interface
+// Deprecated
 type Ints = cflag.Ints
 
 // Strings The string flag list, implemented flag.Value interface
+// Deprecated
 type Strings = cflag.Strings
 
 // Booleans The bool flag list, implemented flag.Value interface
+// Deprecated
 type Booleans = cflag.Booleans
 
 // EnumString The string flag list, implemented flag.Value interface
+// Deprecated
 type EnumString = cflag.EnumString
 
-// KVString The key-value string flag, repeatable.
-type KVString = cflag.KVString
-
-// ConfString The config-string flag, INI format, like nginx-config
-type ConfString = cflag.ConfString
-
 // String type, a special string
-//
-// Usage:
-//
-//	// case 1:
-//	var names gcli.String
-//	c.VarOpt(&names, "names", "", "multi name by comma split")
-//
-//	--names "tom,john,joy"
-//	 names.Split(",") -> []string{"tom","john","joy"}
-//
-//	// case 2:
-//	var ids gcli.String
-//	c.VarOpt(&ids, "ids", "", "multi id by comma split")
-//
-//	--names "23,34,56"
-//	 names.Ints(",") -> []int{23,34,56}
+// Deprecated
 type String = cflag.String
 
 /*************************************************************************
