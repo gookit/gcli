@@ -173,6 +173,11 @@ func (ops *CliOpts) strOpt(p *string, opt *CliOpt) {
 	defVal := opt.DValue().String()
 	name := ops.checkFlagInfo(opt)
 
+	// use *p as default value
+	if defVal == "" && *p != "" {
+		defVal = *p
+	}
+
 	// binding option to flag.FlagSet
 	ops.fSet.StringVar(p, opt.Name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
@@ -211,6 +216,11 @@ func (ops *CliOpts) intOpt(ptr *int, opt *CliOpt) {
 	defVal := opt.DValue().Int()
 	name := ops.checkFlagInfo(opt)
 
+	// use *p as default value
+	if defVal == 0 && *ptr != 0 {
+		defVal = *ptr
+	}
+
 	// binding option to flag.FlagSet
 	ops.fSet.IntVar(ptr, name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
@@ -224,7 +234,6 @@ func (ops *CliOpts) Int64(name, shorts string, defVal int64, desc string) *int64
 	// binding option to flag.FlagSet
 	p := ops.fSet.Int64(name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
-
 	return p
 }
 
@@ -239,6 +248,11 @@ func (ops *CliOpts) Int64Opt(ptr *int64, name, shorts string, defValue int64, de
 func (ops *CliOpts) int64Opt(ptr *int64, opt *CliOpt) {
 	defVal := opt.DValue().Int64()
 	name := ops.checkFlagInfo(opt)
+
+	// use *p as default value
+	if defVal == 0 && *ptr != 0 {
+		defVal = *ptr
+	}
 
 	// binding option to flag.FlagSet
 	ops.fSet.Int64Var(ptr, name, defVal, opt.Desc)
