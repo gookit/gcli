@@ -3,7 +3,7 @@ module github.com/gookit/gcli/v3
 go 1.18
 
 require (
-	github.com/gookit/color v1.5.2
+	github.com/gookit/color v1.5.3
 	github.com/gookit/goutil v0.6.7
 	golang.org/x/crypto v0.7.0
 )
