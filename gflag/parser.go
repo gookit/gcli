@@ -12,6 +12,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
@@ -102,6 +103,12 @@ func (p *Parser) SetConfig(opt *Config) { p.cfg = opt }
 // UseSimpleRule for the parse tag value rule string. see TagRuleSimple
 func (p *Parser) UseSimpleRule() *Parser {
 	p.cfg.TagRuleType = TagRuleSimple
+	return p
+}
+
+// SetRuleType for the parse tag value rule string.
+func (p *Parser) SetRuleType(rt uint8) *Parser {
+	p.cfg.TagRuleType = rt
 	return p
 }
 
@@ -233,6 +240,13 @@ var (
 	errTagRuleType = errors.New("invalid tag rule type on struct")
 )
 
+// MustFromStruct from struct tag binding options, panic if error
+//
+// more see FromStruct()
+func (p *Parser) MustFromStruct(ptr any, ruleType ...uint8) {
+	goutil.MustOK(p.FromStruct(ptr, ruleType...))
+}
+
 // FromStruct from struct tag binding options
 //
 // ## Named rule:
@@ -254,8 +268,8 @@ var (
 //		Age int `flag:"age;input user age;true;;o"`
 //	}
 //	opt := &UserCmdOpts{}
-//	p.UseSimpleRule().FromStruct(opt)
-func (p *Parser) FromStruct(ptr any) (err error) {
+//	p.FromStruct(opt, gflag.TagRuleSimple)
+func (p *Parser) FromStruct(ptr any, ruleType ...uint8) (err error) {
 	v := reflect.ValueOf(ptr)
 	if v.Kind() != reflect.Ptr {
 		return errNotPtrValue
@@ -270,9 +284,9 @@ func (p *Parser) FromStruct(ptr any) (err error) {
 		return errNotAnStruct
 	}
 
-	tagName := p.cfg.TagName
-	if tagName == "" {
-		tagName = FlagTagName
+	tagName := p.cfg.GetTagName()
+	if len(ruleType) > 0 {
+		p.SetRuleType(ruleType[0])
 	}
 
 	var mp map[string]string

@@ -11,20 +11,20 @@ const (
 	AlignLeft = strutil.PosRight
 	// AlignRight Align left, padding right
 	AlignRight = strutil.PosLeft
-
 	// default desc
 	defaultDesc = "No description"
-
+)
+const (
 	// TagRuleNamed struct tag use named k-v rule.
 	//
 	// eg: `flag:"name=int0;shorts=i;required=true;desc=int option message"`
-	TagRuleNamed = 0
+	TagRuleNamed uint8 = iota
 
 	// TagRuleSimple struct tag use simple rule.
 	// format: "desc;required;default;shorts"
 	//
 	// eg: `flag:"int option message;required;;i"`
-	TagRuleSimple = 1
+	TagRuleSimple
 )
 
 // FlagTagName default tag name on struct
@@ -38,12 +38,20 @@ type Config struct {
 	DescNewline bool
 	// Alignment flag name align left or right. default is: left
 	Alignment strutil.PosFlag
-	// TagName on struct
+	// TagName on struct. default is FlagTagName
 	TagName string
 	// TagRuleType for struct tag value. default is TagRuleNamed
 	TagRuleType uint8
 	// DisableArg disable binding arguments.
 	DisableArg bool
+}
+
+// GetTagName get tag name, default is FlagTagName
+func (c *Config) GetTagName() string {
+	if c.TagName == "" {
+		c.TagName = FlagTagName
+	}
+	return c.TagName
 }
 
 // OptCategory struct
