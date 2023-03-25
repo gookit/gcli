@@ -484,11 +484,34 @@ func TestFlags_PrintHelpPanel(t *testing.T) {
 
 	fs.IntVar(&testOpts.opt1, &gcli.FlagMeta{Name: "opt1"})
 	fs.StrVar(&testOpts.opt3, &gcli.FlagMeta{
-		Name: "test",
+		Name: "test, t",
 		Desc: "test desc",
 		// required
 		Required: true,
 	})
 	fs.BoolOpt(&testOpts.opt2, "bol", "ab", false, "opt2 desc")
+	fs.PrintHelpPanel()
+}
+
+func TestFlags_PrintHelpPanel_IndentLongOpt(t *testing.T) {
+	fs := gflag.New("test").WithConfigFn(func(c *gflag.Config) {
+		c.IndentLongOpt = true
+	})
+
+	testOpts := struct {
+		opt1 int
+		opt2 bool
+		opt3 string
+	}{}
+
+	fs.IntVar(&testOpts.opt1, &gcli.FlagMeta{Name: "opt1"})
+	fs.StrVar(&testOpts.opt3, &gcli.FlagMeta{
+		Name: "test, t",
+		Desc: "test desc",
+		// required
+		Required: true,
+	})
+	fs.BoolOpt(&testOpts.opt2, "bol", "ab", false, "opt2 desc")
+	fmt.Println("Flag Help - enable IndentLongOpt:")
 	fs.PrintHelpPanel()
 }

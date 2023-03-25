@@ -30,6 +30,9 @@ const (
 // FlagTagName default tag name on struct
 var FlagTagName = "flag"
 
+// ConfigFunc config func for parser
+type ConfigFunc func(cfg *Config)
+
 // Config for render help information
 type Config struct {
 	// WithoutType don't display flag data type on print help
@@ -44,6 +47,8 @@ type Config struct {
 	TagRuleType uint8
 	// DisableArg disable binding arguments.
 	DisableArg bool
+	// IndentLongOpt indent long option name on print help
+	IndentLongOpt bool
 }
 
 // GetTagName get tag name, default is FlagTagName
@@ -52,6 +57,13 @@ func (c *Config) GetTagName() string {
 		c.TagName = FlagTagName
 	}
 	return c.TagName
+}
+
+// WithIndentLongOpt on print help
+func WithIndentLongOpt(yes bool) ConfigFunc {
+	return func(cfg *Config) {
+		cfg.IndentLongOpt = yes
+	}
 }
 
 // OptCategory struct

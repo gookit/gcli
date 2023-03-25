@@ -97,6 +97,11 @@ func (p *Parser) SetName(name string) {
 	p.CliArgs.SetName(name)
 }
 
+// ParserCfg for the parser.
+func (p *Parser) ParserCfg() *Config {
+	return p.cfg
+}
+
 // SetConfig for the object.
 func (p *Parser) SetConfig(opt *Config) { p.cfg = opt }
 
@@ -113,7 +118,7 @@ func (p *Parser) SetRuleType(rt uint8) *Parser {
 }
 
 // WithConfigFn for the object.
-func (p *Parser) WithConfigFn(fns ...func(cfg *Config)) *Parser {
+func (p *Parser) WithConfigFn(fns ...ConfigFunc) *Parser {
 	for _, fn := range fns {
 		fn(p.cfg)
 	}

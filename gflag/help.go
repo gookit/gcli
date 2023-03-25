@@ -94,6 +94,11 @@ func (p *Parser) formatOneFlag(f *flag.Flag) (s string) {
 
 	// add prefix '-' to option
 	fullName = cflag.AddPrefixes2(name, opt.Shorts, true)
+	if p.hasShort && p.cfg.IndentLongOpt && fullName[1] == '-' {
+		nameLen += 4
+		fullName = "    " + fullName
+	}
+
 	s = fmt.Sprintf("  <info>%s</>", fullName)
 
 	// - build flag type info
