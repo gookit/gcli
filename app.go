@@ -100,6 +100,7 @@ func NewApp(fns ...func(app *App)) *App {
 
 	app.fs = gflag.New(app.Name).WithConfigFn(func(opt *gflag.Config) {
 		opt.WithoutType = true
+		opt.IndentLongOpt = true
 		opt.Alignment = gflag.AlignLeft
 	})
 
@@ -211,9 +212,16 @@ func (app *App) AddCommand(c *Command) {
 	c.app = app
 	// inherit some from application
 	c.Ctx = app.Ctx
+	// init for cmd flags parser
+	c.Flags.Init(c.Name)
+
+	// inherit flag parser config
+	fsCfg := app.fs.ParserCfg()
+	c.Flags.WithConfigFn(gflag.WithIndentLongOpt(fsCfg.IndentLongOpt))
 
 	// do add command
 	app.addCommand(app.Name, c)
+
 	app.fireWithCmd(events.OnAppCmdAdded, c, nil)
 }
 

@@ -207,10 +207,9 @@ func (c *Command) AddCommand(sub *Command) {
 	// init command
 	sub.app = c.app
 	sub.parent = c
-	// inherit standalone value
-	sub.standalone = c.standalone
-	// inherit something from parent
+	// inherit something from parent command
 	sub.Ctx = c.Ctx
+	sub.standalone = c.standalone
 
 	// initialize command
 	c.initialize()
@@ -218,8 +217,10 @@ func (c *Command) AddCommand(sub *Command) {
 	// extend path names from parent
 	sub.pathNames = c.pathNames[0:]
 
-	// do add
+	// do add and init sub command
 	c.base.addCommand(c.Name, sub)
+	// update some parser config
+	sub.WithConfigFn(gflag.WithIndentLongOpt(c.ParserCfg().IndentLongOpt))
 }
 
 // Match sub command by input names
@@ -258,20 +259,19 @@ func (c *Command) initialize() {
 	c.initCommandBase(cName)
 	c.Fire(events.OnCmdInitBefore, nil)
 
-	// load common subs
+	// init for cmd flags parser
+	c.Flags.Init(cName)
+
+	// load common sub commands
 	if len(c.Subs) > 0 {
 		for _, sub := range c.Subs {
 			c.AddCommand(sub)
 		}
 	}
 
-	// init for cmd flags parser
-	c.Flags.Init(cName)
-
 	// format description
 	if len(c.Desc) > 0 {
 		c.Desc = strutil.UpperFirst(c.Desc)
-		// contains help var "{$cmd}". replace on here is for 'app help'
 		if strings.Contains(c.Desc, "{$cmd}") {
 			c.Desc = strings.Replace(c.Desc, "{$cmd}", c.Name, -1)
 		}
@@ -703,7 +703,7 @@ func (c *Command) App() *App {
 	return c.app
 }
 
-// ID get command ID string. return like: git:branch:create
+// ID get command ID string. return like "git:branch:create"
 func (c *Command) ID() string {
 	return strings.Join(c.pathNames, CommandSep)
 }

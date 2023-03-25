@@ -120,6 +120,13 @@ func (ctx *Context) WorkDir() string {
 	return ctx.workDir
 }
 
+// ChWorkDir work dir path
+func (ctx *Context) ChWorkDir(dir string) {
+	if len(dir) > 0 {
+		ctx.workDir = dir
+	}
+}
+
 // ArgLine os.Args to string, but no binName.
 func (ctx *Context) ArgLine() string {
 	return ctx.argLine
@@ -222,6 +229,11 @@ func (b *base) BinDir() string { return b.Ctx.BinDir() }
 // WorkDir get work dirname
 func (b *base) WorkDir() string { return b.Ctx.workDir }
 
+// ChWorkDir work dir path
+func (b *base) ChWorkDir(dir string) {
+	b.Ctx.ChWorkDir(dir)
+}
+
 // ResetData from ctx
 func (b *base) ResetData() {
 	if b.Ctx != nil {
@@ -274,7 +286,7 @@ func (b *base) IsCommand(name string) bool {
 
 // add Command to the group
 func (b *base) addCommand(pName string, c *Command) {
-	// init command
+	// ensure init command
 	c.initialize()
 
 	cName := c.Name
@@ -307,9 +319,6 @@ func (b *base) addCommand(pName string, c *Command) {
 	// add aliases for the command
 	Logf(VerbCrazy, "register command '%s'(parent: %s), aliases: %v", cName, pName, c.Aliases)
 	b.cmdAliases.AddAliases(c.Name, c.Aliases)
-
-	// inherit global flags from application
-	// append
 	b.commands[cName] = c
 }
 

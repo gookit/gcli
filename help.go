@@ -199,7 +199,7 @@ var CmdHelpTemplate = `{{.Desc}}
 <comment>Help:</>
 {{.Cmd.Help}}{{end}}`
 
-// ShowHelp show command help info
+// ShowHelp show command help information
 func (c *Command) ShowHelp() (err error) {
 	Debugf("render the command '%s' help information", c.Name)
 
