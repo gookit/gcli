@@ -7,6 +7,8 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/maputil"
+	"github.com/gookit/goutil/reflects"
+	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -27,6 +29,19 @@ type ListOption struct {
 
 // ListOpFunc define
 type ListOpFunc func(opts *ListOption)
+
+// NewListOption instance
+func NewListOption() *ListOption {
+	return &ListOption{
+		SepChar:  " ",
+		KeyStyle: "info",
+		// more
+		LeftIndent:  "  ",
+		KeyMinWidth: 8,
+		IgnoreEmpty: true,
+		TitleStyle:  "comment",
+	}
+}
 
 /*************************************************************
  * List
@@ -59,15 +74,7 @@ func NewList(title string, data any, fns ...ListOpFunc) *List {
 		// base
 		Base: Base{out: Output},
 		// options
-		Opts: &ListOption{
-			SepChar:    " ",
-			KeyStyle:   "info",
-			LeftIndent: "  ",
-			// more settings
-			KeyMinWidth: 8,
-			IgnoreEmpty: true,
-			TitleStyle:  "comment",
-		},
+		Opts: NewListOption(),
 	}
 
 	return l.WithOptionFns(fns)
@@ -194,24 +201,32 @@ type Lists struct {
 	buffer *bytes.Buffer
 }
 
-// NewLists create lists
-func NewLists(listMap map[string]any, fns ...ListOpFunc) *Lists {
+// NewEmptyLists create empty lists
+func NewEmptyLists(fns ...ListOpFunc) *Lists {
 	ls := &Lists{
 		Base: Base{out: Output},
-		Opts: &ListOption{
-			SepChar:  " ",
-			KeyStyle: "info",
-			// more
-			LeftIndent:  "  ",
-			KeyMinWidth: 8,
-			IgnoreEmpty: true,
-			TitleStyle:  "comment",
-		},
+		Opts: NewListOption(),
+	}
+	return ls.WithOptionFns(fns)
+}
+
+// NewLists create lists. allow: map[string]any, struct-ptr
+func NewLists(mlist any, fns ...ListOpFunc) *Lists {
+	ls := NewEmptyLists()
+	rv := reflect.Indirect(reflect.ValueOf(mlist))
+
+	if rv.Kind() == reflect.Map {
+		reflects.EachStrAnyMap(rv, func(key string, val any) {
+			ls.AddSublist(key, val)
+		})
+	} else if rv.Kind() == reflect.Struct {
+		for title, data := range structs.ToMap(mlist) {
+			ls.rows = append(ls.rows, NewList(title, data))
+		}
+	} else {
+		panic("not support type: " + rv.Kind().String())
 	}
 
-	for title, data := range listMap {
-		ls.rows = append(ls.rows, NewList(title, data))
-	}
 	return ls.WithOptionFns(fns)
 }
 
@@ -226,6 +241,12 @@ func (ls *Lists) WithOptionFns(fns []ListOpFunc) *Lists {
 // WithOptions with options func list
 func (ls *Lists) WithOptions(fns ...ListOpFunc) *Lists {
 	return ls.WithOptionFns(fns)
+}
+
+// AddSublist with options func list
+func (ls *Lists) AddSublist(title string, data any) *Lists {
+	ls.rows = append(ls.rows, NewList(title, data))
+	return ls
 }
 
 // Format as string

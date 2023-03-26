@@ -270,11 +270,14 @@ func (item *Item) IsEmpty() bool {
 	case reflect.Interface, reflect.Slice, reflect.Ptr:
 		return item.rftVal.IsNil()
 	}
-	return false
+	return !item.rftVal.IsValid()
 }
 
 // ValString get
 func (item *Item) ValString() string {
+	if item.IsEmpty() {
+		return ""
+	}
 	return strutil.QuietString(item.rftVal.Interface())
 }
 

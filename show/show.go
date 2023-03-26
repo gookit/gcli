@@ -73,7 +73,7 @@ func AList(title string, data any, fns ...ListOpFunc) {
 //	show.MList(data, func(opts *ListOption) {
 //		opts.LeftIndent = "    "
 //	})
-func MList(listMap map[string]any, fns ...ListOpFunc) {
+func MList(listMap any, fns ...ListOpFunc) {
 	NewLists(listMap).WithOptionFns(fns).Println()
 }
 
