@@ -133,7 +133,7 @@ type Items struct {
 	keyMaxWidth int
 }
 
-// NewItems create a Items for data.
+// NewItems create an Items for data.
 func NewItems(data any) *Items {
 	items := &Items{
 		data:     data,
@@ -145,7 +145,9 @@ func NewItems(data any) *Items {
 	}
 
 	var keyWidth int
-	switch rv.Kind() {
+	kind := rv.Kind()
+
+	switch kind {
 	case reflect.Map:
 		mapKeys := rv.MapKeys()
 		for i := 0; i < len(mapKeys); i++ {
@@ -188,8 +190,14 @@ func NewItems(data any) *Items {
 			items.List = append(items.List, item)
 			keyWidth = item.maxLen(keyWidth)
 		}
+	case reflect.String:
+		items.List = append(items.List, newItem("", rv, 0))
 	default:
-		panic("GCLI: invalid data type, only allow: array, map, slice, struct")
+		if reflects.IsAnyInt(kind) {
+			items.List = append(items.List, newItem("", rv, 0))
+		} else {
+			panic("GCLI.show: unsupported data type: " + rv.Kind().String())
+		}
 	}
 
 	// settings
