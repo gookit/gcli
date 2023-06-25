@@ -18,11 +18,18 @@ import (
 
 // Runner /Executor interface
 type Runner interface {
-	// Run Config(c *Command)
+	// Run the command
+	//
+	// TIP:
+	// 	args is the remain arguments after parse flags(options and arguments).
 	Run(c *Command, args []string) error
 }
 
 // RunnerFunc definition
+//
+// TIP:
+//
+//	args is the remain arguments after parse flags(options and arguments).
 type RunnerFunc func(c *Command, args []string) error
 
 // Run implement the Runner interface
@@ -96,9 +103,14 @@ type Command struct {
 	// subName is the name for grouped commands
 	// eg: "sys:info" -> module: "sys", subName: "info"
 	// module, subName string
+
 	// Examples some usage example display
 	Examples string
+
 	// Func is the command handler func. Func Runner
+	//
+	// TIP:
+	// 	func `args` is the remain arguments after parse flags(options and arguments).
 	Func RunnerFunc
 	// Help is the long help message text
 	// Can use string-var in contents, eg: {$cmd}
@@ -220,7 +232,7 @@ func (c *Command) AddCommand(sub *Command) {
 	// do add and init sub command
 	c.base.addCommand(c.Name, sub)
 	// update some parser config
-	sub.WithConfigFn(gflag.WithIndentLongOpt(c.ParserCfg().IndentLongOpt))
+	sub.Flags.WithConfigFn(gflag.WithIndentLongOpt(c.ParserCfg().IndentLongOpt))
 }
 
 // Match sub command by input names

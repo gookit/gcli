@@ -208,7 +208,7 @@ func TestFlags_VarOpt(t *testing.T) {
 	assert.NoErr(t, fs.Parse([]string{"--names", "abc", "-n", "def", "-s", "ghi"}))
 
 	assert.Len(t, ss, 3)
-	assert.Eq(t, "[abc def ghi]", ss.String())
+	assert.Eq(t, "abc,def,ghi", ss.String())
 }
 
 func TestFlags_CheckName(t *testing.T) {

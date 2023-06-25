@@ -14,10 +14,14 @@ const (
 	// default desc
 	defaultDesc = "No description"
 )
+
 const (
 	// TagRuleNamed struct tag use named k-v rule.
 	//
-	// eg: `flag:"name=int0;shorts=i;required=true;desc=int option message"`
+	// eg:
+	// 	`flag:"name=int0;shorts=i;required=true;desc=int option message"`
+	//	// name contains short name
+	//	`flag:"name=int0,i;required=true;desc=int option message"`
 	TagRuleNamed uint8 = iota
 
 	// TagRuleSimple struct tag use simple rule.
@@ -25,6 +29,11 @@ const (
 	//
 	// eg: `flag:"int option message;required;;i"`
 	TagRuleSimple
+
+	// TagRuleField struct tag use field name as flag setting name. TODO
+	//
+	// eg: `flag:"name,n" desc:"int option message" required:"true" default:"0"`
+	TagRuleField
 )
 
 // FlagTagName default tag name on struct

@@ -330,7 +330,13 @@ func NewArgument(name, desc string, requiredAndArrayed ...bool) *CliArg {
 	return NewArg(name, desc, nil, requiredAndArrayed...)
 }
 
-// SetArrayed the argument
+// WithArrayed for the argument
+func (a *CliArg) WithArrayed() *CliArg {
+	a.Arrayed = true
+	return a
+}
+
+// SetArrayed for the argument
 func (a *CliArg) SetArrayed() *CliArg {
 	a.Arrayed = true
 	return a

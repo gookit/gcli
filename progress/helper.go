@@ -22,19 +22,18 @@ var CharThemes = []rune{
 	CharSquare2,
 }
 
-// GetCharTheme by index number
+// GetCharTheme by index number. if index not exist, will return a random theme
 func GetCharTheme(index int) rune {
-	if len(CharThemes) > index {
+	if index > 0 && len(CharThemes) > index {
 		return CharThemes[index]
 	}
-
 	return RandomCharTheme()
 }
 
 // RandomCharTheme get
 func RandomCharTheme() rune {
 	rand.Seed(time.Now().UnixNano())
-	return CharThemes[rand.Intn(len(CharsThemes)-1)]
+	return CharThemes[rand.Intn(len(CharThemes)-1)]
 }
 
 // CharsThemes collection. can use for LoadingBar, LoadingSpinner
@@ -69,10 +68,9 @@ var CharsThemes = [][]rune{
 
 // GetCharsTheme by index number
 func GetCharsTheme(index int) []rune {
-	if len(CharsThemes) > index {
+	if index > 0 && len(CharsThemes) > index {
 		return CharsThemes[index]
 	}
-
 	return RandomCharsTheme()
 }
 

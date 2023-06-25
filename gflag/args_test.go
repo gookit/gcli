@@ -118,12 +118,15 @@ func TestArgument(t *testing.T) {
 	is.Eq("23", arg.String())
 
 	// array value
-	arg.Arrayed = true
+	arg.WithArrayed()
 	is.NoErr(arg.SetValue([]string{"a", "b"}))
 	is.True(arg.Arrayed)
 	is.Eq(0, arg.Int())
 	is.Eq("[a b]", arg.String())
 	is.Eq([]string{"a", "b"}, arg.Array())
+
+	arg = gcli.NewArgument("arg0", "arg desc").SetArrayed()
+	is.True(arg.Arrayed)
 
 	// required and is-array
 	arg = gflag.NewArgument("arg1", "arg desc", true, true)

@@ -416,7 +416,7 @@ func TestStrings(t *testing.T) {
 	is.NoErr(err)
 	err = ss.Set("abc")
 	is.NoErr(err)
-	is.Eq("[1 3 abc]", ss.String())
+	is.Eq("1,3,abc", ss.String())
 }
 
 func TestBooleans(t *testing.T) {

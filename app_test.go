@@ -48,6 +48,16 @@ var (
 						c.Ctx.Set("msg", c.App().Ctx.Get("top1:sub1"))
 						return nil
 					},
+					Subs: []*gcli.Command{
+						{
+							Name: "sub1-1",
+							Desc: "desc for top1.sub1.sub1-1",
+							Func: func(c *gcli.Command, args []string) error {
+								c.Ctx.Set("msg", c.App().Ctx.Get("top1:sub1:sub1-1"))
+								return nil
+							},
+						},
+					},
 				},
 			},
 		})

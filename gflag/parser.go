@@ -298,12 +298,12 @@ func (p *Parser) FromStruct(ptr any, ruleType ...uint8) (err error) {
 	for i := 0; i < t.NumField(); i++ {
 		sf := t.Field(i)
 		name := sf.Name
-
 		// skip cannot export field
 		if name[0] >= 'a' && name[0] <= 'z' {
 			continue
 		}
 
+		// TODO support anonymous field by sf.Anonymous
 		// eg: "name=int0;shorts=i;required=true;desc=int option message"
 		str := sf.Tag.Get(tagName)
 		if str == "" {
