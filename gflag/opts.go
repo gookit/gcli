@@ -9,7 +9,6 @@ import (
 	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/mathutil"
-	"github.com/gookit/goutil/stdutil"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
 )
@@ -632,9 +631,9 @@ func (m *CliOpt) Flag() *flag.Flag {
 }
 
 // DValue wrap the default value
-func (m *CliOpt) DValue() *stdutil.Value {
+func (m *CliOpt) DValue() *structs.Value {
 	if m.defVal == nil {
-		m.defVal = &stdutil.Value{V: m.DefVal}
+		m.defVal = &structs.Value{V: m.DefVal}
 	}
 	return m.defVal
 }

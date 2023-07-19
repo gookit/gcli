@@ -12,6 +12,7 @@ import (
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/errorx"
+	"github.com/gookit/goutil/maputil"
 )
 
 /*************************************************************
@@ -281,7 +282,7 @@ func (app *App) doParseOpts(args []string) error {
 
 // parseAppOpts parse global options
 func (app *App) parseAppOpts(args []string) (ok bool) {
-	Logf(VerbDebug, "will begin parse global options")
+	Logf(VerbDebug, "will begin parse app options, input-args: %v", args)
 
 	// parse global options
 	if err := app.doParseOpts(args); err != nil { // has error.
@@ -314,7 +315,7 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 		color.Enable = false
 	}
 
-	Debugf("app options parsed, Verbose level: <mgb>%s</>", app.opts.Verbose.String())
+	Debugf("app options parsed, verbose: <mgb>%s</>, options: %#v", app.opts.Verbose.String(), app.opts)
 
 	// TODO show auto-completion for bash/zsh
 	if app.opts.inCompletion {
@@ -474,7 +475,7 @@ func (app *App) Run(args []string) (code int) {
 		args = os.Args[1:] // exclude first arg, it's binFile.
 	}
 
-	Debugf("will begin run application. args: %v", args)
+	Debugf("will begin run application. input-args: %v", args)
 
 	// parse global flags
 	if false == app.parseAppOpts(args) {
@@ -524,7 +525,6 @@ func (app *App) RunCmd(name string, args []string) error {
 	if !app.HasCommand(name) {
 		return errorx.Failf(ERR, "command %q not exists", name)
 	}
-
 	return app.doRunCmd(name, args)
 }
 
@@ -538,7 +538,7 @@ func (app *App) doRunCmd(name string, args []string) (err error) {
 		err = newRunErr(ERR, err)
 		app.Fire(events.OnAppRunError, map[string]any{"err": err})
 	} else {
-		app.Fire(events.OnAppRunAfter, nil)
+		app.Fire(events.OnAppRunAfter, map[string]any{"cmd": name})
 	}
 	return
 }
@@ -582,7 +582,7 @@ func (app *App) Exec(path string, args []string) error {
  * helper methods
  *************************************************************/
 
-// Opts get
+// Opts get the app GlobalOpts
 func (app *App) Opts() *GlobalOpts {
 	return app.opts
 }
@@ -602,6 +602,8 @@ func (app *App) Exit(code int) {
 
 func (app *App) exitOnEnd(code int) int {
 	Debugf("application exit with code: %d", code)
+	app.Fire(events.OnAppExit, map[string]any{"code": code})
+
 	// if IsGteVerbose(VerbDebug) {
 	// 	app.Infoln("[DEBUG] The Runtime Call Stacks:")
 
@@ -635,7 +637,7 @@ func (app *App) On(name string, handler HookFunc) {
 
 // fire hook on the app. returns True for stop continue run.
 func (app *App) fireWithCmd(event string, cmd *Command, data map[string]any) bool {
-	Debugf("trigger the application event: <green>%s</>", event)
+	Debugf("trigger the application event: <green>%s</>, data: %s", event, maputil.ToString(data))
 
 	ctx := newHookCtx(event, cmd, data).WithApp(app)
 	return app.Hooks.Fire(event, ctx)
@@ -643,7 +645,7 @@ func (app *App) fireWithCmd(event string, cmd *Command, data map[string]any) boo
 
 // Fire hook on the app. returns True for stop continue run.
 func (app *App) Fire(event string, data map[string]any) bool {
-	Debugf("trigger the application event: <green>%s</>", event)
+	Debugf("trigger the application event: <green>%s</>, data: %s", event, maputil.ToString(data))
 
 	ctx := newHookCtx(event, nil, data).WithApp(app)
 	return app.Hooks.Fire(event, ctx)

@@ -78,6 +78,9 @@ type HookFunc func(ctx *HookCtx) (stop bool)
 
 // Hooks struct. hookManager
 type Hooks struct {
+	// pfxHooks can set prefix match hooks func on running.
+	// eg: app.run.* => app.run.init, app.run.after
+	pfxHooks map[string]HookFunc
 	// Hooks can set some hooks func on running.
 	hooks map[string]HookFunc
 }
@@ -86,6 +89,15 @@ type Hooks struct {
 func (h *Hooks) On(name string, handler HookFunc) {
 	if handler == nil {
 		panicf("event %q handler is nil", name)
+	}
+
+	if strings.HasSuffix(name, ".*") {
+		if h.pfxHooks == nil {
+			h.pfxHooks = make(map[string]HookFunc)
+		}
+
+		h.pfxHooks[name[:len(name)-2]] = handler
+		return
 	}
 
 	if h.hooks == nil {
@@ -104,8 +116,26 @@ func (h *Hooks) AddHook(name string, handler HookFunc) {
 // Fire event by name, allow with event data.
 // returns True for stop continue run.
 func (h *Hooks) Fire(event string, ctx *HookCtx) (stop bool) {
-	if handler, ok := h.hooks[event]; ok {
-		return handler(ctx)
+	if fn, ok := h.hooks[event]; ok {
+		if fn(ctx) {
+			return true
+		}
+	}
+
+	// check prefix match hooks
+	for name, fn := range h.pfxHooks {
+		if strings.HasPrefix(event, name) {
+			if fn(ctx) {
+				return true
+			}
+		}
+	}
+
+	// check * hook
+	if fn, ok := h.hooks["*"]; ok {
+		if fn(ctx) {
+			return true
+		}
 	}
 	return false
 }
@@ -119,6 +149,7 @@ func (h *Hooks) HasHook(event string) bool {
 // ResetHooks clear all hooks
 func (h *Hooks) ResetHooks() {
 	h.hooks = nil
+	h.pfxHooks = nil
 }
 
 /*************************************************************

@@ -7,7 +7,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/helper"
-	"github.com/gookit/goutil/stdutil"
+	"github.com/gookit/goutil/goinfo"
 )
 
 /*************************************************************
@@ -39,7 +39,7 @@ func logf(level VerbLevel, format string, v ...any) {
 	}
 
 	name := level2color[level].Render(level.Upper())
-	logAt := stdutil.GetCallerInfo(3)
+	logAt := goinfo.GetCallerInfo(3)
 
 	color.Printf("GCli: [%s] [<gray>%s</>] %s \n", name, logAt, fmt.Sprintf(format, v...))
 }

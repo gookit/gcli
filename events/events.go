@@ -6,11 +6,15 @@ const (
 	OnAppInitBefore = "app.init.before"
 	// OnAppInitAfter On app init after
 	OnAppInitAfter = "app.init.after"
-	// OnAppStop   = "app.stopped"
+	// OnAppExit On app exit before
+	OnAppExit = "app.exit"
 
-	// OnAppBindOptsBefore bind app options
+	// OnAppBindOptsBefore before bind app options
 	OnAppBindOptsBefore = "app.bind.opts.before"
-	OnAppBindOptsAfter  = "app.bind.opts.after"
+	// OnAppBindOptsAfter after bind app options.
+	//
+	// support binding custom global options
+	OnAppBindOptsAfter = "app.bind.opts.after"
 
 	// OnAppCmdAdd on app cmd add
 	OnAppCmdAdd = "app.cmd.add.before"
@@ -24,9 +28,10 @@ const (
 	// 	{args: app-args}
 	OnAppOptsParsed = "app.opts.parsed"
 
-	// OnAppPrepared prepare for run
+	// OnAppPrepared prepare for run, after the OnAppOptsParsed
 	OnAppPrepared = "app.run.prepared"
 
+	// OnAppRunBefore app run before, after the OnAppPrepared
 	OnAppRunBefore = "app.run.before"
 	OnAppRunAfter  = "app.run.after"
 	OnAppRunError  = "app.run.error"
