@@ -201,7 +201,7 @@ func TestFlags_VarOpt(t *testing.T) {
 	assert.NoErr(t, fs.Parse([]string{"--ints", "12", "--ints", "16"}))
 
 	assert.Len(t, ints, 2)
-	assert.Eq(t, "[12 16]", ints.String())
+	assert.Eq(t, "[12,16]", ints.String())
 
 	var ss gcli.Strings
 	fs.VarOpt(&ss, "names", "n,s", "desc")

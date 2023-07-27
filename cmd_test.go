@@ -398,12 +398,12 @@ func TestInts(t *testing.T) {
 	is.NoErr(err)
 	err = ints.Set("3")
 	is.NoErr(err)
-	is.Eq("[1 3]", ints.String())
+	is.Eq("[1,3]", ints.String())
 	err = ints.Set("abc")
 	is.Err(err)
 
 	ints = gcli.Ints{1, 3}
-	is.Eq("[1 3]", ints.String())
+	is.Eq("[1,3]", ints.String())
 }
 
 func TestStrings(t *testing.T) {
@@ -430,7 +430,7 @@ func TestBooleans(t *testing.T) {
 
 	err = val.Set("True")
 	is.NoErr(err)
-	is.Eq("[false true]", val.String())
+	is.Eq("[false,true]", val.String())
 
 	err = val.Set("abc")
 	is.Err(err)

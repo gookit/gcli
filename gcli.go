@@ -244,23 +244,18 @@ func IsDebugMode() bool { return gOpts.Verbose >= VerbDebug }
  *************************************************************************/
 
 // Ints The int flag list, implemented flag.Value interface
-// Deprecated
 type Ints = cflag.Ints
 
 // Strings The string flag list, implemented flag.Value interface
-// Deprecated
 type Strings = cflag.Strings
 
 // Booleans The bool flag list, implemented flag.Value interface
-// Deprecated
 type Booleans = cflag.Booleans
 
 // EnumString The string flag list, implemented flag.Value interface
-// Deprecated
 type EnumString = cflag.EnumString
 
 // String type, a special string
-// Deprecated
 type String = cflag.String
 
 /*************************************************************************
