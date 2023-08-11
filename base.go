@@ -241,12 +241,12 @@ func (b *base) ResetData() {
 	}
 }
 
-// GetCommand get a command by name
+// GetCommand get a command by top name
 func (b *base) GetCommand(name string) *Command {
 	return b.commands[name]
 }
 
-// Command get a command by name
+// Command get a command by top name
 func (b *base) Command(name string) (c *Command, exist bool) {
 	c, exist = b.commands[name]
 	return
@@ -272,13 +272,13 @@ func (b *base) HasCommands() bool {
 	return len(b.cmdNames) > 0
 }
 
-// HasCommand name check
+// HasCommand top command name check
 func (b *base) HasCommand(name string) bool {
 	_, has := b.cmdNames[name]
 	return has
 }
 
-// IsCommand name check. alias of the HasCommand()
+// IsCommand top command name check. alias of the HasCommand()
 func (b *base) IsCommand(name string) bool {
 	_, has := b.cmdNames[name]
 	return has
@@ -322,7 +322,7 @@ func (b *base) addCommand(pName string, c *Command) {
 	b.commands[cName] = c
 }
 
-// Match command by path names. eg. ["top", "sub"]
+// Match command by path names. eg: ["top", "sub"]
 func (b *base) Match(names []string) *Command {
 	ln := len(names)
 	if ln == 0 {
@@ -351,7 +351,7 @@ func (b *base) FindCommand(path string) *Command {
 	return b.Match(splitPath2names(path))
 }
 
-// FindByPath command by path. eg. "top:sub" or "top sub"
+// FindByPath command by path. eg: "top:sub" or "top sub"
 func (b *base) FindByPath(path string) *Command {
 	return b.Match(splitPath2names(path))
 }

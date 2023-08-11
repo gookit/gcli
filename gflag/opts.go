@@ -318,6 +318,26 @@ func (ops *CliOpts) uint64Opt(ptr *uint64, opt *CliOpt) {
 	opt.flag = ops.fSet.Lookup(name)
 }
 
+// FuncOptFn func option flag func type
+type FuncOptFn func(string) error
+
+// FuncOpt binding a func option flag
+//
+// Usage:
+//
+//	cmd.FuncOpt("name", "description ...", func(s string) error {
+//		// do something ...
+//		return nil
+//	})
+func (ops *CliOpts) FuncOpt(nameAndShorts, desc string, fn FuncOptFn, setFns ...CliOptFn) {
+	opt := NewOpt(nameAndShorts, desc, nil, setFns...)
+	name := ops.checkFlagInfo(opt)
+
+	// binding option to flag.FlagSet
+	ops.fSet.Func(name, opt.Desc, fn)
+	opt.flag = ops.fSet.Lookup(name)
+}
+
 // Var binding an custom var option flag
 func (ops *CliOpts) Var(ptr flag.Value, opt *CliOpt) { ops.varOpt(ptr, opt) }
 

@@ -505,6 +505,11 @@ func (app *App) Run(args []string) (code int) {
 	return app.exitOnEnd(exCode)
 }
 
+// RunArgs running a command with custom args
+func (app *App) RunArgs(args ...string) int {
+	return app.Run(args)
+}
+
 // RunLine manual run a command by command line string.
 //
 // eg: app.RunLine("top --top-opt val0 sub --sub-opt val1 arg0")

@@ -254,7 +254,7 @@ func (p *Parser) MustFromStruct(ptr any, ruleType ...uint8) {
 
 // FromStruct from struct tag binding options
 //
-// ## Named rule:
+// ## Named rule(default)
 //
 //	// tag format: name=val0;shorts=i;required=true;desc=a message
 //	type UserCmdOpts struct {
@@ -384,7 +384,7 @@ func (p *Parser) FromStruct(ptr any, ruleType ...uint8) (err error) {
 		case reflect.String:
 			p.StrVar((*string)(ptr), opt)
 		default:
-			return fmt.Errorf("field: %s - invalid type for binding flag", name)
+			return fmt.Errorf("field: %s - unsupport type(%s) for binding flag", name, ft.Kind())
 		}
 	}
 	return nil

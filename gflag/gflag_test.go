@@ -193,6 +193,20 @@ func TestFlags_Uint64Opt(t *testing.T) {
 	assert.Eq(t, uint64(16), uint2)
 }
 
+func TestFlags_FuncOpt(t *testing.T) {
+	fs := gcli.NewFlags("testFlags")
+
+	var str string
+	fs.FuncOpt("str, s", "desc", func(v string) error {
+		str = v
+		return nil
+	})
+
+	assert.Eq(t, "", str)
+	assert.NoErr(t, fs.Parse([]string{"-s", "abc"}))
+	assert.Eq(t, "abc", str)
+}
+
 func TestFlags_VarOpt(t *testing.T) {
 	fs := gcli.NewFlags("testFlags")
 
@@ -439,6 +453,34 @@ func TestFlags_FromStruct_noNameStruct(t *testing.T) {
 	assert.NoErr(t, err)
 	assert.True(t, fs.HasOption("abbrev"))
 	assert.True(t, fs.IsOption("abbrev"))
+}
+
+func TestExtType_Strings(t *testing.T) {
+	var v1 any
+	v1 = gcli.Strings{}
+	val, ok := v1.(flag.Value)
+	assert.True(t, ok)
+	assert.NotNil(t, val)
+
+	v1 = &gcli.Strings{}
+	val, ok = v1.(flag.Value)
+	assert.True(t, ok)
+	assert.NotNil(t, val)
+}
+
+func TestFlags_FromStruct_var_Strings(t *testing.T) {
+	type fileReplaceOpt struct {
+		// Dir   string       `flag:"desc=the directory for find and replace"`
+		Files gcli.Strings `flag:"desc=the files want replace content"`
+	}
+
+	opt := fileReplaceOpt{Files: make(gcli.Strings, 0)}
+
+	fs := gcli.NewFlags("test")
+	err := fs.FromStruct(&opt)
+
+	assert.NoErr(t, err)
+	assert.True(t, fs.HasOption("files"))
 }
 
 func TestFlags_FromStruct(t *testing.T) {
