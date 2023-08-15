@@ -169,7 +169,6 @@ func (p *Parser) Run(args []string) {
 		if err == flag.ErrHelp {
 			return // ignore help error
 		}
-
 		color.Errorf("Parse error: %s\n", err.Error())
 	}
 
@@ -359,6 +358,14 @@ func (p *Parser) FromStruct(ptr any, ruleType ...uint8) (err error) {
 			continue
 		}
 
+		// field is addressable and implements flag.Value
+		if fv.CanAddr() {
+			if addrV := fv.Addr(); addrV.Type().Implements(flagValueType) {
+				p.Var(addrV.Interface().(flag.Value), opt)
+				continue
+			}
+		}
+
 		// get field ptr addr
 		ptr := unsafe.Pointer(fv.UnsafeAddr())
 		switch ft.Kind() {
@@ -384,7 +391,7 @@ func (p *Parser) FromStruct(ptr any, ruleType ...uint8) (err error) {
 		case reflect.String:
 			p.StrVar((*string)(ptr), opt)
 		default:
-			return fmt.Errorf("field: %s - unsupport type(%s) for binding flag", name, ft.Kind())
+			return fmt.Errorf("field: %s - unsupport type(%s) for binding flag", name, ft.String())
 		}
 	}
 	return nil

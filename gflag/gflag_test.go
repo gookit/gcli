@@ -459,9 +459,10 @@ func TestExtType_Strings(t *testing.T) {
 	var v1 any
 	v1 = gcli.Strings{}
 	val, ok := v1.(flag.Value)
-	assert.True(t, ok)
-	assert.NotNil(t, val)
+	assert.False(t, ok)
+	assert.Nil(t, val)
 
+	// NOTE: must use ptr
 	v1 = &gcli.Strings{}
 	val, ok = v1.(flag.Value)
 	assert.True(t, ok)
@@ -471,7 +472,7 @@ func TestExtType_Strings(t *testing.T) {
 func TestFlags_FromStruct_var_Strings(t *testing.T) {
 	type fileReplaceOpt struct {
 		// Dir   string       `flag:"desc=the directory for find and replace"`
-		Files gcli.Strings `flag:"desc=the files want replace content"`
+		Files gcli.Strings `flag:"desc=the files want replace content;shorts=f"`
 	}
 
 	opt := fileReplaceOpt{Files: make(gcli.Strings, 0)}
@@ -481,6 +482,11 @@ func TestFlags_FromStruct_var_Strings(t *testing.T) {
 
 	assert.NoErr(t, err)
 	assert.True(t, fs.HasOption("files"))
+
+	err = fs.Parse([]string{"--files", "a.txt", "-f", "b.txt"})
+	assert.NoError(t, err)
+	assert.Len(t, opt.Files, 2)
+	assert.Eq(t, "a.txt,b.txt", opt.Files.String())
 }
 
 func TestFlags_FromStruct(t *testing.T) {
