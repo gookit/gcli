@@ -205,10 +205,6 @@ func (p *Parser) Parse(args []string) (err error) {
 		return err
 	}
 
-	if len(p.shorts) > 0 && len(args) > 0 {
-		args = cflag.ReplaceShorts(args, p.shorts) // TODO remove
-	}
-
 	// do parsing options. TODO p.ParseOpts(args)
 	if err = p.fSet.Parse(args); err != nil {
 		return err

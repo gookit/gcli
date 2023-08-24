@@ -33,6 +33,7 @@ type CliArgs struct {
 	argWidth int
 	// record min length for args
 	// argsMinLen int
+
 	// record argument names and defined positional relationships
 	//
 	// {
@@ -156,15 +157,15 @@ func (ags *CliArgs) AddArgument(arg *CliArg) *CliArg {
 	// validate argument name
 	name := arg.goodArgument()
 	if _, has := ags.argsIndexes[name]; has {
-		helper.Panicf("the argument name '%s' already exists in command '%s'", name, ags.name)
+		panicf("the argument name '%s' already exists in command '%s'", name, ags.name)
 	}
 
 	if ags.hasArrayArg {
-		helper.Panicf("have defined an array argument, you cannot add argument '%s'", name)
+		panicf("have defined an array argument, you cannot add argument '%s'", name)
 	}
 
 	if arg.Required && ags.hasOptionalArg {
-		helper.Panicf("required argument '%s' cannot be defined after optional argument", name)
+		panicf("required argument '%s' cannot be defined after optional argument", name)
 	}
 
 	// add argument index record
@@ -216,7 +217,7 @@ func (ags *CliArgs) HasArguments() bool {
 func (ags *CliArgs) Arg(name string) *CliArg {
 	i, ok := ags.argsIndexes[name]
 	if !ok {
-		helper.Panicf("get not exists argument '%s'", name)
+		panicf("get not exists argument '%s'", name)
 	}
 	return ags.args[i]
 }
@@ -224,7 +225,7 @@ func (ags *CliArgs) Arg(name string) *CliArg {
 // ArgByIndex get named arg by index
 func (ags *CliArgs) ArgByIndex(i int) *CliArg {
 	if i >= len(ags.args) {
-		helper.Panicf("get not exists argument #%d", i)
+		panicf("get not exists argument #%d", i)
 	}
 	return ags.args[i]
 }
@@ -247,7 +248,7 @@ func (ags *CliArgs) BuildArgsHelp() string {
 		sb.WriteString(fmt.Sprintf(
 			"  <info>%s</> %s",
 			strutil.PadRight(arg.HelpName(), " ", ags.argWidth),
-			getRequiredMark(arg.Required),
+			requiredMark(arg.Required),
 		))
 
 		// multi lines
@@ -388,11 +389,11 @@ func (a *CliArg) Init() *CliArg {
 func (a *CliArg) goodArgument() string {
 	name := strings.TrimSpace(a.Name)
 	if name == "" {
-		helper.Panicf("the command argument name cannot be empty")
+		panicf("the command argument name cannot be empty")
 	}
 
 	if !helper.IsGoodName(name) {
-		helper.Panicf("the argument name '%s' is invalid, must match: %s", name, helper.RegGoodName)
+		panicf("the argument name '%s' is invalid, must match: %s", name, helper.RegGoodName)
 	}
 
 	a.Name = name

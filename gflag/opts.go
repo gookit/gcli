@@ -33,15 +33,15 @@ type CliOpts struct {
 	//
 	// format: {name: length} // TODO delete, move len to opts.
 	names map[string]int
-	// short names map for options. format: {short: name}
-	//
-	// eg. {"n": "name", "o": "opt"}
-	shorts map[string]string
 	// support option category
 	categories []OptCategory
 	// flag name max length. useful for render help
 	// eg: "-V, --version" length is 13
 	optMaxLen int
+	// short names map for options. format: {short: name}
+	//
+	// eg. {"n": "name", "o": "opt"}
+	shorts map[string]string
 	// exist short names. useful for render help
 	hasShort bool
 }
@@ -411,6 +411,9 @@ func (co *CliOpts) checkShortNames(name string, shorts []string) {
 		// storage short name
 		co.shorts[short] = name
 	}
+
+	// copy to fSet
+	co.fSet.shorts = co.shorts
 }
 
 /***********************************************************************
@@ -474,7 +477,7 @@ func (co *CliOpts) HasOption(name string) bool {
 	return ok
 }
 
-// LookupFlag get flag.Flag by name
+// LookupFlag get Flag by name
 func (co *CliOpts) LookupFlag(name string) *Flag { return co.fSet.Lookup(name) }
 
 // Opt get CliOpt by name
@@ -505,7 +508,7 @@ func WithShorts(shorts ...string) CliOptFn {
 	return func(opt *CliOpt) { opt.Shorts = shorts }
 }
 
-// WithShortcut setting for option
+// WithShortcut setting for option, multi shortcut use comma separated
 func WithShortcut(shortcut string) CliOptFn {
 	return func(opt *CliOpt) { opt.Shorts = strutil.Split(shortcut, shortSepChar) }
 }
@@ -518,7 +521,7 @@ func WithValidator(fn func(val string) error) CliOptFn {
 // CliOpt define for a flag option
 type CliOpt struct {
 	// go flag value
-	flag *flag.Flag
+	flag *Flag
 	// Name of flag and description
 	Name, Desc string
 	// default value for the flag option
@@ -649,7 +652,7 @@ func (m *CliOpt) Validate(val string) error {
 }
 
 // Flag value
-func (m *CliOpt) Flag() *flag.Flag {
+func (m *CliOpt) Flag() *Flag {
 	return m.flag
 }
 

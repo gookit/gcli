@@ -8,6 +8,19 @@ import (
 	"github.com/gookit/goutil/testutil/assert"
 )
 
+func TestCliOpts_useShorts(t *testing.T) {
+	co := gflag.CliOpts{}
+	co.SetName("opts")
+	co.InitFlagSet()
+
+	var str string
+	co.StrOpt(&str, "str", "s", "a string option")
+
+	err := co.ParseOpts([]string{"-s", "val"})
+	assert.NoErr(t, err)
+	assert.Eq(t, "val", str)
+}
+
 func TestCliOpt_basic(t *testing.T) {
 	opt := gflag.NewOpt("opt1", "a option", "")
 	opt.WithOptFns(gflag.WithDefault("abc"), gflag.WithRequired(), gflag.WithShorts("o", "a"))

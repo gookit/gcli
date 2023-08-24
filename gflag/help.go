@@ -57,7 +57,7 @@ func (p *Parser) BuildHelp() string {
 func (p *Parser) BuildOptsHelp() string {
 	var sb strings.Builder
 
-	p.fSet.VisitAll(func(f *flag.Flag) {
+	p.fSet.VisitAll(func(f *Flag) {
 		line := p.formatOneFlag(f)
 		if line != "" {
 			sb.WriteString(line)
@@ -68,7 +68,7 @@ func (p *Parser) BuildOptsHelp() string {
 	return sb.String()
 }
 
-func (p *Parser) formatOneFlag(f *flag.Flag) (s string) {
+func (p *Parser) formatOneFlag(f *Flag) (s string) {
 	// Skip render:
 	// - opt is not exists(Has ensured that it is not a short name)
 	// - it is hidden flag option

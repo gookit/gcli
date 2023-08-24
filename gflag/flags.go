@@ -2,6 +2,7 @@ package gflag
 
 import (
 	"encoding"
+	"errors"
 	"flag"
 	"fmt"
 	"os"
@@ -18,8 +19,8 @@ type Flag = flag.Flag
 // sortFlags returns the flags as a slice in lexicographical sorted order.
 //
 // from the go flag package.
-func sortFlags(flags map[string]*flag.Flag) []*flag.Flag {
-	result := make([]*flag.Flag, len(flags))
+func sortFlags(flags map[string]*Flag) []*Flag {
+	result := make([]*Flag, len(flags))
 	i := 0
 	for _, f := range flags {
 		result[i] = f
@@ -31,10 +32,11 @@ func sortFlags(flags map[string]*flag.Flag) []*flag.Flag {
 	return result
 }
 
-// FlagSet custom implement flag set
+// FlagSet custom implement flag set, like flag.FlagSet.
+// But support short names for options.
 type FlagSet struct {
 	name string
-	args []string // arguments after parse
+	args []string // remain arguments after parse
 
 	parsed bool
 	actual map[string]*Flag
@@ -45,6 +47,11 @@ type FlagSet struct {
 	// output  io.Writer // nil means stderr; use Output() accessor
 
 	Usage func()
+
+	// short names map for options. format: {short: name}
+	//
+	// eg. {"n": "name", "o": "opt"}
+	shorts map[string]string
 }
 
 // NewFlagSet create a new FlagSet
@@ -281,7 +288,7 @@ func (f *FlagSet) Parse(arguments []string) error {
 		case flag.ContinueOnError:
 			return err
 		case flag.ExitOnError:
-			if err == flag.ErrHelp {
+			if errors.Is(err, flag.ErrHelp) {
 				os.Exit(0)
 			}
 			os.Exit(2)
@@ -331,6 +338,11 @@ func (f *FlagSet) parseOne() (bool, error) {
 		}
 	}
 
+	// resolve shortcut name
+	if rName, ok := f.shorts[name]; ok {
+		name = rName
+	}
+
 	flg, ok := f.formal[name]
 	if !ok {
 		if name == "help" || name == "h" { // special case for nice help message.
@@ -347,7 +359,7 @@ func (f *FlagSet) parseOne() (bool, error) {
 			}
 		} else {
 			if err := fv.Set("true"); err != nil {
-				return false, fmt.Errorf("invalid boolean flag %s: %v", name, err)
+				return false, fmt.Errorf("invalid boolean flag %s: %v", cflag.AddPrefix(name), err)
 			}
 		}
 	} else {
