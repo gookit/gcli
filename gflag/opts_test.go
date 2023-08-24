@@ -38,7 +38,7 @@ func TestCliOpt_Validate(t *testing.T) {
 
 	err := fm.Validate("")
 	assert.Err(t, err)
-	assert.Eq(t, "flag 'opt1' is required", err.Error())
+	assert.Eq(t, "option 'opt1' is required", err.Error())
 
 	err = fm.Validate("val")
 	assert.Err(t, err)

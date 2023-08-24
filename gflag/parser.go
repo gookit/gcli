@@ -423,16 +423,10 @@ func (p *Parser) Required(names ...string) {
  ***********************************************************************/
 
 // Name of the Flags
-func (p *Parser) Name() string { return p.fSet.Name() }
+func (p *Parser) Name() string { return p.name }
 
 // Len of the Flags
 func (p *Parser) Len() int { return len(p.names) }
-
-// FSet get the raw *flag.FlagSet
-func (p *Parser) FSet() *flag.FlagSet { return p.fSet }
-
-// SetFlagSet set the raw *flag.FlagSet
-func (p *Parser) SetFlagSet(fSet *flag.FlagSet) { p.fSet = fSet }
 
 // SetOutput for the Flags
 func (p *Parser) SetOutput(out io.Writer) { p.out = out }

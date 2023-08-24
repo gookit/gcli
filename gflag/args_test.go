@@ -5,61 +5,13 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/testutil/assert"
 )
 
-func TestCommand_AddArg(t *testing.T) {
-	is := assert.New(t)
-	c := gcli.NewCommand("test", "test desc", nil)
-
-	arg := c.AddArg("arg0", "arg desc", true)
-	is.Eq(0, arg.Index())
-
-	ret := c.ArgByIndex(0)
-	is.Eq(ret, arg)
-
-	assert.PanicsMsg(t, func() {
-		c.ArgByIndex(1)
-	}, "GCli: get not exists argument #1")
-
-	arg = c.AddArg("arg1", "arg1 desc")
-	is.Eq(1, arg.Index())
-
-	ret = c.Arg("arg1")
-	is.Eq(ret, arg)
-
-	is.PanicsMsg(func() {
-		c.Arg("not-exist")
-	}, "GCli: get not exists argument 'not-exist'")
-
-	is.Len(c.Args(), 2)
-
-	is.PanicsMsg(func() {
-		c.AddArg("", "desc")
-	}, "GCli: the command argument name cannot be empty")
-
-	is.PanicsMsg(func() {
-		c.AddArg(":)&dfd", "desc")
-	}, "GCli: the argument name ':)&dfd' is invalid, must match: ^[a-zA-Z][\\w-]*$")
-
-	is.PanicsMsg(func() {
-		c.AddArg("arg1", "desc")
-	}, "GCli: the argument name 'arg1' already exists in command 'test'")
-	is.PanicsMsg(func() {
-		c.AddArg("arg2", "arg2 desc", true)
-	}, "GCli: required argument 'arg2' cannot be defined after optional argument")
-
-	c.AddArg("arg3", "arg3 desc", false, true)
-	is.PanicsMsg(func() {
-		c.AddArg("argN", "desc", true)
-	}, "GCli: have defined an array argument, you cannot add argument 'argN'")
-}
-
 func TestArguments_AddArgByRule(t *testing.T) {
 	is := assert.New(t)
-	ags := gcli.Arguments{}
+	ags := gflag.Arguments{}
 
 	arg := ags.AddArgByRule("arg2", "arg2 desc;false;23")
 	is.Eq("arg2 desc", arg.Desc)
@@ -69,15 +21,15 @@ func TestArguments_AddArgByRule(t *testing.T) {
 
 func TestArguments_BindArg(t *testing.T) {
 	is := assert.New(t)
-	ags := gcli.Arguments{}
+	ags := gflag.Arguments{}
 
-	ags.BindArg(&gcli.Argument{Name: "ag0"})
+	ags.BindArg(&gflag.Argument{Name: "ag0"})
 	is.True(ags.HasArg("ag0"))
 }
 
 func TestArgument(t *testing.T) {
 	is := assert.New(t)
-	arg := gcli.NewArgument("arg0", "arg desc")
+	arg := gflag.NewArgument("arg0", "arg desc")
 
 	is.False(arg.Arrayed)
 	is.False(arg.Required)
@@ -125,7 +77,7 @@ func TestArgument(t *testing.T) {
 	is.Eq("[a b]", arg.String())
 	is.Eq([]string{"a", "b"}, arg.Array())
 
-	arg = gcli.NewArgument("arg0", "arg desc").SetArrayed()
+	arg = gflag.NewArgument("arg0", "arg desc").SetArrayed()
 	is.True(arg.Arrayed)
 
 	// required and is-array
@@ -137,7 +89,7 @@ func TestArgument(t *testing.T) {
 }
 
 func TestArgument_GetValue(t *testing.T) {
-	arg := gcli.NewArgument("arg0", "arg desc")
+	arg := gflag.NewArgument("arg0", "arg desc")
 
 	// custom handler
 	assert.NoErr(t, arg.SetValue("a-b-c"))
@@ -153,7 +105,7 @@ var str2int = func(val any) (any, error) {
 }
 
 func TestArgument_WithConfig(t *testing.T) {
-	arg := gcli.NewArgument("arg0", "arg desc").WithFn(func(arg *gcli.CliArg) {
+	arg := gflag.NewArgument("arg0", "arg desc").WithFn(func(arg *gflag.CliArg) {
 		_ = arg.SetValue(23)
 		arg.Init()
 	})
@@ -163,7 +115,7 @@ func TestArgument_WithConfig(t *testing.T) {
 }
 
 func TestArgument_SetValue(t *testing.T) {
-	arg := gcli.NewArgument("arg0", "arg desc")
+	arg := gflag.NewArgument("arg0", "arg desc")
 	// convert "12" to 12
 	arg.Validator = str2int
 
@@ -177,7 +129,7 @@ func TestArgument_SetValue(t *testing.T) {
 	assert.Nil(t, arg.Val())
 
 	// convert "12" to 12
-	arg = gcli.NewArgument("arg0", "arg desc").WithValidator(str2int)
+	arg = gflag.NewArgument("arg0", "arg desc").WithValidator(str2int)
 	err = arg.SetValue("12")
 	assert.NoErr(t, err)
 	assert.Eq(t, 12, arg.Val())
