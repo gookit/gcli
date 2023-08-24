@@ -55,7 +55,7 @@ func newDefaultFlagConfig() *Config {
 	}
 }
 
-// New create a new Parser
+// New create a new Parser and init it.
 func New(nameWithDesc ...string) *Parser {
 	p := &Parser{
 		out: os.Stdout,
@@ -71,7 +71,8 @@ func New(nameWithDesc ...string) *Parser {
 		}
 	}
 
-	p.InitFlagSet(fName)
+	p.SetName(fName)
+	p.InitFlagSet()
 	return p
 }
 
@@ -87,7 +88,7 @@ func (p *Parser) Init(name string) {
 	}
 
 	p.SetName(name)
-	p.InitFlagSet(name)
+	p.InitFlagSet()
 }
 
 // SetName for parser
@@ -136,7 +137,7 @@ func (p *Parser) SetHandle(fn HandleFunc) *Parser {
  * - parse input flags
  ***********************************************************************/
 
-// Run flags parse and handle help render
+// Run parse options and arguments, and handle help render
 //
 // Usage:
 //
@@ -164,12 +165,18 @@ func (p *Parser) Run(args []string) {
 		p.PrintHelpPanel()
 	})
 
-	// do parsing
+	// do parsing options
 	if err := p.Parse(waitArgs); err != nil {
-		if err == flag.ErrHelp {
-			return // ignore help error
+		if err != flag.ErrHelp {
+			color.Errorf("Parse options error: %s\n", err.Error())
 		}
-		color.Errorf("Parse error: %s\n", err.Error())
+		return // ignore help error
+	}
+
+	// parsing named arguments.
+	if err := p.ParseArgs(p.fSet.Args()); err != nil {
+		color.Errorf("Parse arguments error: %s\n", err.Error())
+		return
 	}
 
 	if p.handle != nil {
@@ -191,7 +198,7 @@ func (p *Parser) Run(args []string) {
 func (p *Parser) Parse(args []string) (err error) {
 	defer func() {
 		if err := recover(); err != nil {
-			color.Errorln("Flags.Parse Error:", err)
+			color.Errorln("gflag.Parse Error:", err)
 		}
 	}()
 
@@ -201,23 +208,22 @@ func (p *Parser) Parse(args []string) (err error) {
 	}
 
 	if len(p.shorts) > 0 && len(args) > 0 {
-		args = cflag.ReplaceShorts(args, p.shorts)
-		// TODO gcli.Debugf("replace shortcuts. now, args: %v", args)
+		args = cflag.ReplaceShorts(args, p.shorts) // TODO remove
 	}
 
-	// do parsing
+	// do parsing options. TODO p.ParseOpts(args)
 	if err = p.fSet.Parse(args); err != nil {
 		return err
 	}
 
-	// after hook
+	// after options parse hook
 	if p.AfterParse != nil {
 		if err := p.AfterParse(p); err != nil {
 			return err
 		}
 	}
 
-	// call flags validate
+	// call options validations
 	for name, opt := range p.opts {
 		fItem := p.fSet.Lookup(name)
 		err = opt.Validate(fItem.Value.String())
@@ -225,6 +231,9 @@ func (p *Parser) Parse(args []string) (err error) {
 			return err
 		}
 	}
+
+	// parsing named arguments. TODO
+	// err = p.ParseArgs(p.fSet.Args())
 	return
 }
 

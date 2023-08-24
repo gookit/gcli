@@ -28,12 +28,14 @@ type CliOpts struct {
 
 	// the options flag set TODO remove flag.FlagSet, custom implement parse
 	fSet *flag.FlagSet
-	// all cli option names.
+	// metadata for all options, key is option name.
+	opts map[string]*CliOpt // TODO support option category
+	// all cli option names, without short names.
+	//
 	// format: {name: length} // TODO delete, move len to opts.
 	names map[string]int
-	// metadata for all options
-	opts map[string]*CliOpt // TODO support option category
 	// short names map for options. format: {short: name}
+	//
 	// eg. {"n": "name", "o": "opt"}
 	shorts map[string]string
 	// support option category
@@ -46,13 +48,15 @@ type CliOpts struct {
 }
 
 // InitFlagSet create and init flag.FlagSet
-func (ops *CliOpts) InitFlagSet(name string) {
+func (ops *CliOpts) InitFlagSet() {
 	if ops.fSet != nil {
 		return
 	}
 
-	ops.name = name
-	ops.fSet = flag.NewFlagSet(name, flag.ContinueOnError)
+	if ops.name == "" {
+		ops.name = "flags"
+	}
+	ops.fSet = flag.NewFlagSet(ops.name, flag.ContinueOnError)
 	// disable output internal error message on parse flags
 	ops.fSet.SetOutput(io.Discard)
 	// nothing to do ... render usage on after parsed
@@ -102,7 +106,6 @@ func (ops *CliOpts) boolOpt(ptr *bool, opt *CliOpt) {
 	defVal := opt.DValue().Bool()
 	name := ops.checkFlagInfo(opt)
 
-	// binding option to flag.FlagSet
 	ops.fSet.BoolVar(ptr, name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 }
@@ -121,7 +124,6 @@ func (ops *CliOpts) float64Opt(p *float64, opt *CliOpt) {
 	defVal := opt.DValue().Float64()
 	name := ops.checkFlagInfo(opt)
 
-	// binding option to flag.FlagSet
 	ops.fSet.Float64Var(p, name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 }
@@ -133,7 +135,6 @@ func (ops *CliOpts) Str(name, shorts string, defVal, desc string) *string {
 	opt := newOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
-	// binding option to flag.FlagSet
 	p := ops.fSet.String(name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 
@@ -177,7 +178,6 @@ func (ops *CliOpts) strOpt(p *string, opt *CliOpt) {
 		defVal = *p
 	}
 
-	// binding option to flag.FlagSet
 	ops.fSet.StringVar(p, opt.Name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 }
@@ -189,7 +189,6 @@ func (ops *CliOpts) Int(name, shorts string, defVal int, desc string) *int {
 	opt := newOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
-	// binding option to flag.FlagSet
 	ptr := ops.fSet.Int(name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 
@@ -220,7 +219,6 @@ func (ops *CliOpts) intOpt(ptr *int, opt *CliOpt) {
 		defVal = *ptr
 	}
 
-	// binding option to flag.FlagSet
 	ops.fSet.IntVar(ptr, name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 }
@@ -230,7 +228,6 @@ func (ops *CliOpts) Int64(name, shorts string, defVal int64, desc string) *int64
 	opt := newOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
-	// binding option to flag.FlagSet
 	p := ops.fSet.Int64(name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 	return p
@@ -253,7 +250,6 @@ func (ops *CliOpts) int64Opt(ptr *int64, opt *CliOpt) {
 		defVal = *ptr
 	}
 
-	// binding option to flag.FlagSet
 	ops.fSet.Int64Var(ptr, name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 }
@@ -265,7 +261,6 @@ func (ops *CliOpts) Uint(name, shorts string, defVal uint, desc string) *uint {
 	opt := newOpt(name, desc, defVal, shorts)
 	name = ops.checkFlagInfo(opt)
 
-	// binding option to flag.FlagSet
 	ptr := ops.fSet.Uint(name, defVal, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 
@@ -284,7 +279,6 @@ func (ops *CliOpts) uintOpt(ptr *uint, opt *CliOpt) {
 	defVal := opt.DValue().Int()
 	name := ops.checkFlagInfo(opt)
 
-	// binding option to flag.FlagSet
 	ops.fSet.UintVar(ptr, name, uint(defVal), opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 }
@@ -313,7 +307,6 @@ func (ops *CliOpts) uint64Opt(ptr *uint64, opt *CliOpt) {
 	defVal := opt.DValue().Int64()
 	name := ops.checkFlagInfo(opt)
 
-	// binding option to flag.FlagSet
 	ops.fSet.Uint64Var(ptr, name, uint64(defVal), opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 }
@@ -360,7 +353,6 @@ func (ops *CliOpts) VarOpt2(v flag.Value, nameAndShorts, desc string, setFns ...
 func (ops *CliOpts) varOpt(v flag.Value, opt *CliOpt) {
 	name := ops.checkFlagInfo(opt)
 
-	// binding option to flag.FlagSet
 	ops.fSet.Var(v, name, opt.Desc)
 	opt.flag = ops.fSet.Lookup(name)
 }
@@ -377,14 +369,14 @@ func (ops *CliOpts) checkFlagInfo(opt *CliOpt) string {
 	if ops.names == nil {
 		ops.names = map[string]int{}
 		ops.opts = map[string]*CliOpt{}
-		ops.InitFlagSet("flags-" + opt.Name)
+		ops.InitFlagSet()
 	}
 
 	// is a short name
 	helpLen := opt.helpNameLen()
 	// fix: must exclude Hidden option
 	if !opt.Hidden {
-		// +7: type placeholder width
+		// +6: type placeholder width
 		ops.optMaxLen = mathutil.MaxInt(ops.optMaxLen, helpLen+6)
 	}
 
@@ -425,6 +417,27 @@ func (ops *CliOpts) checkShortNames(name string, shorts []string) {
 		// storage short name
 		ops.shorts[short] = name
 	}
+}
+
+/***********************************************************************
+ * Options parse
+ ***********************************************************************/
+
+// ParseOpts parse options from input args
+func (ops *CliOpts) ParseOpts(args []string) (err error) {
+	// parse options
+	if err = ops.fSet.Parse(args); err != nil {
+		return
+	}
+
+	// call options validations
+	for _, opt := range ops.opts {
+		err = opt.Validate(opt.Flag().Value.String())
+		if err != nil {
+			return err
+		}
+	}
+	return
 }
 
 /***********************************************************************
@@ -522,7 +535,7 @@ type CliOpt struct {
 	DefVal any
 	// wrapped the default value
 	defVal *structs.Value
-	// short names. eg: ["o", "a"]
+	// Shorts shorthand names. eg: ["o", "a"]
 	Shorts []string
 	// EnvVar allow set flag value from ENV var
 	EnvVar string
@@ -635,7 +648,7 @@ func (m *CliOpt) helpNameLen() int {
 // Validate the binding value
 func (m *CliOpt) Validate(val string) error {
 	if m.Required && val == "" {
-		return fmt.Errorf("flag '%s' is required", m.Name)
+		return fmt.Errorf("option '%s' is required", m.Name)
 	}
 
 	// call user custom validator

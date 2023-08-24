@@ -24,7 +24,7 @@ type CliArgs struct {
 	name string
 	// args definition for a command.
 	//
-	// eg. [
+	// eg: [
 	// 	{"arg0", "this is first argument", false, false},
 	// 	{"arg1", "this is second argument", false, false},
 	// ]
@@ -61,7 +61,7 @@ func (ags *CliArgs) SetValidateNum(validateNum bool) {
 	ags.validateNum = validateNum
 }
 
-// ParseArgs for CliArgs
+// ParseArgs parse and binding named arguments from input args
 func (ags *CliArgs) ParseArgs(args []string) (err error) {
 	var num int // parsed num
 	inNum := len(args)
