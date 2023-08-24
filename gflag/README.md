@@ -1,16 +1,33 @@
 # Gflag
 
-`gflag` provide command line options and arguments binding, parse, management.
+`gflag` provide command line options and arguments parse, binding, management.
 
 ## GoDoc
 
-Please see https://pkg.go.dev/github.com/gookit/gcli/v3/gflag
+Please see https://pkg.go.dev/github.com/gookit/gcli/v3
 
 ## Install
 
 ```shell
 go get github.com/gookit/gcli/v3/gflag
 ```
+
+## Flags
+
+- `options`   - start with `-` or `--`, and the first character must be a letter
+- `arguments` - not start with `-` or `--`, and after options.
+
+### Flag Options
+
+- Support long option. eg: `--long` `--long value`
+- Support short option. eg: `-s -a value`
+- Support define array option
+    - eg: `--tag php --tag go` will get `tag: [php, go]`
+
+### Flag Arguments
+
+- Support binding named argument
+- Support define array argument
 
 ## Usage
 

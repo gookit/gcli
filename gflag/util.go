@@ -1,6 +1,8 @@
 package gflag
 
 import (
+	"fmt"
+
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/comdef"
@@ -14,11 +16,16 @@ func sepStr(seps []string) string {
 	return comdef.DefaultSep
 }
 
-func getRequiredMark(must bool) string {
+func requiredMark(must bool) string {
 	if must {
 		return "<red>*</>"
 	}
 	return ""
+}
+
+// panicf message
+func panicf(format string, v ...any) {
+	panic(fmt.Sprintf("gflag: "+format, v...))
 }
 
 // allowed keys on struct tag.
@@ -34,9 +41,11 @@ func getRequiredMark(must bool) string {
 //	shorts
 //	required
 //	default
-var flagTagKeys = arrutil.Strings{"name", "desc", "required", "default", "shorts"}
-var flagTagKeys1 = arrutil.Strings{"desc", "required", "default", "shorts"}
-var flagArgKeys = arrutil.Strings{"desc", "required", "default"}
+var (
+	flagTagKeys  = arrutil.Strings{"name", "desc", "required", "default", "shorts"}
+	flagTagKeys1 = arrutil.Strings{"desc", "required", "default", "shorts"}
+	flagArgKeys  = arrutil.Strings{"desc", "required", "default"}
+)
 
 // struct tag value use simple rule. each item split by ';'
 //

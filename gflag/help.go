@@ -132,7 +132,7 @@ func (p *Parser) formatOneFlag(f *flag.Flag) (s string) {
 		desc = strings.Replace(strutil.UpperFirst(desc), "\n", nlIndent, -1)
 	}
 
-	s += getRequiredMark(opt.Required) + desc
+	s += requiredMark(opt.Required) + desc
 
 	// ---- append default value
 	if isZero, isStr := cflag.IsZeroValue(f, f.DefValue); !isZero {

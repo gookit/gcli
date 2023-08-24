@@ -11,24 +11,23 @@ import (
 	"unsafe"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/color/colorp"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
 )
 
-// Flags type
-type Flags = Parser
+// Parser type, alias of Flags type
+type Parser = Flags
 
 // HandleFunc type
-type HandleFunc func(p *Parser) error
+type HandleFunc func(fs *Flags) error
 
-// Parser cli flag options and arguments binding management and parsing.
-type Parser struct {
+// Flags cli flag options and arguments management, parsing, and binding.
+type Flags struct {
 	// --- cli options ---
 	CliOpts
-
 	// --- cli arguments ---
 	CliArgs
 
@@ -36,7 +35,7 @@ type Parser struct {
 	// Desc message
 	Desc string
 	// AfterParse options hook
-	AfterParse func(fs *Parser) error
+	AfterParse func(fs *Flags) error
 
 	// cfg option for the flags parser
 	cfg *Config
@@ -44,8 +43,8 @@ type Parser struct {
 	buf *bytes.Buffer
 	// output for print help message
 	out io.Writer
-	// handle func
-	handle HandleFunc
+	// HandleFunc handle func, will call on Run()
+	HandleFunc HandleFunc
 }
 
 func newDefaultFlagConfig() *Config {
@@ -56,8 +55,8 @@ func newDefaultFlagConfig() *Config {
 }
 
 // New create a new Parser and init it.
-func New(nameWithDesc ...string) *Parser {
-	p := &Parser{
+func New(nameWithDesc ...string) *Flags {
+	p := &Flags{
 		out: os.Stdout,
 		cfg: newDefaultFlagConfig(),
 	}
@@ -127,8 +126,8 @@ func (p *Parser) WithConfigFn(fns ...ConfigFunc) *Parser {
 }
 
 // SetHandle func
-func (p *Parser) SetHandle(fn HandleFunc) *Parser {
-	p.handle = fn
+func (p *Parser) SetHandle(fn HandleFunc) *Flags {
+	p.HandleFunc = fn
 	return p
 }
 
@@ -137,7 +136,7 @@ func (p *Parser) SetHandle(fn HandleFunc) *Parser {
  * - parse input flags
  ***********************************************************************/
 
-// Run parse options and arguments, and handle help render
+// Run parse options and arguments, and HandleFunc help render
 //
 // Usage:
 //
@@ -160,8 +159,7 @@ func (p *Parser) Run(args []string) {
 		}
 
 		color.Comment.Println("Usage:")
-		color.Cyan.Println(" ", binFile, "[--Options...] [CliArgs...]\n")
-
+		colorp.Cyanln(" ", binFile, "[--Options ...] [Arguments ...]\n")
 		p.PrintHelpPanel()
 	})
 
@@ -179,8 +177,8 @@ func (p *Parser) Run(args []string) {
 		return
 	}
 
-	if p.handle != nil {
-		if err := p.handle(p); err != nil {
+	if p.HandleFunc != nil {
+		if err := p.HandleFunc(p); err != nil {
 			color.Errorln(err)
 		}
 	}
@@ -411,7 +409,7 @@ func (p *Parser) Required(names ...string) {
 	for _, name := range names {
 		opt, ok := p.opts[name]
 		if !ok {
-			helper.Panicf("config undefined option '%s'", cflag.AddPrefix(name))
+			panicf("config undefined option '%s'", cflag.AddPrefix(name))
 		}
 		opt.Required = true
 	}

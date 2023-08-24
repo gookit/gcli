@@ -356,7 +356,7 @@ func (co *CliOpts) checkFlagInfo(opt *CliOpt) string {
 	// check flag name
 	name := opt.initCheck()
 	if _, ok := co.opts[name]; ok {
-		helper.Panicf("redefined option flag '%s'", name)
+		panicf("redefined option flag '%s'", name)
 	}
 
 	// NOTICE: must init some required fields
@@ -397,15 +397,15 @@ func (co *CliOpts) checkShortNames(name string, shorts []string) {
 
 	for _, short := range shorts {
 		if name == short {
-			helper.Panicf("short name '%s' has been used as the current option name", short)
+			panicf("short name '%s' has been used as the current option name", short)
 		}
 
 		if _, ok := co.names[short]; ok {
-			helper.Panicf("short name '%s' has been used as an option name", short)
+			panicf("short name '%s' has been used as an option name", short)
 		}
 
 		if n, ok := co.shorts[short]; ok {
-			helper.Panicf("short name '%s' has been used by option '%s'", short, n)
+			panicf("short name '%s' has been used by option '%s'", short, n)
 		}
 
 		// storage short name
@@ -461,10 +461,6 @@ func (co *CliOpts) IsShortOpt(short string) bool { return co.IsShortName(short) 
 
 // IsShortName check it is a shortcut name
 func (co *CliOpts) IsShortName(short string) bool {
-	if len(short) != 1 {
-		return false
-	}
-
 	_, ok := co.shorts[short]
 	return ok
 }
@@ -479,7 +475,7 @@ func (co *CliOpts) HasOption(name string) bool {
 }
 
 // LookupFlag get flag.Flag by name
-func (co *CliOpts) LookupFlag(name string) *flag.Flag { return co.fSet.Lookup(name) }
+func (co *CliOpts) LookupFlag(name string) *Flag { return co.fSet.Lookup(name) }
 
 // Opt get CliOpt by name
 func (co *CliOpts) Opt(name string) *CliOpt { return co.opts[name] }
@@ -529,7 +525,7 @@ type CliOpt struct {
 	DefVal any
 	// wrapped the default value
 	defVal *structs.Value
-	// Shorts shorthand names. eg: ["o", "a"]
+	// Shorts shorthand/alias names. eg: ["o", "a"]
 	Shorts []string
 	// EnvVar allow set flag value from ENV var
 	EnvVar string
@@ -607,11 +603,11 @@ func (m *CliOpt) initCheck() string {
 func (m *CliOpt) goodName() string {
 	name := strings.Trim(m.Name, "- ")
 	if name == "" {
-		helper.Panicf("option flag name cannot be empty")
+		panicf("option flag name cannot be empty")
 	}
 
 	if !helper.IsGoodName(name) {
-		helper.Panicf("option flag name '%s' is invalid, must match: %s", name, helper.RegGoodName)
+		panicf("option flag name '%s' is invalid, must match: %s", name, helper.RegGoodName)
 	}
 
 	// update self name

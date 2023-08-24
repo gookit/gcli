@@ -231,25 +231,25 @@ func TestFlags_CheckName(t *testing.T) {
 		fs := gcli.NewFlags()
 		fs.Int64Opt(&i, "opt1", "", 0, "desc")
 		fs.Int64Opt(&i, "opt1", "", 0, "desc")
-	}, "GCli: redefined option flag 'opt1'")
+	}, "gflag: redefined option flag 'opt1'")
 
 	assert.PanicsMsg(t, func() {
 		var b bool
 		fs := gcli.NewFlags()
 		fs.BoolOpt(&b, "", "", false, "desc")
-	}, "GCli: option flag name cannot be empty")
+	}, "gflag: option flag name cannot be empty")
 
 	assert.PanicsMsg(t, func() {
 		var fv uint
 		fs := gcli.NewFlags()
 		fs.UintOpt(&fv, "+invalid", "", 0, "desc")
-	}, "GCli: option flag name '+invalid' is invalid, must match: ^[a-zA-Z][\\w-]*$")
+	}, "gflag: option flag name '+invalid' is invalid, must match: ^[a-zA-Z][\\w-]*$")
 
 	assert.PanicsMsg(t, func() {
 		var fv uint64
 		fs := gcli.NewFlags()
 		fs.Uint64Opt(&fv, "78", "", 0, "desc")
-	}, "GCli: option flag name '78' is invalid, must match: ^[a-zA-Z][\\w-]*$")
+	}, "gflag: option flag name '78' is invalid, must match: ^[a-zA-Z][\\w-]*$")
 }
 
 func TestFlags_CheckShorts(t *testing.T) {
@@ -277,21 +277,21 @@ func TestFlags_CheckShorts(t *testing.T) {
 		var i int
 		fs := gcli.NewFlags()
 		fs.IntVar(&i, &gcli.FlagMeta{Name: "a", Shorts: []string{"a"}})
-	}, "GCli: short name 'a' has been used as the current option name")
+	}, "gflag: short name 'a' has been used as the current option name")
 
 	assert.PanicsMsg(t, func() {
 		var i int
 		fs := gcli.NewFlags()
 		fs.IntOpt(&i, "s", "", 0, "desc")
 		fs.IntOpt(&i, "int1", "s", 0, "desc")
-	}, "GCli: short name 's' has been used as an option name")
+	}, "gflag: short name 's' has been used as an option name")
 
 	assert.PanicsMsg(t, func() {
 		var str string
 		fs := gcli.NewFlags()
 		fs.StrOpt(&str, "str", "s", "", "desc")
 		fs.StrOpt(&str, "str1", "s", "", "desc")
-	}, "GCli: short name 's' has been used by option 'str'")
+	}, "gflag: short name 's' has been used by option 'str'")
 }
 
 var flagOpts = struct {
