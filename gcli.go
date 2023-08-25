@@ -75,7 +75,8 @@ func GCtx() *Context {
 // Flags alias of the gflag.Parser
 type Flags = gflag.Parser
 
-// FlagMeta alias of the gflag.CliOpt
+// FlagMeta alias of the gflag.CliOpt.
+// Deprecated: use CliOpt instead
 type FlagMeta = gflag.CliOpt
 
 // CliOpt alias of the gflag.CliOpt

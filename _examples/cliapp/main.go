@@ -47,11 +47,11 @@ func main() {
 	// gcli.GOpts().SetDisable()
 
 	// app.BeforeAddOpts = func(opts *gcli.Flags) {
-	// 	opts.StrVar(&customGOpt, &gcli.FlagMeta{Name: "custom", Desc: "desc message for the option"})
+	// 	opts.StrVar(&customGOpt, &gcli.CliOpt{Name: "custom", Desc: "desc message for the option"})
 	// }
 
 	app.On(events.OnAppBindOptsAfter, func(ctx *gcli.HookCtx) (stop bool) {
-		ctx.App.Flags().StrVar(&customGOpt, &gcli.FlagMeta{
+		ctx.App.Flags().StrVar(&customGOpt, &gcli.CliOpt{
 			Name: "custom",
 			Desc: "desc message for the option",
 		})

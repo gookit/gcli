@@ -53,7 +53,7 @@ Including running commands, color styles, data display, progress display, intera
 
 **Flag Arguments**:
 
-- Support binding named arguemnt
+- Support binding named argument
 - Support define array argument
 
 ## GoDoc

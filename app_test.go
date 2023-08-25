@@ -294,7 +294,9 @@ func TestApp_Run_command_withOptions(t *testing.T) {
 	}()
 
 	app.Run([]string{"test", "-h"})
-	is.Contains(buf.String(), "-o, --opt1 string")
+	s := buf.String()
+	fmt.Println(s)
+	is.Contains(s, "-o, --opt1 string")
 }
 
 func TestApp_Run_subcommand(t *testing.T) {
