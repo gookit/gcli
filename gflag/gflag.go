@@ -58,6 +58,12 @@ type Config struct {
 	DisableArg bool
 	// IndentLongOpt indent long option name on print help
 	IndentLongOpt bool
+	// EnhanceShort enhance short option parse. TODO
+	//
+	// 	0 - none
+	// 	1 - multi short bool options. eg: `-aux` = `-a -u -x`
+	// 	2 - allow name with value as one node. eg: `-Ostdout` = `-O stdout`
+	EnhanceShort uint8
 }
 
 // GetTagName get tag name, default is FlagTagName

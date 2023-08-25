@@ -134,3 +134,51 @@ func TestArgument_SetValue(t *testing.T) {
 	assert.NoErr(t, err)
 	assert.Eq(t, 12, arg.Val())
 }
+
+func TestCliArgs_AddArg_panic(t *testing.T) {
+	is := assert.New(t)
+	c := gflag.Arguments{}
+	c.SetName("test")
+
+	arg := c.AddArg("arg0", "arg desc", true)
+	is.Eq(0, arg.Index())
+
+	ret := c.ArgByIndex(0)
+	is.Eq(ret, arg)
+
+	assert.PanicsMsg(t, func() {
+		c.ArgByIndex(1)
+	}, "gflag: get not exists argument #1")
+
+	arg = c.AddArg("arg1", "arg1 desc")
+	is.Eq(1, arg.Index())
+
+	ret = c.Arg("arg1")
+	is.Eq(ret, arg)
+
+	is.PanicsMsg(func() {
+		c.Arg("not-exist")
+	}, "gflag: get not exists argument 'not-exist'")
+
+	is.Len(c.Args(), 2)
+
+	is.PanicsMsg(func() {
+		c.AddArg("", "desc")
+	}, "gflag: the command argument name cannot be empty")
+
+	is.PanicsMsg(func() {
+		c.AddArg(":)&dfd", "desc")
+	}, "gflag: the argument name ':)&dfd' is invalid, must match: ^[a-zA-Z][\\w-]*$")
+
+	is.PanicsMsg(func() {
+		c.AddArg("arg1", "desc")
+	}, "gflag: the argument name 'arg1' already exists in command 'test'")
+	is.PanicsMsg(func() {
+		c.AddArg("arg2", "arg2 desc", true)
+	}, "gflag: required argument 'arg2' cannot be defined after optional argument")
+
+	c.AddArg("arg3", "arg3 desc", false, true)
+	is.PanicsMsg(func() {
+		c.AddArg("argN", "desc", true)
+	}, "gflag: have defined an array argument, you cannot add argument 'argN'")
+}

@@ -2,7 +2,6 @@ package gflag
 
 import (
 	"bytes"
-	"flag"
 	"fmt"
 	"strings"
 
@@ -102,7 +101,7 @@ func (p *Parser) formatOneFlag(f *Flag) (s string) {
 	s = fmt.Sprintf("  <info>%s</>", fullName)
 
 	// - build flag type info
-	typeName, desc := flag.UnquoteUsage(f)
+	typeName, desc := UnquoteUsage(f)
 	// typeName: option value data type: int, string, ..., bool value will return ""
 	if !p.cfg.WithoutType && len(typeName) > 0 {
 		typeLen := len(typeName) + 1

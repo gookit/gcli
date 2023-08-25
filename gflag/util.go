@@ -84,3 +84,47 @@ func parseSimpleRule(rule string) (mp map[string]string) {
 	}
 	return arrutil.CombineToSMap(flagTagKeys1, ss)
 }
+
+// UnquoteUsage extracts a back-quoted name from the usage
+// string for a flag and returns it and the un-quoted usage.
+// Given "a `name` to show" it returns ("name", "a name to show").
+// If there are no back quotes, the name is an educated guess of the
+// type of the flag's value, or the empty string if the flag is boolean.
+//
+// Note: from go flag.UnquoteUsage()
+func UnquoteUsage(flag *Flag) (name string, usage string) {
+	// Look for a back-quoted name, but avoid the strings package.
+	usage = flag.Usage
+	for i := 0; i < len(usage); i++ {
+		if usage[i] == '`' {
+			for j := i + 1; j < len(usage); j++ {
+				if usage[j] == '`' {
+					name = usage[i+1 : j]
+					usage = usage[:i] + name + usage[j+1:]
+					return name, usage
+				}
+			}
+			break // Only one back quote; use type name.
+		}
+	}
+
+	// No explicit name, so use type if we can find one.
+	name = "value"
+	switch fv := flag.Value.(type) {
+	case boolFlag:
+		if fv.IsBoolFlag() {
+			name = ""
+		}
+	case *durationValue:
+		name = "duration"
+	case *float64Value:
+		name = "float"
+	case *intValue, *int64Value:
+		name = "int"
+	case *stringValue:
+		name = "string"
+	case *uintValue, *uint64Value:
+		name = "uint"
+	}
+	return
+}
