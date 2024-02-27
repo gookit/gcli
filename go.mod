@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/gookit/color v1.5.4
 	github.com/gookit/goutil v0.6.15
-	golang.org/x/crypto v0.19.0
+	golang.org/x/crypto v0.20.0
 )
 
 require (
