@@ -46,8 +46,13 @@ func TestCliOpt_Validate(t *testing.T) {
 		}
 		return nil
 	}))
-
 	assert.True(t, fm.Required)
+
+	var handledVal string
+	fm.WithOptFns(gflag.WithHandler(func(val string) error {
+		handledVal = val
+		return nil
+	}))
 
 	err := fm.Validate("")
 	assert.Err(t, err)
@@ -55,8 +60,10 @@ func TestCliOpt_Validate(t *testing.T) {
 
 	err = fm.Validate("val")
 	assert.Err(t, err)
-	assert.Eq(t, "flag value min len is 5", err.Error())
+	assert.Eq(t, "option 'opt1': flag value min len is 5", err.Error())
+	assert.Empty(t, handledVal)
 
 	err = fm.Validate("value")
 	assert.NoErr(t, err)
+	assert.Eq(t, "value", handledVal)
 }

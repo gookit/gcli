@@ -134,12 +134,12 @@ func (p *Parser) formatOneFlag(f *Flag) (s string) {
 	s += requiredMark(opt.Required) + desc
 
 	// ---- append default value
-	if isZero, isStr := cflag.IsZeroValue(f, f.DefValue); !isZero {
-		if isStr {
-			s += fmt.Sprintf(" (default <magentaB>%q</>)", f.DefValue)
-		} else {
-			s += fmt.Sprintf(" (default <magentaB>%v</>)", f.DefValue)
-		}
+	if isZero, _ := cflag.IsZeroValue(f, f.DefValue); !isZero {
+		// env value, show env name by opt.DefVal
+		defVal := opt.defaultPlaceholder(f.DefValue)
+		s += fmt.Sprintf(" (default <magentaB>%s</>)", defVal)
+	} else if opt.defEnvVar != "" {
+		s += fmt.Sprintf(" (default <magentaB>%s</>)", opt.defEnvVar)
 	}
 
 	// arrayed, repeatable

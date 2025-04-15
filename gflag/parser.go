@@ -125,7 +125,7 @@ func (p *Parser) WithConfigFn(fns ...ConfigFunc) *Parser {
 	return p
 }
 
-// SetHandle func
+// SetHandle func on flags parsed
 func (p *Parser) SetHandle(fn HandleFunc) *Flags {
 	p.HandleFunc = fn
 	return p

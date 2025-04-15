@@ -7,6 +7,7 @@ import (
 
 	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/cflag"
+	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
@@ -108,8 +109,8 @@ func (co *CliOpts) BoolOpt2(p *bool, nameAndShorts, desc string, setFns ...CliOp
 
 // binding option and shorts
 func (co *CliOpts) boolOpt(ptr *bool, opt *CliOpt) {
-	defVal := opt.DValue().Bool()
 	name := co.checkFlagInfo(opt)
+	defVal := opt.DValue().Bool()
 
 	opt.flag = co.fSet.BoolVar(ptr, name, defVal, opt.Desc)
 }
@@ -125,31 +126,36 @@ func (co *CliOpts) Float64Opt(p *float64, name, shorts string, defVal float64, d
 }
 
 func (co *CliOpts) float64Opt(p *float64, opt *CliOpt) {
-	defVal := opt.DValue().Float64()
 	name := co.checkFlagInfo(opt)
+	defVal := opt.DValue().Float64()
 
 	opt.flag = co.fSet.Float64Var(p, name, defVal, opt.Desc)
 }
 
 // --- string option
 
-// Str binding an string option flag, return pointer
+// Str binding an string option flag, return pointer.
 func (co *CliOpts) Str(name, shorts string, defVal, desc string) *string {
 	opt := newOpt(name, desc, defVal, shorts)
 	name = co.checkFlagInfo(opt)
+	defVal1 := opt.DValue().String()
 
-	p := co.fSet.String(name, defVal, opt.Desc)
+	p := co.fSet.String(name, defVal1, opt.Desc)
 	opt.flag = co.fSet.Lookup(name)
 
 	return p
 }
 
 // StrVar binding an string option flag
+//
+// - NOTE: default value support from ENV. eg: "${DB_USERNAME}"
 func (co *CliOpts) StrVar(p *string, opt *CliOpt) { co.strOpt(p, opt) }
 
 // StrOpt binding a string option.
 //
 // If defValAndDesc only one elem, will as desc message.
+//
+// - NOTE: default value support from ENV. eg: "${DB_USERNAME}"
 func (co *CliOpts) StrOpt(p *string, name, shorts string, defValAndDesc ...string) {
 	var defVal, desc string
 	if ln := len(defValAndDesc); ln > 0 {
@@ -167,19 +173,21 @@ func (co *CliOpts) StrOpt(p *string, name, shorts string, defValAndDesc ...strin
 }
 
 // StrOpt2 binding a string option, and allow with CliOptFn for config option.
+//
+// - NOTE: default value support from ENV. eg: "${DB_USERNAME}"
 func (co *CliOpts) StrOpt2(p *string, nameAndShorts, desc string, setFns ...CliOptFn) {
 	co.strOpt(p, NewOpt(nameAndShorts, desc, "", setFns...))
 }
 
 // binding option and shorts
 func (co *CliOpts) strOpt(p *string, opt *CliOpt) {
-	defVal := opt.DValue().String()
-	name := co.checkFlagInfo(opt)
-
 	// use *p as default value
-	if defVal == "" && *p != "" {
-		defVal = *p
+	if *p != "" {
+		opt.DefVal = *p
 	}
+
+	name := co.checkFlagInfo(opt)
+	defVal := opt.DValue().String()
 
 	opt.flag = co.fSet.StringVar(p, name, defVal, opt.Desc)
 }
@@ -212,8 +220,8 @@ func (co *CliOpts) IntOpt2(p *int, nameAndShorts, desc string, setFns ...CliOptF
 }
 
 func (co *CliOpts) intOpt(ptr *int, opt *CliOpt) {
-	defVal := opt.DValue().Int()
 	name := co.checkFlagInfo(opt)
+	defVal := opt.DValue().Int()
 
 	// use *p as default value
 	if defVal == 0 && *ptr != 0 {
@@ -242,8 +250,8 @@ func (co *CliOpts) Int64Opt(ptr *int64, name, shorts string, defValue int64, des
 }
 
 func (co *CliOpts) int64Opt(ptr *int64, opt *CliOpt) {
-	defVal := opt.DValue().Int64()
 	name := co.checkFlagInfo(opt)
+	defVal := opt.DValue().Int64()
 
 	// use *p as default value
 	if defVal == 0 && *ptr != 0 {
@@ -275,8 +283,8 @@ func (co *CliOpts) UintOpt(ptr *uint, name, shorts string, defValue uint, desc s
 }
 
 func (co *CliOpts) uintOpt(ptr *uint, opt *CliOpt) {
-	defVal := opt.DValue().Int()
 	name := co.checkFlagInfo(opt)
+	defVal := opt.DValue().Int()
 
 	opt.flag = co.fSet.UintVar(ptr, name, uint(defVal), opt.Desc)
 }
@@ -302,8 +310,8 @@ func (co *CliOpts) Uint64Opt(ptr *uint64, name, shorts string, defVal uint64, de
 
 // binding option and shorts
 func (co *CliOpts) uint64Opt(ptr *uint64, opt *CliOpt) {
-	defVal := opt.DValue().Int64()
 	name := co.checkFlagInfo(opt)
+	defVal := opt.DValue().Int64()
 
 	opt.flag = co.fSet.Uint64Var(ptr, name, uint64(defVal), opt.Desc)
 }
@@ -347,7 +355,6 @@ func (co *CliOpts) VarOpt2(v flag.Value, nameAndShorts, desc string, setFns ...C
 // binding option and shorts
 func (co *CliOpts) varOpt(v flag.Value, opt *CliOpt) {
 	name := co.checkFlagInfo(opt)
-
 	opt.flag = co.fSet.Var(v, name, opt.Desc)
 }
 
@@ -427,10 +434,9 @@ func (co *CliOpts) ParseOpts(args []string) (err error) {
 		return
 	}
 
-	// call options validations
+	// call validations after parsed
 	for _, opt := range co.opts {
-		err = opt.Validate(opt.flag.Value.String())
-		if err != nil {
+		if err = opt.Validate(opt.flag.Value.String()); err != nil {
 			return err
 		}
 	}
@@ -498,7 +504,9 @@ func WithRequired() CliOptFn {
 	return func(opt *CliOpt) { opt.Required = true }
 }
 
-// WithDefault value setting for option
+// WithDefault value setting for option.
+//
+// - allow set default value from ENV var.
 func WithDefault(defVal any) CliOptFn {
 	return func(opt *CliOpt) { opt.DefVal = defVal }
 }
@@ -513,7 +521,12 @@ func WithShortcut(shortcut string) CliOptFn {
 	return func(opt *CliOpt) { opt.Shorts = strutil.Split(shortcut, shortSepChar) }
 }
 
-// WithValidator setting for option
+// WithHandler setting for option. see CliOpt.Handler
+func WithHandler(fn func(val string) error) CliOptFn {
+	return func(opt *CliOpt) { opt.Handler = fn }
+}
+
+// WithValidator setting for option. see CliOpt.Validator
 func WithValidator(fn func(val string) error) CliOptFn {
 	return func(opt *CliOpt) { opt.Validator = fn }
 }
@@ -524,25 +537,32 @@ type CliOpt struct {
 	flag *Flag
 	// Name of flag and description
 	Name, Desc string
+	// Shorts shorthand/alias names. eg: ["o", "a"]
+	Shorts []string
+
+	// --- default value ---
+
 	// default value for the flag option
 	DefVal any
 	// wrapped the default value
 	defVal *structs.Value
-	// Shorts shorthand/alias names. eg: ["o", "a"]
-	Shorts []string
-	// EnvVar allow set flag value from ENV var
-	EnvVar string
+	// ENV var name for the default value.
+	defEnvVar string
 
-	// --- advanced settings
+	// --- advanced settings ---
 
 	// Hidden the option on help
 	Hidden bool
 	// Required the option is required
 	Required bool
-	// Validator support validate the option flag value
+	// Handler support add custom handler on value is set. like flag.Func
+	Handler func(val string) error
+	// Validator support custom validate the option flag value.
 	Validator func(val string) error
 	// TODO interactive question for collect value
-	Question string
+	// Question string
+	// TODO Category name for the option
+	// Category string
 }
 
 // NewOpt quick create an CliOpt instance
@@ -569,6 +589,7 @@ func (m *CliOpt) WithOptFns(fns ...CliOptFn) *CliOpt {
 	return m
 }
 
+// init and check current option
 func (m *CliOpt) initCheck() string {
 	// feat: support add shorts by option name. eg: "name,n"
 	if strings.ContainsRune(m.Name, shortSepRune) {
@@ -577,11 +598,20 @@ func (m *CliOpt) initCheck() string {
 		m.Shorts = append(m.Shorts, ss[1:]...)
 	}
 
+	// feat: support set default value from ENV.eg: "${DB_USERNAME}"
+	if m.DefVal != nil {
+		defStr, ok := m.DefVal.(string)
+		if ok && defStr != "" && defStr[0] == '$' {
+			m.DefVal = envutil.ParseEnvValue(defStr)
+			m.defEnvVar = defStr
+			m.defVal = nil // reset
+		}
+	}
+
 	if m.Desc != "" {
 		desc := strings.Trim(m.Desc, "; ")
 		if strings.ContainsRune(desc, ';') {
 			// format: desc;required
-			// format: desc;required;env TODO parse ENV var
 			parts := strutil.SplitNTrimmed(desc, ";", 2)
 			if ln := len(parts); ln > 1 {
 				bl, err := strutil.Bool(parts[1])
@@ -634,19 +664,31 @@ func (m *CliOpt) HelpName() string {
 	return cflag.AddPrefixes(m.Name, m.Shorts)
 }
 
-func (m *CliOpt) helpNameLen() int {
-	return len(m.HelpName())
-}
+func (m *CliOpt) helpNameLen() int { return len(m.HelpName()) }
 
-// Validate the binding value
+// Validate the binding value after parsed
 func (m *CliOpt) Validate(val string) error {
 	if m.Required && val == "" {
 		return fmt.Errorf("option '%s' is required", m.Name)
 	}
 
+	if m.flag != nil {
+		// if is func type option, skip validate
+		if _, ok := m.flag.Value.(*funcValue); ok {
+			return nil
+		}
+	}
+
 	// call user custom validator
 	if m.Validator != nil {
-		return m.Validator(val)
+		if err := m.Validator(val); err != nil {
+			return fmt.Errorf("option '%s': %s", m.Name, err.Error())
+		}
+	}
+
+	// call user custom handler
+	if m.Handler != nil {
+		return m.Handler(val)
 	}
 	return nil
 }
@@ -662,4 +704,12 @@ func (m *CliOpt) DValue() *structs.Value {
 		m.defVal = &structs.Value{V: m.DefVal}
 	}
 	return m.defVal
+}
+
+func (m *CliOpt) defaultPlaceholder(realDefVal any) string {
+	// env value, show env name
+	if m.defEnvVar != "" {
+		return m.defEnvVar
+	}
+	return fmt.Sprint(realDefVal)
 }

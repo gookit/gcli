@@ -10,6 +10,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/dump"
+	"github.com/gookit/goutil/testutil"
 	"github.com/gookit/goutil/testutil/assert"
 )
 
@@ -524,10 +525,24 @@ func TestFlags_PrintHelpPanel(t *testing.T) {
 	fs := gcli.NewFlags("test")
 
 	testOpts := struct {
-		opt1 int
-		opt2 bool
-		opt3 string
-	}{}
+		opt1      int
+		opt2      bool
+		opt3      string
+		optByEnv1 string
+		optByEnv2 string
+		optByEnv3 int
+		optByEnv4 string
+	}{
+		optByEnv1: "${TEST_OPT_ENV1}",
+	}
+
+	// dont set env value for optByEnv4: TEST_OPT_ENV4
+	tmpKey := testutil.SetOsEnvs("test_help", map[string]string{
+		"TEST_OPT_ENV1": "test_value_env1",
+		"TEST_OPT_ENV2": "test_value_env2",
+		"TEST_OPT_ENV3": "345",
+	})
+	defer testutil.RemoveTmpEnvs(tmpKey)
 
 	fs.IntVar(&testOpts.opt1, &gcli.CliOpt{Name: "opt1"})
 	fs.StrVar(&testOpts.opt3, &gcli.CliOpt{
@@ -537,6 +552,17 @@ func TestFlags_PrintHelpPanel(t *testing.T) {
 		Required: true,
 	})
 	fs.BoolOpt(&testOpts.opt2, "bol", "ab", false, "opt2 desc")
+
+	// set default from ENV
+	fs.StrOpt2(&testOpts.optByEnv1, "optByEnv1", "optByEnv1 desc")
+	fs.StrOpt2(&testOpts.optByEnv2, "optByEnv2", "optByEnv2 desc", gflag.WithDefault("${TEST_OPT_ENV2}"))
+	fs.StrOpt(&testOpts.optByEnv4, "optByEnv4", "", "${TEST_OPT_ENV4}", "optByEnv4 desc")
+	fs.IntVar(&testOpts.optByEnv3, &gcli.CliOpt{
+		Name:   "optByEnv3",
+		Desc:   "optByEnv3 desc",
+		DefVal: "${TEST_OPT_ENV3}",
+	})
+
 	fs.PrintHelpPanel()
 }
 
