@@ -83,8 +83,9 @@ func (co *CliOpts) SetFlagSet(fSet *FlagSet) { co.fSet = fSet }
 // --- bool option
 
 // Bool binding a bool option flag, return pointer
-func (co *CliOpts) Bool(name, shorts string, defVal bool, desc string) *bool {
-	opt := newOpt(name, desc, defVal, shorts)
+func (co *CliOpts) Bool(name, shorts string, defVal bool, desc string, setFns ...CliOptFn) *bool {
+	opt := newOpt(name, desc, defVal, shorts, setFns...)
+	opt.flagType = FlagTypeBool
 	name = co.checkFlagInfo(opt)
 
 	// binding option to flag.FlagSet
@@ -98,8 +99,8 @@ func (co *CliOpts) Bool(name, shorts string, defVal bool, desc string) *bool {
 func (co *CliOpts) BoolVar(ptr *bool, opt *CliOpt) { co.boolOpt(ptr, opt) }
 
 // BoolOpt binding a bool option
-func (co *CliOpts) BoolOpt(ptr *bool, name, shorts string, defVal bool, desc string) {
-	co.boolOpt(ptr, newOpt(name, desc, defVal, shorts))
+func (co *CliOpts) BoolOpt(ptr *bool, name, shorts string, defVal bool, desc string, setFns ...CliOptFn) {
+	co.boolOpt(ptr, newOpt(name, desc, defVal, shorts, setFns...))
 }
 
 // BoolOpt2 binding a bool option, and allow with CliOptFn for config option.
@@ -109,6 +110,7 @@ func (co *CliOpts) BoolOpt2(p *bool, nameAndShorts, desc string, setFns ...CliOp
 
 // binding option and shorts
 func (co *CliOpts) boolOpt(ptr *bool, opt *CliOpt) {
+	opt.flagType = FlagTypeBool
 	name := co.checkFlagInfo(opt)
 	defVal := opt.DValue().Bool()
 
@@ -121,11 +123,12 @@ func (co *CliOpts) boolOpt(ptr *bool, opt *CliOpt) {
 func (co *CliOpts) Float64Var(ptr *float64, opt *CliOpt) { co.float64Opt(ptr, opt) }
 
 // Float64Opt binding a float64 option
-func (co *CliOpts) Float64Opt(p *float64, name, shorts string, defVal float64, desc string) {
-	co.float64Opt(p, newOpt(name, desc, defVal, shorts))
+func (co *CliOpts) Float64Opt(p *float64, name, shorts string, defVal float64, desc string, setFns ...CliOptFn) {
+	co.float64Opt(p, newOpt(name, desc, defVal, shorts, setFns...))
 }
 
 func (co *CliOpts) float64Opt(p *float64, opt *CliOpt) {
+	opt.flagType = FlagTypeFloat
 	name := co.checkFlagInfo(opt)
 	defVal := opt.DValue().Float64()
 
@@ -134,9 +137,12 @@ func (co *CliOpts) float64Opt(p *float64, opt *CliOpt) {
 
 // --- string option
 
-// Str binding an string option flag, return pointer.
-func (co *CliOpts) Str(name, shorts string, defVal, desc string) *string {
-	opt := newOpt(name, desc, defVal, shorts)
+// Str binding a string option flag, return pointer.
+//
+// - NOTE: default value support from ENV. eg: "${DB_USERNAME}"
+func (co *CliOpts) Str(name, shorts string, defVal, desc string, setFns ...CliOptFn) *string {
+	opt := newOpt(name, desc, defVal, shorts, setFns...)
+	opt.flagType = FlagTypeString
 	name = co.checkFlagInfo(opt)
 	defVal1 := opt.DValue().String()
 
@@ -186,6 +192,7 @@ func (co *CliOpts) strOpt(p *string, opt *CliOpt) {
 		opt.DefVal = *p
 	}
 
+	opt.flagType = FlagTypeString
 	name := co.checkFlagInfo(opt)
 	defVal := opt.DValue().String()
 
@@ -195,8 +202,9 @@ func (co *CliOpts) strOpt(p *string, opt *CliOpt) {
 // --- intX option
 
 // Int binding an int option flag, return pointer
-func (co *CliOpts) Int(name, shorts string, defVal int, desc string) *int {
-	opt := newOpt(name, desc, defVal, shorts)
+func (co *CliOpts) Int(name, shorts string, defVal int, desc string, setFns ...CliOptFn) *int {
+	opt := newOpt(name, desc, defVal, shorts, setFns...)
+	opt.flagType = FlagTypeInt
 	name = co.checkFlagInfo(opt)
 
 	ptr := co.fSet.Int(name, defVal, opt.Desc)
@@ -209,8 +217,8 @@ func (co *CliOpts) Int(name, shorts string, defVal int, desc string) *int {
 func (co *CliOpts) IntVar(p *int, opt *CliOpt) { co.intOpt(p, opt) }
 
 // IntOpt binding an int option
-func (co *CliOpts) IntOpt(p *int, name, shorts string, defVal int, desc string) {
-	co.intOpt(p, newOpt(name, desc, defVal, shorts))
+func (co *CliOpts) IntOpt(p *int, name, shorts string, defVal int, desc string, setFns ...CliOptFn) {
+	co.intOpt(p, newOpt(name, desc, defVal, shorts, setFns...))
 }
 
 // IntOpt2 binding an int option and with config func.
@@ -220,6 +228,7 @@ func (co *CliOpts) IntOpt2(p *int, nameAndShorts, desc string, setFns ...CliOptF
 }
 
 func (co *CliOpts) intOpt(ptr *int, opt *CliOpt) {
+	opt.flagType = FlagTypeInt
 	name := co.checkFlagInfo(opt)
 	defVal := opt.DValue().Int()
 
@@ -232,8 +241,9 @@ func (co *CliOpts) intOpt(ptr *int, opt *CliOpt) {
 }
 
 // Int64 binding an int64 option flag, return pointer
-func (co *CliOpts) Int64(name, shorts string, defVal int64, desc string) *int64 {
-	opt := newOpt(name, desc, defVal, shorts)
+func (co *CliOpts) Int64(name, shorts string, defVal int64, desc string, setFns ...CliOptFn) *int64 {
+	opt := newOpt(name, desc, defVal, shorts, setFns...)
+	opt.flagType = FlagTypeInt
 	name = co.checkFlagInfo(opt)
 
 	p := co.fSet.Int64(name, defVal, opt.Desc)
@@ -245,11 +255,12 @@ func (co *CliOpts) Int64(name, shorts string, defVal int64, desc string) *int64 
 func (co *CliOpts) Int64Var(ptr *int64, opt *CliOpt) { co.int64Opt(ptr, opt) }
 
 // Int64Opt binding an int64 option
-func (co *CliOpts) Int64Opt(ptr *int64, name, shorts string, defValue int64, desc string) {
-	co.int64Opt(ptr, newOpt(name, desc, defValue, shorts))
+func (co *CliOpts) Int64Opt(ptr *int64, name, shorts string, defValue int64, desc string, setFns ...CliOptFn) {
+	co.int64Opt(ptr, newOpt(name, desc, defValue, shorts, setFns...))
 }
 
 func (co *CliOpts) int64Opt(ptr *int64, opt *CliOpt) {
+	opt.flagType = FlagTypeInt
 	name := co.checkFlagInfo(opt)
 	defVal := opt.DValue().Int64()
 
@@ -264,8 +275,9 @@ func (co *CliOpts) int64Opt(ptr *int64, opt *CliOpt) {
 // --- uintX option
 
 // Uint binding an int option flag, return pointer
-func (co *CliOpts) Uint(name, shorts string, defVal uint, desc string) *uint {
-	opt := newOpt(name, desc, defVal, shorts)
+func (co *CliOpts) Uint(name, shorts string, defVal uint, desc string, setFns ...CliOptFn) *uint {
+	opt := newOpt(name, desc, defVal, shorts, setFns...)
+	opt.flagType = FlagTypeInt
 	name = co.checkFlagInfo(opt)
 
 	ptr := co.fSet.Uint(name, defVal, opt.Desc)
@@ -278,11 +290,12 @@ func (co *CliOpts) Uint(name, shorts string, defVal uint, desc string) *uint {
 func (co *CliOpts) UintVar(ptr *uint, opt *CliOpt) { co.uintOpt(ptr, opt) }
 
 // UintOpt binding an uint option
-func (co *CliOpts) UintOpt(ptr *uint, name, shorts string, defValue uint, desc string) {
-	co.uintOpt(ptr, newOpt(name, desc, defValue, shorts))
+func (co *CliOpts) UintOpt(ptr *uint, name, shorts string, defValue uint, desc string, setFns ...CliOptFn) {
+	co.uintOpt(ptr, newOpt(name, desc, defValue, shorts, setFns...))
 }
 
 func (co *CliOpts) uintOpt(ptr *uint, opt *CliOpt) {
+	opt.flagType = FlagTypeInt
 	name := co.checkFlagInfo(opt)
 	defVal := opt.DValue().Int()
 
@@ -290,8 +303,9 @@ func (co *CliOpts) uintOpt(ptr *uint, opt *CliOpt) {
 }
 
 // Uint64 binding an int option flag, return pointer
-func (co *CliOpts) Uint64(name, shorts string, defVal uint64, desc string) *uint64 {
-	opt := newOpt(name, desc, defVal, shorts)
+func (co *CliOpts) Uint64(name, shorts string, defVal uint64, desc string, setFns ...CliOptFn) *uint64 {
+	opt := newOpt(name, desc, defVal, shorts, setFns...)
+	opt.flagType = FlagTypeInt
 	name = co.checkFlagInfo(opt)
 
 	ptr := co.fSet.Uint64(name, defVal, opt.Desc)
@@ -304,12 +318,13 @@ func (co *CliOpts) Uint64(name, shorts string, defVal uint64, desc string) *uint
 func (co *CliOpts) Uint64Var(ptr *uint64, opt *CliOpt) { co.uint64Opt(ptr, opt) }
 
 // Uint64Opt binding an uint64 option
-func (co *CliOpts) Uint64Opt(ptr *uint64, name, shorts string, defVal uint64, desc string) {
-	co.uint64Opt(ptr, newOpt(name, desc, defVal, shorts))
+func (co *CliOpts) Uint64Opt(ptr *uint64, name, shorts string, defVal uint64, desc string, setFns ...CliOptFn) {
+	co.uint64Opt(ptr, newOpt(name, desc, defVal, shorts, setFns...))
 }
 
 // binding option and shorts
 func (co *CliOpts) uint64Opt(ptr *uint64, opt *CliOpt) {
+	opt.flagType = FlagTypeInt
 	name := co.checkFlagInfo(opt)
 	defVal := opt.DValue().Int64()
 
@@ -329,6 +344,7 @@ type FuncOptFn func(string) error
 //	})
 func (co *CliOpts) FuncOpt(nameAndShorts, desc string, fn FuncOptFn, setFns ...CliOptFn) {
 	opt := NewOpt(nameAndShorts, desc, nil, setFns...)
+	opt.flagType = FlagTypeFunc
 	name := co.checkFlagInfo(opt)
 
 	opt.flag = co.fSet.Func(name, opt.Desc, fn)
@@ -343,8 +359,8 @@ func (co *CliOpts) Var(ptr flag.Value, opt *CliOpt) { co.varOpt(ptr, opt) }
 //
 //	var names gcli.Strings
 //	cmd.VarOpt(&names, "tables", "t", "description ...")
-func (co *CliOpts) VarOpt(v flag.Value, name, shorts, desc string) {
-	co.varOpt(v, newOpt(name, desc, nil, shorts))
+func (co *CliOpts) VarOpt(v flag.Value, name, shorts, desc string, setFns ...CliOptFn) {
+	co.varOpt(v, newOpt(name, desc, nil, shorts, setFns...))
 }
 
 // VarOpt2 binding an int option and with config func.
@@ -354,6 +370,7 @@ func (co *CliOpts) VarOpt2(v flag.Value, nameAndShorts, desc string, setFns ...C
 
 // binding option and shorts
 func (co *CliOpts) varOpt(v flag.Value, opt *CliOpt) {
+	opt.flagType = FlagTypeVar
 	name := co.checkFlagInfo(opt)
 	opt.flag = co.fSet.Var(v, name, opt.Desc)
 }
@@ -521,6 +538,11 @@ func WithShortcut(shortcut string) CliOptFn {
 	return func(opt *CliOpt) { opt.Shorts = strutil.Split(shortcut, shortSepChar) }
 }
 
+// WithCollector setting for option. see CliOpt.Collector
+func WithCollector(fn func() (string, error)) CliOptFn {
+	return func(opt *CliOpt) { opt.Collector = fn }
+}
+
 // WithHandler setting for option. see CliOpt.Handler
 func WithHandler(fn func(val string) error) CliOptFn {
 	return func(opt *CliOpt) { opt.Handler = fn }
@@ -535,6 +557,8 @@ func WithValidator(fn func(val string) error) CliOptFn {
 type CliOpt struct {
 	// go flag value
 	flag *Flag
+	// flag type name. eg: bool, string, int, float, var, func
+	flagType string
 	// Name of flag and description
 	Name, Desc string
 	// Shorts shorthand/alias names. eg: ["o", "a"]
@@ -543,42 +567,47 @@ type CliOpt struct {
 	// --- default value ---
 
 	// default value for the flag option
+	//
+	// - NOTE: support set from ENV. eg: "${DB_USERNAME}"
 	DefVal any
 	// wrapped the default value
 	defVal *structs.Value
-	// ENV var name for the default value.
+	// ENV var name for the default value. for help message
 	defEnvVar string
 
 	// --- advanced settings ---
 
-	// Hidden the option on help
+	// Hidden the option on help panel
 	Hidden bool
-	// Required the option is required
+	// Required mark the option is required
 	Required bool
-	// Handler support add custom handler on value is set. like flag.Func
-	Handler func(val string) error
+	// custom the value collector, will call on not input value.
+	Collector func() (string, error)
 	// Validator support custom validate the option flag value.
 	Validator func(val string) error
-	// TODO interactive question for collect value
-	// Question string
+	// Handler support add custom handler on value is set. like flag.Func
+	Handler func(val string) error
 	// TODO Category name for the option
 	// Category string
+	// TODO interactive question for collect value
+	// Question string
 }
 
 // NewOpt quick create an CliOpt instance
 func NewOpt(nameAndShorts, desc string, defVal any, setFns ...CliOptFn) *CliOpt {
-	return newOpt(nameAndShorts, desc, defVal, "").WithOptFns(setFns...)
+	return newOpt(nameAndShorts, desc, defVal, "", setFns...)
 }
 
 // newOpt quick create an CliOpt instance
-func newOpt(nameAndShorts, desc string, defVal any, shortcut string) *CliOpt {
-	return &CliOpt{
+func newOpt(nameAndShorts, desc string, defVal any, shortcut string, setFns ...CliOptFn) *CliOpt {
+	co := &CliOpt{
 		Name: nameAndShorts,
 		Desc: desc,
 		// other info
 		DefVal: defVal,
 		Shorts: strutil.Split(shortcut, shortSepChar),
 	}
+	return co.WithOptFns(setFns...)
 }
 
 // WithOptFns set for current option
@@ -665,10 +694,39 @@ func (m *CliOpt) HelpName() string {
 }
 
 func (m *CliOpt) helpNameLen() int { return len(m.HelpName()) }
+func (m *CliOpt) valIsEmpty(val string) bool {
+	if m.flagType == FlagTypeBool || m.flagType == FlagTypeFunc {
+		return false
+	}
+
+	if m.flagType == FlagTypeInt {
+		return val == "0"
+	}
+	if m.flagType == FlagTypeFloat {
+		return val == "0.0"
+	}
+	return val == ""
+}
 
 // Validate the binding value after parsed
 func (m *CliOpt) Validate(val string) error {
-	if m.Required && val == "" {
+	valEmpty := m.valIsEmpty(val)
+
+	// feat: call custom value collector on input empty value
+	if m.Collector != nil && valEmpty {
+		valNew, err := m.Collector()
+		// set new value
+		if err == nil && val != valNew {
+			err = m.flag.Value.Set(valNew)
+		}
+		if err != nil {
+			return err
+		}
+		val = valNew
+	}
+
+	// check required
+	if m.Required && valEmpty {
 		return fmt.Errorf("option '%s' is required", m.Name)
 	}
 
@@ -679,26 +737,27 @@ func (m *CliOpt) Validate(val string) error {
 		}
 	}
 
-	// call user custom validator
+	// call user custom value validator
 	if m.Validator != nil {
 		if err := m.Validator(val); err != nil {
 			return fmt.Errorf("option '%s': %s", m.Name, err.Error())
 		}
 	}
 
-	// call user custom handler
-	if m.Handler != nil {
+	// feat: call user custom handler for the option.
+	if m.Handler != nil && val != "" {
 		return m.Handler(val)
 	}
 	return nil
 }
 
-// Flag value
-func (m *CliOpt) Flag() *Flag {
-	return m.flag
-}
+// Flag get raw flag.Flag
+func (m *CliOpt) Flag() *Flag { return m.flag }
 
-// DValue wrap the default value
+// Value get raw value flag.Value
+func (m *CliOpt) Value() Value { return m.flag.Value }
+
+// DValue get wrapper the default value
 func (m *CliOpt) DValue() *structs.Value {
 	if m.defVal == nil {
 		m.defVal = &structs.Value{V: m.DefVal}

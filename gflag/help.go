@@ -69,8 +69,8 @@ func (p *Parser) BuildOptsHelp() string {
 
 func (p *Parser) formatOneFlag(f *Flag) (s string) {
 	// Skip render:
-	// - opt is not exists(Has ensured that it is not a short name)
-	// - it is hidden flag option
+	// - opt is not exists (Has ensured that it is not a short name)
+	// - it is a hidden flag option
 	// - flag desc is empty
 	opt, has := p.opts[f.Name]
 	if !has || opt.Hidden {
@@ -124,7 +124,7 @@ func (p *Parser) formatOneFlag(f *Flag) (s string) {
 		s += "    "
 	}
 
-	// --- build description
+	// -- build description
 	if desc == "" {
 		desc = defaultDesc
 	} else {

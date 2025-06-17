@@ -8,10 +8,16 @@ import (
 	"github.com/gookit/goutil/testutil/assert"
 )
 
-func TestCliOpts_useShorts(t *testing.T) {
+func newFlagOptions() gflag.CliOpts {
 	co := gflag.CliOpts{}
-	co.SetName("opts")
+	co.SetName("opts_test")
 	co.InitFlagSet()
+
+	return co
+}
+
+func TestCliOpts_useShorts(t *testing.T) {
+	co := newFlagOptions()
 
 	var str string
 	co.StrOpt(&str, "str", "s", "a string option")
@@ -34,6 +40,32 @@ func TestCliOpt_basic(t *testing.T) {
 
 	assert.False(t, opt.Required)
 	assert.Eq(t, "o", opt.Shorts2String())
+}
+
+func TestCliOpt_Collector(t *testing.T) {
+	opt := gflag.NewOpt("opt1", "a option", "")
+	opt.WithOptFns(gflag.WithCollector(func() (string, error) {
+		return "abc", nil
+	}))
+
+	fo := newFlagOptions()
+	var str string
+	fo.StrVar(&str, opt)
+
+	assert.NoErr(t, fo.ParseOpts(nil))
+	assert.Eq(t, "abc", str)
+	assert.Eq(t, "abc", opt.Value().String())
+
+	// test collect error
+	t.Run("error_case", func(t *testing.T) {
+		var optInt int
+		fo1 := newFlagOptions()
+		fo1.IntOpt2(&optInt, "opt2", "a int option", gflag.WithCollector(func() (string, error) {
+			return "", errors.New("collect error")
+		}))
+		assert.ErrMsg(t, fo1.ParseOpts(nil), "collect error")
+		assert.Eq(t, 0, optInt)
+	})
 }
 
 func TestCliOpt_Validate(t *testing.T) {

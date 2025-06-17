@@ -341,7 +341,7 @@ func TestFlags_Parse(t *testing.T) {
 
 	err = gf.Parse([]string{"--opt1", "val"})
 	assert.Err(t, err)
-	assert.Eq(t, "flag value min len is 5", err.Error())
+	assert.ErrSubMsg(t, err, "flag value min len is 5")
 
 	err = gf.Parse([]string{"--opt1", "value"})
 	assert.NoErr(t, err)
@@ -537,7 +537,7 @@ func TestFlags_PrintHelpPanel(t *testing.T) {
 	}
 
 	// dont set env value for optByEnv4: TEST_OPT_ENV4
-	tmpKey := testutil.SetOsEnvs("test_help", map[string]string{
+	tmpKey := testutil.SetOsEnvs(map[string]string{
 		"TEST_OPT_ENV1": "test_value_env1",
 		"TEST_OPT_ENV2": "test_value_env2",
 		"TEST_OPT_ENV3": "345",

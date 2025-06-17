@@ -36,6 +36,16 @@ const (
 	TagRuleField
 )
 
+// flag type value enum
+const (
+	FlagTypeInt    = "int" // int*
+	FlagTypeString = "string"
+	FlagTypeBool   = "bool"
+	FlagTypeFloat  = "float" // float*
+	FlagTypeVar    = "var"
+	FlagTypeFunc   = "func"
+)
+
 // FlagTagName default tag name on struct
 var FlagTagName = "flag"
 
