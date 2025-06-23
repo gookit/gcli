@@ -581,11 +581,11 @@ type CliOpt struct {
 	Hidden bool
 	// Required mark the option is required
 	Required bool
-	// custom the value collector, will call on not input value.
+	// Collector hook. Custom value collector will call on not input value.
 	Collector func() (string, error)
 	// Validator support custom validate the option flag value.
 	Validator func(val string) error
-	// Handler support add custom handler on value is set. like flag.Func
+	// Handler callback hook. will call it after the flag value is set. like flag.Func
 	Handler func(val string) error
 	// TODO Category name for the option
 	// Category string

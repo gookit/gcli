@@ -120,8 +120,8 @@ func (ctx *Context) WorkDir() string {
 	return ctx.workDir
 }
 
-// ChWorkDir work dir path
-func (ctx *Context) ChWorkDir(dir string) {
+// UpWorkDir update work dir path
+func (ctx *Context) UpWorkDir(dir string) {
 	if len(dir) > 0 {
 		ctx.workDir = dir
 	}
@@ -229,9 +229,13 @@ func (b *base) BinDir() string { return b.Ctx.BinDir() }
 // WorkDir get work dirname
 func (b *base) WorkDir() string { return b.Ctx.workDir }
 
-// ChWorkDir work dir path
-func (b *base) ChWorkDir(dir string) {
-	b.Ctx.ChWorkDir(dir)
+// ChWorkDir change the work dir path
+func (b *base) ChWorkDir(dir string) error {
+	err := os.Chdir(dir)
+	if err == nil {
+		b.Ctx.UpWorkDir(dir)
+	}
+	return err
 }
 
 // ResetData from ctx
