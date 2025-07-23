@@ -32,7 +32,7 @@ jobs:
 
     - name: Revive check
       uses: morphy2k/revive-action@v2.7.8
-      if: ${{ matrix.os == 'ubuntu-latest' }}
+      if: ${{ matrix.os == 'ubuntu-latest' && matrix.go_version == '1.23' }}
       with:
         # Exclude patterns, separated by semicolons (optional)
         exclude: "./internal/..."
@@ -49,5 +49,7 @@ jobs:
         # Exit with 1 when it find at least one finding.
         fail_on_error: true
 
+    - name: Tidy go mod
+      run: go mod tidy
     - name: Run tests
       run: go test -v -cover ./...
