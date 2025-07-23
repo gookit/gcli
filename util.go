@@ -7,7 +7,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/helper"
-	"github.com/gookit/goutil/goinfo"
+	"github.com/gookit/goutil/x/goinfo"
 )
 
 /*************************************************************
@@ -41,7 +41,7 @@ func logf(level VerbLevel, format string, v ...any) {
 	name := level2color[level].Render(level.Upper())
 	logAt := goinfo.GetCallerInfo(3)
 
-	color.Printf("GCli: [%s] [<gray>%s</>] %s \n", name, logAt, fmt.Sprintf(format, v...))
+	color.Printf("GCLI: [%s] [<gray>%s</>] %s \n", name, logAt, fmt.Sprintf(format, v...))
 }
 
 func defaultErrHandler(ctx *HookCtx) (stop bool) {
@@ -55,13 +55,14 @@ func defaultErrHandler(ctx *HookCtx) (stop bool) {
 	return
 }
 
-func name2verbLevel(name string) VerbLevel {
+// VerbLevelFrom level name string.
+func VerbLevelFrom(name string) VerbLevel {
 	switch strings.ToLower(name) {
-	case "quiet":
+	case "quiet", "silent":
 		return VerbQuiet
-	case "error":
+	case "err", "error":
 		return VerbError
-	case "warn":
+	case "warn", "warning":
 		return VerbWarn
 	case "info":
 		return VerbInfo
@@ -80,19 +81,13 @@ func name2verbLevel(name string) VerbLevel {
  *************************************************************/
 
 // Print messages
-func Print(args ...any) {
-	color.Print(args...)
-}
+func Print(args ...any) { color.Print(args...) }
 
 // Println messages
-func Println(args ...any) {
-	color.Println(args...)
-}
+func Println(args ...any) { color.Println(args...) }
 
 // Printf messages
-func Printf(format string, args ...any) {
-	color.Printf(format, args...)
-}
+func Printf(format string, args ...any) { color.Printf(format, args...) }
 
 func panicf(format string, v ...any) {
 	panic(fmt.Sprintf("GCli: "+format, v...))

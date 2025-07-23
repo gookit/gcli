@@ -13,6 +13,7 @@ import (
 	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/maputil"
+	"github.com/gookit/goutil/x/ccolor"
 )
 
 /*************************************************************
@@ -298,7 +299,7 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 	}
 
 	if app.Fire(events.OnGlobalOptsParsed, evtData) {
-		Logf(VerbDebug, "stop running on the event %s return True", events.OnGlobalOptsParsed)
+		Debugf("stop running on the event %s return True", events.OnGlobalOptsParsed)
 		return
 	}
 
@@ -310,9 +311,15 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 		return app.showVersionInfo()
 	}
 
-	// disable color
+	// disable cli color
 	if app.opts.NoColor {
 		color.Enable = false
+		ccolor.Disable()
+	}
+
+	// if not set verbose, use global options
+	if app.opts.Verbose != defaultVerb {
+		app.opts.Verbose = gOpts.Verbose
 	}
 
 	Debugf("app options parsed, verbose: <mgb>%s</>, options: %#v", app.opts.Verbose.String(), app.opts)

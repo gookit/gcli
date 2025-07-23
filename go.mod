@@ -1,10 +1,10 @@
 module github.com/gookit/gcli/v3
 
-go 1.18
+go 1.19
 
 require (
 	github.com/gookit/color v1.5.4
-	github.com/gookit/goutil v0.6.18
+	github.com/gookit/goutil v0.7.0
 	golang.org/x/crypto v0.36.0
 )
 

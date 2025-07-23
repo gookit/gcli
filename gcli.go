@@ -113,9 +113,13 @@ func NewArgument(name, desc string, requiredAndArrayed ...bool) *Argument {
 
 // GlobalOpts global flag options
 type GlobalOpts struct {
-	Disable  bool
-	NoColor  bool
-	Verbose  VerbLevel // message report level
+	Disable bool
+	NoColor bool
+	// message report level.
+	//
+	// can set by env: GCLI_VERBOSE=debug. see VerbEnvName
+	Verbose VerbLevel
+	// ShowHelp show help information
 	ShowHelp bool
 	// ShowVersion show version information
 	ShowVersion bool
@@ -215,8 +219,14 @@ func CommitID() string { return commitID }
 // Verbose returns Verbose level
 func Verbose() VerbLevel { return gOpts.Verbose }
 
-// SetVerbose level
-func SetVerbose(verbose VerbLevel) { gOpts.SetVerbose(verbose) }
+// SetVerbose level by name or level
+func SetVerbose[T VerbLevel | string](verbose T) {
+	if name, ok := any(verbose).(string); ok {
+		gOpts.SetVerbose(VerbLevelFrom(name))
+	} else {
+		gOpts.SetVerbose(any(verbose).(VerbLevel))
+	}
+}
 
 // SetDebugMode level
 func SetDebugMode() { SetVerbose(VerbDebug) }
@@ -316,6 +326,6 @@ func (vl *VerbLevel) Set(value string) error {
 	}
 
 	// string: level name.
-	*vl = name2verbLevel(value)
+	*vl = VerbLevelFrom(value)
 	return nil
 }

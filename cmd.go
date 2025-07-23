@@ -536,7 +536,7 @@ func (c *Command) doExecute(args []string) (err error) {
 	// collect and binding named argument
 	Debugf("cmd: %s - collect and binding named arguments", c.Name)
 	if err := c.ParseArgs(args); err != nil {
-		c.Fire(events.OnCmdRunError, map[string]any{"err": err})
+		c.Fire(events.OnCmdRunError, map[string]any{"cmd": c.Name, "err": err})
 		Logf(VerbError, "binding command '%s' arguments err: <red>%s</>", c.Name, err.Error())
 		return err
 	}

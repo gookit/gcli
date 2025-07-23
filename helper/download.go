@@ -12,7 +12,7 @@ import (
 	"time"
 
 	"github.com/gookit/gcli/v3/progress"
-	"github.com/gookit/goutil/fmtutil"
+	"github.com/gookit/goutil/x/fmtutil"
 )
 
 // Downloader struct definition.
