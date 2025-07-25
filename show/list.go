@@ -14,9 +14,9 @@ import (
 
 // ListOption definition
 type ListOption struct {
-	// IgnoreEmpty ignore empty value item
+	// IgnoreEmpty ignore empty value item. default: true
 	IgnoreEmpty bool
-	// UpperFirst upper first char for the item.value
+	// UpperFirst upper first char for the item.value. default: false
 	UpperFirst  bool
 	SepChar     string // split key value
 	LeftIndent  string
@@ -47,7 +47,7 @@ func NewListOption() *ListOption {
  * List
  *************************************************************/
 
-// List definition
+// List definition. data allow type: struct, slice, array, map
 //
 // String len:
 //
