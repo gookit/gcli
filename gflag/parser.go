@@ -14,6 +14,7 @@ import (
 	"github.com/gookit/color/colorp"
 	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/cflag"
+	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
 )
@@ -296,7 +297,7 @@ func (p *Parser) FromStruct(ptr any, ruleType ...uint8) (err error) {
 		p.SetRuleType(ruleType[0])
 	}
 
-	var mp map[string]string
+	var mp maputil.SMap
 	for i := 0; i < t.NumField(); i++ {
 		sf := t.Field(i)
 		name := sf.Name
@@ -333,8 +334,7 @@ func (p *Parser) FromStruct(ptr any, ruleType ...uint8) (err error) {
 
 		// eg: "name=int0;shorts=i;required=true;desc=int option message"
 		if p.cfg.TagRuleType == TagRuleNamed {
-			// mp = parseNamedRule(name, str)
-			mp, err = structs.ParseTagValueNamed(name, str, flagTagKeys...)
+			mp, err = structs.ParseTagValueNamed(name, str, namedTagKeys...)
 			if err != nil {
 				return err
 			}
@@ -350,7 +350,7 @@ func (p *Parser) FromStruct(ptr any, ruleType ...uint8) (err error) {
 			optName = strutil.SnakeCase(name, "-")
 		}
 
-		opt := newOpt(optName, mp["desc"], mp["default"], mp["shorts"])
+		opt := newOpt(optName, mp["desc"], mp["default"], mp.StrOne("shorts", "short"))
 		if must, has := mp["required"]; has {
 			opt.Required = strutil.QuietBool(must)
 		}

@@ -110,7 +110,7 @@ type Command struct {
 	// Func is the command handler func. Func Runner
 	//
 	// TIP:
-	// 	func `args` is the remain arguments after parse flags(options and arguments).
+	// 	params: `args` is the remain arguments after parse flags(options and arguments).
 	Func RunnerFunc
 	// Help is the long help message text
 	// Can use string-var in contents, eg: {$cmd}

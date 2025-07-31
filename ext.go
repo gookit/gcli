@@ -163,8 +163,8 @@ type HookCtx struct {
 	App *App
 	Cmd *Command
 
-	stop bool // stop continue handle.
-	err  error
+	stop bool  // stop to continue handle.
+	err  error // set handle error. TODO
 	name string
 }
 
@@ -193,14 +193,10 @@ func (hc *HookCtx) Err() error {
 }
 
 // Name of event
-func (hc *HookCtx) Name() string {
-	return hc.name
-}
+func (hc *HookCtx) Name() string { return hc.name }
 
 // Stopped value
-func (hc *HookCtx) Stopped() bool {
-	return hc.stop
-}
+func (hc *HookCtx) Stopped() bool { return hc.stop }
 
 // SetStop value
 func (hc *HookCtx) SetStop(stop bool) bool {
