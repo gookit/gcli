@@ -1,6 +1,7 @@
 package gcli
 
 import (
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -10,7 +11,7 @@ import (
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/cflag"
-	"github.com/gookit/goutil/cliutil"
+	"github.com/gookit/goutil/cliutil/cmdline"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/x/ccolor"
@@ -141,7 +142,7 @@ func (app *App) Config(fns ...func(a *App)) {
 }
 
 /*************************************************************
- * app initialize
+ * region T:app initialize
  *************************************************************/
 
 // initialize application on: add, run
@@ -189,7 +190,7 @@ func (app *App) bindAppOpts() {
 }
 
 /*************************************************************
- * register commands
+ * region T:register commands
  *************************************************************/
 
 // Add one or multi command(s)
@@ -265,7 +266,7 @@ func (app *App) AddAliases(name string, aliases ...string) {
 // }
 
 /*************************************************************
- * parse global options
+ * region T:parse global options
  *************************************************************/
 
 // parseAppOpts parse global options
@@ -334,28 +335,36 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 }
 
 /*************************************************************
- * prepare run
+ * region T:prepare run
  *************************************************************/
 
-// prepare to running
+// prepare to run command
 //
-//	parse args
-//	check global options
-//	get command name and command args
-func (app *App) prepareRun() (code int, name string) {
+//	- parse args
+//	- check global options
+//	- get command name and command args
+func (app *App) prepareRun() (code PrepareState, name string) {
 	// find command name.
-	name = app.findCommandName()
-	if name == HelpCommand {
-		if len(app.args) == 0 { // like 'help'
-			app.showApplicationHelp()
-		} else {
-			// like 'help COMMAND'
-			code = app.showCommandHelp(app.args)
+	var fState FoundState
+	name, fState = app.findCommandName()
+
+	// is a valid command name.
+	if fState == Founded {
+		if name == HelpCommand {
+			if len(app.args) == 0 { // like 'help'
+				app.showApplicationHelp()
+			} else {
+				// like 'help COMMAND'
+				code = app.showCommandHelp(app.args)
+			}
+			return
 		}
-		return
+
+		app.commandName = name
+		return GOON, name
 	}
 
-	// not input and not set defaultCommand
+	// NotFound: not input name AND not set defaultCommand
 	if name == "" {
 		if app.Func != nil {
 			code = app.doRunFunc(app.args)
@@ -365,67 +374,68 @@ func (app *App) prepareRun() (code int, name string) {
 		return
 	}
 
-	// name is not empty, but is not command.
-	if app.inputName == "" {
-		Logf(VerbDebug, "input the command is not an registered: %s", name)
-		hookData := map[string]any{"name": name, "args": app.args}
+	// NotFound: name is not empty, but is not command.
+	Logf(VerbDebug, "input the command is not an registered: %s", name)
+	hookData := map[string]any{"name": name, "raw": app.inputName, "args": app.args}
 
-		// fire events
-		if stop := app.Fire(events.OnAppCmdNotFound, hookData); stop {
-			return
-		}
-		if stop := app.Fire(events.OnCmdNotFound, hookData); stop {
-			return
-		}
-
-		app.showCommandTips(name)
+	// fire events
+	if app.Fire(events.OnAppCmdNotFound, hookData) {
+		return
+	}
+	if app.Fire(events.OnCmdNotFound, hookData) {
 		return
 	}
 
-	// is valid command name.
-	app.commandName = name
-	return GOON, name
+	app.showCommandTips(name)
+	return
 }
 
-func (app *App) findCommandName() (name string) {
-	args := app.args
-	if len(args) == 0 {
-		// not input command, will try to run app.defaultCommand
-		name = app.defaultCommand
-		if name == "" {
-			return
-		}
+// result for find command TODO
+type foundCmd struct {
+	state FoundState
+	name  string
+	raw   string
+	parts []string // split from raw input
+}
 
+func (app *App) findCommandName() (name string, fState FoundState) {
+	args := app.args
+	// not input command, will try to run app.defaultCommand
+	if len(args) == 0 {
+		name = app.defaultCommand
 		// It is not an valid command name. TODO default is command ID.
-		if false == app.IsCommand(name) {
+		if name != "" && !app.IsCommand(name) {
 			Logf(VerbError, "the default command '<cyan>%s</>' is invalid", name)
-			return "" // invalid, return empty string.
+			return "", NotFound // invalid, return empty string.
 		}
-		return name
+		return
 	}
 
 	name = strings.TrimSpace(args[0])
 	// is empty string or is an option
 	if name == "" || name[0] == '-' {
-		return ""
+		return "", NotFound
 	}
 
 	// check is valid ID/name string.
+	app.inputName = name
 	if !helper.IsGoodCmdId(name) {
+		app.args = args[1:]
 		Logf(VerbWarn, "the input command name(%s) string is invalid", name)
-		return ""
+		return name, NotFound
 	}
 
+	// backup raw name
 	rawName := name
 	nodes := splitPath2names(name)
+
 	// Is command ID. eg: "top:sub"
 	if len(nodes) > 1 {
-		name = nodes[0]
-		name = app.ResolveAlias(name)
+		name = app.ResolveAlias(nodes[0])
 		Debugf("input(args[0]) is an command ID, expand it. '%s' -> '%s'", rawName, name)
 	} else {
 		rName := app.ResolveAlias(name)
-		nodes = splitPath2names(rName)
+		nodes = splitPath2names(rName) // TIP: alias can be a command ID
 		// Is command ID. eg: "top:sub"
 		if len(nodes) > 1 {
 			name = nodes[0]
@@ -442,26 +452,23 @@ func (app *App) findCommandName() (name string) {
 		app.args = args[1:]
 	}
 
-	// it is exists command name.
+	// it is an exists command name.
 	if app.IsCommand(name) {
-		app.inputName = rawName
 		Debugf("the raw input command: '<cyan>%s</>'; real name: '<green>%s</>', args: %v", rawName, name, app.args)
-		return name
+		return name, Founded
 	}
 
-	// not exists
+	// command doesn't exist
 	Logf(VerbInfo, "the input command name '%s' is not exists. nodes: %v", rawName, nodes)
-	return rawName
+	return rawName, NotFound
 }
 
 /*************************************************************
- * prepare run
+ * region T: run with args
  *************************************************************/
 
 // QuickRun the application with os.Args
-func (app *App) QuickRun() int {
-	return app.Run(os.Args[1:])
-}
+func (app *App) QuickRun() int { return app.Run(os.Args[1:]) }
 
 // Run the application with input args
 //
@@ -477,7 +484,7 @@ func (app *App) Run(args []string) (code int) {
 	// ensure application initialized
 	app.initialize()
 
-	// if not set input args
+	// if not input args
 	if args == nil {
 		args = os.Args[1:] // exclude first arg, it's binFile.
 	}
@@ -490,22 +497,19 @@ func (app *App) Run(args []string) (code int) {
 	}
 
 	Logf(VerbCrazy, "begin run console application, PID: %d", app.Ctx.PID())
-
-	var name string
-	code, name = app.prepareRun()
-	if code != GOON {
-		return app.exitOnEnd(code)
+	pCode, name := app.prepareRun()
+	if pCode != GOON {
+		return app.exitOnEnd(int(pCode))
 	}
 
 	app.Fire(events.OnAppPrepared, map[string]any{"name": name})
 
 	// do run input command
 	var exCode int
+	var ec errorx.ErrorCoder
 	err := app.doRunCmd(name, app.args)
-	if err != nil {
-		if ec, ok := err.(errorx.ErrorCoder); ok {
-			exCode = ec.Code()
-		}
+	if err != nil && errors.As(err, &ec) {
+		exCode = ec.Code()
 	}
 
 	Debugf("command '%s' run complete, exit with code: %d", name, exCode)
@@ -513,15 +517,13 @@ func (app *App) Run(args []string) (code int) {
 }
 
 // RunArgs running a command with custom args
-func (app *App) RunArgs(args ...string) int {
-	return app.Run(args)
-}
+func (app *App) RunArgs(args ...string) int { return app.Run(args) }
 
 // RunLine manual run a command by command line string.
 //
 // eg: app.RunLine("top --top-opt val0 sub --sub-opt val1 arg0")
 func (app *App) RunLine(argsLine string) int {
-	args := cliutil.ParseLine(argsLine)
+	args := cmdline.NewParser(argsLine).Parse()
 	return app.Run(args)
 }
 
@@ -535,7 +537,7 @@ func (app *App) RunLine(argsLine string) int {
 //	app.Exec("top", []string{"sub", "-o", "abc"})
 func (app *App) RunCmd(name string, args []string) error {
 	if !app.HasCommand(name) {
-		return errorx.Failf(ERR, "command %q not exists", name)
+		return errorx.Failf(ERR.ToInt(), "command %q not exists", name)
 	}
 	return app.doRunCmd(name, args)
 }
@@ -547,7 +549,7 @@ func (app *App) doRunCmd(name string, args []string) (err error) {
 
 	// do execute command
 	if err = cmd.innerDispatch(args); err != nil {
-		err = newRunErr(ERR, err)
+		// err = newRunErr(ERR.ToInt(), err) // TODO need warp it?
 		app.Fire(events.OnAppRunError, map[string]any{"err": err})
 	} else {
 		app.Fire(events.OnAppRunAfter, map[string]any{"cmd": name})
@@ -555,7 +557,7 @@ func (app *App) doRunCmd(name string, args []string) (err error) {
 	return
 }
 
-func (app *App) doRunFunc(args []string) (code int) {
+func (app *App) doRunFunc(args []string) (code PrepareState) {
 	// do execute command
 	if err := app.Func(app, args); err != nil {
 		code = ERR
@@ -591,18 +593,14 @@ func (app *App) Exec(path string, args []string) error {
 }
 
 /*************************************************************
- * helper methods
+ * region T:helper methods
  *************************************************************/
 
 // Opts get the app GlobalOpts
-func (app *App) Opts() *GlobalOpts {
-	return app.opts
-}
+func (app *App) Opts() *GlobalOpts { return app.opts }
 
 // Flags get
-func (app *App) Flags() *Flags {
-	return app.fs
-}
+func (app *App) Flags() *Flags { return app.fs }
 
 // Exit get the app GlobalFlags
 func (app *App) Exit(code int) {
@@ -632,14 +630,10 @@ func (app *App) exitOnEnd(code int) int {
 }
 
 // CommandName get current command name
-func (app *App) CommandName() string {
-	return app.commandName
-}
+func (app *App) CommandName() string { return app.commandName }
 
 // SetDefaultCommand set default command name
-func (app *App) SetDefaultCommand(name string) {
-	app.defaultCommand = name
-}
+func (app *App) SetDefaultCommand(name string) { app.defaultCommand = name }
 
 // On add hook handler for a hook event
 func (app *App) On(name string, handler HookFunc) {

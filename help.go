@@ -90,7 +90,7 @@ func (app *App) showApplicationHelp() bool {
 }
 
 // showCommandHelp display help for a command
-func (app *App) showCommandHelp(list []string) (code int) {
+func (app *App) showCommandHelp(list []string) (code PrepareState) {
 	binName := app.Ctx.binName
 	// if len(list) == 0 { TODO support multi level sub command?
 	if len(list) > 1 {

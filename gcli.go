@@ -21,13 +21,34 @@ import (
 	"github.com/gookit/goutil/envutil"
 )
 
+// PrepareState value. 0=ok, 2=error, -1=goon
+type PrepareState int8
+
+// ToInt value
+func (ps PrepareState) ToInt() int {
+	return int(ps)
+}
+
 const (
-	// OK success exit code
-	OK = 0
+	// OK success exit code. eg: help command, fired event
+	OK PrepareState = 0
 	// ERR error exit code
-	ERR = 2
+	ERR PrepareState = 2
 	// GOON prepare run successful, goon run command
-	GOON = -1
+	GOON PrepareState = -1
+)
+
+// FoundState for match command name
+type FoundState int8
+
+const (
+	// NotFound not found command by input
+	NotFound FoundState = iota
+	Founded
+	// Invalid // invalid name
+)
+
+const (
 	// CommandSep char
 	CommandSep = ":"
 	// HelpCommand name
