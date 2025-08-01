@@ -16,7 +16,7 @@ type result struct {
 //
 // Usage:
 //
-//	answer,err := Prompt(context.Background(), "your name?", "")
+//	answer, err := Prompt(context.Background(), "your name?", "")
 //
 // from package golang.org/x/tools/cmd/getgo
 func Prompt(ctx context.Context, query, defaultAnswer string) (string, error) {

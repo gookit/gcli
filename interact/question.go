@@ -12,7 +12,7 @@ type Question struct {
 	// Q the question message
 	Q string
 	// Func validate user input answer is right.
-	// if not set, will only check answer is empty.
+	// if not set, will only check the answer is empty.
 	Func func(ans string) error
 	// DefVal default value
 	DefVal string

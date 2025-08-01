@@ -684,7 +684,7 @@ func (c *Command) Fire(event string, data map[string]any) (stop bool) {
 
 	// notify to app
 	if c.app != nil && c.app.Hooks.Fire(event, hookCtx) {
-		return
+		return true
 	}
 
 	return c.Hooks.Fire(event, hookCtx)

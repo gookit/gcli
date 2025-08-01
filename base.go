@@ -17,6 +17,7 @@ import (
 
 /*************************************************************
  * Command Line: command data
+ * region T: context
  *************************************************************/
 
 // Context struct
@@ -146,6 +147,7 @@ func (ctx *Context) ResetData() {
 
 /*************************************************************
  * command base
+ * region T: command base
  *************************************************************/
 
 // will inject to every Command
@@ -246,35 +248,25 @@ func (b *base) ResetData() {
 }
 
 // GetCommand get a command by top name
-func (b *base) GetCommand(name string) *Command {
-	return b.commands[name]
-}
+func (b *base) GetCommand(name string) *Command { return b.commands[name] }
 
-// Command get a command by top name
+// Command gets a command by top name
 func (b *base) Command(name string) (c *Command, exist bool) {
 	c, exist = b.commands[name]
 	return
 }
 
 // IsAlias name check
-func (b *base) IsAlias(alias string) bool {
-	return b.cmdAliases.HasAlias(alias)
-}
+func (b *base) IsAlias(alias string) bool { return b.cmdAliases.HasAlias(alias) }
 
 // ResolveAlias get real command name by alias
-func (b *base) ResolveAlias(alias string) string {
-	return b.cmdAliases.ResolveAlias(alias)
-}
+func (b *base) ResolveAlias(alias string) string { return b.cmdAliases.ResolveAlias(alias) }
 
 // HasSubcommands on the app
-func (b *base) HasSubcommands() bool {
-	return b.hasSubcommands
-}
+func (b *base) HasSubcommands() bool { return b.hasSubcommands }
 
 // HasCommands on the cmd/app
-func (b *base) HasCommands() bool {
-	return len(b.cmdNames) > 0
-}
+func (b *base) HasCommands() bool { return len(b.cmdNames) > 0 }
 
 // HasCommand top command name check
 func (b *base) HasCommand(name string) bool {
@@ -351,19 +343,13 @@ func (b *base) Match(names []string) *Command {
 }
 
 // FindCommand command by path. eg: "top:sub" or "top sub"
-func (b *base) FindCommand(path string) *Command {
-	return b.Match(splitPath2names(path))
-}
+func (b *base) FindCommand(path string) *Command { return b.Match(splitPath2names(path)) }
 
 // FindByPath command by path. eg: "top:sub" or "top sub"
-func (b *base) FindByPath(path string) *Command {
-	return b.Match(splitPath2names(path))
-}
+func (b *base) FindByPath(path string) *Command { return b.Match(splitPath2names(path)) }
 
 // MatchByPath command by path. eg: "top:sub" or "top sub"
-func (b *base) MatchByPath(path string) *Command {
-	return b.Match(splitPath2names(path))
-}
+func (b *base) MatchByPath(path string) *Command { return b.Match(splitPath2names(path)) }
 
 // SetLogo text and color style
 func (b *base) SetLogo(logo string, style ...string) {
@@ -379,14 +365,10 @@ func (b *base) AddError(err error) {
 }
 
 // Commands get all commands
-func (b *base) Commands() map[string]*Command {
-	return b.commands
-}
+func (b *base) Commands() map[string]*Command { return b.commands }
 
 // CmdNames get all command names
-func (b *base) CmdNames() []string {
-	return b.CommandNames()
-}
+func (b *base) CmdNames() []string { return b.CommandNames() }
 
 // CommandNames get all command names
 func (b *base) CommandNames() []string {
@@ -398,21 +380,13 @@ func (b *base) CommandNames() []string {
 }
 
 // CmdNameMap get all command names
-func (b *base) CmdNameMap() map[string]int {
-	return b.cmdNames
-}
+func (b *base) CmdNameMap() map[string]int { return b.cmdNames }
 
 // CmdAliases get cmd aliases
-func (b *base) CmdAliases() *structs.Aliases {
-	return b.cmdAliases
-}
+func (b *base) CmdAliases() *structs.Aliases { return b.cmdAliases }
 
 // AliasesMapping get cmd aliases mapping
-func (b *base) AliasesMapping() map[string]string {
-	return b.cmdAliases.Mapping()
-}
+func (b *base) AliasesMapping() map[string]string { return b.cmdAliases.Mapping() }
 
 // AddHelpVar to instance.
-func (b *base) AddHelpVar(key string, val any) {
-	b.helpVars[key] = val
-}
+func (b *base) AddHelpVar(key string, val any) { b.helpVars[key] = val }

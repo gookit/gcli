@@ -173,6 +173,7 @@ func moveArgumentsToEnd(args []string) []string {
 	return append(args[argEnd:], args[0:argEnd]...)
 }
 
+// split path/ID to names
 func splitPath2names(path string) []string {
 	var names []string
 	path = strings.TrimSpace(path)

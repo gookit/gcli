@@ -56,7 +56,7 @@ func JSON(v any, prefixAndIndent ...string) int {
 	return OK
 }
 
-// AList create a List instance and print.
+// AList create a List instance and print. options see: ListOption
 //
 // Usage:
 //
@@ -65,7 +65,7 @@ func AList(title string, data any, fns ...ListOpFunc) {
 	NewList(title, data).WithOptionFns(fns).Println()
 }
 
-// MList show multi list data.
+// MList show multi list data. options see: ListOption
 //
 // Usage:
 //

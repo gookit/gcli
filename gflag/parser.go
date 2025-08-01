@@ -221,8 +221,7 @@ func (p *Parser) Parse(args []string) (err error) {
 	// call options validations
 	for name, opt := range p.opts {
 		fItem := p.fSet.Lookup(name)
-		err = opt.Validate(fItem.Value.String())
-		if err != nil {
+		if err = opt.Validate(fItem.Value.String()); err != nil {
 			return err
 		}
 	}

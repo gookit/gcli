@@ -44,7 +44,7 @@ func NewListOption() *ListOption {
 }
 
 /*************************************************************
- * List
+ * region List
  *************************************************************/
 
 // List definition. data allow type: struct, slice, array, map
@@ -188,10 +188,10 @@ func (l *List) Flush() {
 }
 
 /*************************************************************
- * Lists
+ * region Lists
  *************************************************************/
 
-// Lists definition
+// Lists use for formatting and printing multi list data
 type Lists struct {
 	Base // use for internal
 	// options
@@ -238,7 +238,7 @@ func (ls *Lists) WithOptionFns(fns []ListOpFunc) *Lists {
 	return ls
 }
 
-// WithOptions with options func list
+// WithOptions with an options func list
 func (ls *Lists) WithOptions(fns ...ListOpFunc) *Lists {
 	return ls.WithOptionFns(fns)
 }
@@ -283,6 +283,4 @@ func (ls *Lists) Println() {
 }
 
 // Flush formatted message to console
-func (ls *Lists) Flush() {
-	ls.Println()
-}
+func (ls *Lists) Flush() { ls.Println() }

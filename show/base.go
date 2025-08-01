@@ -112,7 +112,7 @@ func (b *Base) Println() {
 }
 
 /*************************************************************
- * Data item(s)
+ * region Data item(s)
  *************************************************************/
 
 const (
@@ -173,7 +173,7 @@ func NewItems(data any) *Items {
 		for i := 0; i < rt.NumField(); i++ {
 			ft := rt.Field(i)
 			fv := rv.Field(i)
-			// skip don't exported field
+			// skip unexported field
 			name := ft.Name
 			if name[0] >= 'a' && name[0] <= 'z' {
 				continue
@@ -226,6 +226,10 @@ func (its *Items) Each(fn func(item *Item)) {
 	}
 }
 
+/*************************************************************
+ * region Data item
+ *************************************************************/
+
 // Item definition
 type Item struct {
 	// Val string
@@ -256,9 +260,7 @@ func newItem(key any, rv reflect.Value, index int) *Item {
 }
 
 // Kind get
-func (item *Item) Kind() reflect.Kind {
-	return item.rftVal.Kind()
-}
+func (item *Item) Kind() reflect.Kind { return item.rftVal.Kind() }
 
 // IsKind check
 func (item *Item) IsKind(kind reflect.Kind) bool {
@@ -277,8 +279,9 @@ func (item *Item) IsEmpty() bool {
 		return item.rftVal.Len() == 0
 	case reflect.Interface, reflect.Slice, reflect.Ptr:
 		return item.rftVal.IsNil()
+	default:
+		return !item.rftVal.IsValid()
 	}
-	return !item.rftVal.IsValid()
 }
 
 // ValString get
@@ -290,9 +293,7 @@ func (item *Item) ValString() string {
 }
 
 // RftVal get
-func (item *Item) RftVal() reflect.Value {
-	return item.rftVal
-}
+func (item *Item) RftVal() reflect.Value { return item.rftVal }
 
 func (item *Item) maxLen(ln int) int {
 	if item.keyLen > ln {

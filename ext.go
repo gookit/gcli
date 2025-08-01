@@ -56,13 +56,11 @@ func newRunErr(code int, err error) errorx.ErrorCoder {
 }
 
 // Code for error
-func (e *runErr) Code() int {
-	return e.code
-}
+func (e *runErr) Code() int { return e.code }
 
 // Error string
 func (e *runErr) Error() string {
-	return fmt.Sprintf("%v with code %d", e.err, e.code)
+	return fmt.Sprintf("%v (exit code %d)", e.err, e.code)
 }
 
 // HookFunc definition.
