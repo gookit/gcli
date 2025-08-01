@@ -168,7 +168,7 @@ func NewItems(data any) *Items {
 			keyWidth = item.maxLen(keyWidth)
 		}
 	case reflect.Struct:
-		// structs.ToMap()
+		// goutil: structs.ToMap() TODO
 		rt := rv.Type()
 		for i := 0; i < rt.NumField(); i++ {
 			ft := rt.Field(i)
@@ -176,6 +176,10 @@ func NewItems(data any) *Items {
 			// skip unexported field
 			name := ft.Name
 			if name[0] >= 'a' && name[0] <= 'z' {
+				continue
+			}
+			// skip type: func, chan
+			if fv.Kind() == reflect.Func || fv.Kind() == reflect.Chan {
 				continue
 			}
 

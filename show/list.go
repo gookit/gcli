@@ -25,6 +25,9 @@ type ListOption struct {
 	KeyStyle    string
 	ValueStyle  string
 	TitleStyle  string
+	// FilterFunc filter item.
+	//  - return true to show item, otherwise hide item.
+	FilterFunc func(item *Item) bool
 }
 
 // ListOpFunc define
@@ -124,6 +127,10 @@ func (l *List) Format() {
 		if l.Opts.IgnoreEmpty && item.IsEmpty() {
 			continue
 		}
+		// call filter func
+		if l.Opts.FilterFunc != nil && !l.Opts.FilterFunc(item) {
+			continue
+		}
 
 		if l.Opts.LeftIndent != "" {
 			l.buf.WriteString(l.Opts.LeftIndent)
@@ -183,9 +190,7 @@ func (l *List) Println() {
 }
 
 // Flush formatted message to console
-func (l *List) Flush() {
-	l.Println()
-}
+func (l *List) Flush() { l.Println() }
 
 /*************************************************************
  * region Lists
