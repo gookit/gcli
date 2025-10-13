@@ -63,6 +63,7 @@ type App struct {
 	Desc string
 	// Func on run app, if is empty will display help.
 	Func func(app *App, args []string) error
+
 	// ExitOnEnd call os.Exit on running end
 	// ExitOnEnd bool
 	// ExitFunc default is os.Exit

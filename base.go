@@ -157,8 +157,10 @@ type base struct {
 	*Hooks
 	// HelpReplacer help message replace pairs.
 	HelpReplacer
+	// can custom append some help text
+	HelpConfig HelpConfig
 	// helpVars custom add vars for render help template.
-	helpVars map[string]any
+	HelpVars map[string]any
 
 	// Ctx data for command, allow add custom context data.
 	Ctx *Context
@@ -202,12 +204,12 @@ func newBase() base {
 		cmdNames: make(map[string]int),
 		// name2idx: make(map[string]int),
 		commands: make(map[string]*Command),
-		// set an default value.
+		// set a default value.
 		nameMaxWidth: 12,
 		// cmdAliases:   make(maputil.Aliases),
 		cmdAliases: structs.NewAliases(aliasNameCheck),
 		// ExitOnEnd:  false,
-		helpVars: make(map[string]any),
+		HelpVars: make(map[string]any),
 		// Context: NewCtx(),
 	}
 }
@@ -389,4 +391,4 @@ func (b *base) CmdAliases() *structs.Aliases { return b.cmdAliases }
 func (b *base) AliasesMapping() map[string]string { return b.cmdAliases.Mapping() }
 
 // AddHelpVar to instance.
-func (b *base) AddHelpVar(key string, val any) { b.helpVars[key] = val }
+func (b *base) AddHelpVar(key string, val any) { b.HelpVars[key] = val }

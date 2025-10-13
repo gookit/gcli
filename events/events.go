@@ -28,6 +28,11 @@ const (
 	// 	{args: app-args}
 	OnAppOptsParsed = "app.opts.parsed"
 
+	// OnAppHelpBefore event. before on render help
+	OnAppHelpBefore = "app.help.before"
+	// OnAppHelpAfter event. after on render help
+	OnAppHelpAfter = "app.help.after"
+
 	// OnAppPrepared prepare for run, after the OnAppOptsParsed
 	OnAppPrepared = "app.run.prepared"
 

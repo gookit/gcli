@@ -6,11 +6,20 @@ import (
 	"text/template"
 
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/sysutil"
 )
+
+// HelpConfig struct
+type HelpConfig struct {
+	// AfterCmdText add text after commands list
+	AfterCmdText string
+	// FooterText add help footer text on help end
+	FooterText string
+}
 
 /*************************************************************
  * display app help
@@ -56,12 +65,13 @@ var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
   <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}{{end}}
   <info>{{ paddingName "help" }}</> Display help information
 
-Use "<cyan>{$binName} COMMAND -h</>" for more information about a command
+{{.Help.AfterCmdText}}Use "<cyan>{$binName} COMMAND -h</>" for more information about a command.{{.Help.FooterText}}
 `
 
 // display app help and list all commands. showCommandList()
 func (app *App) showApplicationHelp() bool {
 	Debugf("render application help and commands list, replaces=%s", maputil.ToString2(app.Replaces()))
+	app.Fire(events.OnAppHelpBefore, nil)
 
 	// cmdHelpTemplate = color.ReplaceTag(cmdHelpTemplate)
 	// render help text template
@@ -74,7 +84,9 @@ func (app *App) showApplicationHelp() bool {
 		// always upper first char
 		"Desc": strutil.UpperFirst(app.Desc),
 		// user custom help vars
-		"Vars": app.helpVars,
+		"Vars": app.HelpVars,
+		// custom help config
+		"Help": app.HelpConfig,
 	}, template.FuncMap{
 		"paddingName": func(n string) string {
 			return strutil.PadRight(n, " ", app.nameMaxWidth)
@@ -83,6 +95,8 @@ func (app *App) showApplicationHelp() bool {
 
 	// parse help vars and render color tags
 	color.Print(app.ReplacePairs(s))
+	app.Fire(events.OnAppHelpAfter, nil)
+
 	if sysutil.IsLinux() {
 		fmt.Println()
 	}
@@ -193,11 +207,11 @@ var CmdHelpTemplate = `{{.Desc}}
 {{.ArgsHelp}}{{end}}{{ if .Subs }}
 <comment>Subcommands:</>{{range $n,$c := .Subs}}
   <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
-{{end}}{{if .Cmd.Examples}}
+{{end}}{{.Help.AfterCmdText}}{{if .Cmd.Examples}}
 <comment>Examples:</>
 {{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}
 <comment>Help:</>
-{{.Cmd.Help}}{{end}}`
+{{.Cmd.Help}}{{end}}{{.Help.FooterText}}`
 
 // ShowHelp show command help information
 func (c *Command) ShowHelp() (err error) {
@@ -232,7 +246,9 @@ func (c *Command) ShowHelp() (err error) {
 		// always upper first char
 		"Desc": c.HelpDesc(),
 		// user custom help vars
-		"Vars": c.helpVars,
+		"Vars": c.HelpVars,
+		// custom help config
+		"Help": c.HelpConfig,
 	}
 
 	// if c.NotStandalone() {
