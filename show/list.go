@@ -199,6 +199,7 @@ func (l *List) Flush() { l.Println() }
 // Lists use for formatting and printing multi list data
 type Lists struct {
 	Base // use for internal
+	err error
 	// options
 	Opts *ListOption
 	rows []*List
@@ -221,7 +222,7 @@ func NewLists(mlist any, fns ...ListOpFunc) *Lists {
 	rv := reflect.Indirect(reflect.ValueOf(mlist))
 
 	if rv.Kind() == reflect.Map {
-		reflects.EachStrAnyMap(rv, func(key string, val any) {
+		ls.err = reflects.EachStrAnyMap(rv, func(key string, val any) {
 			ls.AddSublist(key, val)
 		})
 	} else if rv.Kind() == reflect.Struct {
@@ -229,7 +230,7 @@ func NewLists(mlist any, fns ...ListOpFunc) *Lists {
 			ls.rows = append(ls.rows, NewList(title, data))
 		}
 	} else {
-		panic("not support type: " + rv.Kind().String())
+		panic("Lists: not support type: " + rv.Kind().String())
 	}
 
 	return ls.WithOptionFns(fns)

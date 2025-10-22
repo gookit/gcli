@@ -52,17 +52,40 @@ const (
 	Equal  rune = '='
 	Equal1 rune = '═'
 	Space  rune = ' '
+
+	Underline  rune = '_'
+	LeftArrow  rune = '<'
+	RightArrow rune = '>'
+)
+
+// style1:
+// ╭─────╮
+// │  hi │
+// ╰─────╯
+// style2:
+//  ┌────┐
+//  │ hi │
+//  └────┘
+const (
 	// Hyphen Minus
 	Hyphen   rune = '-' // eg: -------
 	CNHyphen rune = '—' // eg: —————
 	Hyphen2  rune = '─' // eg: ────
 
-	Underline  rune = '_'
-	LeftArrow  rune = '<'
-	RightArrow rune = '>'
-
 	VLine     rune = '|'
 	VLineFull rune = '│'
+
+	LeftTop1 = '╭'
+	LeftTop2 = '┌'
+
+	RightTop1 = '╮'
+	RightTop2 = '┐'
+
+	LeftBottom1 = '╰'
+	LeftBottom2 = '└'
+
+	RightBottom1 = '╯'
+	RightBottom2 = '┘'
 
 	// TChar eg TChar + Hyphen2: ──┬──
 	TChar rune = '┬'

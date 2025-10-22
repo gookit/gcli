@@ -56,6 +56,11 @@ func JSON(v any, prefixAndIndent ...string) int {
 	return OK
 }
 
+// ATitle create a Title instance and print. options see: TitleOption
+func ATitle(title string, fns ...TitleOpFunc) {
+	NewTitle(title).WithOptionFns(fns).Println()
+}
+
 // AList create a List instance and print. options see: ListOption
 //
 // Usage:
@@ -75,6 +80,16 @@ func AList(title string, data any, fns ...ListOpFunc) {
 //	})
 func MList(listMap any, fns ...ListOpFunc) {
 	NewLists(listMap).WithOptionFns(fns).Println()
+}
+
+// ABanner create a Banner instance and print. options see: BannerOption
+func ABanner(content string, fns ...BannerOpFunc) {
+	NewBanner([]string{content}, fns...).Println()
+}
+
+// ABanner2 create a Banner instance and print. options see: BannerOption
+func ABanner2(contents []string, fns ...BannerOpFunc) {
+	NewBanner(contents, fns...).Println()
 }
 
 // TabWriter create.

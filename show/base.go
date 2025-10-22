@@ -30,6 +30,8 @@ const (
 	PosMiddle
 )
 
+const PosCenter = PosMiddle
+
 // var errInvalidType = errors.New("invalid input data type")
 
 // FormatterFace interface
