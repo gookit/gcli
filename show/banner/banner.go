@@ -1,14 +1,15 @@
-package show
+package banner
 
 import (
 	"strings"
 
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/v3/gclicom"
 	"github.com/gookit/goutil/strutil"
 )
 
 /*
-eg: TODO
+eg:
    ╭──────────────────────────────────────────────────────────────────╮
    │                                                                  │
    │                Update available! 3.21.0 → 3.27.0.                │
@@ -62,8 +63,8 @@ type Banner struct {
 	BorderStyle BorderStyle
 }
 
-// BannerOpFunc definition
-type BannerOpFunc func(*Banner)
+// OptionFunc definition
+type OptionFunc func(b *Banner)
 
 // BorderStyle 边框样式
 type BorderStyle struct {
@@ -85,12 +86,12 @@ var (
 )
 
 // NewBanner1 创建新的 Banner 实例
-func NewBanner1(content string, fns ...BannerOpFunc) *Banner {
-	return NewBanner([]string{content}, fns...)
+func NewBanner1(content string, fns ...OptionFunc) *Banner {
+	return New([]string{content}, fns...)
 }
 
-// NewBanner 创建新的 Banner 实例
-func NewBanner(content []string, fns ...BannerOpFunc) *Banner {
+// New 创建新的 Banner 实例
+func New(content []string, fns ...OptionFunc) *Banner {
 	b := &Banner{
 		Contents: content,
 		Padding:  1,
@@ -103,12 +104,12 @@ func NewBanner(content []string, fns ...BannerOpFunc) *Banner {
 }
 
 // WithOptionFn 设置 Banner 的选项
-func (b *Banner) WithOptionFn(fns ...BannerOpFunc) *Banner {
+func (b *Banner) WithOptionFn(fns ...OptionFunc) *Banner {
 	return b.WithOptionFns(fns)
 }
 
 // WithOptionFns 设置 Banner 的选项
-func (b *Banner) WithOptionFns(fns []BannerOpFunc) *Banner {
+func (b *Banner) WithOptionFns(fns []OptionFunc) *Banner {
 	for _, fn := range fns {
 		fn(b)
 	}
@@ -116,7 +117,7 @@ func (b *Banner) WithOptionFns(fns []BannerOpFunc) *Banner {
 }
 
 func (b *Banner) Println() {
-	color.Fprintln(Output, b.Render())
+	color.Fprintln(gclicom.Output, b.Render())
 }
 
 // Render 绘制横幅样式的信息

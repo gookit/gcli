@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"sort"
 	"strings"
 	"unicode/utf8"
 
@@ -130,7 +131,7 @@ type Items struct {
 	// raw data
 	data any
 	// inner context
-	itemType    string
+	itemType string // see ItemMap, ItemList
 	rowNumber   int
 	keyMaxWidth int
 }
@@ -160,6 +161,9 @@ func NewItems(data any) *Items {
 			items.List = append(items.List, item)
 			keyWidth = item.maxLen(keyWidth)
 		}
+
+		// up: map 数据根据 Item.key 排序
+		sort.Sort(items)
 	case reflect.Slice, reflect.Array:
 		items.itemType = ItemList
 		for i := 0; i < rv.Len(); i++ {
@@ -230,6 +234,18 @@ func (its *Items) Each(fn func(item *Item)) {
 	for _, item := range its.List {
 		fn(item)
 	}
+}
+
+// 为 Items 实现 sort.Interface 排序方法, 默认使用 Key 字段排序
+
+func (its *Items) Len() int { return len(its.List) }
+
+func (its *Items) Less(i, j int) bool {
+	return its.List[i].Key < its.List[j].Key
+}
+
+func (its *Items) Swap(i, j int) {
+	its.List[i], its.List[j] = its.List[j], its.List[i]
 }
 
 /*************************************************************

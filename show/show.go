@@ -9,6 +9,8 @@ import (
 	"text/tabwriter"
 
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/v3/show/banner"
+	"github.com/gookit/gcli/v3/show/title"
 )
 
 // Output the global input out stream
@@ -57,8 +59,8 @@ func JSON(v any, prefixAndIndent ...string) int {
 }
 
 // ATitle create a Title instance and print. options see: TitleOption
-func ATitle(title string, fns ...TitleOpFunc) {
-	NewTitle(title).WithOptionFns(fns).Println()
+func ATitle(titleText string, fns ...title.OptionFunc) {
+	title.New(titleText).WithOptionFns(fns).Println()
 }
 
 // AList create a List instance and print. options see: ListOption
@@ -82,14 +84,14 @@ func MList(listMap any, fns ...ListOpFunc) {
 	NewLists(listMap).WithOptionFns(fns).Println()
 }
 
-// ABanner create a Banner instance and print. options see: BannerOption
-func ABanner(content string, fns ...BannerOpFunc) {
-	NewBanner([]string{content}, fns...).Println()
+// ABanner create a Banner instance and print. options see: banner.Banner
+func ABanner(content string, fns ...banner.OptionFunc) {
+	banner.New([]string{content}, fns...).Println()
 }
 
-// ABanner2 create a Banner instance and print. options see: BannerOption
-func ABanner2(contents []string, fns ...BannerOpFunc) {
-	NewBanner(contents, fns...).Println()
+// ABanner2 create a Banner instance and print. options see: banner.Banner
+func ABanner2(contents []string, fns ...banner.OptionFunc) {
+	banner.New(contents, fns...).Println()
 }
 
 // TabWriter create.

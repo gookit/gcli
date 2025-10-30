@@ -1,7 +1,8 @@
-package show
+package title
 
 import (
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/v3/gclicom"
 	"github.com/gookit/gcli/v3/show/symbols"
 )
 
@@ -12,26 +13,31 @@ type Title struct {
 	// Formatter 自定义格式化处理，不设置时，使用默认格式化处理
 	Formatter func(t *Title) string
 	// Formatter IFormatter
-	ShowBorder bool
 
-	// Char 填充字符
-	Char   rune
+	// PaddingLR 是否左右填充 Char
+	PaddingLR bool
+	ShowBorder bool
+	// BorderPos 边框位置 0: 无, 1: 上, 2: 下, 4: 上下
+	BorderPos gclicom.BorderPos
+
 	Width  int
 	Indent int
-	Align  PosFlag
+	// Char 左右填充字符
+	Char  rune
+	Align gclicom.TextPos
 }
 
-// TitleOpFunc definition
-type TitleOpFunc func(t *Title)
+// OptionFunc definition
+type OptionFunc func(t *Title)
 
-// NewTitle instance
-func NewTitle(title string, fns ...TitleOpFunc) *Title {
+// New Title instance
+func New(title string, fns ...OptionFunc) *Title {
 	t := &Title{
 		Title: title,
 		Width: 80,
 		Char:  symbols.Equal,
 		// Indent: 2,
-		Align: PosLeft,
+		Align: gclicom.TextPosLeft,
 		Color: "green1",
 		// Border
 		ShowBorder: true,
@@ -39,7 +45,7 @@ func NewTitle(title string, fns ...TitleOpFunc) *Title {
 	return t.WithOptionFns(fns)
 }
 
-func (t *Title) WithOptionFns(fns []TitleOpFunc) *Title {
+func (t *Title) WithOptionFns(fns []OptionFunc) *Title {
 	for _, fn := range fns {
 		fn(t)
 	}
@@ -48,7 +54,7 @@ func (t *Title) WithOptionFns(fns []TitleOpFunc) *Title {
 
 // Println print title line
 func (t *Title) Println() {
-	color.Fprintln(Output, t.Render())
+	color.Fprintln(gclicom.Output, t.Render())
 }
 
 func (t *Title) Render() string {
@@ -66,11 +72,11 @@ func (t *Title) Render() string {
 	// 根据对齐方式处理标题
 	var content string
 	switch t.Align {
-	case PosCenter:
+	case gclicom.TextPosCenter:
 		content = t.renderCenter(availableWidth)
-	case PosRight:
+	case gclicom.TextPosRight:
 		content = t.renderRight(availableWidth)
-	default:
+	default: // left
 		content = t.renderLeft(availableWidth)
 	}
 
