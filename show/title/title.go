@@ -1,9 +1,12 @@
 package title
 
 import (
+	"strings"
+
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/gclicom"
 	"github.com/gookit/gcli/v3/show/symbols"
+	"github.com/gookit/goutil/strutil"
 )
 
 // Title 在终端中打印标题行
@@ -16,14 +19,17 @@ type Title struct {
 
 	// PaddingLR 是否左右填充 Char
 	PaddingLR bool
+	// Char 左右填充字符
+	Char rune
+
+	// 是否显示上下边框
 	ShowBorder bool
+	BorderChar rune
 	// BorderPos 边框位置 0: 无, 1: 上, 2: 下, 4: 上下
 	BorderPos gclicom.BorderPos
 
-	Width  int
+	Width int // 总的显示宽度
 	Indent int
-	// Char 左右填充字符
-	Char  rune
 	Align gclicom.TextPos
 }
 
@@ -40,16 +46,63 @@ func New(title string, fns ...OptionFunc) *Title {
 		Align: gclicom.TextPosLeft,
 		Color: "green1",
 		// Border
-		ShowBorder: true,
+		ShowBorder: false,
+		BorderChar: '-',
+		BorderPos:  gclicom.BorderPosBottom,
+		// Padding
+		PaddingLR: true,
 	}
 	return t.WithOptionFns(fns)
 }
 
+// WithBorderTop setting the title border to top
+func WithBorderTop() OptionFunc {
+	return func(t *Title) {
+		t.ShowBorder = true
+		t.BorderPos = gclicom.BorderPosTop
+	}
+}
+
+// WithBorderBottom setting the title border to bottom
+func WithBorderBottom() OptionFunc {
+	return func(t *Title) {
+		t.ShowBorder = true
+		t.BorderPos = gclicom.BorderPosBottom
+	}
+}
+
+// WithBorderBoth setting the title border to both top and bottom
+func WithBorderBoth() OptionFunc {
+	return func(t *Title) {
+		t.ShowBorder = true
+		t.BorderPos = gclicom.BorderPosTB
+	}
+}
+
+// WithoutBorder setting the title border to none
+func WithoutBorder() OptionFunc {
+	return func(t *Title) {
+		t.ShowBorder = false
+	}
+}
+
+// WithOptionFns 设置选项
 func (t *Title) WithOptionFns(fns []OptionFunc) *Title {
 	for _, fn := range fns {
 		fn(t)
 	}
 	return t
+}
+
+// SetTitle set title text
+func (t *Title) SetTitle(title string) *Title {
+	t.Title = title
+	return t
+}
+
+// ShowNew set new title and print
+func (t *Title) ShowNew(title string) {
+	t.SetTitle(title).Println()
 }
 
 // Println print title line
@@ -89,14 +142,41 @@ func (t *Title) Render() string {
 		content = string(indent) + content
 	}
 
+	// 处理边框显示
+	if t.ShowBorder {
+		return t.renderWithBorder(content, availableWidth)
+	}
+
 	return content
+}
+
+// renderWithBorder 添加边框处理
+func (t *Title) renderWithBorder(content string, width int) string {
+	// 创建边框线
+	borderLine := strings.Repeat(string(t.BorderChar), width)
+
+	// 根据边框位置添加边框
+	switch t.BorderPos {
+	case gclicom.BorderPosTop:
+		return borderLine + "\n" + content
+	case gclicom.BorderPosBottom:
+		return content + "\n" + borderLine
+	case gclicom.BorderPosTB: // Top & Bottom
+		return borderLine + "\n" + content + "\n" + borderLine
+	default:
+		return content
+	}
 }
 
 // renderLeft 左对齐渲染
 func (t *Title) renderLeft(width int) string {
-	if t.ShowBorder {
-		// 显示边框: CHAR Title CHAR
-		titleLen := len(t.Title)
+	titleLen := strutil.TextWidth(t.Title)
+	if titleLen >= width {
+		return t.title()
+	}
+
+	if t.PaddingLR {
+		// 填充左右: CHAR Title CHAR
 		if titleLen >= width-2 {
 			return string(t.Char) + " " + t.title()
 		}
@@ -109,29 +189,24 @@ func (t *Title) renderLeft(width int) string {
 		return string(t.Char) + " " + t.title() + " " + string(rightChars)
 	}
 
-	// 不显示边框: Title CHAR
-	titleLen := len(t.Title)
-	if titleLen >= width {
-		return t.title()
-	}
-
-	remaining := width - titleLen
-	chars := make([]rune, remaining)
-	for i := range chars {
-		chars[i] = t.Char
-	}
-	return t.title() + " " + string(chars)
+	// 不填充: Title CHAR
+	// remaining := width - titleLen
+	// chars := make([]rune, remaining)
+	// for i := range chars {
+	// 	chars[i] = t.Char
+	// }
+	return t.title() // + " " + string(chars)
 }
 
 // renderCenter 居中渲染
 func (t *Title) renderCenter(width int) string {
-	titleLen := len(t.Title)
+	titleLen := strutil.TextWidth(t.Title)
 	if titleLen >= width {
 		return t.title()
 	}
 
-	if t.ShowBorder {
-		// 显示边框: CHAR Title CHAR 居中
+	if t.PaddingLR {
+		// 填充左右: CHAR Title CHAR 居中
 		totalPadding := width - titleLen - 2
 		leftPadding := totalPadding / 2
 		rightPadding := totalPadding - leftPadding
@@ -148,32 +223,32 @@ func (t *Title) renderCenter(width int) string {
 		return string(leftChars) + " " + t.title() + " " + string(rightChars)
 	}
 
-	// 不显示边框: Title 居中
+	// 不填充: Title 居中
 	totalPadding := width - titleLen
 	leftPadding := totalPadding / 2
-	rightPadding := totalPadding - leftPadding
+	// rightPadding := totalPadding - leftPadding
 
 	leftChars := make([]rune, leftPadding)
-	rightChars := make([]rune, rightPadding)
+	// rightChars := make([]rune, rightPadding)
 	for i := range leftChars {
-		leftChars[i] = t.Char
+		leftChars[i] = ' '
 	}
-	for i := range rightChars {
-		rightChars[i] = t.Char
-	}
+	// for i := range rightChars {
+	// 	rightChars[i] = t.Char
+	// }
 
-	return string(leftChars) + " " + t.title() + " " + string(rightChars)
+	return string(leftChars) + " " + t.title() // + " " + string(rightChars)
 }
 
 // renderRight 右对齐渲染
 func (t *Title) renderRight(width int) string {
-	titleLen := len(t.Title)
+	titleLen := strutil.TextWidth(t.Title)
 	if titleLen >= width {
 		return t.title()
 	}
 
-	if t.ShowBorder {
-		// 显示边框: CHAR Title CHAR
+	if t.PaddingLR {
+		// 填充左右: CHAR Title CHAR
 		remaining := width - titleLen - 2
 		leftChars := make([]rune, remaining)
 		for i := range leftChars {
@@ -182,13 +257,14 @@ func (t *Title) renderRight(width int) string {
 		return string(leftChars) + " " + t.title() + " " + string(t.Char)
 	}
 
-	// 不显示边框: CHAR Title
-	remaining := width - titleLen
-	leftChars := make([]rune, remaining)
-	for i := range leftChars {
-		leftChars[i] = t.Char
-	}
-	return string(leftChars) + " " + t.title()
+	// 不填充: CHAR Title
+	return t.title()
+	// remaining := width - titleLen
+	// leftChars := make([]rune, remaining)
+	// for i := range leftChars {
+	// 	leftChars[i] = t.Char
+	// }
+	// return string(leftChars) + " " + t.title()
 }
 
 func (t *Title) title() string {
