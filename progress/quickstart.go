@@ -20,7 +20,7 @@ const (
 	CharSquare3 rune = '░'
 	CharSquare4 rune = '▒'
 	CharSquare5 rune = '▢'
-	// Hyphen Minus
+	// CharHyphen Minus
 	CharHyphen      rune = '-'
 	CharCNHyphen    rune = '—'
 	CharUnderline   rune = '_'
