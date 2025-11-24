@@ -289,11 +289,11 @@ func (b *base) addCommand(pName string, c *Command) {
 
 	cName := c.Name
 	if _, ok := b.cmdNames[cName]; ok {
-		panicf("The command name '%s' is already added", cName)
+		panicf("The command name '%s' is already added in %q", cName, pName)
 	}
 
 	if b.cmdAliases.HasAlias(cName) {
-		panicf("The name '%s' is already used as an alias", cName)
+		panicf("The name '%s' is already used as an alias in %q", cName, pName)
 	}
 
 	if c.IsDisabled() {

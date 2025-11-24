@@ -12,7 +12,7 @@ import (
 
 const (
 	// RegGoodName match a good option, argument name
-	RegGoodName = `^[a-zA-Z][\w-]*$`
+	RegGoodName = `^[0-9a-zA-Z][\w-]*$`
 	// RegGoodCmdName match a good command name
 	RegGoodCmdName = `^[a-zA-Z][\w-]*$`
 	// RegGoodCmdId match command id. eg: "self:init"

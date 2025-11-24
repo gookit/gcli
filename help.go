@@ -205,8 +205,8 @@ var CmdHelpTemplate = `{{.Desc}}
 {{.Options}}{{end}}{{if .ArgsHelp}}
 <comment>Arguments:</>
 {{.ArgsHelp}}{{end}}{{ if .Subs }}
-<comment>Subcommands:</>{{range $n,$c := .Subs}}
-  <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
+<comment>Subcommands:</>{{range $n,$c := .Subs}}{{if $c.Visible}}
+  <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}{{end}}
 {{end}}{{.Help.AfterCmdText}}{{if .Cmd.Examples}}
 <comment>Examples:</>
 {{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}

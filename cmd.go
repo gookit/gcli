@@ -67,7 +67,7 @@ type Command struct {
 
 	// Aliases is the command name's alias names
 	Aliases arrutil.Strings
-	// Category for the command
+	// Category for the command TODO
 	Category string
 	// Config func, will call on `initialize`.
 	//
@@ -104,16 +104,21 @@ type Command struct {
 	// eg: "sys:info" -> module: "sys", subName: "info"
 	// module, subName string
 
-	// Examples some usage example display
-	Examples string
-
 	// Func is the command handler func. Func Runner
 	//
 	// TIP:
 	// 	params: `args` is the remain arguments after parse flags(options and arguments).
 	Func RunnerFunc
+
+	// Examples some usage example display.
+	//
+	// Can use string-var in contents, eg:
+	//   {$cmd}, {$binName}, {$binDir}, {$workDir}, {$binWithCmd}, {$binWithPath}, {$fullCmd}
+	Examples string
 	// Help is the long help message text
-	// Can use string-var in contents, eg: {$cmd}
+	//
+	// Can use string-var in contents, eg:
+	//   {$cmd}, {$binName}, {$binDir}, {$workDir}, {$binWithCmd}, {$binWithPath}, {$fullCmd}
 	Help string
 	// HelpRender custom render cmd help message
 	HelpRender func(c *Command)
@@ -350,7 +355,7 @@ func (c *Command) Next() {
  * standalone running
  *************************************************************/
 
-// MustRun Alone the current command, will panic on error
+// MustRun Alone the current command, will output message on error
 //
 // Usage:
 //
