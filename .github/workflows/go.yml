@@ -22,7 +22,7 @@ jobs:
 
     steps:
     - name: Check out codes
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Setup Go Faster
       uses: WillAbides/setup-go-faster@v1.14.0
