@@ -48,7 +48,7 @@ type DividerStyle struct {
 var (
 	// StyleDefault - MySql-like table style:
 	StyleDefault = Style{
-		HeadColor: "",
+		HeadColor: "info",
 		RowColor:  "",
 		Border: BorderStyle{
 			// Top
@@ -57,17 +57,76 @@ var (
 			TopIntersect: '+',
 			TopRight:     '+',
 			// Body
-			Right: '|',
-			Cell:  '|',
+			Right:  '|',
+			Cell:   '|',
+			Left:   '|',
+			Center: '-',
 			// Bottom
 			BottomRight:     '+',
 			Bottom:          '-',
 			BottomLeft:      '+',
 			BottomIntersect: '+',
 		},
-		Divider: DividerStyle{},
+		Divider: DividerStyle{
+			Left:      '+',
+			Right:     '+',
+			Intersect: '+',
+		},
 	}
 
-	StyleSimple   = Style{}
-	StyleMarkdown = Style{}
+	// StyleSimple - Simple table style:
+	StyleSimple = Style{
+		HeadColor: "info",
+		RowColor:  "",
+		Border: BorderStyle{
+			// Simple style without corners
+			TopLeft:      ' ', // No corner
+			Top:          ' ', // No top line
+			TopIntersect: ' ', // No intersection
+			TopRight:     ' ', // No corner
+			// Body
+			Right:  '|',
+			Cell:   '|',
+			Left:   '|',
+			Center: '-',
+			// Bottom
+			BottomRight:     ' ', // No corner
+			Bottom:          ' ', // No bottom line
+			BottomLeft:      ' ', // No corner
+			BottomIntersect: ' ', // No intersection
+		},
+		Divider: DividerStyle{
+			Left:      '|',
+			Right:     '|',
+			Intersect: '|',
+		},
+	}
+
+	// StyleMarkdown - Markdown table style:
+	StyleMarkdown = Style{
+		HeadColor: "info",
+		RowColor:  "",
+		Border: BorderStyle{
+			// Markdown doesn't have corners since it uses text characters
+			TopLeft:      0, // Not used in markdown
+			Top:          0, // Not used in markdown
+			TopIntersect: 0, // Not used in markdown
+			TopRight:     0, // Not used in markdown
+			// Body
+			Right:  '|',
+			Cell:   '|',
+			Left:   '|',
+			Center: '-', // Used for header separator
+			// Bottom
+			BottomRight:     0, // Not used in markdown
+			Bottom:          0, // Not used in markdown
+			BottomLeft:      0, // Not used in markdown
+			BottomIntersect: 0, // Not used in markdown
+		},
+		Divider: DividerStyle{
+			Left:      '|',
+			Right:     '|',
+			Intersect: '|',
+		},
+	}
 )

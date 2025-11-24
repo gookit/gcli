@@ -24,3 +24,9 @@
 /*.sh
 /*.zsh
 /*.pid
+
+# ai agent
+/openspec
+/.iflow
+AGENTS.md
+IFLOW.md
