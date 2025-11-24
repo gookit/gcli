@@ -157,6 +157,9 @@ func (co *CliOpts) Str(name, shorts string, defVal, desc string, setFns ...CliOp
 // - NOTE: default value support from ENV. eg: "${DB_USERNAME}"
 func (co *CliOpts) StrVar(p *string, opt *CliOpt) { co.strOpt(p, opt) }
 
+// StringVar binding an string option flag
+func (co *CliOpts) StringVar(p *string, opt *CliOpt) { co.strOpt(p, opt) }
+
 // StrOpt binding a string option.
 //
 // If defValAndDesc only one elem, will as desc message.
@@ -178,10 +181,20 @@ func (co *CliOpts) StrOpt(p *string, name, shorts string, defValAndDesc ...strin
 	})
 }
 
+// StringOpt binding a string option. alias of StrOpt
+func (co *CliOpts) StringOpt(p *string, name, shorts string, defValAndDesc ...string) {
+	co.StrOpt(p, name, shorts, defValAndDesc...)
+}
+
 // StrOpt2 binding a string option, and allow with CliOptFn for config option.
 //
 // - NOTE: default value support from ENV. eg: "${DB_USERNAME}"
 func (co *CliOpts) StrOpt2(p *string, nameAndShorts, desc string, setFns ...CliOptFn) {
+	co.strOpt(p, NewOpt(nameAndShorts, desc, "", setFns...))
+}
+
+// StringOpt2 binding a string option, alias of StrOpt2.
+func (co *CliOpts) StringOpt2(p *string, nameAndShorts, desc string, setFns ...CliOptFn) {
 	co.strOpt(p, NewOpt(nameAndShorts, desc, "", setFns...))
 }
 
