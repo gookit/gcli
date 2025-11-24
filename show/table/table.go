@@ -12,17 +12,15 @@ import (
 
 // Options struct
 type Options struct {
-	TitleStyle  string
-	HeaderStyle string
-
-	BottomBorder []rune
+	Style
+	HeadColor string
 
 	Alignment   strutil.PosFlag
 	ColMaxWidth int
 	LineNumber  bool
 	WrapContent bool
 
-	// HasBorder show border line
+	// HasBorder show borderline
 	HasBorder bool
 	// RowBorder show row border
 	RowBorder bool
@@ -38,7 +36,9 @@ type OpFunc func(opts *Options)
 // Table a cli Table show
 type Table struct {
 	show.Base // use for internal
-	out       comdef.ByteStringWriter
+	// options ...
+	opts *Options
+	out  comdef.ByteStringWriter
 
 	// Title for the table
 	Title string
@@ -46,8 +46,6 @@ type Table struct {
 	Heads []string
 	// Rows table data rows
 	Rows []*Row
-	// options ...
-	opts *Options
 
 	// column value align type.
 	// key is col index. start from 0.
@@ -59,7 +57,7 @@ func New(title string, fns ...OpFunc) *Table {
 	t := &Table{
 		Title: title,
 		opts: &Options{
-			BottomBorder: []rune{'━', '┷'},
+			Style: StyleDefault,
 		},
 	}
 
@@ -235,7 +233,7 @@ func (c *Cell) String() string {
 		// return c.str
 	}
 
-	s := strutil.QuietString(c.Val)
+	s := strutil.SafeString(c.Val)
 	if c.Width == 0 {
 		return s
 	}

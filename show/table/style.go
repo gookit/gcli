@@ -23,8 +23,9 @@ type Style struct {
 	Border  BorderStyle
 	Divider DividerStyle
 
-	HeadColor string
-	RowColor  string
+	TitleColor string
+	HeadColor  string
+	RowColor   string
 }
 
 // BorderStyle for table
@@ -38,8 +39,9 @@ type BorderStyle struct {
 
 // DividerStyle defines table divider style
 type DividerStyle struct {
-	Left      rune
-	Right     rune
+	Left  rune
+	Right rune
+	// Intersect 交叉
 	Intersect rune
 }
 
