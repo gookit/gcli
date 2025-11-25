@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"reflect"
+	"sort"
 	"strings"
 
 	"github.com/gookit/color"
@@ -12,67 +13,6 @@ import (
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/strutil"
 )
-
-// Options struct
-type Options struct {
-	Style
-	// Alignment column 内容对齐方式
-	Alignment strutil.PosFlag
-
-	// ColMaxWidth column max width.
-	//  - 0: auto
-	//  - 超出宽度时，将对内容进行处理 OverflowFlag
-	ColMaxWidth int
-	// ColPadding column value l,r.
-	//  - 默认L,R填充一个空格
-	ColPadding string
-	// OverflowFlag 内容溢出处理方式 0: 默认换行, 1: 截断
-	OverflowFlag uint8
-	// ShowRowNumber 显示行号，将会多一个列
-	ShowRowNumber bool
-	// ColumnWidths 自定义设置列宽. 按顺序设置，不设置时，将根据内容自动计算
-	ColumnWidths []int
-
-	// SortColumn sort rows by column index value.
-	//
-	//  -1: 不排序
-	SortColumn int
-	// SortAscending sort direction, true for ascending
-	SortAscending bool
-	// TrimSpace trim spaces from cell values. default: true
-	TrimSpace bool
-	// CSVOutput output table in CSV format
-	CSVOutput bool
-
-	// -- control border show
-
-	// ShowBorder show borderline
-	ShowBorder bool
-	// RowBorder show row border
-	RowBorder bool
-	// HeadBorder show head border
-	HeadBorder bool
-	// WrapBorder wrap(l,r,t,b) border for table
-	WrapBorder bool
-}
-
-// NewOptions create default options
-func NewOptions() *Options {
-	return &Options{
-		Style:      StyleDefault,
-		ShowBorder: true,
-		HeadBorder: true,
-		WrapBorder: true,
-	}
-}
-
-// OptionFunc define
-type OptionFunc func(opts *Options)
-
-// WithStyle set table style
-func WithStyle(style Style) OptionFunc {
-	return func(opts *Options) { opts.Style = style }
-}
 
 // Table a cli Table show
 type Table struct {
@@ -86,10 +26,6 @@ type Table struct {
 	Heads []string
 	// Rows table data rows
 	Rows []*Row
-
-	// column value align type.
-	// key is col index. start from 0.
-	colAlign map[int]strutil.PosFlag
 
 	// 计算后的列宽
 	colWidths []int
@@ -310,6 +246,11 @@ func (t *Table) Format() {
 }
 
 func (t *Table) prepare() {
+	// 如果需要显示行号，在表头前添加"#"
+	if t.opts.ShowRowNumber {
+		t.Heads = append([]string{"#"}, t.Heads...)
+	}
+
 	// 计算列数
 	colCount := len(t.Heads)
 	for _, row := range t.Rows {
@@ -325,6 +266,16 @@ func (t *Table) prepare() {
 	// 计算表头列宽
 	for i, head := range t.Heads {
 		width := strutil.Utf8Width(head)
+		// 自定义列宽
+		if len(t.opts.ColumnWidths) > i && t.opts.ColumnWidths[i] > 0 {
+			width = t.opts.ColumnWidths[i]
+		}
+		// 列L,R填充
+		if t.opts.ColPadding != "" {
+			width += len(t.opts.ColPadding) * 2
+		}
+
+		// 列最大宽度
 		if t.opts.ColMaxWidth != 0 && width > t.opts.ColMaxWidth {
 			width = t.opts.ColMaxWidth
 		}
@@ -333,10 +284,47 @@ func (t *Table) prepare() {
 		}
 	}
 
+	// 如果需要排序，对行进行排序
+	sortColIdx := t.opts.SortColumn
+	if sortColIdx >= 0 && sortColIdx < colCount {
+		sort.SliceStable(t.Rows, func(i, j int) bool {
+			// 确保索引有效
+			if sortColIdx >= len(t.Rows[i].Cells) || sortColIdx >= len(t.Rows[j].Cells) {
+				return false
+			}
+
+			valI := t.Rows[i].Cells[sortColIdx].String()
+			valJ := t.Rows[j].Cells[sortColIdx].String()
+
+			if t.opts.SortAscending {
+				return valI < valJ
+			}
+			return valI > valJ
+		})
+	}
+
+	// 如果显示行号，为每行添加行号单元格
+	if t.opts.ShowRowNumber {
+		for i, row := range t.Rows {
+			rowNumCell := &Cell{Val: fmt.Sprintf("%d", i)}
+			row.Cells = append([]*Cell{rowNumCell}, row.Cells...)
+		}
+	}
+
 	// 计算数据列宽
 	for _, row := range t.Rows {
 		for i, cell := range row.Cells {
 			cellWidth := cell.MaxWidth()
+			// 自定义列宽
+			if len(t.opts.ColumnWidths) > i && t.opts.ColumnWidths[i] > 0 {
+				cellWidth = t.opts.ColumnWidths[i]
+			}
+			// 列L,R填充
+			if t.opts.ColPadding != "" {
+				cellWidth += len(t.opts.ColPadding) * 2
+			}
+
+			// 列最大宽度
 			if t.opts.ColMaxWidth != 0 && cellWidth > t.opts.ColMaxWidth {
 				cellWidth = t.opts.ColMaxWidth
 			}
@@ -497,6 +485,11 @@ func (t *Table) formatBody() {
 				cell := row.Cells[j]
 				cellStr := cell.String()
 
+				// 去除空格（如果设置了 TrimSpace）
+				if opts.TrimSpace {
+					cellStr = strings.TrimSpace(cellStr)
+				}
+
 				// 应用对齐方式
 				var align strutil.PosFlag
 				if cell.Align != 0 {
@@ -505,9 +498,20 @@ func (t *Table) formatBody() {
 					align = opts.Alignment
 				}
 
+				// 添加列填充
+				if opts.ColPadding != "" {
+					cellStr = opts.ColPadding + cellStr + opts.ColPadding
+				}
+
 				// 根据宽度调整内容
 				if cell.Width > 0 {
-					cellStr = strutil.Resize(cellStr, cell.Width, align)
+					// 截断模式
+					if opts.OverflowFlag == OverflowCut {
+						cellStr = strutil.Utf8Truncate(cellStr, cell.Width, "")
+					} else {
+						// 默认换行模式
+						cellStr = strutil.Resize(cellStr, cell.Width, align)
+					}
 				}
 
 				// 应用颜色（如果设置了行颜色或首列颜色）
@@ -557,7 +561,7 @@ func (t *Table) formatFooter() {
 	}
 }
 
-// drawBorderLine draws a border line with the given characters
+// drawBorderLine draws a borderline with the given characters
 func (t *Table) drawBorderLine(buf *bytes.Buffer, leftChar, centerChar, intersectChar, rightChar rune) {
 	if leftChar == 0 && rightChar == 0 {
 		return // 如果没有边框字符，则跳过
@@ -609,7 +613,7 @@ type Cell struct {
 
 // MaxWidth returns the max width of all the lines in a cell
 func (c *Cell) MaxWidth() int {
-	width := 0
+	width := c.Width
 	for _, s := range strings.Split(c.String(), "\n") {
 		w := strutil.Utf8Width(s)
 		if w > width {
@@ -622,6 +626,13 @@ func (c *Cell) MaxWidth() int {
 
 // String returns the string formatted representation of the cell
 func (c *Cell) String() string {
+	if c.str == "" {
+		c.str = c.toString()
+	}
+	return c.str
+}
+
+func (c *Cell) toString() string {
 	if c.Val == nil {
 		return strutil.PadLeft(" ", " ", c.Width)
 		// return c.str

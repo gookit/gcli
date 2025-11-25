@@ -14,7 +14,14 @@ func TestNewTable(t *testing.T) {
 	tb.SetHeads("Name", "Age", "City").
 		AddRow("Tom", 25, "New York").
 		AddRow("Jerry", 30, "Boston").
-		AddRow("Alice", 28, "Chicago")
+		AddRow("Alice", 28, "Chicago").
+		WithOptions(
+			table.WithShowRowNumber(false),
+			table.WithOverflowFlag(0),
+			table.WithTrimSpace(true),
+			table.WithSortColumn(-1, false),
+			table.WithCSVOutput(false),
+		)
 
 	result := tb.String()
 
@@ -42,7 +49,7 @@ func TestTableSetRowsWithSlice(t *testing.T) {
 	}
 
 	tb.SetHeads("Name", "Age", "Job").SetRows(users).
-		WithOptions(table.WithStyle(table.StyleBold))
+		WithOptions(table.WithStyle(table.StyleBold), table.WithColPadding(" "))
 
 	result := tb.String()
 
@@ -64,16 +71,26 @@ func TestTableWithStyle(t *testing.T) {
 
 	// 测试不同样式
 	tb.WithOptions(func(opts *table.Options) {
-		opts.Style = table.StyleSimple
+		opts.Style = table.StyleDefault
 		opts.HeadColor = "info"
 	})
 
 	result := tb.String()
 	fmt.Println(result)
-	if !strings.Contains(result, "Styled Table") {
-		t.Error("Table should contain title")
-	}
+	assert.StrContains(t, result, "Styled Table")
 
+	t.Run("StyleSimple", func(t *testing.T) {
+		tb.WithOptions(table.WithStyle(table.StyleSimple))
+		tb.Println()
+	})
+	t.Run("StyleMarkdown", func(t *testing.T) {
+		tb.WithOptions(table.WithStyle(table.StyleMarkdown))
+		tb.Println()
+	})
+	t.Run("StyleBold", func(t *testing.T) {
+		tb.WithOptions(table.WithStyle(table.StyleBold))
+		tb.Println()
+	})
 	t.Run("StyleRounded", func(t *testing.T) {
 		tb.WithOptions(table.WithStyle(table.StyleRounded))
 		tb.Println()
