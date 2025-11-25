@@ -7,9 +7,9 @@ import (
 )
 
 const (
-	// AlignLeft Align right, padding left
+	// AlignLeft Align left, padding right
 	AlignLeft = strutil.PosRight
-	// AlignRight Align left, padding right
+	// AlignRight Align right, padding left
 	AlignRight = strutil.PosLeft
 	// default desc
 	defaultDesc = "No description"

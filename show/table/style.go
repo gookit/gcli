@@ -41,14 +41,14 @@ type BorderStyle struct {
 	// Right - right border char
 	Right  rune
 	Center rune
-	// Cell - column separator char
+	// Cell - column separator char. 列分隔符
 	Cell rune
 	Left rune
 
 	BottomRight, Bottom, BottomIntersect, BottomLeft rune
 }
 
-// DividerStyle defines table divider style
+// DividerStyle defines table divider style. 定义表格分隔器样式
 type DividerStyle struct {
 	Left  rune
 	Right rune
@@ -89,25 +89,25 @@ var (
 		HeadColor:  "info",
 		Border: BorderStyle{
 			// Simple style without corners
-			TopLeft:      ' ', // No corner
-			Top:          ' ', // No top line
-			TopIntersect: ' ', // No intersection
-			TopRight:     ' ', // No corner
+			TopLeft:      0, // No corner
+			Top:          0, // No top line
+			TopIntersect: 0, // No intersection
+			TopRight:     0, // No corner
 			// Body
 			Right:  '|',
 			Cell:   '|',
 			Left:   '|',
 			Center: '-',
 			// Bottom
-			BottomRight:     ' ', // No corner
-			Bottom:          ' ', // No bottom line
-			BottomLeft:      ' ', // No corner
-			BottomIntersect: ' ', // No intersection
+			BottomRight:     0, // No corner
+			Bottom:          0, // No bottom line
+			BottomLeft:      0, // No corner
+			BottomIntersect: 0, // No intersection
 		},
 		Divider: DividerStyle{
 			Left:      '|',
 			Right:     '|',
-			Intersect: '|',
+			Intersect: '+',
 		},
 	}
 

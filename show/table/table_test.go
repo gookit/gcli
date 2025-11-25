@@ -75,9 +75,11 @@ func TestTableWithStyle(t *testing.T) {
 		opts.HeadColor = "info"
 	})
 
-	result := tb.String()
-	fmt.Println(result)
-	assert.StrContains(t, result, "Styled Table")
+	t.Run("StyleDefault", func(t *testing.T) {
+		result := tb.String()
+		fmt.Println(result)
+		assert.StrContains(t, result, "Styled Table")
+	})
 
 	t.Run("StyleSimple", func(t *testing.T) {
 		tb.WithOptions(table.WithStyle(table.StyleSimple))

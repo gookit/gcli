@@ -370,97 +370,48 @@ func (t *Table) formatHeader() {
 
 	// 打印表头
 	if len(t.Heads) > 0 {
-		// 特殊处理 Markdown 样式
-		if style == StyleMarkdown {
-			// 对于 Markdown 样式，先打印表头内容
-			buf.WriteRune(style.Border.Right) // 左边框
+		buf.WriteRune(style.Border.Right) // 左边框
+		var coloredHead string
 
-			for i, head := range t.Heads {
-				if i < len(t.colWidths) {
-					// 使用 strutil.Resize 来对齐表头内容
-					resized := strutil.Resize(head, t.colWidths[i], t.opts.Alignment)
-					// 应用颜色（优先使用 FirstColor 给第一列）
-					var coloredHead string
-					if i == 0 && opts.FirstColor != "" {
-						// 表头第一列使用 FirstColor
-						coloredHead = color.Sprintf("<%s>%s</>", opts.FirstColor, resized)
-					} else if opts.HeadColor != "" {
-						// 其他列使用 HeadColor
-						coloredHead = color.Sprintf("<%s>%s</>", opts.HeadColor, resized)
-					} else {
-						coloredHead = resized
-					}
-					buf.WriteString(coloredHead)
+		for i, head := range t.Heads {
+			// 添加列填充
+			if opts.ColPadding != "" {
+				head = opts.ColPadding + head + opts.ColPadding
+			}
+
+			if i < len(t.colWidths) {
+				// 使用 strutil.Resize 来对齐表头内容
+				resized := strutil.Resize(head, t.colWidths[i], opts.Alignment)
+				// 应用颜色（优先使用 FirstColor 给第一列）
+				if i == 0 && opts.FirstColor != "" {
+					// 表头第一列使用 FirstColor
+					coloredHead = color.Sprintf("<%s>%s</>", opts.FirstColor, resized)
+				} else if opts.HeadColor != "" {
+					// 其他列使用 HeadColor
+					coloredHead = color.Sprintf("<%s>%s</>", opts.HeadColor, resized)
 				} else {
-					buf.WriteString(head)
+					coloredHead = resized
 				}
-
-				if i < len(t.Heads)-1 { // 不是最后一个元素
-					buf.WriteRune(style.Border.Cell) // 列分隔符
-				}
+				buf.WriteString(coloredHead)
+			} else {
+				buf.WriteString(head)
 			}
 
-			buf.WriteRune(style.Border.Right) // 右边框
-			buf.WriteString("\n")
-
-			// 然后打印 Markdown 风格的分隔行
-			buf.WriteRune(style.Border.Right) // 左边框
-			for i := 0; i < len(t.Heads); i++ {
-				if i < len(t.colWidths) {
-					// Markdown 表格分隔符，通常为至少3个连字符
-					sepWidth := t.colWidths[i]
-					if sepWidth < 3 {
-						sepWidth = 3
-					}
-					buf.WriteString(strings.Repeat("-", sepWidth))
-				}
-
-				if i < len(t.Heads)-1 { // 不是最后一个元素
-					buf.WriteRune(style.Border.Cell) // 列分隔符
-				}
-			}
-
-			buf.WriteRune(style.Border.Right) // 右边框
-			buf.WriteString("\n")
-		} else {
-			// 普通表格样式
-			buf.WriteRune(style.Border.Right) // 左边框
-
-			for i, head := range t.Heads {
-				if i < len(t.colWidths) {
-					// 使用 strutil.Resize 来对齐表头内容
-					resized := strutil.Resize(head, t.colWidths[i], t.opts.Alignment)
-					// 应用颜色（优先使用 FirstColor 给第一列）
-					var coloredHead string
-					if i == 0 && opts.FirstColor != "" {
-						// 表头第一列使用 FirstColor
-						coloredHead = color.Sprintf("<%s>%s</>", opts.FirstColor, resized)
-					} else if opts.HeadColor != "" {
-						// 其他列使用 HeadColor
-						coloredHead = color.Sprintf("<%s>%s</>", opts.HeadColor, resized)
-					} else {
-						coloredHead = resized
-					}
-					buf.WriteString(coloredHead)
-				} else {
-					buf.WriteString(head)
-				}
-
-				if i < len(t.Heads)-1 { // 不是最后一个元素
-					buf.WriteRune(style.Border.Cell) // 列分隔符
-				}
-			}
-
-			buf.WriteRune(style.Border.Right) // 右边框
-			buf.WriteString("\n")
-
-			// 画表头分隔线（如果需要）
-			if opts.HeadBorder {
-				t.drawBorderLine(buf, style.Divider.Left, style.Border.Center, style.Divider.Intersect, style.Divider.Right)
-			} else if opts.RowBorder {
-				t.drawBorderLine(buf, style.Border.Right, style.Border.Center, style.Border.Cell, style.Border.Right)
+			if i < len(t.Heads)-1 { // 不是最后一个元素
+				buf.WriteRune(style.Border.Cell) // 列分隔符
 			}
 		}
+
+		buf.WriteRune(style.Border.Right) // 右边框
+		buf.WriteString("\n")
+
+		// 画表头分隔线（如果需要）
+		if opts.HeadBorder {
+			t.drawBorderLine(buf, style.Divider.Left, style.Border.Center, style.Divider.Intersect, style.Divider.Right)
+		} else if opts.RowBorder {
+			t.drawBorderLine(buf, style.Border.Right, style.Border.Center, style.Border.Cell, style.Border.Right)
+		}
+
 	} else if len(t.Heads) == 0 && len(t.Rows) > 0 {
 		// 没有表头但有数据，仍可能需要画分隔线
 		if opts.HeadBorder {
@@ -593,6 +544,10 @@ type Row struct {
 	// Cells is the group of cell for the row
 	Cells []*Cell
 
+	// Height is the height of the row.
+	//
+	// Defaults to 0 - the height of the tallest cell(最高的单元格的高度)
+	Height int
 	// Separator for table columns
 	Separator rune
 }

@@ -30,3 +30,5 @@
 /.iflow
 AGENTS.md
 IFLOW.md
+go.work.sum
+.xenv.toml
