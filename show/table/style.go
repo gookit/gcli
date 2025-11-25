@@ -26,6 +26,8 @@ type Style struct {
 	TitleColor string
 	HeadColor  string
 	RowColor   string
+	// FirstColor - first column color
+	FirstColor string
 }
 
 // BorderStyle for table
@@ -53,8 +55,9 @@ type DividerStyle struct {
 var (
 	// StyleDefault - MySql-like table style
 	StyleDefault = Style{
-		HeadColor: "info",
-		RowColor:  "",
+		HeadColor:  "info",
+		RowColor:   "",
+		FirstColor: "cyan",
 		Border: BorderStyle{
 			// Top
 			TopLeft:      '+',
@@ -81,8 +84,9 @@ var (
 
 	// StyleSimple - Simple table style
 	StyleSimple = Style{
-		HeadColor: "info",
-		RowColor:  "",
+		HeadColor:  "info",
+		RowColor:   "",
+		FirstColor: "green",
 		Border: BorderStyle{
 			// Simple style without corners
 			TopLeft:      ' ', // No corner
@@ -109,8 +113,9 @@ var (
 
 	// StyleMarkdown - Markdown table style
 	StyleMarkdown = Style{
-		HeadColor: "info",
-		RowColor:  "",
+		HeadColor:  "info",
+		RowColor:   "",
+		FirstColor: "blue",
 		Border: BorderStyle{
 			// Markdown doesn't have corners since it uses text characters
 			TopLeft:      0, // Not used in markdown
@@ -135,10 +140,11 @@ var (
 		},
 	}
 
-	// StyleBold - Bold table style with thick borders
+	// StyleBold - Bold table style with thick borders:
 	StyleBold = Style{
-		HeadColor: "info",
-		RowColor:  "",
+		HeadColor:  "info",
+		RowColor:   "",
+		FirstColor: "magenta",
 		Border: BorderStyle{
 			// Top
 			TopLeft:      '┏',
@@ -163,10 +169,11 @@ var (
 		},
 	}
 
-	// StyleRounded - Rounded corner table style
+	// StyleRounded - Rounded corner table style:
 	StyleRounded = Style{
-		HeadColor: "info",
-		RowColor:  "",
+		HeadColor:  "info",
+		RowColor:   "",
+		FirstColor: "yellow",
 		Border: BorderStyle{
 			// Top
 			TopLeft:      '╭',
@@ -191,10 +198,11 @@ var (
 		},
 	}
 
-	// StyleDouble - Double line table style
+	// StyleDouble - Double line table style:
 	StyleDouble = Style{
-		HeadColor: "info",
-		RowColor:  "",
+		HeadColor:  "info",
+		RowColor:   "",
+		FirstColor: "red",
 		Border: BorderStyle{
 			// Top
 			TopLeft:      '╔',
@@ -219,10 +227,11 @@ var (
 		},
 	}
 
-	// StyleMinimal - Minimal table style with light borders
+	// StyleMinimal - Minimal table style with light borders:
 	StyleMinimal = Style{
-		HeadColor: "green",
-		RowColor:  "",
+		HeadColor:  "info",
+		RowColor:   "",
+		FirstColor: "white",
 		Border: BorderStyle{
 			// Top
 			TopLeft:      '┌',

@@ -16,12 +16,35 @@ import (
 // Options struct
 type Options struct {
 	Style
+	// Alignment column 内容对齐方式
+	Alignment strutil.PosFlag
 
-	// Alignment Align column value
-	Alignment   strutil.PosFlag
+	// ColMaxWidth column max width.
+	//  - 0: auto
+	//  - 超出宽度时，将对内容进行处理 OverflowFlag
 	ColMaxWidth int
-	LineNumber  bool
-	WrapContent bool
+	// ColPadding column value l,r.
+	//  - 默认L,R填充一个空格
+	ColPadding string
+	// OverflowFlag 内容溢出处理方式 0: 默认换行, 1: 截断
+	OverflowFlag uint8
+	// ShowRowNumber 显示行号，将会多一个列
+	ShowRowNumber bool
+	// ColumnWidths 自定义设置列宽. 按顺序设置，不设置时，将根据内容自动计算
+	ColumnWidths []int
+
+	// SortColumn sort rows by column index value.
+	//
+	//  -1: 不排序
+	SortColumn int
+	// SortAscending sort direction, true for ascending
+	SortAscending bool
+	// TrimSpace trim spaces from cell values. default: true
+	TrimSpace bool
+	// CSVOutput output table in CSV format
+	CSVOutput bool
+
+	// -- control border show
 
 	// ShowBorder show borderline
 	ShowBorder bool
@@ -368,12 +391,18 @@ func (t *Table) formatHeader() {
 				if i < len(t.colWidths) {
 					// 使用 strutil.Resize 来对齐表头内容
 					resized := strutil.Resize(head, t.colWidths[i], t.opts.Alignment)
-					if opts.HeadColor != "" {
-						// 如果有颜色设置，使用 color 包
-						buf.WriteString(color.Sprintf("<%s>%s</>", opts.HeadColor, resized))
+					// 应用颜色（优先使用 FirstColor 给第一列）
+					var coloredHead string
+					if i == 0 && opts.FirstColor != "" {
+						// 表头第一列使用 FirstColor
+						coloredHead = color.Sprintf("<%s>%s</>", opts.FirstColor, resized)
+					} else if opts.HeadColor != "" {
+						// 其他列使用 HeadColor
+						coloredHead = color.Sprintf("<%s>%s</>", opts.HeadColor, resized)
 					} else {
-						buf.WriteString(resized)
+						coloredHead = resized
 					}
+					buf.WriteString(coloredHead)
 				} else {
 					buf.WriteString(head)
 				}
@@ -413,12 +442,18 @@ func (t *Table) formatHeader() {
 				if i < len(t.colWidths) {
 					// 使用 strutil.Resize 来对齐表头内容
 					resized := strutil.Resize(head, t.colWidths[i], t.opts.Alignment)
-					if opts.HeadColor != "" {
-						// 如果有颜色设置，使用 color 包
-						buf.WriteString(color.Sprintf("<%s>%s</>", opts.HeadColor, resized))
+					// 应用颜色（优先使用 FirstColor 给第一列）
+					var coloredHead string
+					if i == 0 && opts.FirstColor != "" {
+						// 表头第一列使用 FirstColor
+						coloredHead = color.Sprintf("<%s>%s</>", opts.FirstColor, resized)
+					} else if opts.HeadColor != "" {
+						// 其他列使用 HeadColor
+						coloredHead = color.Sprintf("<%s>%s</>", opts.HeadColor, resized)
 					} else {
-						buf.WriteString(resized)
+						coloredHead = resized
 					}
+					buf.WriteString(coloredHead)
 				} else {
 					buf.WriteString(head)
 				}
@@ -475,12 +510,18 @@ func (t *Table) formatBody() {
 					cellStr = strutil.Resize(cellStr, cell.Width, align)
 				}
 
-				// 应用颜色（如果设置了行颜色）
-				if opts.RowColor != "" {
-					buf.WriteString(color.Sprintf("<%s>%s</>", opts.RowColor, cellStr))
+				// 应用颜色（如果设置了行颜色或首列颜色）
+				var coloredCell string
+				if j == 0 && opts.FirstColor != "" {
+					// 首列使用 FirstColor
+					coloredCell = color.Sprintf("<%s>%s</>", opts.FirstColor, cellStr)
+				} else if opts.RowColor != "" {
+					// 其他列使用 RowColor
+					coloredCell = color.Sprintf("<%s>%s</>", opts.RowColor, cellStr)
 				} else {
-					buf.WriteString(cellStr)
+					coloredCell = cellStr
 				}
+				buf.WriteString(coloredCell)
 			} else {
 				// 如果这一行没有足够的列，使用空格填充
 				if j < len(t.colWidths) {
