@@ -56,6 +56,7 @@ type ShownFace interface {
 
 // Base formatter
 type Base struct {
+	// out  comdef.ByteStringWriter
 	// TODO lock sync.Mutex
 	out io.Writer
 	// formatted string
@@ -92,8 +93,11 @@ func (b *Base) Format() {
 }
 
 // Err get
-func (b *Base) Err() error {
-	return b.err
+func (b *Base) Err() error { return b.err }
+
+// SetErr set error
+func (b *Base) SetErr(err error) {
+	b.err = err
 }
 
 // Print formatted message

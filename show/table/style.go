@@ -32,7 +32,12 @@ type Style struct {
 type BorderStyle struct {
 	TopLeft, Top, TopIntersect, TopRight rune
 
-	Right, Center, Cell, Left rune
+	// Right - right border char
+	Right  rune
+	Center rune
+	// Cell - column separator char
+	Cell rune
+	Left rune
 
 	BottomRight, Bottom, BottomIntersect, BottomLeft rune
 }
@@ -46,7 +51,7 @@ type DividerStyle struct {
 }
 
 var (
-	// StyleDefault - MySql-like table style:
+	// StyleDefault - MySql-like table style
 	StyleDefault = Style{
 		HeadColor: "info",
 		RowColor:  "",
@@ -74,7 +79,7 @@ var (
 		},
 	}
 
-	// StyleSimple - Simple table style:
+	// StyleSimple - Simple table style
 	StyleSimple = Style{
 		HeadColor: "info",
 		RowColor:  "",
@@ -102,7 +107,7 @@ var (
 		},
 	}
 
-	// StyleMarkdown - Markdown table style:
+	// StyleMarkdown - Markdown table style
 	StyleMarkdown = Style{
 		HeadColor: "info",
 		RowColor:  "",
@@ -127,6 +132,118 @@ var (
 			Left:      '|',
 			Right:     '|',
 			Intersect: '|',
+		},
+	}
+
+	// StyleBold - Bold table style with thick borders
+	StyleBold = Style{
+		HeadColor: "info",
+		RowColor:  "",
+		Border: BorderStyle{
+			// Top
+			TopLeft:      '┏',
+			Top:          '━',
+			TopIntersect: '┳',
+			TopRight:     '┓',
+			// Body
+			Right:  '┃',
+			Cell:   '┃',
+			Left:   '┃',
+			Center: '━',
+			// Bottom
+			BottomRight:     '┛',
+			Bottom:          '━',
+			BottomLeft:      '┗',
+			BottomIntersect: '┻',
+		},
+		Divider: DividerStyle{
+			Left:      '┣',
+			Right:     '┫',
+			Intersect: '╋',
+		},
+	}
+
+	// StyleRounded - Rounded corner table style
+	StyleRounded = Style{
+		HeadColor: "info",
+		RowColor:  "",
+		Border: BorderStyle{
+			// Top
+			TopLeft:      '╭',
+			Top:          '─',
+			TopIntersect: '┬',
+			TopRight:     '╮',
+			// Body
+			Right:  '│',
+			Cell:   '│',
+			Left:   '│',
+			Center: '─',
+			// Bottom
+			BottomRight:     '╯',
+			Bottom:          '─',
+			BottomLeft:      '╰',
+			BottomIntersect: '┴',
+		},
+		Divider: DividerStyle{
+			Left:      '├',
+			Right:     '┤',
+			Intersect: '┼',
+		},
+	}
+
+	// StyleDouble - Double line table style
+	StyleDouble = Style{
+		HeadColor: "info",
+		RowColor:  "",
+		Border: BorderStyle{
+			// Top
+			TopLeft:      '╔',
+			Top:          '═',
+			TopIntersect: '╦',
+			TopRight:     '╗',
+			// Body
+			Right:  '║',
+			Cell:   '║',
+			Left:   '║',
+			Center: '═',
+			// Bottom
+			BottomRight:     '╝',
+			Bottom:          '═',
+			BottomLeft:      '╚',
+			BottomIntersect: '╩',
+		},
+		Divider: DividerStyle{
+			Left:      '╠',
+			Right:     '╣',
+			Intersect: '╬',
+		},
+	}
+
+	// StyleMinimal - Minimal table style with light borders
+	StyleMinimal = Style{
+		HeadColor: "green",
+		RowColor:  "",
+		Border: BorderStyle{
+			// Top
+			TopLeft:      '┌',
+			Top:          '─',
+			TopIntersect: '┬',
+			TopRight:     '┐',
+			// Body
+			Right:  '│',
+			Cell:   '│',
+			Left:   '│',
+			Center: '─',
+			// Bottom
+			BottomRight:     '┘',
+			Bottom:          '─',
+			BottomLeft:      '└',
+			BottomIntersect: '┴',
+		},
+		Divider: DividerStyle{
+			Left:      '├',
+			Right:     '┤',
+			Intersect: '┼',
 		},
 	}
 )

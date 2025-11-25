@@ -6,11 +6,12 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3/show/table"
+	"github.com/gookit/goutil/testutil/assert"
 )
 
 func TestNewTable(t *testing.T) {
 	tb := table.New("Table example1")
-	tb.AddHead("Name", "Age", "City").
+	tb.SetHeads("Name", "Age", "City").
 		AddRow("Tom", 25, "New York").
 		AddRow("Jerry", 30, "Boston").
 		AddRow("Alice", 28, "Chicago")
@@ -40,7 +41,8 @@ func TestTableSetRowsWithSlice(t *testing.T) {
 		{"Jerry", 30, "Designer"},
 	}
 
-	tb.AddHead("Name", "Age", "Job").SetRows(users)
+	tb.SetHeads("Name", "Age", "Job").SetRows(users).
+		WithOptions(table.WithStyle(table.StyleBold))
 
 	result := tb.String()
 
@@ -56,9 +58,9 @@ func TestTableSetRowsWithSlice(t *testing.T) {
 
 func TestTableWithStyle(t *testing.T) {
 	tb := table.New("Styled Table")
-	tb.AddHead("ID", "Name").
-		AddRow(1, "Product A").
-		AddRow(2, "Product B")
+	tb.SetHeads("ID", "Name", "Age", "Description").
+		AddRow(1, "Product A", 10, "This is a description").
+		AddRow(2, "Product B", 20, "This is another description")
 
 	// 测试不同样式
 	tb.WithOptions(func(opts *table.Options) {
@@ -68,30 +70,35 @@ func TestTableWithStyle(t *testing.T) {
 
 	result := tb.String()
 	fmt.Println(result)
-
 	if !strings.Contains(result, "Styled Table") {
 		t.Error("Table should contain title")
 	}
+
+	t.Run("StyleRounded", func(t *testing.T) {
+		tb.WithOptions(table.WithStyle(table.StyleRounded))
+		tb.Println()
+	})
+	t.Run("StyleDouble", func(t *testing.T) {
+		tb.WithOptions(table.WithStyle(table.StyleDouble))
+		tb.Println()
+	})
+	t.Run("StyleMinimal", func(t *testing.T) {
+		tb.WithOptions(table.WithStyle(table.StyleMinimal))
+		tb.Println()
+	})
 }
 
 func TestTableMarkdownStyle(t *testing.T) {
 	tb := table.New("Markdown Table")
-	tb.AddHead("Name", "Value").
+	tb.SetHeads("Name", "Value").
 		AddRow("A", 100).
 		AddRow("B", 200)
 
-	tb.WithOptions(func(opts *table.Options) {
-		opts.Style = table.StyleMarkdown
-	})
+	tb.WithOptions(table.WithStyle(table.StyleMarkdown))
 
 	result := tb.String()
 	fmt.Println(result)
 
 	// 验证 Markdown 表格格式
-	if !strings.Contains(result, "| Name | Value |") {
-		t.Error("Markdown table should have header row")
-	}
-	if !strings.Contains(result, "| --- | --- |") {
-		t.Error("Markdown table should have separator row")
-	}
+	assert.StrContainsAll(t, result, []string{"|----|-----|", "|Name|Value|"})
 }

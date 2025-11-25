@@ -9,39 +9,53 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/show"
-	"github.com/gookit/goutil/comdef"
+	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/strutil"
 )
 
 // Options struct
 type Options struct {
 	Style
-	HeadColor string
 
+	// Alignment Align column value
 	Alignment   strutil.PosFlag
 	ColMaxWidth int
 	LineNumber  bool
 	WrapContent bool
 
-	// HasBorder show borderline
-	HasBorder bool
+	// ShowBorder show borderline
+	ShowBorder bool
 	// RowBorder show row border
 	RowBorder bool
 	// HeadBorder show head border
 	HeadBorder bool
-	// WrapBorder wrap border for table
+	// WrapBorder wrap(l,r,t,b) border for table
 	WrapBorder bool
 }
 
-// OpFunc define
-type OpFunc func(opts *Options)
+// NewOptions create default options
+func NewOptions() *Options {
+	return &Options{
+		Style:      StyleDefault,
+		ShowBorder: true,
+		HeadBorder: true,
+		WrapBorder: true,
+	}
+}
+
+// OptionFunc define
+type OptionFunc func(opts *Options)
+
+// WithStyle set table style
+func WithStyle(style Style) OptionFunc {
+	return func(opts *Options) { opts.Style = style }
+}
 
 // Table a cli Table show
 type Table struct {
 	show.Base // use for internal
 	// options ...
 	opts *Options
-	out  comdef.ByteStringWriter
 
 	// Title for the table
 	Title string
@@ -53,33 +67,31 @@ type Table struct {
 	// column value align type.
 	// key is col index. start from 0.
 	colAlign map[int]strutil.PosFlag
-	
+
 	// 计算后的列宽
 	colWidths []int
 }
 
 // New create table
-func New(title string, fns ...OpFunc) *Table {
+func New(title string, fns ...OptionFunc) *Table {
 	t := &Table{
 		Title: title,
-		opts: &Options{
-			Style: StyleDefault,
-		},
+		opts: NewOptions(),
 	}
 
 	return t.WithOptions(fns...)
 }
 
 // WithOptions for table
-func (t *Table) WithOptions(fns ...OpFunc) *Table {
+func (t *Table) WithOptions(fns ...OptionFunc) *Table {
 	for _, fn := range fns {
 		fn(t.opts)
 	}
 	return t
 }
 
-// AddHead column names to table
-func (t *Table) AddHead(names ...string) *Table {
+// SetHeads column names to table
+func (t *Table) SetHeads(names ...string) *Table {
 	t.Heads = names
 	return t
 }
@@ -109,7 +121,7 @@ func (t *Table) AddRow(cols ...any) *Table {
 // SetRows to table
 func (t *Table) SetRows(rs any) *Table {
 	t.Rows = nil // 清空现有行
-	
+
 	switch v := rs.(type) {
 	case [][]any:
 		// 二维切片
@@ -126,7 +138,7 @@ func (t *Table) SetRows(rs any) *Table {
 				}
 			}
 		}
-		
+
 		for _, m := range v {
 			rowData := make([]any, len(t.Heads))
 			for i, head := range t.Heads {
@@ -143,7 +155,7 @@ func (t *Table) SetRows(rs any) *Table {
 		if rv.Kind() == reflect.Ptr {
 			rv = rv.Elem()
 		}
-		
+
 		switch rv.Kind() {
 		case reflect.Slice, reflect.Array:
 			for i := 0; i < rv.Len(); i++ {
@@ -151,7 +163,7 @@ func (t *Table) SetRows(rs any) *Table {
 				if elem.Kind() == reflect.Interface {
 					elem = elem.Elem()
 				}
-				
+
 				switch elem.Kind() {
 				case reflect.Slice, reflect.Array:
 					// 二维数组/切片
@@ -168,7 +180,7 @@ func (t *Table) SetRows(rs any) *Table {
 							t.Heads = append(t.Heads, fmt.Sprintf("%v", key.Interface()))
 						}
 					}
-					
+
 					rowData := make([]any, len(t.Heads))
 					for i, head := range t.Heads {
 						mapVal := elem.MapIndex(reflect.ValueOf(head))
@@ -198,7 +210,7 @@ func (t *Table) SetRows(rs any) *Table {
 							}
 						}
 					}
-					
+
 					rowData := make([]any, len(t.Heads))
 					rt := elem.Type()
 					for i, head := range t.Heads {
@@ -207,7 +219,7 @@ func (t *Table) SetRows(rs any) *Table {
 							field := rt.Field(j)
 							jsonTag := field.Tag.Get("json")
 							fieldName := field.Name
-							
+
 							if jsonTag != "" && jsonTag != "-" {
 								if commaPos := strings.Index(jsonTag, ","); commaPos != -1 {
 									jsonTag = jsonTag[:commaPos]
@@ -228,9 +240,11 @@ func (t *Table) SetRows(rs any) *Table {
 					t.AddRow(elem.Interface())
 				}
 			}
+		default:
+			t.SetErr(errorx.Rf("Unsupported data type: %v", reflect.TypeOf(v)))
 		}
 	}
-	
+
 	return t
 }
 
@@ -262,7 +276,7 @@ func (t *Table) Render() {
 func (t *Table) Format() {
 	// 清空缓冲区
 	t.Buffer().Reset()
-	
+
 	t.prepare()
 
 	t.formatHeader()
@@ -279,11 +293,12 @@ func (t *Table) prepare() {
 		if len(row.Cells) > colCount {
 			colCount = len(row.Cells)
 		}
+		row.Separator = t.opts.Border.Cell
 	}
-	
+
 	// 初始化列宽数组
 	colWidths := make([]int, colCount)
-	
+
 	// 计算表头列宽
 	for i, head := range t.Heads {
 		width := strutil.Utf8Width(head)
@@ -294,7 +309,7 @@ func (t *Table) prepare() {
 			colWidths[i] = width
 		}
 	}
-	
+
 	// 计算数据列宽
 	for _, row := range t.Rows {
 		for i, cell := range row.Cells {
@@ -307,7 +322,7 @@ func (t *Table) prepare() {
 			}
 		}
 	}
-	
+
 	// 为 Cell 设置宽度
 	for _, row := range t.Rows {
 		for i, cell := range row.Cells {
@@ -316,7 +331,7 @@ func (t *Table) prepare() {
 			}
 		}
 	}
-	
+
 	// 保存计算后的列宽到 table 实例
 	t.colWidths = colWidths
 }
@@ -324,31 +339,31 @@ func (t *Table) prepare() {
 // Format as string
 func (t *Table) formatHeader() {
 	buf := t.Buffer()
-	
+
 	if len(t.Heads) == 0 && len(t.Rows) == 0 {
 		return // 没有表头和数据，直接返回
 	}
-	
+
 	opts := t.opts
 	style := opts.Style
-	
+
 	// 如果有标题，先打印标题
 	if t.Title != "" {
 		buf.WriteString(t.Title + "\n")
 	}
-	
+
 	// 画顶部边框（如果需要）
-	if opts.HasBorder && style.Border.TopLeft != 0 {
+	if opts.ShowBorder && style.Border.TopLeft != 0 {
 		t.drawBorderLine(t.Buffer(), style.Border.TopLeft, style.Border.Top, style.Border.TopIntersect, style.Border.TopRight)
 	}
-	
+
 	// 打印表头
 	if len(t.Heads) > 0 {
 		// 特殊处理 Markdown 样式
 		if style == StyleMarkdown {
 			// 对于 Markdown 样式，先打印表头内容
 			buf.WriteRune(style.Border.Right) // 左边框
-			
+
 			for i, head := range t.Heads {
 				if i < len(t.colWidths) {
 					// 使用 strutil.Resize 来对齐表头内容
@@ -362,15 +377,15 @@ func (t *Table) formatHeader() {
 				} else {
 					buf.WriteString(head)
 				}
-				
+
 				if i < len(t.Heads)-1 { // 不是最后一个元素
 					buf.WriteRune(style.Border.Cell) // 列分隔符
 				}
 			}
-			
+
 			buf.WriteRune(style.Border.Right) // 右边框
 			buf.WriteString("\n")
-			
+
 			// 然后打印 Markdown 风格的分隔行
 			buf.WriteRune(style.Border.Right) // 左边框
 			for i := 0; i < len(t.Heads); i++ {
@@ -382,18 +397,18 @@ func (t *Table) formatHeader() {
 					}
 					buf.WriteString(strings.Repeat("-", sepWidth))
 				}
-				
+
 				if i < len(t.Heads)-1 { // 不是最后一个元素
 					buf.WriteRune(style.Border.Cell) // 列分隔符
 				}
 			}
-			
+
 			buf.WriteRune(style.Border.Right) // 右边框
 			buf.WriteString("\n")
 		} else {
 			// 普通表格样式
 			buf.WriteRune(style.Border.Right) // 左边框
-			
+
 			for i, head := range t.Heads {
 				if i < len(t.colWidths) {
 					// 使用 strutil.Resize 来对齐表头内容
@@ -407,15 +422,15 @@ func (t *Table) formatHeader() {
 				} else {
 					buf.WriteString(head)
 				}
-				
+
 				if i < len(t.Heads)-1 { // 不是最后一个元素
 					buf.WriteRune(style.Border.Cell) // 列分隔符
 				}
 			}
-			
+
 			buf.WriteRune(style.Border.Right) // 右边框
 			buf.WriteString("\n")
-			
+
 			// 画表头分隔线（如果需要）
 			if opts.HeadBorder {
 				t.drawBorderLine(buf, style.Divider.Left, style.Border.Center, style.Divider.Intersect, style.Divider.Right)
@@ -436,100 +451,56 @@ func (t *Table) formatBody() {
 	buf := t.Buffer()
 	opts := t.opts
 	style := opts.Style
-	
+
 	for i, row := range t.Rows {
-		// 特殊处理 Markdown 样式
-		if style == StyleMarkdown {
-			buf.WriteRune(style.Border.Right) // 左边框
-			
-			// 处理每列
-			for j := 0; j < len(t.colWidths); j++ {
-				if j < len(row.Cells) {
-					cell := row.Cells[j]
-					cellStr := cell.String()
-					
-					// 应用对齐方式
-					var align strutil.PosFlag
-					if cell.Align != 0 {
-						align = cell.Align
-					} else {
-						align = opts.Alignment
-					}
-					
-					// 根据宽度调整内容
-					if cell.Width > 0 {
-						cellStr = strutil.Resize(cellStr, cell.Width, align)
-					}
-					
-					// 应用颜色（如果设置了行颜色）
-					if opts.RowColor != "" {
-						buf.WriteString(color.Sprintf("<%s>%s</>", opts.RowColor, cellStr))
-					} else {
-						buf.WriteString(cellStr)
-					}
+		// 表格样式
+		buf.WriteRune(style.Border.Right) // 左边框
+
+		// 处理每列
+		for j := 0; j < len(t.colWidths); j++ {
+			if j < len(row.Cells) {
+				cell := row.Cells[j]
+				cellStr := cell.String()
+
+				// 应用对齐方式
+				var align strutil.PosFlag
+				if cell.Align != 0 {
+					align = cell.Align
 				} else {
-					// 如果这一行没有足够的列，使用空格填充
-					if j < len(t.colWidths) {
-						buf.WriteString(strings.Repeat(" ", t.colWidths[j]))
-					}
+					align = opts.Alignment
 				}
-				
-				if j < len(t.colWidths)-1 { // 不是最后一个元素
-					buf.WriteRune(style.Border.Cell) // 列分隔符
+
+				// 根据宽度调整内容
+				if cell.Width > 0 {
+					cellStr = strutil.Resize(cellStr, cell.Width, align)
+				}
+
+				// 应用颜色（如果设置了行颜色）
+				if opts.RowColor != "" {
+					buf.WriteString(color.Sprintf("<%s>%s</>", opts.RowColor, cellStr))
+				} else {
+					buf.WriteString(cellStr)
+				}
+			} else {
+				// 如果这一行没有足够的列，使用空格填充
+				if j < len(t.colWidths) {
+					buf.WriteString(strings.Repeat(" ", t.colWidths[j]))
 				}
 			}
-			
-			buf.WriteRune(style.Border.Right) // 右边框
-			buf.WriteString("\n")
-		} else {
-			// 普通表格样式
-			buf.WriteRune(style.Border.Right) // 左边框
-			
-			// 处理每列
-			for j := 0; j < len(t.colWidths); j++ {
-				if j < len(row.Cells) {
-					cell := row.Cells[j]
-					cellStr := cell.String()
-					
-					// 应用对齐方式
-					var align strutil.PosFlag
-					if cell.Align != 0 {
-						align = cell.Align
-					} else {
-						align = opts.Alignment
-					}
-					
-					// 根据宽度调整内容
-					if cell.Width > 0 {
-						cellStr = strutil.Resize(cellStr, cell.Width, align)
-					}
-					
-					// 应用颜色（如果设置了行颜色）
-					if opts.RowColor != "" {
-						buf.WriteString(color.Sprintf("<%s>%s</>", opts.RowColor, cellStr))
-					} else {
-						buf.WriteString(cellStr)
-					}
-				} else {
-					// 如果这一行没有足够的列，使用空格填充
-					if j < len(t.colWidths) {
-						buf.WriteString(strings.Repeat(" ", t.colWidths[j]))
-					}
-				}
-				
-				if j < len(t.colWidths)-1 { // 不是最后一个元素
-					buf.WriteRune(style.Border.Cell) // 列分隔符
-				}
-			}
-			
-			buf.WriteRune(style.Border.Right) // 右边框
-			buf.WriteString("\n")
-			
-			// 画行分隔线（如果需要）
-			if opts.RowBorder && i < len(t.Rows)-1 {
-				t.drawBorderLine(buf, style.Border.Right, style.Border.Center, style.Border.Cell, style.Border.Right)
+
+			if j < len(t.colWidths)-1 { // 不是最后一个元素
+				buf.WriteRune(style.Border.Cell) // 列分隔符
 			}
 		}
+
+		buf.WriteRune(style.Border.Right) // 右边框
+		buf.WriteString("\n")
+
+		// 画行分隔线（如果需要）
+		if opts.RowBorder && i < len(t.Rows)-1 {
+			t.drawBorderLine(buf, style.Border.Right, style.Border.Center, style.Border.Cell, style.Border.Right)
+		}
+
 	}
 }
 
@@ -538,9 +509,9 @@ func (t *Table) formatFooter() {
 	buf := t.Buffer()
 	opts := t.opts
 	style := opts.Style
-	
+
 	// 画底部边框（如果需要）
-	if opts.HasBorder && opts.WrapBorder && style.Border.BottomLeft != 0 {
+	if opts.ShowBorder && opts.WrapBorder && style.Border.BottomLeft != 0 {
 		t.drawBorderLine(buf, style.Border.BottomLeft, style.Border.Bottom, style.Border.BottomIntersect, style.Border.BottomRight)
 	}
 }
@@ -550,9 +521,9 @@ func (t *Table) drawBorderLine(buf *bytes.Buffer, leftChar, centerChar, intersec
 	if leftChar == 0 && rightChar == 0 {
 		return // 如果没有边框字符，则跳过
 	}
-	
+
 	buf.WriteRune(leftChar)
-	
+
 	for i, width := range t.colWidths {
 		for j := 0; j < width; j++ {
 			buf.WriteRune(centerChar)
@@ -561,7 +532,7 @@ func (t *Table) drawBorderLine(buf *bytes.Buffer, leftChar, centerChar, intersec
 			buf.WriteRune(intersectChar) // 列间分隔符
 		}
 	}
-	
+
 	buf.WriteRune(rightChar)
 	buf.WriteString("\n")
 }
