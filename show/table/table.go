@@ -58,18 +58,12 @@ func (t *Table) SetHeads(names ...string) *Table {
 // AddRow data to table
 func (t *Table) AddRow(cols ...any) *Table {
 	tr := &Row{
-		Cells:     make([]*Cell, 0, len(cols)),
-		Separator: '|',
+		Cells: make([]*Cell, 0, len(cols)),
+		// Separator: '|',
 	}
 
 	for _, colVal := range cols {
-		cell := &Cell{
-			Width: 0,
-			Wrap:  false,
-			Align: 0,
-			Val:   colVal,
-		}
-
+		cell := &Cell{Align: strutil.PosAuto, Val: colVal}
 		tr.Cells = append(tr.Cells, cell)
 	}
 
@@ -233,8 +227,7 @@ func (t *Table) Render() {
 
 // Format as string
 func (t *Table) Format() {
-	// 清空缓冲区
-	t.Buffer().Reset()
+	t.reset()
 
 	t.prepare()
 
@@ -245,19 +238,35 @@ func (t *Table) Format() {
 	t.formatFooter()
 }
 
+func (t *Table) reset() {
+	// 清空缓冲区
+	t.Buffer().Reset()
+	t.colWidths = nil
+
+	for _, row := range t.Rows {
+		for _, cell := range row.Cells {
+			cell.init = false
+			cell.width = 0
+			cell.height = 0
+		}
+	}
+}
+
 func (t *Table) prepare() {
 	// 如果需要显示行号，在表头前添加"#"
 	if t.opts.ShowRowNumber {
 		t.Heads = append([]string{"#"}, t.Heads...)
 	}
 
-	// 计算列数
+	// 计算列数 + init row.Cells
 	colCount := len(t.Heads)
 	for _, row := range t.Rows {
 		if len(row.Cells) > colCount {
 			colCount = len(row.Cells)
 		}
-		row.Separator = t.opts.Border.Cell
+		for _, cell := range row.Cells {
+			cell.Init(t.opts)
+		}
 	}
 
 	// 初始化列宽数组
@@ -271,8 +280,8 @@ func (t *Table) prepare() {
 			width = t.opts.ColumnWidths[i]
 		}
 		// 列L,R填充
-		if t.opts.ColPadding != "" {
-			width += len(t.opts.ColPadding) * 2
+		if t.opts.CellPadding != "" {
+			width += len(t.opts.CellPadding) * 2
 		}
 
 		// 列最大宽度
@@ -306,7 +315,7 @@ func (t *Table) prepare() {
 	// 如果显示行号，为每行添加行号单元格
 	if t.opts.ShowRowNumber {
 		for i, row := range t.Rows {
-			rowNumCell := &Cell{Val: fmt.Sprintf("%d", i)}
+			rowNumCell := &Cell{Align: strutil.PosAuto, Val: fmt.Sprintf("%d", i)}
 			row.Cells = append([]*Cell{rowNumCell}, row.Cells...)
 		}
 	}
@@ -314,14 +323,14 @@ func (t *Table) prepare() {
 	// 计算数据列宽
 	for _, row := range t.Rows {
 		for i, cell := range row.Cells {
-			cellWidth := cell.MaxWidth()
+			cellWidth := cell.width
 			// 自定义列宽
 			if len(t.opts.ColumnWidths) > i && t.opts.ColumnWidths[i] > 0 {
 				cellWidth = t.opts.ColumnWidths[i]
 			}
 			// 列L,R填充
-			if t.opts.ColPadding != "" {
-				cellWidth += len(t.opts.ColPadding) * 2
+			if t.opts.CellPadding != "" {
+				cellWidth += len(t.opts.CellPadding) * 2
 			}
 
 			// 列最大宽度
@@ -338,7 +347,7 @@ func (t *Table) prepare() {
 	for _, row := range t.Rows {
 		for i, cell := range row.Cells {
 			if i < len(colWidths) {
-				cell.Width = colWidths[i]
+				cell.width = colWidths[i]
 			}
 		}
 	}
@@ -349,14 +358,13 @@ func (t *Table) prepare() {
 
 // Format as string
 func (t *Table) formatHeader() {
-	buf := t.Buffer()
-
 	if len(t.Heads) == 0 && len(t.Rows) == 0 {
 		return // 没有表头和数据，直接返回
 	}
 
+	buf := t.Buffer()
 	opts := t.opts
-	style := opts.Style
+	style := t.opts.Style
 
 	// 如果有标题，先打印标题
 	if t.Title != "" {
@@ -375,8 +383,8 @@ func (t *Table) formatHeader() {
 
 		for i, head := range t.Heads {
 			// 添加列填充
-			if opts.ColPadding != "" {
-				head = opts.ColPadding + head + opts.ColPadding
+			if opts.CellPadding != "" {
+				head = opts.CellPadding + head + opts.CellPadding
 			}
 
 			if i < len(t.colWidths) {
@@ -403,7 +411,7 @@ func (t *Table) formatHeader() {
 		}
 
 		buf.WriteRune(style.Border.Right) // 右边框
-		buf.WriteString("\n")
+		buf.WriteByte('\n')
 
 		// 画表头分隔线（如果需要）
 		if opts.HeadBorder {
@@ -436,32 +444,19 @@ func (t *Table) formatBody() {
 				cell := row.Cells[j]
 				cellStr := cell.String()
 
-				// 去除空格（如果设置了 TrimSpace）
-				if opts.TrimSpace {
-					cellStr = strings.TrimSpace(cellStr)
-				}
-
-				// 应用对齐方式
-				var align strutil.PosFlag
-				if cell.Align != 0 {
-					align = cell.Align
-				} else {
-					align = opts.Alignment
-				}
-
 				// 添加列填充
-				if opts.ColPadding != "" {
-					cellStr = opts.ColPadding + cellStr + opts.ColPadding
+				if opts.CellPadding != "" {
+					cellStr = opts.CellPadding + cellStr + opts.CellPadding
 				}
 
 				// 根据宽度调整内容
-				if cell.Width > 0 {
+				if cell.width > 0 {
 					// 截断模式
 					if opts.OverflowFlag == OverflowCut {
-						cellStr = strutil.Utf8Truncate(cellStr, cell.Width, "")
+						cellStr = strutil.Utf8Truncate(cellStr, cell.width, "")
 					} else {
 						// 默认换行模式
-						cellStr = strutil.Resize(cellStr, cell.Width, align)
+						cellStr = strutil.Resize(cellStr, cell.width, cell.Align)
 					}
 				}
 
@@ -490,7 +485,7 @@ func (t *Table) formatBody() {
 		}
 
 		buf.WriteRune(style.Border.Right) // 右边框
-		buf.WriteString("\n")
+		buf.WriteByte('\n')
 
 		// 画行分隔线（如果需要）
 		if opts.RowBorder && i < len(t.Rows)-1 {
@@ -513,7 +508,7 @@ func (t *Table) formatFooter() {
 }
 
 // drawBorderLine draws a borderline with the given characters
-func (t *Table) drawBorderLine(buf *bytes.Buffer, leftChar, centerChar, intersectChar, rightChar rune) {
+func (t *Table) drawBorderLine(buf *bytes.Buffer, leftChar, centerChar, intersect, rightChar rune) {
 	if leftChar == 0 && rightChar == 0 {
 		return // 如果没有边框字符，则跳过
 	}
@@ -525,12 +520,12 @@ func (t *Table) drawBorderLine(buf *bytes.Buffer, leftChar, centerChar, intersec
 			buf.WriteRune(centerChar)
 		}
 		if i < len(t.colWidths)-1 { // 不是最后一个列
-			buf.WriteRune(intersectChar) // 列间分隔符
+			buf.WriteRune(intersect) // 列间分隔符
 		}
 	}
 
 	buf.WriteRune(rightChar)
-	buf.WriteString("\n")
+	buf.WriteByte('\n')
 }
 
 // WriteTo format table to string and write to w.
@@ -549,34 +544,71 @@ type Row struct {
 	// Defaults to 0 - the height of the tallest cell(最高的单元格的高度)
 	Height int
 	// Separator for table columns
-	Separator rune
+	// Separator rune
+}
+
+// reset the row context info
+func (r *Row) reset() {
+	for _, cell := range r.Cells {
+		cell.init = false
+		cell.width = 0
+		cell.height = 0
+	}
 }
 
 // Cell represents a column in a row
 type Cell struct {
-	// Width is the width of the cell
+	// Width is the width of the cell. use for calc width
 	Width int
 	// Wrap when true wraps the contents of the cell when the length exceeds the width
 	Wrap bool
 	// Align when true aligns contents to the right
 	Align strutil.PosFlag
 
+	// TODO 支持 跨列，跨行 设置
+
+	init bool
 	// Val is the cell data
 	Val any
-	str string // string cache of Val
+	// string cache of Val
+	str string
+	// width and height after calc
+	width, height int
 }
 
-// MaxWidth returns the max width of all the lines in a cell
-func (c *Cell) MaxWidth() int {
-	width := c.Width
-	for _, s := range strings.Split(c.String(), "\n") {
-		w := strutil.Utf8Width(s)
-		if w > width {
-			width = w
-		}
+// Init for one cell
+func (c *Cell) Init(opts *Options) {
+	if c.init {
+		return
+	}
+	c.init = true
+
+	if c.Align == strutil.PosAuto {
+		c.Align = opts.Alignment
 	}
 
-	return width
+	// conv value to string.
+	s := c.String()
+	// 去除空格
+	if opts.TrimSpace {
+		c.str = strings.TrimSpace(s)
+	}
+
+	c.calcWH()
+}
+
+// calc width and height of the cell
+func (c *Cell) calcWH() {
+	c.height = 0
+	c.width = c.Width
+
+	for _, s := range strings.Split(c.String(), "\n") {
+		c.height++
+		w := strutil.Utf8Width(s)
+		if w > c.width {
+			c.width = w
+		}
+	}
 }
 
 // String returns the string formatted representation of the cell
@@ -589,17 +621,10 @@ func (c *Cell) String() string {
 
 func (c *Cell) toString() string {
 	if c.Val == nil {
-		return strutil.PadLeft(" ", " ", c.Width)
-		// return c.str
+		return ""
 	}
-
-	s := strutil.SafeString(c.Val)
-	if c.Width == 0 {
+	if s, ok := c.Val.(string); ok {
 		return s
 	}
-
-	if c.Wrap && len(s) > c.Width {
-		return strutil.WordWrap(s, c.Width)
-	}
-	return strutil.Resize(s, c.Width, c.Align)
+	return strutil.SafeString(c.Val)
 }

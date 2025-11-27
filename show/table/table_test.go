@@ -93,6 +93,10 @@ func TestTableWithStyle(t *testing.T) {
 		tb.WithOptions(table.WithStyle(table.StyleBold))
 		tb.Println()
 	})
+	t.Run("StyleBoldBorder", func(t *testing.T) {
+		tb.WithOptions(table.WithStyle(table.StyleBoldBorder))
+		tb.Println()
+	})
 	t.Run("StyleRounded", func(t *testing.T) {
 		tb.WithOptions(table.WithStyle(table.StyleRounded))
 		tb.Println()

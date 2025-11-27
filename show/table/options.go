@@ -17,9 +17,9 @@ type Options struct {
 	//  - 0: auto
 	//  - 超出宽度时，将对内容进行处理 OverflowFlag
 	ColMaxWidth int
-	// ColPadding column value padding left and right.
+	// CellPadding column value padding left and right.
 	//  - 默认L,R填充一个空格
-	ColPadding string
+	CellPadding string
 	// OverflowFlag 内容溢出处理方式 0: 默认换行, 1: 截断
 	OverflowFlag uint8
 	// ShowRowNumber 显示行号，将会多一个列
@@ -29,13 +29,13 @@ type Options struct {
 
 	// SortColumn sort rows by column index value.
 	//  - -1: 不排序
-	//  - 0+: 按指定列索引排序
+	//  - 0+: 按指定索引列排序
 	SortColumn int
 	// SortAscending sort direction, true for ascending, false for descending
 	SortAscending bool
 	// TrimSpace trim spaces from cell values. default: true
 	TrimSpace bool
-	// CSVOutput output table in CSV format
+	// CSVOutput output table in CSV format TODO
 	CSVOutput bool
 
 	// -- control border show
@@ -44,7 +44,7 @@ type Options struct {
 	ShowBorder bool
 	// RowBorder show row border
 	RowBorder bool
-	// HeadBorder show head border
+	// HeadBorder show head borderline.
 	HeadBorder bool
 	// WrapBorder wrap(l,r,t,b) border for table
 	WrapBorder bool
@@ -53,14 +53,14 @@ type Options struct {
 // NewOptions create default options
 func NewOptions() *Options {
 	return &Options{
-		Style:        StyleDefault,
-		ColPadding:   " ",
-		SortColumn:   -1,
+		Style:       StyleDefault,
+		CellPadding: " ",
+		SortColumn:  -1,
 		SortAscending: true,
-		TrimSpace:    true,
-		ShowBorder:   true,
-		HeadBorder:   true,
-		WrapBorder:   true,
+		TrimSpace:   true,
+		ShowBorder:  true,
+		HeadBorder:  true,
+		WrapBorder:  true,
 	}
 }
 
@@ -74,7 +74,7 @@ func WithStyle(style Style) OptionFunc {
 
 // WithColPadding set column padding
 func WithColPadding(padding string) OptionFunc {
-	return func(opts *Options) { opts.ColPadding = padding }
+	return func(opts *Options) { opts.CellPadding = padding }
 }
 
 // WithOverflowFlag set overflow handling flag

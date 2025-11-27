@@ -246,3 +246,38 @@ var (
 		},
 	}
 )
+
+/*
+StyleBoldBorder - table style with bold top and bottom lines:
+━━━┯━━━━━━━┯━━━━━━━━━━━━━━━━━┯━━━━━━━━━━┯━━━━━━━━━━
+ # │ pid   │ name            │ status   │ cpu
+───┼───────┼─────────────────┼──────────┼──────────
+ 0 │   992 │ chrome          │ Sleeping │ 6.988768
+ 2 │ 13973 │ qemu-system-x86 │ Sleeping │ 4.996551
+━━━┷━━━━━━━┷━━━━━━━━━━━━━━━━━┷━━━━━━━━━━┷━━━━━━━━━━
+*/
+var StyleBoldBorder = Style{
+	HeadColor: "info",
+	Border: BorderStyle{
+		// Top - 使用粗线字符
+		TopLeft:      '┏',
+		Top:          '━',
+		TopIntersect: '┯',
+		TopRight:     '┓',
+		// Body - 使用普通线字符
+		Right:  '┃',
+		Cell:   '│',
+		Left:   '┃',
+		Center: '─',
+		// Bottom - 使用粗线字符
+		BottomRight:     '┛',
+		Bottom:          '━',
+		BottomLeft:      '┗',
+		BottomIntersect: '┷',
+	},
+	Divider: DividerStyle{
+		Left:      '┃',
+		Right:     '┃',
+		Intersect: '┼',
+	},
+}
