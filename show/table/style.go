@@ -40,7 +40,7 @@ type BorderStyle struct {
 
 	// Right - right border char
 	Right  rune
-	Center rune
+	Center rune // eg: ─
 	// Cell - column separator char. 列分隔符
 	Cell rune
 	Left rune
@@ -50,9 +50,9 @@ type BorderStyle struct {
 
 // DividerStyle defines table divider style. 定义表格分隔器样式
 type DividerStyle struct {
-	Left  rune
-	Right rune
-	// Intersect 交叉
+	Left  rune // eg: ├
+	Right rune // eg: ┤
+	// Intersect 交叉 eg: ┼
 	Intersect rune
 }
 

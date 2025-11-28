@@ -12,6 +12,7 @@ import (
 	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/x/ccolor"
 )
 
 // Table a cli Table show
@@ -47,6 +48,18 @@ func (t *Table) WithOptions(fns ...OptionFunc) *Table {
 	for _, fn := range fns {
 		fn(t.opts)
 	}
+	return t
+}
+
+// WithStyle set table style
+func (t *Table) WithStyle(style Style) *Table {
+	t.opts.Style = style
+	return t
+}
+
+// ConfigStyle config the table style
+func (t *Table) ConfigStyle(fn func(s *Style)) *Table {
+	fn(&t.opts.Style)
 	return t
 }
 
@@ -122,97 +135,103 @@ func (t *Table) SetRows(rs any) *Table {
 		if rv.Kind() == reflect.Ptr {
 			rv = rv.Elem()
 		}
-
-		switch rv.Kind() {
-		case reflect.Slice, reflect.Array:
-			for i := 0; i < rv.Len(); i++ {
-				elem := rv.Index(i)
-				if elem.Kind() == reflect.Interface {
-					elem = elem.Elem()
-				}
-
-				switch elem.Kind() {
-				case reflect.Slice, reflect.Array:
-					// 二维数组/切片
-					rowData := make([]any, elem.Len())
-					for j := 0; j < elem.Len(); j++ {
-						rowData[j] = elem.Index(j).Interface()
-					}
-					t.AddRow(rowData...)
-				case reflect.Map:
-					// map 类型，需要建立表头（如果还没有）
-					if len(t.Heads) == 0 {
-						mapKeys := elem.MapKeys()
-						for _, key := range mapKeys {
-							t.Heads = append(t.Heads, fmt.Sprintf("%v", key.Interface()))
-						}
-					}
-
-					rowData := make([]any, len(t.Heads))
-					for i, head := range t.Heads {
-						mapVal := elem.MapIndex(reflect.ValueOf(head))
-						if mapVal.IsValid() {
-							rowData[i] = mapVal.Interface()
-						} else {
-							rowData[i] = ""
-						}
-					}
-					t.AddRow(rowData...)
-				case reflect.Struct:
-					// 结构体，需要建立表头（如果还没有）
-					if len(t.Heads) == 0 {
-						rt := elem.Type()
-						for i := 0; i < rt.NumField(); i++ {
-							field := rt.Field(i)
-							// 获取 json 标签或字段名
-							jsonTag := field.Tag.Get("json")
-							if jsonTag != "" && jsonTag != "-" {
-								// 处理 json 标签中的选项，如 "name,omitempty"
-								if commaPos := strings.Index(jsonTag, ","); commaPos != -1 {
-									jsonTag = jsonTag[:commaPos]
-								}
-								t.Heads = append(t.Heads, jsonTag)
-							} else if field.PkgPath == "" { // 导出的字段
-								t.Heads = append(t.Heads, field.Name)
-							}
-						}
-					}
-
-					rowData := make([]any, len(t.Heads))
-					rt := elem.Type()
-					for i, head := range t.Heads {
-						// 查找匹配的字段
-						for j := 0; j < rt.NumField(); j++ {
-							field := rt.Field(j)
-							jsonTag := field.Tag.Get("json")
-							fieldName := field.Name
-
-							if jsonTag != "" && jsonTag != "-" {
-								if commaPos := strings.Index(jsonTag, ","); commaPos != -1 {
-									jsonTag = jsonTag[:commaPos]
-								}
-								if jsonTag == head {
-									rowData[i] = elem.Field(j).Interface()
-									break
-								}
-							} else if fieldName == head && field.PkgPath == "" {
-								rowData[i] = elem.Field(j).Interface()
-								break
-							}
-						}
-					}
-					t.AddRow(rowData...)
-				default:
-					// 单个元素作为一行
-					t.AddRow(elem.Interface())
-				}
-			}
-		default:
-			t.SetErr(errorx.Rf("Unsupported data type: %v", reflect.TypeOf(v)))
-		}
+		t.setRowsByReflect(rv)
 	}
 
 	return t
+}
+
+// String format as string
+func (t *Table) setRowsByReflect(rv reflect.Value) {
+	switch rv.Kind() {
+	case reflect.Slice, reflect.Array:
+		for i := 0; i < rv.Len(); i++ {
+			elem := rv.Index(i)
+			if elem.Kind() == reflect.Interface {
+				elem = elem.Elem()
+			}
+
+			switch elem.Kind() {
+			case reflect.Slice, reflect.Array:
+				// 二维数组/切片
+				rowData := make([]any, elem.Len())
+				for j := 0; j < elem.Len(); j++ {
+					rowData[j] = elem.Index(j).Interface()
+				}
+				t.AddRow(rowData...)
+			case reflect.Map:
+				// map 类型，需要建立表头（如果还没有）
+				if len(t.Heads) == 0 {
+					mapKeys := elem.MapKeys()
+					for _, key := range mapKeys {
+						t.AddHead(fmt.Sprintf("%v", key.Interface()))
+					}
+				}
+
+				rowData := make([]any, len(t.Heads))
+				for i, head := range t.Heads {
+					mapVal := elem.MapIndex(reflect.ValueOf(head))
+					if mapVal.IsValid() {
+						rowData[i] = mapVal.Interface()
+					} else {
+						rowData[i] = ""
+					}
+				}
+				t.AddRow(rowData...)
+			case reflect.Struct:
+				// 结构体，需要建立表头（如果还没有）
+				if len(t.Heads) == 0 {
+					rt := elem.Type()
+					for i := 0; i < rt.NumField(); i++ {
+						field := rt.Field(i)
+						// 获取 json 标签或字段名
+						tagVal := formatTagVal(field.Tag.Get(t.opts.StructTag))
+						if tagVal != "" {
+							t.AddHead(tagVal)
+						} else if field.PkgPath == "" { // 导出的字段
+							t.AddHead(field.Name)
+						}
+					}
+				}
+
+				rowData := make([]any, len(t.Heads))
+				rt := elem.Type()
+				for i, head := range t.Heads {
+					headName := head.String()
+					// 查找匹配的字段
+					for j := 0; j < rt.NumField(); j++ {
+						field := rt.Field(j)
+						tagVal := formatTagVal(field.Tag.Get(t.opts.StructTag))
+
+						if tagVal != "" && tagVal == headName {
+							rowData[i] = elem.Field(j).Interface()
+							break
+						} else if field.Name == headName && field.PkgPath == "" {
+							rowData[i] = elem.Field(j).Interface()
+							break
+						}
+					}
+				}
+				t.AddRow(rowData...)
+			default:
+				// 单个元素作为一行
+				t.AddRow(elem.Interface())
+			}
+		}
+	default:
+		t.SetErr(errorx.Rf("Unsupported data type: %v", rv.Type()))
+	}
+}
+
+func formatTagVal(tagVal string) string {
+	if tagVal == "" || tagVal == "-" {
+		return ""
+	}
+	// 处理 json 标签中的选项，如 "name,omitempty"
+	if commaPos := strings.Index(tagVal, ","); commaPos != -1 {
+		tagVal = tagVal[:commaPos]
+	}
+	return tagVal
 }
 
 // String format as string
@@ -306,7 +325,7 @@ func (t *Table) prepare() {
 	// 计算表头列宽
 	for i, head := range t.Heads {
 		head.Init(t.opts)
-		width := t.calcColWidth(head.Width, i)
+		width := t.calcColWidth(head.width, i)
 		if width > colWidths[i] {
 			colWidths[i] = width
 		}
@@ -374,17 +393,19 @@ func (t *Table) formatHeader() {
 
 	// 如果有标题，先打印标题
 	if t.Title != "" {
-		buf.WriteString(t.Title + "\n")
+		buf.WriteString(ccolor.WrapTag(t.Title, opts.TitleColor) + "\n")
 	}
 
 	// 画顶部边框（如果需要）
-	if opts.ShowBorder && style.Border.TopLeft != 0 {
+	if opts.HasBorderFlag(BorderTop) {
 		t.drawBorderLine(t.Buffer(), style.Border.TopLeft, style.Border.Top, style.Border.TopIntersect, style.Border.TopRight)
 	}
 
 	// 打印表头
 	if len(t.Heads) > 0 {
-		buf.WriteRune(style.Border.Right) // 左边框
+		if style.Border.Left > 0 {
+			buf.WriteRune(style.Border.Left) // 左边框
+		}
 		var coloredHead string
 
 		for i, head := range t.Heads {
@@ -417,19 +438,21 @@ func (t *Table) formatHeader() {
 			}
 		}
 
-		buf.WriteRune(style.Border.Right) // 右边框
+		if style.Border.Right > 0 {
+			buf.WriteRune(style.Border.Right) // 右边框
+		}
 		buf.WriteByte('\n')
 
 		// 画表头分隔线（如果需要）
-		if opts.HeadBorder {
+		if opts.HasBorderFlag(BorderHeader | BorderRows) {
 			t.drawBorderLine(buf, style.Divider.Left, style.Border.Center, style.Divider.Intersect, style.Divider.Right)
-		} else if opts.RowBorder {
-			t.drawBorderLine(buf, style.Border.Right, style.Border.Center, style.Border.Cell, style.Border.Right)
+			// } else if opts.HasBorderFlag(BorderRows) {
+			// 	t.drawBorderLine(buf, style.Border.Right, style.Border.Center, style.Border.Cell, style.Border.Right)
 		}
 
 	} else if len(t.Heads) == 0 && len(t.Rows) > 0 {
 		// 没有表头但有数据，仍可能需要画分隔线
-		if opts.HeadBorder {
+		if opts.HasBorderFlag(BorderHeader) {
 			t.drawBorderLine(buf, style.Divider.Left, style.Border.Center, style.Divider.Intersect, style.Divider.Right)
 		}
 	}
@@ -442,8 +465,9 @@ func (t *Table) formatBody() {
 	style := opts.Style
 
 	for i, row := range t.Rows {
-		// 表格样式
-		buf.WriteRune(style.Border.Right) // 左边框
+		if style.Border.Left > 0 {
+			buf.WriteRune(style.Border.Left) // 左边框
+		}
 
 		// 处理每列
 		for j := 0; j < len(t.colWidths); j++ {
@@ -491,11 +515,13 @@ func (t *Table) formatBody() {
 			}
 		}
 
-		buf.WriteRune(style.Border.Right) // 右边框
+		if style.Border.Right > 0 {
+			buf.WriteRune(style.Border.Right) // 右边框
+		}
 		buf.WriteByte('\n')
 
 		// 画行分隔线（如果需要）
-		if opts.RowBorder && i < len(t.Rows)-1 {
+		if opts.HasBorderFlag(BorderRows) && i < len(t.Rows)-1 {
 			t.drawBorderLine(buf, style.Border.Right, style.Border.Center, style.Divider.Intersect, style.Border.Right)
 		}
 
@@ -509,7 +535,7 @@ func (t *Table) formatFooter() {
 	style := opts.Style
 
 	// 画底部边框（如果需要）
-	if opts.ShowBorder && opts.WrapBorder && style.Border.BottomLeft != 0 {
+	if opts.HasBorderFlag(BorderBottom) {
 		t.drawBorderLine(buf, style.Border.BottomLeft, style.Border.Bottom, style.Border.BottomIntersect, style.Border.BottomRight)
 	}
 }
@@ -520,7 +546,9 @@ func (t *Table) drawBorderLine(buf *bytes.Buffer, leftChar, centerChar, intersec
 		return // 如果没有边框字符，则跳过
 	}
 
-	buf.WriteRune(leftChar)
+	if leftChar > 0 {
+		buf.WriteRune(leftChar) // 左边
+	}
 
 	for i, width := range t.colWidths {
 		for j := 0; j < width; j++ {
@@ -531,7 +559,9 @@ func (t *Table) drawBorderLine(buf *bytes.Buffer, leftChar, centerChar, intersec
 		}
 	}
 
-	buf.WriteRune(rightChar)
+	if rightChar > 0 {
+		buf.WriteRune(rightChar) // 右边
+	}
 	buf.WriteByte('\n')
 }
 
@@ -565,7 +595,7 @@ func (r *Row) reset() {
 
 // Cell represents a column in a row
 type Cell struct {
-	// Width is the width of the cell. use for calc width
+	// Width custom set width of the cell.
 	Width int
 	// Wrap when true wraps the contents of the cell when the length exceeds the width
 	Wrap bool
@@ -581,7 +611,7 @@ type Cell struct {
 	str string
 	// val content width
 	valWidth int
-	// width for the cell
+	// width for the cell, maybe not equal to valWidth
 	width  int
 	height int
 }

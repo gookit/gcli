@@ -7,6 +7,7 @@ import (
 
 	"github.com/gookit/gcli/v3/show/table"
 	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/ccolor"
 )
 
 func TestNewTable(t *testing.T) {
@@ -40,7 +41,7 @@ func TestNewTable(t *testing.T) {
 	fmt.Println(result)
 }
 
-func TestTableSetRowsWithSlice(t *testing.T) {
+func TestTableSetRows_Slice(t *testing.T) {
 	tb := table.New("User Table")
 
 	users := [][]any{
@@ -62,6 +63,28 @@ func TestTableSetRowsWithSlice(t *testing.T) {
 
 	fmt.Println(result)
 }
+func TestTableSetRows_Struct(t *testing.T) {
+	type User struct {
+		Name  string
+		Age   int
+		Job   string
+		Email string
+	}
+	users := []User{
+		{"Tom", 25, "Engineer", "tom@example.com"},
+		{"Jerry", 30, "Designer", "jerry@example.com"},
+	}
+	tb := table.New("User Table")
+	tb.SetRows(users).WithStyle(table.StyleBoldBorder).ConfigStyle(func(s *table.Style) {
+		s.TitleColor = "mga"
+		s.Border.Left = 0
+		s.Border.Right = 0
+	})
+
+	result := tb.String()
+	ccolor.Println(result)
+}
+
 
 func TestTableWithStyle(t *testing.T) {
 	tb := table.New("Styled Table")
@@ -136,9 +159,7 @@ func TestTableColMaxWidthAndOverflowFlag(t *testing.T) {
 		table.WithColMaxWidth(30),
 		table.WithColumnWidths(20, 50),
 		table.WithOverflowFlag(table.OverflowCut),
-		func(opts *table.Options) {
-			opts.RowBorder = true
-		},
+		table.WithBorderFlags(table.BorderRows),
 	)
 
 	result := tb.String()

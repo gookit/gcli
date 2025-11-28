@@ -8,6 +8,23 @@ const (
 	OverflowWrap
 )
 
+// BorderFlags for controlling table border display
+const (
+	BorderNone uint8 = 0
+	BorderTop  uint8 = 1 << iota
+	BorderBottom
+	BorderLeft
+	BorderRight
+	BorderHeader // 显示表头边框
+	BorderRows   // 显示行边框
+	// BorderTopBottom display top and bottom borders
+	BorderTopBottom = BorderTop | BorderBottom
+	// BorderBody display body borders
+	BorderBody = BorderTop | BorderBottom | BorderLeft | BorderRight | BorderRows
+	// BorderAll display all borders
+	BorderAll = BorderTop | BorderBottom | BorderLeft | BorderRight | BorderHeader | BorderRows
+)
+
 // Options struct
 type Options struct {
 	Style
@@ -43,30 +60,26 @@ type Options struct {
 	// CSVOutput output table in CSV format TODO
 	CSVOutput bool
 
-	// -- control border show
+	// BorderFlags control which borders to show using bit flags
+	// e.g. BorderFlags = BorderTop | BorderBottom | BorderHeader
+	BorderFlags uint8
+}
 
-	// ShowBorder show borderline
-	ShowBorder bool
-	// RowBorder show body row border
-	RowBorder bool
-	// HeadBorder show head borderline.
-	HeadBorder bool
-	// WrapBorder wrap(l,r,t,b) border for table
-	WrapBorder bool
+// HasBorderFlag check border flag
+func (opts *Options) HasBorderFlag(flag uint8) bool {
+	return (opts.BorderFlags & flag) != 0
 }
 
 // NewOptions create default options
 func NewOptions() *Options {
 	return &Options{
 		Style:       StyleDefault,
-		StructTag: "json",
+		StructTag:   "json",
 		CellPadding: " ",
 		SortColumn:  -1,
 		SortAscending: true,
 		TrimSpace:   true,
-		ShowBorder:  true,
-		HeadBorder:  true,
-		WrapBorder:  true,
+		BorderFlags: BorderTopBottom,
 	}
 }
 
@@ -76,6 +89,11 @@ type OptionFunc func(opts *Options)
 // WithStyle set table style
 func WithStyle(style Style) OptionFunc {
 	return func(opts *Options) { opts.Style = style }
+}
+
+// WithBorderFlags set border flags
+func WithBorderFlags(flags uint8) OptionFunc {
+	return func(opts *Options) { opts.BorderFlags = flags }
 }
 
 // WithCellPadding set column padding
