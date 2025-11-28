@@ -2,9 +2,10 @@ package table
 
 import "github.com/gookit/goutil/strutil"
 
+// OverflowFlag values
 const (
-	OverflowWrap = 0
-	OverflowCut = 1
+	OverflowCut uint8 = iota
+	OverflowWrap
 )
 
 // Options struct
@@ -12,6 +13,8 @@ type Options struct {
 	Style
 	// Alignment column 内容对齐方式
 	Alignment strutil.PosFlag
+	// StructTag struct tag name on input struct data. Default: json
+	StructTag string
 
 	// ColMaxWidth column max width.
 	//  - 0: auto
@@ -20,11 +23,13 @@ type Options struct {
 	// CellPadding column value padding left and right.
 	//  - 默认L,R填充一个空格
 	CellPadding string
-	// OverflowFlag 内容溢出处理方式 0: 默认换行, 1: 截断
+	// OverflowFlag 内容溢出处理方式 0: 默认截断, 1: 换行
 	OverflowFlag uint8
 	// ShowRowNumber 显示行号，将会多一个列
 	ShowRowNumber bool
-	// ColumnWidths 自定义设置列宽. 按顺序设置，不设置时，将根据内容自动计算
+	// ColumnWidths 自定义设置列宽. 按顺序设置，不设置/为0时，将根据内容自动计算
+	//
+	// start index is 0
 	ColumnWidths []int
 
 	// SortColumn sort rows by column index value.
@@ -42,7 +47,7 @@ type Options struct {
 
 	// ShowBorder show borderline
 	ShowBorder bool
-	// RowBorder show row border
+	// RowBorder show body row border
 	RowBorder bool
 	// HeadBorder show head borderline.
 	HeadBorder bool
@@ -54,6 +59,7 @@ type Options struct {
 func NewOptions() *Options {
 	return &Options{
 		Style:       StyleDefault,
+		StructTag: "json",
 		CellPadding: " ",
 		SortColumn:  -1,
 		SortAscending: true,
@@ -72,9 +78,19 @@ func WithStyle(style Style) OptionFunc {
 	return func(opts *Options) { opts.Style = style }
 }
 
-// WithColPadding set column padding
-func WithColPadding(padding string) OptionFunc {
+// WithCellPadding set column padding
+func WithCellPadding(padding string) OptionFunc {
 	return func(opts *Options) { opts.CellPadding = padding }
+}
+
+// WithColMaxWidth set column max width
+func WithColMaxWidth(width int) OptionFunc {
+	return func(opts *Options) { opts.ColMaxWidth = width }
+}
+
+// WithColumnWidths set column widths by index
+func WithColumnWidths(widths ...int) OptionFunc {
+	return func(opts *Options) { opts.ColumnWidths = widths }
 }
 
 // WithOverflowFlag set overflow handling flag

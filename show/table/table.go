@@ -23,7 +23,8 @@ type Table struct {
 	// Title for the table
 	Title string
 	// Heads the table head data
-	Heads []string
+	Heads []*Cell
+	// Heads []string
 	// Rows table data rows
 	Rows []*Row
 
@@ -51,7 +52,22 @@ func (t *Table) WithOptions(fns ...OptionFunc) *Table {
 
 // SetHeads column names to table
 func (t *Table) SetHeads(names ...string) *Table {
-	t.Heads = names
+	t.Heads = nil // reset before set
+	for _, name := range names {
+		t.AddHead(name)
+	}
+	return t
+}
+
+// AddHead add head column to table
+func (t *Table) AddHead(name string) *Table {
+	t.Heads = append(t.Heads, NewCell(name))
+	return t
+}
+
+// PrependHead prepend head column
+func (t *Table) PrependHead(name string) *Table {
+	t.Heads = append([]*Cell{NewCell(name)}, t.Heads...)
 	return t
 }
 
@@ -59,12 +75,10 @@ func (t *Table) SetHeads(names ...string) *Table {
 func (t *Table) AddRow(cols ...any) *Table {
 	tr := &Row{
 		Cells: make([]*Cell, 0, len(cols)),
-		// Separator: '|',
 	}
 
 	for _, colVal := range cols {
-		cell := &Cell{Align: strutil.PosAuto, Val: colVal}
-		tr.Cells = append(tr.Cells, cell)
+		tr.Cells = append(tr.Cells, NewCell(colVal))
 	}
 
 	t.Rows = append(t.Rows, tr)
@@ -84,10 +98,10 @@ func (t *Table) SetRows(rs any) *Table {
 	case []map[string]any:
 		// map 切片，需要建立表头（如果还没有）
 		if len(t.Heads) == 0 {
+			// 从第一个 map 中提取键作为表头
 			if len(v) > 0 {
-				// 从第一个 map 中提取键作为表头
 				for k := range v[0] {
-					t.Heads = append(t.Heads, k)
+					t.AddHead(k)
 				}
 			}
 		}
@@ -95,7 +109,7 @@ func (t *Table) SetRows(rs any) *Table {
 		for _, m := range v {
 			rowData := make([]any, len(t.Heads))
 			for i, head := range t.Heads {
-				rowData[i] = m[head]
+				rowData[i] = m[head.String()]
 			}
 			t.AddRow(rowData...)
 		}
@@ -252,10 +266,27 @@ func (t *Table) reset() {
 	}
 }
 
+func (t *Table) calcColWidth(width, i int) int {
+	// 自定义列宽
+	if len(t.opts.ColumnWidths) > i && t.opts.ColumnWidths[i] > 0 {
+		width = t.opts.ColumnWidths[i]
+	}
+	// 列L,R填充
+	if t.opts.CellPadding != "" {
+		width += len(t.opts.CellPadding) * 2
+	}
+
+	// 列最大宽度
+	if t.opts.ColMaxWidth != 0 && width > t.opts.ColMaxWidth {
+		width = t.opts.ColMaxWidth
+	}
+	return width
+}
+
 func (t *Table) prepare() {
-	// 如果需要显示行号，在表头前添加"#"
+	// 如果需要显示行号，在表头前添加 "#"
 	if t.opts.ShowRowNumber {
-		t.Heads = append([]string{"#"}, t.Heads...)
+		t.PrependHead("#")
 	}
 
 	// 计算列数 + init row.Cells
@@ -274,20 +305,8 @@ func (t *Table) prepare() {
 
 	// 计算表头列宽
 	for i, head := range t.Heads {
-		width := strutil.Utf8Width(head)
-		// 自定义列宽
-		if len(t.opts.ColumnWidths) > i && t.opts.ColumnWidths[i] > 0 {
-			width = t.opts.ColumnWidths[i]
-		}
-		// 列L,R填充
-		if t.opts.CellPadding != "" {
-			width += len(t.opts.CellPadding) * 2
-		}
-
-		// 列最大宽度
-		if t.opts.ColMaxWidth != 0 && width > t.opts.ColMaxWidth {
-			width = t.opts.ColMaxWidth
-		}
+		head.Init(t.opts)
+		width := t.calcColWidth(head.Width, i)
 		if width > colWidths[i] {
 			colWidths[i] = width
 		}
@@ -323,20 +342,7 @@ func (t *Table) prepare() {
 	// 计算数据列宽
 	for _, row := range t.Rows {
 		for i, cell := range row.Cells {
-			cellWidth := cell.width
-			// 自定义列宽
-			if len(t.opts.ColumnWidths) > i && t.opts.ColumnWidths[i] > 0 {
-				cellWidth = t.opts.ColumnWidths[i]
-			}
-			// 列L,R填充
-			if t.opts.CellPadding != "" {
-				cellWidth += len(t.opts.CellPadding) * 2
-			}
-
-			// 列最大宽度
-			if t.opts.ColMaxWidth != 0 && cellWidth > t.opts.ColMaxWidth {
-				cellWidth = t.opts.ColMaxWidth
-			}
+			cellWidth := t.calcColWidth(cell.width, i)
 			if cellWidth > colWidths[i] {
 				colWidths[i] = cellWidth
 			}
@@ -382,14 +388,15 @@ func (t *Table) formatHeader() {
 		var coloredHead string
 
 		for i, head := range t.Heads {
+			headStr := head.String()
 			// 添加列填充
 			if opts.CellPadding != "" {
-				head = opts.CellPadding + head + opts.CellPadding
+				headStr = opts.CellPadding + headStr + opts.CellPadding
 			}
 
 			if i < len(t.colWidths) {
 				// 使用 strutil.Resize 来对齐表头内容
-				resized := strutil.Resize(head, t.colWidths[i], opts.Alignment)
+				resized := strutil.Resize(headStr, t.colWidths[i], opts.Alignment)
 				// 应用颜色（优先使用 FirstColor 给第一列）
 				if i == 0 && opts.FirstColor != "" {
 					// 表头第一列使用 FirstColor
@@ -402,7 +409,7 @@ func (t *Table) formatHeader() {
 				}
 				buf.WriteString(coloredHead)
 			} else {
-				buf.WriteString(head)
+				buf.WriteString(headStr)
 			}
 
 			if i < len(t.Heads)-1 { // 不是最后一个元素
@@ -452,10 +459,10 @@ func (t *Table) formatBody() {
 				// 根据宽度调整内容
 				if cell.width > 0 {
 					// 截断模式
-					if opts.OverflowFlag == OverflowCut {
+					if opts.OverflowFlag == OverflowCut && cell.valWidth > cell.width {
 						cellStr = strutil.Utf8Truncate(cellStr, cell.width, "")
 					} else {
-						// 默认换行模式
+						// 填充至 cell.width 宽度
 						cellStr = strutil.Resize(cellStr, cell.width, cell.Align)
 					}
 				}
@@ -489,7 +496,7 @@ func (t *Table) formatBody() {
 
 		// 画行分隔线（如果需要）
 		if opts.RowBorder && i < len(t.Rows)-1 {
-			t.drawBorderLine(buf, style.Border.Right, style.Border.Center, style.Border.Cell, style.Border.Right)
+			t.drawBorderLine(buf, style.Border.Right, style.Border.Center, style.Divider.Intersect, style.Border.Right)
 		}
 
 	}
@@ -572,8 +579,16 @@ type Cell struct {
 	Val any
 	// string cache of Val
 	str string
-	// width and height after calc
-	width, height int
+	// val content width
+	valWidth int
+	// width for the cell
+	width  int
+	height int
+}
+
+// NewCell creates a new cell with the given value
+func NewCell(val any) *Cell {
+	return &Cell{Align: strutil.PosAuto, Val: val}
 }
 
 // Init for one cell
@@ -593,7 +608,6 @@ func (c *Cell) Init(opts *Options) {
 	if opts.TrimSpace {
 		c.str = strings.TrimSpace(s)
 	}
-
 	c.calcWH()
 }
 
@@ -609,6 +623,7 @@ func (c *Cell) calcWH() {
 			c.width = w
 		}
 	}
+	c.valWidth = c.width
 }
 
 // String returns the string formatted representation of the cell

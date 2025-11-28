@@ -49,7 +49,7 @@ func TestTableSetRowsWithSlice(t *testing.T) {
 	}
 
 	tb.SetHeads("Name", "Age", "Job").SetRows(users).
-		WithOptions(table.WithStyle(table.StyleBold), table.WithColPadding(" "))
+		WithOptions(table.WithStyle(table.StyleBold), table.WithCellPadding(" "))
 
 	result := tb.String()
 
@@ -124,4 +124,24 @@ func TestTableMarkdownStyle(t *testing.T) {
 
 	// 验证 Markdown 表格格式
 	assert.StrContainsAll(t, result, []string{"|----|-----|", "|Name|Value|"})
+}
+
+// test for ColMaxWidth and OverflowFlag
+func TestTableColMaxWidthAndOverflowFlag(t *testing.T) {
+	tb := table.New("ColMaxWidth and OverflowFlag")
+	tb.SetHeads("Name", "Description").
+		AddRow("Long Name", "This is a long description that exceeds the column width.").
+		AddRow("Short Name", "This is a short description.")
+	tb.WithOptions(
+		table.WithColMaxWidth(30),
+		table.WithColumnWidths(20, 50),
+		table.WithOverflowFlag(table.OverflowCut),
+		func(opts *table.Options) {
+			opts.RowBorder = true
+		},
+	)
+
+	result := tb.String()
+	fmt.Println(result)
+	assert.StrContainsAll(t, result, []string{"Name", "Description"})
 }

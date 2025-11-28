@@ -68,7 +68,7 @@ var (
 			TopRight:     '+',
 			// Body
 			Right:  '|',
-			Cell:   '|',
+			Cell: '|',
 			Left:   '|',
 			Center: '-',
 			// Bottom
