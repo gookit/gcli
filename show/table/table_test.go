@@ -77,12 +77,14 @@ func TestTableSetRows_Struct(t *testing.T) {
 	tb := table.New("User Table")
 	tb.SetRows(users).WithStyle(table.StyleBoldBorder).ConfigStyle(func(s *table.Style) {
 		s.TitleColor = "mga"
-		s.Border.Left = 0
-		s.Border.Right = 0
-	})
+	}).WithOptions(table.WithBorderFlags(table.BorderTopBottom))
 
 	result := tb.String()
 	ccolor.Println(result)
+	// s := ccolor.ClearCode(result)
+	
+	tb.WithOptions(table.WithoutBorder())
+	tb.Println()
 }
 
 

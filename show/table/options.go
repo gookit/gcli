@@ -91,6 +91,11 @@ func WithStyle(style Style) OptionFunc {
 	return func(opts *Options) { opts.Style = style }
 }
 
+// WithoutBorder set border to none
+func WithoutBorder() OptionFunc {
+	return func(opts *Options) { opts.BorderFlags = BorderNone }
+}
+
 // WithBorderFlags set border flags
 func WithBorderFlags(flags uint8) OptionFunc {
 	return func(opts *Options) { opts.BorderFlags = flags }

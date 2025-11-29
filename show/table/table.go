@@ -401,9 +401,12 @@ func (t *Table) formatHeader() {
 		t.drawBorderLine(t.Buffer(), style.Border.TopLeft, style.Border.Top, style.Border.TopIntersect, style.Border.TopRight)
 	}
 
+	showBorderLeft := t.opts.HasBorderFlag(BorderLeft) && style.Border.Left > 0
+	showBorderRight := t.opts.HasBorderFlag(BorderRight) && style.Border.Right > 0
+
 	// 打印表头
 	if len(t.Heads) > 0 {
-		if style.Border.Left > 0 {
+		if showBorderLeft {
 			buf.WriteRune(style.Border.Left) // 左边框
 		}
 		var coloredHead string
@@ -438,7 +441,7 @@ func (t *Table) formatHeader() {
 			}
 		}
 
-		if style.Border.Right > 0 {
+		if showBorderRight {
 			buf.WriteRune(style.Border.Right) // 右边框
 		}
 		buf.WriteByte('\n')
@@ -464,8 +467,11 @@ func (t *Table) formatBody() {
 	opts := t.opts
 	style := opts.Style
 
+	showBorderLeft := t.opts.HasBorderFlag(BorderLeft) && style.Border.Left > 0
+	showBorderRight := t.opts.HasBorderFlag(BorderRight) && style.Border.Right > 0
+
 	for i, row := range t.Rows {
-		if style.Border.Left > 0 {
+		if showBorderLeft {
 			buf.WriteRune(style.Border.Left) // 左边框
 		}
 
@@ -515,7 +521,7 @@ func (t *Table) formatBody() {
 			}
 		}
 
-		if style.Border.Right > 0 {
+		if showBorderRight {
 			buf.WriteRune(style.Border.Right) // 右边框
 		}
 		buf.WriteByte('\n')
@@ -546,7 +552,7 @@ func (t *Table) drawBorderLine(buf *bytes.Buffer, leftChar, centerChar, intersec
 		return // 如果没有边框字符，则跳过
 	}
 
-	if leftChar > 0 {
+	if t.opts.HasBorderFlag(BorderLeft) && leftChar > 0 {
 		buf.WriteRune(leftChar) // 左边
 	}
 
@@ -559,7 +565,7 @@ func (t *Table) drawBorderLine(buf *bytes.Buffer, leftChar, centerChar, intersec
 		}
 	}
 
-	if rightChar > 0 {
+	if t.opts.HasBorderFlag(BorderRight) && rightChar > 0 {
 		buf.WriteRune(rightChar) // 右边
 	}
 	buf.WriteByte('\n')

@@ -45,7 +45,7 @@ type BorderStyle struct {
 	Cell rune
 	Left rune
 
-	BottomRight, Bottom, BottomIntersect, BottomLeft rune
+	BottomLeft, Bottom, BottomIntersect, BottomRight rune
 }
 
 // DividerStyle defines table divider style. 定义表格分隔器样式
