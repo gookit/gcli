@@ -35,10 +35,7 @@ type Table struct {
 
 // New create table
 func New(title string, fns ...OptionFunc) *Table {
-	t := &Table{
-		Title: title,
-		opts: NewOptions(),
-	}
+	t := &Table{Title: title, opts: NewOptions()}
 
 	return t.WithOptions(fns...)
 }
@@ -493,7 +490,7 @@ func (t *Table) formatBody() {
 						cellStr = strutil.Utf8Truncate(cellStr, cell.width, "")
 					} else {
 						// 填充至 cell.width 宽度
-						cellStr = strutil.Resize(cellStr, cell.width, cell.Align)
+						cellStr = strutil.Utf8Resize(cellStr, cell.width, cell.Align)
 					}
 				}
 

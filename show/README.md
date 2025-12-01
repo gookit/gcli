@@ -24,6 +24,14 @@ Please see https://pkg.go.dev/github.com/gookit/gcli/v3/show
 go get github.com/gookit/gcli/v3/show
 ```
 
+## Develop
+
+Testing:
+
+```bash
+go test -v -run ^\QTestTable_ChineseContent\E$ ./show/table/...
+```
+
 ## Related
 
 - https://github.com/jedib0t/go-pretty

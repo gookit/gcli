@@ -17,8 +17,8 @@ const (
 	BorderRight
 	BorderHeader // 显示表头边框
 	BorderRows   // 显示行边框
-	// BorderTopBottom display top and bottom borders
-	BorderTopBottom = BorderTop | BorderBottom
+	// BorderDefault display head, top and bottom borders
+	BorderDefault = BorderTop | BorderBottom | BorderHeader
 	// BorderBody display body borders
 	BorderBody = BorderTop | BorderBottom | BorderLeft | BorderRight | BorderRows
 	// BorderAll display all borders
@@ -79,7 +79,7 @@ func NewOptions() *Options {
 		SortColumn:  -1,
 		SortAscending: true,
 		TrimSpace:   true,
-		BorderFlags: BorderTopBottom,
+		BorderFlags: BorderDefault,
 	}
 }
 

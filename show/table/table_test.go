@@ -77,16 +77,15 @@ func TestTableSetRows_Struct(t *testing.T) {
 	tb := table.New("User Table")
 	tb.SetRows(users).WithStyle(table.StyleBoldBorder).ConfigStyle(func(s *table.Style) {
 		s.TitleColor = "mga"
-	}).WithOptions(table.WithBorderFlags(table.BorderTopBottom))
+	}).WithOptions(table.WithBorderFlags(table.BorderDefault))
 
 	result := tb.String()
 	ccolor.Println(result)
 	// s := ccolor.ClearCode(result)
-	
+
 	tb.WithOptions(table.WithoutBorder())
 	tb.Println()
 }
-
 
 func TestTableWithStyle(t *testing.T) {
 	tb := table.New("Styled Table")
@@ -152,7 +151,7 @@ func TestTableMarkdownStyle(t *testing.T) {
 }
 
 // test for ColMaxWidth and OverflowFlag
-func TestTableColMaxWidthAndOverflowFlag(t *testing.T) {
+func TestTable_ColMaxWidthAndOverflowFlag(t *testing.T) {
 	tb := table.New("ColMaxWidth and OverflowFlag")
 	tb.SetHeads("Name", "Description").
 		AddRow("Long Name", "This is a long description that exceeds the column width.").
@@ -167,4 +166,25 @@ func TestTableColMaxWidthAndOverflowFlag(t *testing.T) {
 	result := tb.String()
 	fmt.Println(result)
 	assert.StrContainsAll(t, result, []string{"Name", "Description"})
+}
+
+// test 中文内容
+// go test -v -run ^\QTestTable_ChineseContent\E$ ./show/table/...
+func TestTable_ChineseContent(t *testing.T) {
+	tb := table.New("Table with Chinese Content")
+	tb.SetHeads("Name", "Description").
+		AddRow("中文名称", "这是一个中文描述。").
+		AddRow("English Name", "This is an English description.").
+		AddRow("中EN混合", "This 一个中文 English description")
+
+	tb.Println()
+	/*
+		Table with Chinese Content
+		--------------+---------------------------------
+		 Name         | Description
+		--------------+---------------------------------
+		 中文名称     | 这是一个中文描述。
+		 English Name | This is an English description.
+		--------------+---------------------------------
+	*/
 }
