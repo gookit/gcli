@@ -134,6 +134,7 @@ func NewArgument(name, desc string, requiredAndArrayed ...bool) *Argument {
 
 // GlobalOpts global flag options
 type GlobalOpts struct {
+	// Disable auto binding global options
 	Disable bool
 	NoColor bool
 	// message report level.
@@ -173,9 +174,7 @@ func (g *GlobalOpts) SetStrictMode(strictMode bool) {
 }
 
 // SetDisable global options
-func (g *GlobalOpts) SetDisable() {
-	g.Disable = true
-}
+func (g *GlobalOpts) SetDisable() { g.Disable = true }
 
 func (g *GlobalOpts) bindingOpts(fs *gflag.Parser) {
 	fs.BoolOpt(&g.ShowHelp, "help", "h", false, "Display the help information")

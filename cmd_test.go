@@ -99,7 +99,7 @@ func TestCommand_AddArg(t *testing.T) {
 
 	is.PanicsMsg(func() {
 		c.AddArg(":)&dfd", "desc")
-	}, "gflag: the argument name ':)&dfd' is invalid, must match: ^[a-zA-Z][\\w-]*$")
+	}, "gflag: the argument name ':)&dfd' is invalid, must match: ^[0-9a-zA-Z][\\w-]*$")
 
 	is.PanicsMsg(func() {
 		c.AddArg("arg1", "desc")

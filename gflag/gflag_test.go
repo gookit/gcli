@@ -243,13 +243,13 @@ func TestFlags_CheckName(t *testing.T) {
 		var fv uint
 		fs := gcli.NewFlags()
 		fs.UintOpt(&fv, "+invalid", "", 0, "desc")
-	}, "gflag: option flag name '+invalid' is invalid, must match: ^[a-zA-Z][\\w-]*$")
+	}, "gflag: option flag name '+invalid' is invalid, must match: ^[0-9a-zA-Z][\\w-]*$")
 
 	assert.PanicsMsg(t, func() {
 		var fv uint64
 		fs := gcli.NewFlags()
 		fs.Uint64Opt(&fv, "78", "", 0, "desc")
-	}, "gflag: option flag name '78' is invalid, must match: ^[a-zA-Z][\\w-]*$")
+	}, "gflag: option flag name '78' is invalid, must match: ^[0-9a-zA-Z][\\w-]*$")
 }
 
 func TestFlags_CheckShorts(t *testing.T) {

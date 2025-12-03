@@ -164,7 +164,7 @@ func TestApp_AddAliases(t *testing.T) {
 
 	assert.PanicsMsg(t, func() {
 		app.AddCommand(gcli.NewCommand("alias1", "desc"))
-	}, "GCli: The name 'alias1' is already used as an alias")
+	}, "GCli: The name 'alias1' is already used as an alias in \"GCliApp\"")
 	assert.PanicsMsg(t, func() {
 		app.AddAliases("cmd2", "test")
 	}, "GCli: The name 'test' has been used as an command name")

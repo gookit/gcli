@@ -1,14 +1,6 @@
 package table
 
-// Style for table
 /*
-	━━━┯━━━━━━━┯━━━━━━━━━━━━━━━━━┯━━━━━━━━━━┯━━━━━━━━━━
-	 # │ pid   │ name            │ status   │ cpu
-	───┼───────┼─────────────────┼──────────┼──────────
-	 0 │   992 │ chrome          │ Sleeping │ 6.988768
-	 2 │ 13973 │ qemu-system-x86 │ Sleeping │ 4.996551
-	━━━┷━━━━━━━┷━━━━━━━━━━━━━━━━━┷━━━━━━━━━━┷━━━━━━━━━━
-
 	+-----+------------+-----------+--------+-----------------------------+
 	|   # | FIRST NAME | LAST NAME | SALARY |                             |
 	+-----+------------+-----------+--------+-----------------------------+
@@ -57,7 +49,16 @@ type DividerStyle struct {
 }
 
 var (
-	// StyleDefault - MySql-like table style
+	/*
+		StyleDefault - MySql-like table style
+		+-----+------------+-----------+--------+
+		|   # | FIRST NAME | LAST NAME | SALARY |
+		+-----+------------+-----------+--------+
+		|   1 | Arya       | Stark     |   3000 |
+		|  20 | Jon        | Snow      |   2000 |
+		| 300 | Tyrion     | Lannister |   5000 |
+		+-----+------------+-----------+--------+
+	*/
 	StyleDefault = Style{
 		HeadColor:  "info",
 		Border: BorderStyle{

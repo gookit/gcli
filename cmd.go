@@ -136,7 +136,7 @@ type Command struct {
 // Usage:
 //
 //	cmd := NewCommand("my-cmd", "description")
-//	// OR with an config func
+//	// OR with a config func
 //	cmd := NewCommand("my-cmd", "description", func(c *Command) { ... })
 //	app.Add(cmd) // OR cmd.AttachTo(app)
 func NewCommand(name, desc string, setFn ...func(c *Command)) *Command {
@@ -156,14 +156,10 @@ func NewCommand(name, desc string, setFn ...func(c *Command)) *Command {
 }
 
 // Init command. only use for tests
-func (c *Command) Init() {
-	c.initialize()
-}
+func (c *Command) Init() { c.initialize() }
 
 // SetFunc Settings command handler func
-func (c *Command) SetFunc(fn RunnerFunc) {
-	c.Func = fn
-}
+func (c *Command) SetFunc(fn RunnerFunc) { c.Func = fn }
 
 // WithFunc Settings command handler func
 func (c *Command) WithFunc(fn RunnerFunc) *Command {
@@ -178,35 +174,23 @@ func (c *Command) WithHidden() *Command {
 }
 
 // AttachTo attach the command to CLI application
-func (c *Command) AttachTo(app *App) {
-	app.AddCommand(c)
-}
+func (c *Command) AttachTo(app *App) { app.AddCommand(c) }
 
 // Disable set cmd is disabled
-func (c *Command) Disable() {
-	c.disabled = true
-}
+func (c *Command) Disable() { c.disabled = true }
 
 // Visible return cmd is visible
-func (c *Command) Visible() bool {
-	return c.Hidden == false
-}
+func (c *Command) Visible() bool { return c.Hidden == false }
 
 // IsDisabled get cmd is disabled
-func (c *Command) IsDisabled() bool {
-	return c.disabled
-}
+func (c *Command) IsDisabled() bool { return c.disabled }
 
 // IsRunnable reports whether the command can be run; otherwise
 // it is a documentation pseudo-command such as import path.
-func (c *Command) IsRunnable() bool {
-	return c.Func != nil
-}
+func (c *Command) IsRunnable() bool { return c.Func != nil }
 
 // Add one or multi sub-command(s). alias of the AddSubs
-func (c *Command) Add(sub *Command, more ...*Command) {
-	c.AddSubs(sub, more...)
-}
+func (c *Command) Add(sub *Command, more ...*Command) { c.AddSubs(sub, more...) }
 
 // AddSubs add one or multi sub-command(s)
 func (c *Command) AddSubs(sub *Command, more ...*Command) {
@@ -352,7 +336,7 @@ func (c *Command) Next() {
 }
 
 /*************************************************************
- * standalone running
+ * region standalone running
  *************************************************************/
 
 // MustRun Alone the current command, will output message on error
@@ -532,9 +516,7 @@ type panicErr struct {
 }
 
 // Error string
-func (p panicErr) Error() string {
-	return fmt.Sprint(p.val)
-}
+func (p panicErr) Error() string { return fmt.Sprint(p.val) }
 
 // do execute the command
 func (c *Command) doExecute(args []string) (err error) {
@@ -597,19 +579,13 @@ func (c *Command) Root() *Command {
 }
 
 // IsRoot command
-func (c *Command) IsRoot() bool {
-	return c.parent == nil
-}
+func (c *Command) IsRoot() bool { return c.parent == nil }
 
 // Parent get parent
-func (c *Command) Parent() *Command {
-	return c.parent
-}
+func (c *Command) Parent() *Command { return c.parent }
 
 // SetParent set parent
-func (c *Command) SetParent(parent *Command) {
-	c.parent = parent
-}
+func (c *Command) SetParent(parent *Command) { c.parent = parent }
 
 // ParentName name of the parent command
 func (c *Command) ParentName() string {
@@ -620,19 +596,13 @@ func (c *Command) ParentName() string {
 }
 
 // Sub get sub command by name. eg "sub"
-func (c *Command) Sub(name string) *Command {
-	return c.GetCommand(name)
-}
+func (c *Command) Sub(name string) *Command { return c.GetCommand(name) }
 
 // SubCommand get sub command by name. eg "sub"
-func (c *Command) SubCommand(name string) *Command {
-	return c.GetCommand(name)
-}
+func (c *Command) SubCommand(name string) *Command { return c.GetCommand(name) }
 
 // IsSubCommand name check. alias of the HasCommand()
-func (c *Command) IsSubCommand(name string) bool {
-	return c.IsCommand(name)
-}
+func (c *Command) IsSubCommand(name string) bool { return c.IsCommand(name) }
 
 // find sub command by name
 // func (c *Command) findSub(name string) *Command {
@@ -648,14 +618,10 @@ func (c *Command) IsSubCommand(name string) bool {
  *************************************************************/
 
 // IsStandalone running
-func (c *Command) IsStandalone() bool {
-	return c.standalone
-}
+func (c *Command) IsStandalone() bool { return c.standalone }
 
 // NotStandalone running
-func (c *Command) NotStandalone() bool {
-	return !c.standalone
-}
+func (c *Command) NotStandalone() bool { return !c.standalone }
 
 // ID get command ID name.
 func (c *Command) goodName() string {
@@ -716,24 +682,16 @@ func (c *Command) Copy() *Command {
 }
 
 // App returns the CLI application
-func (c *Command) App() *App {
-	return c.app
-}
+func (c *Command) App() *App { return c.app }
 
 // ID get command ID string. return like "git:branch:create"
-func (c *Command) ID() string {
-	return strings.Join(c.pathNames, CommandSep)
-}
+func (c *Command) ID() string { return strings.Join(c.pathNames, CommandSep) }
 
-// Path get command full path
-func (c *Command) Path() string {
-	return strings.Join(c.pathNames, " ")
-}
+// Path get command full path, joined by space. eg: "git branch create"
+func (c *Command) Path() string { return strings.Join(c.pathNames, " ") }
 
 // PathNames get command path names
-func (c *Command) PathNames() []string {
-	return c.pathNames
-}
+func (c *Command) PathNames() []string { return c.pathNames }
 
 // NewErr format message and add error to the command
 func (c *Command) NewErr(msg string) error { return errors.New(msg) }
