@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3/show"
+	"github.com/gookit/gcli/v3/show/lists"
 	"github.com/gookit/goutil/testutil/assert"
 )
 
@@ -39,7 +40,7 @@ func TestList_mlevel(t *testing.T) {
 	l := show.NewList("test list", d)
 	l.Println()
 
-	l = show.NewList("test list2", d).WithOptions(func(opts *show.ListOption) {
+	l = show.NewList("test list2", d).WithOptions(func(opts *lists.ListOption) {
 		opts.SepChar = " | "
 	})
 	l.Println()

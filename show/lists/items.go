@@ -1,15 +1,11 @@
-package show
+package lists
 
 import (
-	"bytes"
-	"fmt"
-	"io"
 	"reflect"
 	"sort"
 	"strings"
 	"unicode/utf8"
 
-	"github.com/gookit/color"
 	"github.com/gookit/goutil/reflects"
 	"github.com/gookit/goutil/strutil"
 )
@@ -20,18 +16,6 @@ const (
 	// ERR error exit code
 	ERR = 2
 )
-
-// PosFlag type
-type PosFlag = strutil.PosFlag
-
-// some position constants
-const (
-	PosLeft PosFlag = iota
-	PosRight
-	PosMiddle
-)
-
-const PosCenter = PosMiddle
 
 // var errInvalidType = errors.New("invalid input data type")
 
@@ -52,70 +36,6 @@ type ShownFace interface {
 	Print()
 	// Println print current message
 	Println()
-}
-
-// Base formatter
-type Base struct {
-	// out  comdef.ByteStringWriter
-	// TODO lock sync.Mutex
-	out io.Writer
-	// formatted string
-	buf *bytes.Buffer
-	err error
-}
-
-// SetOutput for print message
-func (b *Base) SetOutput(out io.Writer) {
-	b.out = out
-}
-
-// SetBuffer field
-func (b *Base) SetBuffer(buf *bytes.Buffer) {
-	b.buf = buf
-}
-
-// Buffer get
-func (b *Base) Buffer() *bytes.Buffer {
-	if b.buf == nil {
-		b.buf = new(bytes.Buffer)
-	}
-	return b.buf
-}
-
-// String format given data to string
-func (b *Base) String() string {
-	panic("please implement the method")
-}
-
-// Format given data to string
-func (b *Base) Format() {
-	panic("please implement the method")
-}
-
-// Err get
-func (b *Base) Err() error { return b.err }
-
-// SetErr set error
-func (b *Base) SetErr(err error) {
-	b.err = err
-}
-
-// Print formatted message
-func (b *Base) Print() {
-	if b.out == nil {
-		b.out = Output
-	}
-
-	if b.buf != nil && b.buf.Len() > 0 {
-		color.Fprint(b.out, b.buf.String())
-		b.buf.Reset()
-	}
-}
-
-// Println formatted message and print newline
-func (b *Base) Println() {
-	b.Print()
-	fmt.Println()
 }
 
 /*************************************************************

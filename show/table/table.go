@@ -9,7 +9,7 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v3/show"
+	"github.com/gookit/gcli/v3/show/showcom"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/strutil"
 	"github.com/gookit/goutil/x/ccolor"
@@ -17,7 +17,7 @@ import (
 
 // Table a cli Table show
 type Table struct {
-	show.Base // use for internal
+	showcom.Base // use for internal
 	// options ...
 	opts *Options
 

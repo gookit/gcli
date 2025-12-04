@@ -1,14 +1,13 @@
-package show
+package lists
 
 import (
-	"bytes"
 	"reflect"
 
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/v3/gclicom"
+	"github.com/gookit/gcli/v3/show/showcom"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/maputil"
-	"github.com/gookit/goutil/reflects"
-	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"
 )
 
@@ -56,7 +55,7 @@ func NewListOption() *ListOption {
 //
 //	len("你好"), len("hello"), len("hello你好") -> 6 5 11
 type List struct {
-	Base // use for internal
+	showcom.Base // use for internal
 	// options
 	Opts *ListOption
 	// Title list title name
@@ -75,7 +74,7 @@ func NewList(title string, data any, fns ...ListOpFunc) *List {
 		title: title,
 		data:  data,
 		// base
-		Base: Base{out: Output},
+		Base: showcom.Base{Out: gclicom.Output},
 		// options
 		Opts: NewListOption(),
 	}
@@ -104,13 +103,10 @@ func (l *List) Format() {
 		return
 	}
 
-	if l.buf == nil {
-		l.buf = new(bytes.Buffer)
-	}
-
+	buf := l.Buffer()
 	if l.title != "" { // has title
 		title := strutil.UpperWord(l.title)
-		l.buf.WriteString(color.WrapTag(title, l.Opts.TitleStyle) + "\n")
+		buf.WriteString(color.WrapTag(title, l.Opts.TitleStyle) + "\n")
 	}
 
 	items := NewItems(l.data) // build items
@@ -133,14 +129,14 @@ func (l *List) Format() {
 		}
 
 		if l.Opts.LeftIndent != "" {
-			l.buf.WriteString(l.Opts.LeftIndent)
+			buf.WriteString(l.Opts.LeftIndent)
 		}
 
 		// format key - parsed from map, struct
 		if items.itemType == ItemMap {
 			key := strutil.PadRight(item.Key, " ", keyWidth)
 			key = color.WrapTag(key, l.Opts.KeyStyle)
-			l.buf.WriteString(key + l.Opts.SepChar)
+			buf.WriteString(key + l.Opts.SepChar)
 		}
 
 		// format value
@@ -149,23 +145,23 @@ func (l *List) Format() {
 				f.Indent = mlIndent
 				f.ClosePrefix = "  "
 				// f.AfterReset = true
-				f.SetOutput(l.buf)
+				f.SetOutput(buf)
 			}).Format()
-			l.buf.WriteByte('\n')
+			buf.WriteByte('\n')
 		} else if item.IsKind(reflect.Map) {
 			maputil.NewFormatter(item.rftVal).WithFn(func(f *maputil.MapFormatter) {
 				f.Indent = mlIndent
 				f.ClosePrefix = "  "
 				// f.AfterReset = true
-				f.SetOutput(l.buf)
+				f.SetOutput(buf)
 			}).Format()
-			l.buf.WriteByte('\n')
+			buf.WriteByte('\n')
 		} else {
 			val := item.ValString()
 			if l.Opts.UpperFirst {
 				val = strutil.UpperFirst(val)
 			}
-			l.buf.WriteString(val + "\n")
+			buf.WriteString(val + "\n")
 		}
 
 	}
@@ -174,7 +170,7 @@ func (l *List) Format() {
 // String returns formatted string
 func (l *List) String() string {
 	l.Format()
-	return l.buf.String()
+	return l.Buf.String()
 }
 
 // Print formatted message
@@ -191,102 +187,3 @@ func (l *List) Println() {
 
 // Flush formatted message to console
 func (l *List) Flush() { l.Println() }
-
-/*************************************************************
- * region Lists
- *************************************************************/
-
-// Lists use for formatting and printing multi list data
-type Lists struct {
-	Base // use for internal
-	err error
-	// options
-	Opts *ListOption
-	rows []*List
-	// data buffer
-	buffer *bytes.Buffer
-}
-
-// NewEmptyLists create empty lists
-func NewEmptyLists(fns ...ListOpFunc) *Lists {
-	ls := &Lists{
-		Base: Base{out: Output},
-		Opts: NewListOption(),
-	}
-	return ls.WithOptionFns(fns)
-}
-
-// NewLists create lists. allow: map[string]any, struct-ptr
-func NewLists(mlist any, fns ...ListOpFunc) *Lists {
-	ls := NewEmptyLists()
-	rv := reflect.Indirect(reflect.ValueOf(mlist))
-
-	if rv.Kind() == reflect.Map {
-		ls.err = reflects.EachStrAnyMap(rv, func(key string, val any) {
-			ls.AddSublist(key, val)
-		})
-	} else if rv.Kind() == reflect.Struct {
-		for title, data := range structs.ToMap(mlist) {
-			ls.rows = append(ls.rows, NewList(title, data))
-		}
-	} else {
-		panic("Lists: not support type: " + rv.Kind().String())
-	}
-
-	return ls.WithOptionFns(fns)
-}
-
-// WithOptionFns with options func
-func (ls *Lists) WithOptionFns(fns []ListOpFunc) *Lists {
-	for _, fn := range fns {
-		fn(ls.Opts)
-	}
-	return ls
-}
-
-// WithOptions with an options func list
-func (ls *Lists) WithOptions(fns ...ListOpFunc) *Lists {
-	return ls.WithOptionFns(fns)
-}
-
-// AddSublist with options func list
-func (ls *Lists) AddSublist(title string, data any) *Lists {
-	ls.rows = append(ls.rows, NewList(title, data))
-	return ls
-}
-
-// Format as string
-func (ls *Lists) Format() {
-	if len(ls.rows) == 0 {
-		return
-	}
-
-	ls.buffer = new(bytes.Buffer)
-
-	for _, list := range ls.rows {
-		list.Opts = ls.Opts
-		list.SetBuffer(ls.buffer)
-		list.Format()
-	}
-}
-
-// String returns formatted string
-func (ls *Lists) String() string {
-	ls.Format()
-	return ls.buf.String()
-}
-
-// Print formatted message
-func (ls *Lists) Print() {
-	ls.Format()
-	ls.Base.Print()
-}
-
-// Println formatted message with newline
-func (ls *Lists) Println() {
-	ls.Format()
-	ls.Base.Println()
-}
-
-// Flush formatted message to console
-func (ls *Lists) Flush() { ls.Println() }

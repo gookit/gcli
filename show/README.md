@@ -2,6 +2,7 @@
 
 contains `section, panel, padding, helpPanel, table, tree, title, list, multiList`
 
+- banner
 - title
 - table
 - panel

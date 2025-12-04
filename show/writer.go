@@ -1,6 +1,10 @@
 package show
 
-import "io"
+import (
+	"io"
+
+	"github.com/gookit/gcli/v3/gclicom"
+)
 
 // Writer definition
 type Writer struct {
@@ -11,7 +15,7 @@ type Writer struct {
 // NewWriter create a new writer
 func NewWriter(output io.Writer) *Writer {
 	if output == nil {
-		output = Output
+		output = gclicom.Output
 	}
 
 	return &Writer{

@@ -1,8 +1,10 @@
 package show
 
+import "github.com/gookit/gcli/v3/show/showcom"
+
 // PrettyJSON struct
 type PrettyJSON struct {
-	Base
+	showcom.Base
 }
 
 // NewPrettyJSON instance

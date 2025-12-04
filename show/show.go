@@ -4,35 +4,33 @@ package show
 import (
 	"encoding/json"
 	"fmt"
-	"io"
-	"os"
 	"text/tabwriter"
 
 	"github.com/gookit/color"
+	"github.com/gookit/gcli/v3/gclicom"
 	"github.com/gookit/gcli/v3/show/banner"
+	"github.com/gookit/gcli/v3/show/lists"
 	"github.com/gookit/gcli/v3/show/title"
 )
 
-// Output the global input out stream
-var Output io.Writer = os.Stdout
-
-// SetOutput stream
-func SetOutput(out io.Writer) { Output = out }
-
-// ResetOutput stream
-func ResetOutput() { Output = os.Stdout }
+const (
+	// OK success exit code
+	OK = 0
+	// ERR error exit code
+	ERR = 2
+)
 
 // Error tips message print
 func Error(format string, v ...any) int {
 	prefix := color.Red.Sprint("ERROR: ")
-	_, _ = fmt.Fprintf(Output, prefix+format+"\n", v...)
+	_, _ = fmt.Fprintf(gclicom.Output, prefix+format+"\n", v...)
 	return ERR
 }
 
 // Success tips message print
 func Success(format string, v ...any) int {
 	prefix := color.Green.Sprint("SUCCESS: ")
-	_, _ = fmt.Fprintf(Output, prefix+format+"\n", v...)
+	_, _ = fmt.Fprintf(gclicom.Output, prefix+format+"\n", v...)
 	return OK
 }
 
@@ -54,13 +52,25 @@ func JSON(v any, prefixAndIndent ...string) int {
 		panic(err)
 	}
 
-	_, _ = fmt.Fprintln(Output, string(bs))
+	_, _ = fmt.Fprintln(gclicom.Output, string(bs))
 	return OK
 }
 
 // ATitle create a Title instance and print. options see: TitleOption
 func ATitle(titleText string, fns ...title.OptionFunc) {
 	title.New(titleText).WithOptionFns(fns).Println()
+}
+
+type ListOpFunc = lists.ListOpFunc
+
+// NewList create a List instance. options see: ListOption
+func NewList(title string, data any, fns ...ListOpFunc) *lists.List {
+	return lists.NewList(title, data).WithOptionFns(fns)
+}
+
+// NewLists create a Lists instance and print. options see: ListOption
+func NewLists(listMap any, fns ...ListOpFunc) *lists.Lists {
+	return lists.NewLists(listMap).WithOptionFns(fns)
 }
 
 // AList create a List instance and print. options see: ListOption
@@ -94,8 +104,7 @@ func ABanner2(contents []string, fns ...banner.OptionFunc) {
 	banner.New(contents, fns...).Println()
 }
 
-// TabWriter create.
-// more please see: package text/tabwriter/example_test.go
+// TabWriter create. more please see: package text/tabwriter/example_test.go
 //
 // Usage:
 //
@@ -105,7 +114,7 @@ func ABanner2(contents []string, fns ...banner.OptionFunc) {
 //	})
 //	w.Flush()
 func TabWriter(rows []string) *tabwriter.Writer {
-	w := tabwriter.NewWriter(Output, 0, 4, 2, ' ', tabwriter.Debug)
+	w := tabwriter.NewWriter(gclicom.Output, 0, 4, 2, ' ', tabwriter.Debug)
 
 	for _, row := range rows {
 		if _, err := fmt.Fprintln(w, row); err != nil {
