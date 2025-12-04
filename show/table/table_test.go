@@ -95,18 +95,18 @@ func TestTableWithStyle(t *testing.T) {
 
 	// 测试不同样式
 	tb.WithOptions(func(opts *table.Options) {
-		opts.Style = table.StyleDefault
+		opts.Style = table.StyleSimple
 		opts.HeadColor = "info"
 	})
 
-	t.Run("StyleDefault", func(t *testing.T) {
+	t.Run("StyleSimple", func(t *testing.T) {
 		result := tb.String()
 		fmt.Println(result)
 		assert.StrContains(t, result, "Styled Table")
 	})
 
-	t.Run("StyleSimple", func(t *testing.T) {
-		tb.WithOptions(table.WithStyle(table.StyleSimple))
+	t.Run("StyleMySql", func(t *testing.T) {
+		tb.WithOptions(table.WithStyle(table.StyleMySql))
 		tb.Println()
 	})
 	t.Run("StyleMarkdown", func(t *testing.T) {
@@ -140,14 +140,14 @@ func TestTableMarkdownStyle(t *testing.T) {
 	tb.SetHeads("Name", "Value").
 		AddRow("A", 100).
 		AddRow("B", 200)
-
-	tb.WithOptions(table.WithStyle(table.StyleMarkdown))
+	tb.WithStyle(table.StyleMarkdown)
 
 	result := tb.String()
 	fmt.Println(result)
 
 	// 验证 Markdown 表格格式
-	assert.StrContainsAll(t, result, []string{"|----|-----|", "|Name|Value|"})
+	result = ccolor.ClearCode(result)
+	assert.StrContainsAll(t, result, []string{"|------|-------|", "| Name | Value |"})
 }
 
 // test for ColMaxWidth and OverflowFlag
@@ -187,4 +187,22 @@ func TestTable_ChineseContent(t *testing.T) {
 		 English Name | This is an English description.
 		--------------+---------------------------------
 	*/
+}
+
+// 测试单元内容有多行文本
+// go test -v -run ^\QTestTable_MultiLineContent\E$ ./show/table/...
+func TestTable_MultiLineContent(t *testing.T) {
+	tb := table.New("Table with Multi-Line Content")
+	tb.WithOptions(
+		table.WithOverflowFlag(table.OverflowWrap),
+		table.WithBorderFlags(table.BorderAll),
+	)
+	tb.SetHeads("Name", "Age", "Description").
+		AddRow("Some one", 23, "This is a long description that\nspans multiple lines.").
+		AddRow("Tom", 24, "This is a short description.").
+		AddRow("John", 25). // missing description
+		AddRow("Inhere", nil, "这是一个中文描述\n有 english words \n有多行内容")
+
+	s := tb.String()
+	fmt.Println(s)
 }

@@ -17,6 +17,10 @@ type Style struct {
 	Border  BorderStyle
 	Divider DividerStyle
 
+	// BorderFlags control which borders to show using bit flags
+	// e.g. BorderFlags = BorderTop | BorderBottom | BorderHeader
+	BorderFlags uint8
+
 	// TitleColor - table title color.
 	//  allow: red, green, blue, yellow, magenta, cyan, white, gray, black
 	TitleColor string
@@ -49,8 +53,28 @@ type DividerStyle struct {
 }
 
 var (
+	BorderStyleDefault = BorderStyle{
+		// Top
+		TopLeft:      '+',
+		Top:          '-',
+		TopIntersect: '+',
+		TopRight:     '+',
+		// Body
+		Right:  '|',
+		Cell:   '|',
+		Left:   '|',
+		Center: '-',
+		// Bottom
+		BottomRight:     '+',
+		Bottom:          '-',
+		BottomLeft:      '+',
+		BottomIntersect: '+',
+	}
+)
+
+var (
 	/*
-		StyleDefault - MySql-like table style
+		StyleMySql - MySql-like table style
 		+-----+------------+-----------+--------+
 		|   # | FIRST NAME | LAST NAME | SALARY |
 		+-----+------------+-----------+--------+
@@ -59,25 +83,10 @@ var (
 		| 300 | Tyrion     | Lannister |   5000 |
 		+-----+------------+-----------+--------+
 	*/
-	StyleDefault = Style{
+	StyleMySql = Style{
 		HeadColor:  "info",
-		Border: BorderStyle{
-			// Top
-			TopLeft:      '+',
-			Top:          '-',
-			TopIntersect: '+',
-			TopRight:     '+',
-			// Body
-			Right:  '|',
-			Cell: '|',
-			Left:   '|',
-			Center: '-',
-			// Bottom
-			BottomRight:     '+',
-			Bottom:          '-',
-			BottomLeft:      '+',
-			BottomIntersect: '+',
-		},
+		BorderFlags: BorderAll,
+		Border:      BorderStyleDefault,
 		Divider: DividerStyle{
 			Left:      '+',
 			Right:     '+',
@@ -88,23 +97,8 @@ var (
 	// StyleSimple - Simple table style
 	StyleSimple = Style{
 		HeadColor:  "info",
-		Border: BorderStyle{
-			// Simple style without corners
-			TopLeft:      0, // No corner
-			Top:          0, // No top line
-			TopIntersect: 0, // No intersection
-			TopRight:     0, // No corner
-			// Body
-			Right:  '|',
-			Cell:   '|',
-			Left:   '|',
-			Center: '-',
-			// Bottom
-			BottomRight:     0, // No corner
-			Bottom:          0, // No bottom line
-			BottomLeft:      0, // No corner
-			BottomIntersect: 0, // No intersection
-		},
+		BorderFlags: BorderDefault,
+		Border:      BorderStyleDefault,
 		Divider: DividerStyle{
 			Left:      '|',
 			Right:     '|',
@@ -115,6 +109,7 @@ var (
 	// StyleMarkdown - Markdown table style
 	StyleMarkdown = Style{
 		HeadColor:  "info",
+		BorderFlags: BorderAll,
 		Border: BorderStyle{
 			// Markdown doesn't have corners since it uses text characters
 			TopLeft:      0, // Not used in markdown
@@ -142,6 +137,7 @@ var (
 	// StyleBold - Bold table style with thick borders:
 	StyleBold = Style{
 		HeadColor:  "info",
+		BorderFlags: BorderDefault,
 		Border: BorderStyle{
 			// Top
 			TopLeft:      '┏',
@@ -169,6 +165,7 @@ var (
 	// StyleRounded - Rounded corner table style:
 	StyleRounded = Style{
 		HeadColor:  "info",
+		BorderFlags: BorderDefault,
 		Border: BorderStyle{
 			// Top
 			TopLeft:      '╭',
@@ -196,6 +193,7 @@ var (
 	// StyleDouble - Double line table style:
 	StyleDouble = Style{
 		HeadColor:  "info",
+		BorderFlags: BorderDefault,
 		Border: BorderStyle{
 			// Top
 			TopLeft:      '╔',
@@ -223,6 +221,7 @@ var (
 	// StyleMinimal - Minimal table style with light borders:
 	StyleMinimal = Style{
 		HeadColor:  "info",
+		BorderFlags: BorderAll,
 		Border: BorderStyle{
 			// Top
 			TopLeft:      '┌',
@@ -259,6 +258,7 @@ StyleBoldBorder - table style with bold top and bottom lines:
 */
 var StyleBoldBorder = Style{
 	HeadColor: "info",
+	BorderFlags: BorderDefault,
 	Border: BorderStyle{
 		// Top - 使用粗线字符
 		TopLeft:      '┏',

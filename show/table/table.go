@@ -31,6 +31,7 @@ type Table struct {
 
 	// 计算后的列宽
 	colWidths []int
+	headHeight int // 表头高度
 }
 
 // New create table
@@ -282,6 +283,10 @@ func (t *Table) reset() {
 	}
 }
 
+//
+// region Prepare
+//
+
 func (t *Table) calcColWidth(width, i int) int {
 	// 自定义列宽
 	if len(t.opts.ColumnWidths) > i && t.opts.ColumnWidths[i] > 0 {
@@ -305,15 +310,13 @@ func (t *Table) prepare() {
 		t.PrependHead("#")
 	}
 
-	// 计算列数 + init row.Cells
+	// 计算列数 + init Rows,Cells
 	colCount := len(t.Heads)
 	for _, row := range t.Rows {
 		if len(row.Cells) > colCount {
 			colCount = len(row.Cells)
 		}
-		for _, cell := range row.Cells {
-			cell.Init(t.opts)
-		}
+		row.Init(t.opts)
 	}
 
 	// 初始化列宽数组
@@ -322,6 +325,9 @@ func (t *Table) prepare() {
 	// 计算表头列宽
 	for i, head := range t.Heads {
 		head.Init(t.opts)
+		if head.height > t.headHeight {
+			t.headHeight = head.height
+		}
 		width := t.calcColWidth(head.width, i)
 		if width > colWidths[i] {
 			colWidths[i] = width
@@ -377,6 +383,10 @@ func (t *Table) prepare() {
 	// 保存计算后的列宽到 table 实例
 	t.colWidths = colWidths
 }
+
+//
+// region Format
+//
 
 // Format as string
 func (t *Table) formatHeader() {
@@ -468,60 +478,72 @@ func (t *Table) formatBody() {
 	showBorderRight := t.opts.HasBorderFlag(BorderRight) && style.Border.Right > 0
 
 	for i, row := range t.Rows {
-		if showBorderLeft {
-			buf.WriteRune(style.Border.Left) // 左边框
+		// 为每个单元格准备行内容
+		cellLines := make([][]string, len(row.Cells))
+		for j, cell := range row.Cells {
+			cellLines[j] = cell.lines
 		}
 
-		// 处理每列
-		for j := 0; j < len(t.colWidths); j++ {
-			if j < len(row.Cells) {
-				cell := row.Cells[j]
-				cellStr := cell.String()
+		// 渲染每一行（对于多行单元格）
+		for lineIdx := 0; lineIdx < row.Height; lineIdx++ {
+			if showBorderLeft {
+				buf.WriteRune(style.Border.Left) // 左边框
+			}
 
-				// 添加列填充
-				if opts.CellPadding != "" {
-					cellStr = opts.CellPadding + cellStr + opts.CellPadding
-				}
+			// 处理每列
+			for j := 0; j < len(t.colWidths); j++ {
+				var lineStr string
+				if j < len(row.Cells) {
+					lines := cellLines[j]
+					if lineIdx < len(lines) {
+						lineStr = lines[lineIdx]
+					}
 
-				// 根据宽度调整内容
-				if cell.width > 0 {
-					// 截断模式
-					if opts.OverflowFlag == OverflowCut && cell.valWidth > cell.width {
-						cellStr = strutil.Utf8Truncate(cellStr, cell.width, "")
+					// 添加列填充
+					if opts.CellPadding != "" {
+						lineStr = opts.CellPadding + lineStr + opts.CellPadding
+					}
+
+					// 根据宽度调整内容
+					if row.Cells[j].width > 0 {
+						// 截断模式
+						if opts.OverflowFlag <= OverflowCut && row.Cells[j].valWidth > row.Cells[j].width {
+							lineStr = strutil.Utf8Truncate(lineStr, row.Cells[j].width, "")
+						} else {
+							// 填充至 cell.width 宽度
+							lineStr = strutil.Utf8Resize(lineStr, row.Cells[j].width, row.Cells[j].Align)
+						}
+					}
+
+					// 应用颜色（如果设置了行颜色或首列颜色）
+					var coloredCell string
+					if j == 0 && opts.FirstColor != "" {
+						// 首列使用 FirstColor
+						coloredCell = color.Sprintf("<%s>%s</>", opts.FirstColor, lineStr)
+					} else if opts.RowColor != "" {
+						// 其他列使用 RowColor
+						coloredCell = color.Sprintf("<%s>%s</>", opts.RowColor, lineStr)
 					} else {
-						// 填充至 cell.width 宽度
-						cellStr = strutil.Utf8Resize(cellStr, cell.width, cell.Align)
+						coloredCell = lineStr
+					}
+					buf.WriteString(coloredCell)
+				} else {
+					// 如果这一行没有足够的列，使用空格填充
+					if j < len(t.colWidths) {
+						buf.WriteString(strings.Repeat(" ", t.colWidths[j]))
 					}
 				}
 
-				// 应用颜色（如果设置了行颜色或首列颜色）
-				var coloredCell string
-				if j == 0 && opts.FirstColor != "" {
-					// 首列使用 FirstColor
-					coloredCell = color.Sprintf("<%s>%s</>", opts.FirstColor, cellStr)
-				} else if opts.RowColor != "" {
-					// 其他列使用 RowColor
-					coloredCell = color.Sprintf("<%s>%s</>", opts.RowColor, cellStr)
-				} else {
-					coloredCell = cellStr
-				}
-				buf.WriteString(coloredCell)
-			} else {
-				// 如果这一行没有足够的列，使用空格填充
-				if j < len(t.colWidths) {
-					buf.WriteString(strings.Repeat(" ", t.colWidths[j]))
+				if j < len(t.colWidths)-1 { // 不是最后一个元素
+					buf.WriteRune(style.Border.Cell) // 列分隔符
 				}
 			}
 
-			if j < len(t.colWidths)-1 { // 不是最后一个元素
-				buf.WriteRune(style.Border.Cell) // 列分隔符
+			if showBorderRight {
+				buf.WriteRune(style.Border.Right) // 右边框
 			}
+			buf.WriteByte('\n')
 		}
-
-		if showBorderRight {
-			buf.WriteRune(style.Border.Right) // 右边框
-		}
-		buf.WriteByte('\n')
 
 		// 画行分隔线（如果需要）
 		if opts.HasBorderFlag(BorderRows) && i < len(t.Rows)-1 {
@@ -574,8 +596,13 @@ func (t *Table) WriteTo(w io.Writer) (int64, error) {
 	return t.Buffer().WriteTo(w)
 }
 
+//
+// region Row and Cell
+//
+
 // Row represents a row in a table
 type Row struct {
+	init bool
 	// Cells is the group of cell for the row
 	Cells []*Cell
 
@@ -585,6 +612,22 @@ type Row struct {
 	Height int
 	// Separator for table columns
 	// Separator rune
+}
+
+// Init for one row: calc cell width and height, row height
+func (r *Row) Init(opts *Options) {
+	if r.init {
+		return
+	}
+	r.init = true
+
+	for _, cell := range r.Cells {
+		cell.Init(opts)
+		// 获取行高度
+		if cell.height > r.Height {
+			r.Height = cell.height
+		}
+	}
 }
 
 // reset the row context info
@@ -601,7 +644,9 @@ type Cell struct {
 	// Width custom set width of the cell.
 	Width int
 	// Wrap when true wraps the contents of the cell when the length exceeds the width
-	Wrap bool
+	//
+	// default: auto - will inherit from the table options
+	Wrap OverflowFlag
 	// Align when true aligns contents to the right
 	Align strutil.PosFlag
 
@@ -616,7 +661,8 @@ type Cell struct {
 	valWidth int
 	// width for the cell, maybe not equal to valWidth
 	width  int
-	height int
+	height int      // >= 1
+	lines  []string // split by \n
 }
 
 // NewCell creates a new cell with the given value
@@ -634,6 +680,9 @@ func (c *Cell) Init(opts *Options) {
 	if c.Align == strutil.PosAuto {
 		c.Align = opts.Alignment
 	}
+	if c.Wrap == OverflowAuto {
+		c.Wrap = opts.OverflowFlag
+	}
 
 	// conv value to string.
 	s := c.String()
@@ -641,6 +690,8 @@ func (c *Cell) Init(opts *Options) {
 	if opts.TrimSpace {
 		c.str = strings.TrimSpace(s)
 	}
+
+	c.lines = strings.Split(c.str, "\n")
 	c.calcWH()
 }
 
@@ -649,7 +700,7 @@ func (c *Cell) calcWH() {
 	c.height = 0
 	c.width = c.Width
 
-	for _, s := range strings.Split(c.String(), "\n") {
+	for _, s := range c.lines {
 		c.height++
 		w := strutil.Utf8Width(s)
 		if w > c.width {

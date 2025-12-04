@@ -2,10 +2,14 @@ package table
 
 import "github.com/gookit/goutil/strutil"
 
+// OverflowFlag for handling content overflow
+type OverflowFlag uint8
+
 // OverflowFlag values
 const (
-	OverflowCut uint8 = iota
-	OverflowWrap
+	OverflowAuto OverflowFlag = iota // auto: default is cut
+	OverflowCut                      // 截断
+	OverflowWrap                     // 换行
 )
 
 // BorderFlags for controlling table border display
@@ -41,7 +45,7 @@ type Options struct {
 	//  - 默认L,R填充一个空格
 	CellPadding string
 	// OverflowFlag 内容溢出处理方式 0: 默认截断, 1: 换行
-	OverflowFlag uint8
+	OverflowFlag OverflowFlag
 	// ShowRowNumber 显示行号，将会多一个列
 	ShowRowNumber bool
 	// ColumnWidths 自定义设置列宽. 按顺序设置，不设置/为0时，将根据内容自动计算
@@ -59,10 +63,6 @@ type Options struct {
 	TrimSpace bool
 	// CSVOutput output table in CSV format TODO
 	CSVOutput bool
-
-	// BorderFlags control which borders to show using bit flags
-	// e.g. BorderFlags = BorderTop | BorderBottom | BorderHeader
-	BorderFlags uint8
 }
 
 // HasBorderFlag check border flag
@@ -73,13 +73,12 @@ func (opts *Options) HasBorderFlag(flag uint8) bool {
 // NewOptions create default options
 func NewOptions() *Options {
 	return &Options{
-		Style:       StyleDefault,
+		Style: StyleSimple,
 		StructTag:   "json",
 		CellPadding: " ",
 		SortColumn:  -1,
 		SortAscending: true,
 		TrimSpace:   true,
-		BorderFlags: BorderDefault,
 	}
 }
 
@@ -117,7 +116,7 @@ func WithColumnWidths(widths ...int) OptionFunc {
 }
 
 // WithOverflowFlag set overflow handling flag
-func WithOverflowFlag(flag uint8) OptionFunc {
+func WithOverflowFlag(flag OverflowFlag) OptionFunc {
 	return func(opts *Options) { opts.OverflowFlag = flag }
 }
 

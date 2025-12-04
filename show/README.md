@@ -29,7 +29,7 @@ go get github.com/gookit/gcli/v3/show
 Testing:
 
 ```bash
-go test -v -run ^\QTestTable_ChineseContent\E$ ./show/table/...
+go test -v -run ^TestTable_MultiLineContent$ ./show/table/...
 ```
 
 ## Related
