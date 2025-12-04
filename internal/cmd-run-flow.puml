@@ -1,6 +1,0 @@
-@startuml
-start
-:input command line - Entry;
-
-stop
-@enduml
