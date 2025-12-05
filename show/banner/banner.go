@@ -1,11 +1,13 @@
 package banner
 
 import (
+	"fmt"
 	"strings"
 
-	"github.com/gookit/color"
-	"github.com/gookit/gcli/v3/gclicom"
+	"github.com/gookit/gcli/v3/show/showcom"
+	"github.com/gookit/goutil/comdef"
 	"github.com/gookit/goutil/strutil"
+	"github.com/gookit/goutil/x/termenv"
 )
 
 /*
@@ -17,29 +19,12 @@ eg:
    │                Run "x y z" to update.                			  │
    │                                                                  │
    ╰──────────────────────────────────────────────────────────────────╯
-*/
 
-/*
-style1:
- ╭─────╮
- │  hi │
- ╰─────╯
-style2:
-  ┌────┐
-  │ hi │
-  └────┘
-style3:
- ╔═════╗
- ║ hi  ║
- ╚═════╝
 style4:
   +────+
   | hi |
   +────+
-style5:
- +-----+
- | hi  |
- +-----+
+
 style6:
  +=======+
  |   hi  |
@@ -48,133 +33,241 @@ style6:
 
 // Banner 在终端中绘制横幅样式的信息
 type Banner struct {
+	// use for internal
+	showcom.Base
+	// Options banner options
+	Options
 	// Contents 横幅显示的内容
 	Contents []string
-	// Padding 内边距
-	Padding int
-	// Margin 外边距
-	Margin int
-	// Width 横幅宽度
-	//  - 0 表示自动计算
-	Width int
-	// TextColor 文本颜色 tag
-	TextColor string
-	// BorderStyle 边框样式
-	BorderStyle BorderStyle
-}
 
-// OptionFunc definition
-type OptionFunc func(b *Banner)
-
-// BorderStyle 边框样式
-type BorderStyle struct {
-	TopLeft     rune
-	TopRight    rune
-	BottomLeft  rune
-	BottomRight rune
-	Horizontal  rune
-	Vertical    rune
-	// Color 边框颜色 tag
-	Color string
-}
-
-// 预定义的边框样式
-var (
-	SimpleBorderStyle  = BorderStyle{TopLeft: '+', TopRight: '+', BottomLeft: '+', BottomRight: '+', Horizontal: '-', Vertical: '|'}
-	RoundedBorderStyle = BorderStyle{TopLeft: '╭', TopRight: '╮', BottomLeft: '╰', BottomRight: '╯', Horizontal: '─', Vertical: '│'}
-	SharpBorderStyle   = BorderStyle{TopLeft: '┌', TopRight: '┐', BottomLeft: '└', BottomRight: '┘', Horizontal: '─', Vertical: '│'}
-)
-
-// NewBanner1 创建新的 Banner 实例
-func NewBanner1(content string, fns ...OptionFunc) *Banner {
-	return New([]string{content}, fns...)
+	// context data 存储渲染过程中计算的数据
+	termWidth  int
+	innerWidth int
+	totalWidth int // boxWidth = innerWidth + 2 + padding*2
+	// contentLines 存储处理后的内容行
+	contentLines []string
+	tbHorizontal string // top, bottom line
+	// margin padding string
+	marginStr string
 }
 
 // New 创建新的 Banner 实例
-func New(content []string, fns ...OptionFunc) *Banner {
+func New(content any, fns ...OptionFunc) *Banner {
 	b := &Banner{
-		Contents: content,
-		Padding:  1,
-		Margin:   0,
-		Width:    0, // 0 表示自动计算
-		// 默认使用圆角边框样式
-		BorderStyle: RoundedBorderStyle,
+		Options: Options{
+			Padding:      1,
+			OverflowFlag: showcom.OverflowWrap,
+			Alignment:    comdef.Left, // 默认左对齐
+			// 默认使用圆角边框样式
+			BorderStyle: RoundedBorderStyle,
+		},
 	}
-	return b.WithOptionFns(fns)
+	b.FormatFn = b.Format
+	return b.WithContents(content).WithOptionFns(fns)
 }
 
 // WithOptionFn 设置 Banner 的选项
-func (b *Banner) WithOptionFn(fns ...OptionFunc) *Banner {
-	return b.WithOptionFns(fns)
-}
+func (b *Banner) WithOptionFn(fns ...OptionFunc) *Banner { return b.WithOptionFns(fns) }
 
 // WithOptionFns 设置 Banner 的选项
 func (b *Banner) WithOptionFns(fns []OptionFunc) *Banner {
 	for _, fn := range fns {
-		fn(b)
+		fn(&b.Options)
 	}
 	return b
 }
 
-func (b *Banner) Println() {
-	color.Fprintln(gclicom.Output, b.Render())
+// WithContents 设置横幅显示的内容
+//
+//	content: string, []string, []any, ...
+func (b *Banner) WithContents(content any) *Banner {
+	var contents []string
+	switch v := content.(type) {
+	case string:
+		contents = append(contents, v)
+	case []string:
+		contents = append(contents, v...)
+	case []any:
+		for _, item := range v {
+			contents = append(contents, fmt.Sprint(item))
+		}
+	default:
+		contents = append(contents, fmt.Sprint(content))
+	}
+	b.Contents = contents
+	return b
 }
 
 // Render 绘制横幅样式的信息
 func (b *Banner) Render() string {
+	b.Format()
+	return b.Buf.String()
+}
+
+// Format 绘制横幅
+func (b *Banner) Format() {
 	if len(b.Contents) == 0 {
-		return ""
+		return
+	}
+
+	b.InitBuffer()
+
+	// 准备渲染数据
+	b.prepare()
+
+	// 顶部边框
+	b.renderTop()
+
+	// 内容行
+	b.renderBody()
+
+	// 底部边框
+	b.renderBottom()
+}
+
+// prepare 准备渲染所需的数据
+func (b *Banner) prepare() {
+	// 获取终端宽度
+	b.termWidth, _ = termenv.GetTermSize()
+
+	// 预处理内容 - 拆分有换行的line
+	fmtContents := make([]string, 0, len(b.Contents))
+	for _, content := range b.Contents {
+		content = strings.TrimSpace(content)
+		fmtContents = append(fmtContents, strings.Split(content, "\n")...)
 	}
 
 	// 计算最大内容宽度
 	maxContentWidth := 0
-	for _, line := range b.Contents {
+	lineWidths := make([]int, 0, len(fmtContents))
+	for _, line := range fmtContents {
 		lineWidth := strutil.TextWidth(line)
 		if lineWidth > maxContentWidth {
 			maxContentWidth = lineWidth
 		}
+		lineWidths = append(lineWidths, lineWidth)
 	}
 
-	// 计算横幅总宽度
-	contentWidth := maxContentWidth
-	if b.Width > 0 && b.Width > contentWidth {
-		contentWidth = b.Width
-	}
+	// 计算横幅总宽度 - 默认为内容宽度
+	b.innerWidth = maxContentWidth
 
-	// +2: 左右边框宽度
-	totalWidth := contentWidth + 2 + b.Padding*2
-
-	// 构建横幅
-	var lines []string
-	tbHorizontal := strings.Repeat(string(b.BorderStyle.Horizontal), totalWidth-2)
-
-	// 顶部边框
-	topLine := string(b.BorderStyle.TopLeft) + tbHorizontal + string(b.BorderStyle.TopRight)
-	lines = append(lines, topLine)
-
-	// 内容行
-	vBorderChar := string(b.BorderStyle.Vertical)
-	for _, line := range b.Contents {
-		lineWidth := strutil.TextWidth(line)
-		// 计算左右填充
-		leftPad := strings.Repeat(" ", b.Padding)
-		rightPad := strings.Repeat(" ", b.Padding+(contentWidth-lineWidth))
-
-		fullLine := vBorderChar + leftPad + line + rightPad + vBorderChar
-		lines = append(lines, fullLine)
-	}
-
-	// 底部边框
-	bottomLine := string(b.BorderStyle.BottomLeft) + tbHorizontal + string(b.BorderStyle.BottomRight)
-	lines = append(lines, bottomLine)
-
-	// 添加外边距
-	if b.Margin > 0 {
-		marginLine := strings.Repeat(" ", b.Margin)
-		for i := range lines {
-			lines[i] = marginLine + lines[i]
+	// 应用百分比宽度
+	if b.PercentWidth > 0 && b.termWidth > 0 {
+		percentWidth := b.termWidth * b.PercentWidth / 100
+		if percentWidth > 0 {
+			b.innerWidth = percentWidth
 		}
 	}
 
-	return strings.Join(lines, "\n")
+	// 应用固定宽度
+	if b.Width > 0 {
+		b.innerWidth = b.Width
+	}
+	// 应用最小宽度
+	if b.MinWidth > 0 && b.innerWidth < b.MinWidth {
+		b.innerWidth = b.MinWidth
+	}
+
+	// +2: 左右边框宽度
+	b.totalWidth = b.innerWidth + 2 + b.Padding*2
+	// 构建横幅水平线
+	b.tbHorizontal = strings.Repeat(string(b.BorderStyle.Horizontal), b.totalWidth-2)
+
+	// 处理内容行 - 换行/截断
+	b.contentLines = nil
+	for i, line := range fmtContents {
+		// 处理内容溢出
+		if lineWidths[i] > b.innerWidth {
+			if b.OverflowFlag == showcom.OverflowCut { // 截断模式
+				line = strutil.TextTruncate(line, b.innerWidth, "")
+			} else { // 换行模式
+				splitLines := strutil.TextSplit(line, b.innerWidth)
+				b.contentLines = append(b.contentLines, splitLines...)
+				continue
+			}
+		}
+		b.contentLines = append(b.contentLines, line)
+	}
+
+	// 应用高度设置
+	if b.Height > 0 && len(b.contentLines) < b.Height {
+		// 填充空行到指定高度
+		for i := len(b.contentLines); i < b.Height; i++ {
+			b.contentLines = append(b.contentLines, "")
+		}
+	} else if b.Height > 0 && len(b.contentLines) > b.Height {
+		// 截断到指定高度
+		b.contentLines = b.contentLines[:b.Height]
+	}
+
+	// 预处理外边距
+	marginWidth := b.MarginL
+	// 居中对齐
+	if b.MarginL == AtCenter && b.termWidth > 0 {
+		marginWidth = (b.termWidth - b.totalWidth) / 2
+	} else if b.MarginL == AtRight && b.termWidth > 0 {
+		marginWidth = b.termWidth - b.totalWidth
+	}
+	if marginWidth > 0 {
+		b.marginStr = strings.Repeat(" ", marginWidth)
+	}
+}
+
+// renderTop 渲染顶部边框
+func (b *Banner) renderTop() {
+	if b.marginStr != "" {
+		b.Buf.WriteString(b.marginStr)
+	}
+	b.Buf.WriteRune(b.BorderStyle.TopLeft)
+	b.Buf.WriteString(b.tbHorizontal)
+	b.Buf.WriteRune(b.BorderStyle.TopRight)
+	b.Buf.WriteByte('\n')
+}
+
+// renderBody 渲染内容行
+func (b *Banner) renderBody() {
+	// 渲染内容行
+	for _, lineText := range b.contentLines {
+		lineWidth := strutil.TextWidth(lineText)
+
+		// 根据对齐方式计算左右填充
+		var leftPad, rightPad string
+		totalPad := b.innerWidth - lineWidth
+
+		switch b.Alignment {
+		case comdef.Center:
+			leftPadCount := totalPad / 2
+			rightPadCount := totalPad - leftPadCount
+			leftPad = strings.Repeat(" ", b.Padding+leftPadCount)
+			rightPad = strings.Repeat(" ", b.Padding+rightPadCount)
+		case comdef.Right:
+			leftPad = strings.Repeat(" ", b.Padding+totalPad)
+			rightPad = strings.Repeat(" ", b.Padding)
+		default: // Left
+			leftPad = strings.Repeat(" ", b.Padding)
+			rightPad = strings.Repeat(" ", b.Padding+totalPad)
+		}
+
+		// 应用外边距
+		if b.marginStr != "" {
+			b.Buf.WriteString(b.marginStr)
+		}
+
+		b.Buf.WriteRune(b.BorderStyle.Vertical)
+		b.Buf.WriteString(leftPad)
+		b.Buf.WriteString(lineText)
+		b.Buf.WriteString(rightPad)
+		b.Buf.WriteRune(b.BorderStyle.Vertical)
+		b.Buf.WriteByte('\n')
+	}
+}
+
+// renderBottom 渲染底部边框
+func (b *Banner) renderBottom() {
+	if b.marginStr != "" {
+		b.Buf.WriteString(b.marginStr)
+	}
+	b.Buf.WriteRune(b.BorderStyle.BottomLeft)
+	b.Buf.WriteString(b.tbHorizontal)
+	b.Buf.WriteRune(b.BorderStyle.BottomRight)
 }

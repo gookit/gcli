@@ -31,9 +31,16 @@ const PosCenter = PosMiddle
 
 // var errInvalidType = errors.New("invalid input data type")
 
-// FormatterFace interface
-type FormatterFace interface {
+// Formatter interface
+type Formatter interface {
 	Format()
+}
+
+type FormatFunc func()
+
+// Format implement FormatterFace
+func (fn FormatFunc) Format() {
+	fn()
 }
 
 // ShownFace shown interface
@@ -58,6 +65,9 @@ type Base struct {
 	// Buf store formatted string
 	Buf *bytes.Buffer
 	Err error
+	// FormatFn function
+	FormatFn  FormatFunc
+	formatted bool
 }
 
 // SetOutput for print message
@@ -66,30 +76,48 @@ func (b *Base) SetOutput(out io.Writer) { b.Out = out }
 // SetBuffer field
 func (b *Base) SetBuffer(buf *bytes.Buffer) { b.Buf = buf }
 
-// Buffer get
-func (b *Base) Buffer() *bytes.Buffer {
+// InitBuffer instance
+func (b *Base) InitBuffer() {
 	if b.Buf == nil {
 		b.Buf = new(bytes.Buffer)
+	} else {
+		b.Buf.Reset()
 	}
+}
+
+// Buffer get buffer instance
+func (b *Base) Buffer() *bytes.Buffer {
+	b.InitBuffer()
 	return b.Buf
 }
 
 // String format given data to string
 func (b *Base) String() string {
-	panic("please implement the method")
+	b.format()
+	return b.Buf.String()
 }
 
 // Format given data to string
-func (b *Base) Format() { panic("please implement the method") }
+func (b *Base) format() {
+	if b.formatted {
+		return
+	}
+	b.formatted = true
 
-// SetErr set error
-func (b *Base) SetErr(err error) { b.Err = err }
+	if b.FormatFn == nil {
+		panic("gcli/show: please set the FormatFn")
+	}
+	b.FormatFn()
+}
 
 // Print formatted message
 func (b *Base) Print() {
 	if b.Out == nil {
 		b.Out = gclicom.Output
 	}
+
+	// call format
+	b.format()
 
 	if b.Buf != nil && b.Buf.Len() > 0 {
 		color.Fprint(b.Out, b.Buf.String())
@@ -102,3 +130,6 @@ func (b *Base) Println() {
 	b.Print()
 	fmt.Println()
 }
+
+// SetErr set error
+func (b *Base) SetErr(err error) { b.Err = err }

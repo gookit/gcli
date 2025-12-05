@@ -94,14 +94,14 @@ func MList(listMap any, fns ...ListOpFunc) {
 	NewLists(listMap).WithOptionFns(fns).Println()
 }
 
-// ABanner create a Banner instance and print. options see: banner.Banner
-func ABanner(content string, fns ...banner.OptionFunc) {
-	banner.New([]string{content}, fns...).Println()
+// NewBanner create a Banner instance. options see: banner.Options
+func NewBanner(content any, fns ...banner.OptionFunc) *banner.Banner {
+	return banner.New(content, fns...)
 }
 
-// ABanner2 create a Banner instance and print. options see: banner.Banner
-func ABanner2(contents []string, fns ...banner.OptionFunc) {
-	banner.New(contents, fns...).Println()
+// Banner create a Banner instance and print. options see: banner.Options
+func Banner(content any, fns ...banner.OptionFunc) {
+	banner.New(content, fns...).Println()
 }
 
 // TabWriter create. more please see: package text/tabwriter/example_test.go
