@@ -63,17 +63,17 @@ func ATitle(titleText string, fns ...title.OptionFunc) {
 
 type ListOpFunc = lists.ListOpFunc
 
-// NewList create a List instance. options see: ListOption
+// NewList create a List instance. options see: Options
 func NewList(title string, data any, fns ...ListOpFunc) *lists.List {
 	return lists.NewList(title, data).WithOptionFns(fns)
 }
 
-// NewLists create a Lists instance and print. options see: ListOption
+// NewLists create a Lists instance and print. options see: Options
 func NewLists(listMap any, fns ...ListOpFunc) *lists.Lists {
 	return lists.NewLists(listMap).WithOptionFns(fns)
 }
 
-// AList create a List instance and print. options see: ListOption
+// AList create a List instance and print. options see: Options
 //
 // Usage:
 //
@@ -82,12 +82,12 @@ func AList(title string, data any, fns ...ListOpFunc) {
 	NewList(title, data).WithOptionFns(fns).Println()
 }
 
-// MList show multi list data. options see: ListOption
+// MList show multi list data. options see: Options
 //
 // Usage:
 //
 //	show.MList(data)
-//	show.MList(data, func(opts *ListOption) {
+//	show.MList(data, func(opts *Options) {
 //		opts.LeftIndent = "    "
 //	})
 func MList(listMap any, fns ...ListOpFunc) {

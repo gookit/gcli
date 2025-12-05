@@ -40,7 +40,7 @@ func TestList_mlevel(t *testing.T) {
 	l := show.NewList("test list", d)
 	l.Println()
 
-	l = show.NewList("test list2", d).WithOptions(func(opts *lists.ListOption) {
+	l = show.NewList("test list2", d).WithOptions(func(opts *lists.Options) {
 		opts.SepChar = " | "
 	})
 	l.Println()

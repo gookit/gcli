@@ -3,7 +3,6 @@ package table
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"reflect"
 	"sort"
 	"strings"
@@ -37,6 +36,7 @@ type Table struct {
 // New create table
 func New(title string, fns ...OptionFunc) *Table {
 	t := &Table{Title: title, opts: NewOptions()}
+	t.FormatFn = t.Format
 
 	return t.WithOptions(fns...)
 }
@@ -60,6 +60,10 @@ func (t *Table) ConfigStyle(fn func(s *Style)) *Table {
 	fn(&t.opts.Style)
 	return t
 }
+
+//
+// region Set Data
+//
 
 // SetHeads column names to table
 func (t *Table) SetHeads(names ...string) *Table {
@@ -232,28 +236,10 @@ func formatTagVal(tagVal string) string {
 	return tagVal
 }
 
-// String format as string
-func (t *Table) String() string {
-	t.Format()
-	return t.Buffer().String()
-}
-
-// Print formatted message
-func (t *Table) Print() {
-	t.Format()
-	t.Base.Print()
-}
-
-// Println formatted message with newline
-func (t *Table) Println() {
-	t.Format()
-	t.Base.Println()
-}
-
 // Render formatted message with newline
-func (t *Table) Render() {
+func (t *Table) Render() string {
 	t.Format()
-	t.Base.Println()
+	return t.Buf.String()
 }
 
 // Format as string
@@ -271,7 +257,7 @@ func (t *Table) Format() {
 
 func (t *Table) reset() {
 	// 清空缓冲区
-	t.Buffer().Reset()
+	t.InitBuffer()
 	t.colWidths = nil
 
 	for _, row := range t.Rows {
@@ -588,12 +574,6 @@ func (t *Table) drawBorderLine(buf *bytes.Buffer, leftChar, centerChar, intersec
 		buf.WriteRune(rightChar) // 右边
 	}
 	buf.WriteByte('\n')
-}
-
-// WriteTo format table to string and write to w.
-func (t *Table) WriteTo(w io.Writer) (int64, error) {
-	t.Format()
-	return t.Buffer().WriteTo(w)
 }
 
 //

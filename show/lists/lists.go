@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"reflect"
 
-	"github.com/gookit/gcli/v3/gclicom"
 	"github.com/gookit/gcli/v3/show/showcom"
 	"github.com/gookit/goutil/reflects"
 	"github.com/gookit/goutil/structs"
@@ -18,30 +17,31 @@ import (
 type Lists struct {
 	showcom.Base // use for internal
 	// options
-	Opts *ListOption
+	Opts *Options
 	rows []*List
 }
 
 // NewEmptyLists create empty lists
 func NewEmptyLists(fns ...ListOpFunc) *Lists {
 	ls := &Lists{
-		Base: showcom.Base{Out: gclicom.Output},
-		Opts: NewListOption(),
+		Opts: NewOptions(),
 	}
+
+	ls.FormatFn = ls.Format
 	return ls.WithOptionFns(fns)
 }
 
 // NewLists create lists. allow: map[string]any, struct-ptr
-func NewLists(mlist any, fns ...ListOpFunc) *Lists {
+func NewLists(mList any, fns ...ListOpFunc) *Lists {
 	ls := NewEmptyLists()
-	rv := reflect.Indirect(reflect.ValueOf(mlist))
+	rv := reflect.Indirect(reflect.ValueOf(mList))
 
 	if rv.Kind() == reflect.Map {
 		ls.Err = reflects.EachStrAnyMap(rv, func(key string, val any) {
 			ls.AddSublist(key, val)
 		})
 	} else if rv.Kind() == reflect.Struct {
-		for title, data := range structs.ToMap(mlist) {
+		for title, data := range structs.ToMap(mList) {
 			ls.rows = append(ls.rows, NewList(title, data))
 		}
 	} else {
@@ -82,24 +82,6 @@ func (ls *Lists) Format() {
 		list.SetBuffer(ls.Buf)
 		list.Format()
 	}
-}
-
-// String returns formatted string
-func (ls *Lists) String() string {
-	ls.Format()
-	return ls.Buf.String()
-}
-
-// Print formatted message
-func (ls *Lists) Print() {
-	ls.Format()
-	ls.Base.Print()
-}
-
-// Println formatted message with newline
-func (ls *Lists) Println() {
-	ls.Format()
-	ls.Base.Println()
 }
 
 // Flush formatted message to console

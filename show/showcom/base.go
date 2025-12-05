@@ -57,7 +57,7 @@ type ShownFace interface {
 	Println()
 }
 
-// Base formatter
+// Base formatter. NOTE: must config the FormatFn before use
 type Base struct {
 	// out  comdef.ByteStringWriter
 	// TODO lock sync.Mutex
@@ -87,7 +87,9 @@ func (b *Base) InitBuffer() {
 
 // Buffer get buffer instance
 func (b *Base) Buffer() *bytes.Buffer {
-	b.InitBuffer()
+	if b.Buf == nil {
+		b.Buf = new(bytes.Buffer)
+	}
 	return b.Buf
 }
 
@@ -108,6 +110,12 @@ func (b *Base) format() {
 		panic("gcli/show: please set the FormatFn")
 	}
 	b.FormatFn()
+}
+
+// WriteTo format to string and write to w.
+func (b *Base) WriteTo(w io.Writer) (int64, error) {
+	b.format()
+	return b.Buf.WriteTo(w)
 }
 
 // Print formatted message

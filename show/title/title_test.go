@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/show/title"
 	"github.com/gookit/goutil/testutil/assert"
 )
@@ -26,34 +27,34 @@ func TestTitleRender(t *testing.T) {
 	// 测试基本标题渲染
 	t1 := title.New("Test Title")
 	content := t1.Render()
-	fmt.Println(content)
 	assert.NotEmpty(t, content)
+	color.Println(content)
+	fmt.Println()
 
 	// 测试顶部边框
 	t2 := title.New("Top Border", title.WithBorderTop())
 	content = t2.Render()
-	if content == "" {
-		t.Error("Expected non-empty content with top border")
-	}
+	assert.NotEmpty(t, content)
+	color.Println(content)
+	fmt.Println()
 
 	// 测试底部边框
-	t3 := title.New("Bottom Border", title.WithBorderBottom())
+	t3 := title.New("Bottom Border Align Center", title.WithBorderBottom(), title.WithAlignCenter())
 	content = t3.Render()
-	if content == "" {
-		t.Error("Expected non-empty content with bottom border")
-	}
+	assert.NotEmpty(t, content)
+	color.Println(content)
+	fmt.Println()
 
 	// 测试上下边框
 	t4 := title.New("Top and Bottom Border", title.WithBorderBoth())
 	content = t4.Render()
-	if content == "" {
-		t.Error("Expected non-empty content with top and bottom borders")
-	}
+	assert.NotEmpty(t, content)
+	color.Println(content)
+	fmt.Println()
 
 	// 测试无边框
-	t5 := title.New("No Border", title.WithoutBorder())
+	t5 := title.New("No Border Align Right", title.WithoutBorder(), title.WithAlignRight())
 	content = t5.Render()
-	if content == "" {
-		t.Error("Expected non-empty content without border")
-	}
+	assert.NotEmpty(t, content)
+	color.Println(content)
 }

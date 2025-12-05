@@ -4,15 +4,14 @@ import (
 	"reflect"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v3/gclicom"
 	"github.com/gookit/gcli/v3/show/showcom"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
 )
 
-// ListOption definition
-type ListOption struct {
+// Options for List, Lists
+type Options struct {
 	// IgnoreEmpty ignore empty value item. default: true
 	IgnoreEmpty bool
 	// UpperFirst upper first char for the item.value. default: false
@@ -29,12 +28,13 @@ type ListOption struct {
 	FilterFunc func(item *Item) bool
 }
 
-// ListOpFunc define
-type ListOpFunc func(opts *ListOption)
+// OptionFunc define
+type OptionFunc func(opts *Options)
+type ListOpFunc = OptionFunc
 
-// NewListOption instance
-func NewListOption() *ListOption {
-	return &ListOption{
+// NewOptions instance
+func NewOptions() *Options {
+	return &Options{
 		SepChar:  " ",
 		KeyStyle: "info",
 		// more
@@ -57,7 +57,7 @@ func NewListOption() *ListOption {
 type List struct {
 	showcom.Base // use for internal
 	// options
-	Opts *ListOption
+	Opts *Options
 	// Title list title name
 	title string
 	// list data. allow type: struct, slice, array, map
@@ -66,19 +66,16 @@ type List struct {
 
 // NewList instance.
 //
-// data allow type:
-//
-//	struct, slice, array, map
+// data type allow: struct, slice, array, map
 func NewList(title string, data any, fns ...ListOpFunc) *List {
 	l := &List{
 		title: title,
 		data:  data,
-		// base
-		Base: showcom.Base{Out: gclicom.Output},
 		// options
-		Opts: NewListOption(),
+		Opts: NewOptions(),
 	}
 
+	l.FormatFn = l.Format
 	return l.WithOptionFns(fns)
 }
 
@@ -165,24 +162,6 @@ func (l *List) Format() {
 		}
 
 	}
-}
-
-// String returns formatted string
-func (l *List) String() string {
-	l.Format()
-	return l.Buf.String()
-}
-
-// Print formatted message
-func (l *List) Print() {
-	l.Format()
-	l.Base.Print()
-}
-
-// Println formatted message with newline
-func (l *List) Println() {
-	l.Format()
-	l.Base.Println()
 }
 
 // Flush formatted message to console
