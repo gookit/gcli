@@ -10,34 +10,6 @@ import (
 	"github.com/gookit/goutil/strutil"
 )
 
-const (
-	// OK success exit code
-	OK = 0
-	// ERR error exit code
-	ERR = 2
-)
-
-// var errInvalidType = errors.New("invalid input data type")
-
-// FormatterFace interface
-type FormatterFace interface {
-	Format()
-}
-
-// ShownFace shown interface
-type ShownFace interface {
-	// io.WriterTo TODO
-	// Format()
-	// Buffer()
-
-	// String data to string
-	String() string
-	// Print print current message
-	Print()
-	// Println print current message
-	Println()
-}
-
 /*************************************************************
  * region Data item(s)
  *************************************************************/

@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"text/tabwriter"
 
-	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/gclicom"
 	"github.com/gookit/gcli/v3/show/banner"
 	"github.com/gookit/gcli/v3/show/lists"
@@ -20,18 +19,25 @@ const (
 	ERR = 2
 )
 
-// Error tips message print
-func Error(format string, v ...any) int {
-	prefix := color.Red.Sprint("ERROR: ")
-	_, _ = fmt.Fprintf(gclicom.Output, prefix+format+"\n", v...)
-	return ERR
+// var errInvalidType = errors.New("invalid input data type")
+
+// FormatterFace interface
+type FormatterFace interface {
+	Format()
 }
 
-// Success tips message print
-func Success(format string, v ...any) int {
-	prefix := color.Green.Sprint("SUCCESS: ")
-	_, _ = fmt.Fprintf(gclicom.Output, prefix+format+"\n", v...)
-	return OK
+// ShownFace shown interface
+type ShownFace interface {
+	// io.WriterTo TODO
+	// Format()
+	// Buffer()
+
+	// String data to string
+	String() string
+	// Print print current message
+	Print()
+	// Println print current message
+	Println()
 }
 
 // JSON print pretty JSON data

@@ -67,7 +67,7 @@ type List struct {
 // NewList instance.
 //
 // data type allow: struct, slice, array, map
-func NewList(title string, data any, fns ...ListOpFunc) *List {
+func NewList(title string, data any, fns ...OptionFunc) *List {
 	l := &List{
 		title: title,
 		data:  data,
@@ -80,7 +80,7 @@ func NewList(title string, data any, fns ...ListOpFunc) *List {
 }
 
 // WithOptionFns with options func
-func (l *List) WithOptionFns(fns []ListOpFunc) *List {
+func (l *List) WithOptionFns(fns []OptionFunc) *List {
 	for _, fn := range fns {
 		if fn != nil {
 			fn(l.Opts)
@@ -90,7 +90,7 @@ func (l *List) WithOptionFns(fns []ListOpFunc) *List {
 }
 
 // WithOptions with options func
-func (l *List) WithOptions(fns ...ListOpFunc) *List {
+func (l *List) WithOptions(fns ...OptionFunc) *List {
 	return l.WithOptionFns(fns)
 }
 

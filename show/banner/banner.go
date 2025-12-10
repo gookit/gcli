@@ -37,6 +37,8 @@ type Banner struct {
 	showcom.Base
 	// Options banner options
 	Options
+	// Prefix 横幅前缀
+	Prefix string
 	// Contents 横幅显示的内容
 	Contents []string
 

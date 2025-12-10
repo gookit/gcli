@@ -88,6 +88,7 @@ func FromUnicode(s string) string {
 }
 
 // ToUnicode convert emoji to unicode string
+//
 // Usage:
 //
 //	unicode := ToUnicode("💖")

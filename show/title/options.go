@@ -7,7 +7,8 @@ import (
 
 // Options title options
 type Options struct {
-	Color string // 颜色Tag
+	// Color 颜色Tag
+	Color string
 	// PaddingLR 是否左右填充 PaddingChar
 	PaddingLR bool
 	// PaddingChar 左右填充字符

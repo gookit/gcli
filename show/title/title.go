@@ -15,6 +15,7 @@ import (
 type Title struct {
 	showcom.Base
 	Options
+	Prefix string
 	Title string
 }
 

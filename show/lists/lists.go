@@ -22,7 +22,7 @@ type Lists struct {
 }
 
 // NewEmptyLists create empty lists
-func NewEmptyLists(fns ...ListOpFunc) *Lists {
+func NewEmptyLists(fns ...OptionFunc) *Lists {
 	ls := &Lists{
 		Opts: NewOptions(),
 	}
@@ -32,7 +32,7 @@ func NewEmptyLists(fns ...ListOpFunc) *Lists {
 }
 
 // NewLists create lists. allow: map[string]any, struct-ptr
-func NewLists(mList any, fns ...ListOpFunc) *Lists {
+func NewLists(mList any, fns ...OptionFunc) *Lists {
 	ls := NewEmptyLists()
 	rv := reflect.Indirect(reflect.ValueOf(mList))
 
@@ -52,7 +52,7 @@ func NewLists(mList any, fns ...ListOpFunc) *Lists {
 }
 
 // WithOptionFns with options func
-func (ls *Lists) WithOptionFns(fns []ListOpFunc) *Lists {
+func (ls *Lists) WithOptionFns(fns []OptionFunc) *Lists {
 	for _, fn := range fns {
 		fn(ls.Opts)
 	}
@@ -60,7 +60,7 @@ func (ls *Lists) WithOptionFns(fns []ListOpFunc) *Lists {
 }
 
 // WithOptions with an options func list
-func (ls *Lists) WithOptions(fns ...ListOpFunc) *Lists {
+func (ls *Lists) WithOptions(fns ...OptionFunc) *Lists {
 	return ls.WithOptionFns(fns)
 }
 

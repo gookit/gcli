@@ -23,6 +23,12 @@ func ExampleWithBorderTop() {
 	title.New("No Border Title", title.WithoutBorder()).Println()
 }
 
+func TestTitleRender_hasNL(t *testing.T) {
+	tn := title.New("Test Title content \n has newline char")
+
+	tn.Println()
+}
+
 func TestTitleRender(t *testing.T) {
 	// 测试基本标题渲染
 	t1 := title.New("Test Title")
