@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"strings"
+	"time"
 
 	"github.com/gookit/gcli/v3/helper"
 	"github.com/gookit/goutil/cflag"
@@ -342,6 +343,27 @@ func (co *CliOpts) uint64Opt(ptr *uint64, opt *CliOpt) {
 	defVal := opt.DValue().Int64()
 
 	opt.flag = co.fSet.Uint64Var(ptr, name, uint64(defVal), opt.Desc)
+}
+
+// DurationOpt binding a duration option
+func (co *CliOpts) DurationOpt(ptr *time.Duration, name, shorts string, defVal time.Duration, desc string, setFns ...CliOptFn) {
+	co.durationOpt(ptr, newOpt(name, desc, defVal, shorts, setFns...))
+}
+
+// DurationOpt2 binding a duration option and with config func.
+func (co *CliOpts) DurationOpt2(ptr *time.Duration, nameAndShorts, desc string, setFns ...CliOptFn) {
+	co.durationOpt(ptr, newOpt(nameAndShorts, desc, 0, "").WithOptFns(setFns...))
+}
+
+// DurationVar binding a duration option
+func (co *CliOpts) DurationVar(ptr *time.Duration, opt *CliOpt) { co.durationOpt(ptr, opt) }
+
+func (co *CliOpts) durationOpt(ptr *time.Duration, opt *CliOpt) {
+	opt.flagType = FlagTypeDur
+	name := co.checkFlagInfo(opt)
+	defVal := opt.DValue().Int64()
+
+	opt.flag = co.fSet.DurationVar(ptr, name, time.Duration(defVal), opt.Desc)
 }
 
 // FuncOptFn func option flag func type
