@@ -9,7 +9,6 @@ import (
 	"sort"
 	"time"
 
-	"github.com/gookit/goutil"
 	"github.com/gookit/goutil/cflag"
 )
 
@@ -113,7 +112,7 @@ func (f *FlagSet) Set(name, value string) error {
 // from the go flag.Var()
 func (f *FlagSet) Var(value Value, name string, usage string) *Flag {
 	if !cflag.IsGoodName(name) {
-		goutil.Panicf("flag name '%s' is not a good name", name)
+		panicf("option flag name '%s' is not a good name", name)
 	}
 
 	// Remember the default value as a string; it won't change.

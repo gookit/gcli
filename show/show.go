@@ -9,6 +9,7 @@ import (
 	"github.com/gookit/gcli/v3/gclicom"
 	"github.com/gookit/gcli/v3/show/banner"
 	"github.com/gookit/gcli/v3/show/lists"
+	"github.com/gookit/gcli/v3/show/showcom"
 	"github.com/gookit/gcli/v3/show/title"
 )
 
@@ -21,24 +22,11 @@ const (
 
 // var errInvalidType = errors.New("invalid input data type")
 
-// FormatterFace interface
-type FormatterFace interface {
-	Format()
-}
+// FormatterFace interface. for compatible
+type FormatterFace = showcom.Formatter
 
-// ShownFace shown interface
-type ShownFace interface {
-	// io.WriterTo TODO
-	// Format()
-	// Buffer()
-
-	// String data to string
-	String() string
-	// Print print current message
-	Print()
-	// Println print current message
-	Println()
-}
+// ShownFace shown interface. for compatible
+type ShownFace = showcom.ShownFace
 
 // JSON print pretty JSON data
 func JSON(v any, prefixAndIndent ...string) int {
@@ -67,7 +55,9 @@ func ATitle(titleText string, fns ...title.OptionFunc) {
 	title.New(titleText).WithOptionFns(fns).Println()
 }
 
-type ListOpFunc = lists.ListOpFunc
+// ListOption alias for lists.Options. for compatible
+type ListOption = lists.Options
+type ListOpFunc = lists.OptionFunc
 
 // NewList create a List instance. options see: Options
 func NewList(title string, data any, fns ...ListOpFunc) *lists.List {

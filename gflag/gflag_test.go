@@ -249,7 +249,7 @@ func TestFlags_CheckName(t *testing.T) {
 		var fv uint64
 		fs := gcli.NewFlags()
 		fs.Uint64Opt(&fv, "78", "", 0, "desc")
-	}, "gflag: option flag name '78' is invalid, must match: ^[0-9a-zA-Z][\\w-]*$")
+	}, "gflag: option flag name '78' is not a good name")
 }
 
 func TestFlags_CheckShorts(t *testing.T) {

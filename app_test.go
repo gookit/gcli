@@ -364,21 +364,21 @@ func TestApp_showCommandHelp(t *testing.T) {
 	code = app.Run([]string{"help", "test", "more"})
 	str = buf.String()
 	buf.Reset()
-	is.Eq(gcli.ERR, code)
+	is.Eq(gcli.ERR.ToInt(), code)
 	is.Contains(str, "ERROR: Too many arguments given.")
 
 	// show command help for 'help'
 	code = app.Run([]string{"help", "help"})
 	str = buf.String()
 	buf.Reset()
-	is.Eq(gcli.OK, code)
+	is.Eq(gcli.OK.ToInt(), code)
 	is.Contains(str, "Display help message for application or command.")
 
 	// show command help: unknown command
 	code = app.Run([]string{"help", "not-exist"})
 	str = buf.String()
 	buf.Reset()
-	is.Eq(gcli.ERR, code)
+	is.Eq(gcli.ERR.ToInt(), code)
 	is.Contains(str, "Unknown command name 'not-exist'")
 }
 
