@@ -18,7 +18,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go_version: [1.21, 1.22, 1.23, 1.24, stable]
+        go_version: [1.22, 1.23, 1.24, stable]
 
     steps:
     - name: Check out codes
@@ -32,7 +32,7 @@ jobs:
 
     - name: Revive check
       uses: morphy2k/revive-action@v2.7.8
-      if: ${{ matrix.os == 'ubuntu-latest' && matrix.go_version == '1.23' }}
+      if: ${{ matrix.os == 'ubuntu-latest' && matrix.go_version == 'stable' }}
       with:
         # Exclude patterns, separated by semicolons (optional)
         exclude: "./internal/..."
