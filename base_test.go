@@ -7,6 +7,7 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/goutil/byteutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/testutil/assert"
 )
@@ -23,96 +24,94 @@ func newNotExitApp(fns ...func(app *gcli.App)) *gcli.App {
 }
 
 func TestApp_Hooks_EvtAppInit(t *testing.T) {
-	buf.Reset()
+	b := byteutil.NewBuffer()
 
 	cli := newNotExitApp()
 	cli.On(events.OnAppInitAfter, func(ctx *gcli.HookCtx) bool {
-		buf.WriteString("trigger " + ctx.Name())
+		b.WriteString("trigger " + ctx.Name())
 		return false
 	})
 	cli.Add(simpleCmd)
-	assert.Eq(t, "trigger "+events.OnAppInitAfter, buf.String())
+	assert.Eq(t, "trigger "+events.OnAppInitAfter, b.ResetGet())
 
-	buf.Reset()
 	cli.On(events.OnGlobalOptsParsed, func(ctx *gcli.HookCtx) bool {
-		buf.WriteString("trigger " + ctx.Name() + ", args:" + fmt.Sprintf("%v", ctx.Strings("args")))
+		b.WriteString("trigger " + ctx.Name() + ", args:" + fmt.Sprintf("%v", ctx.Strings("args")))
 		return false
 	})
 
 	cli.Run([]string{"simple"})
-	assert.Eq(t, "trigger "+events.OnGlobalOptsParsed+", args:[simple]", buf.String())
+	assert.Eq(t, "trigger "+events.OnGlobalOptsParsed+", args:[simple]", b.ResetGet())
 }
 
 func TestApp_Hooks_OnAppCmdAdd(t *testing.T) {
-	buf.Reset()
+	b := byteutil.NewBuffer()
 
 	cli := newNotExitApp()
 	cli.On(events.OnAppCmdAdd, func(ctx *gcli.HookCtx) (stop bool) {
-		buf.WriteString(ctx.Name())
-		buf.WriteString(" - ")
-		buf.WriteString(ctx.Cmd.Name + ";")
+		b.WriteString(ctx.Name())
+		b.WriteString(" - ")
+		b.WriteString(ctx.Cmd.Name + ";")
 		return
 	})
 
 	cli.Add(emptyCmd)
-	assert.Eq(t, "app.cmd.add.before - empty;", buf.String())
+	assert.Eq(t, "app.cmd.add.before - empty;", b.String())
 
 	cli.Add(simpleCmd)
-	assert.Eq(t, "app.cmd.add.before - empty;app.cmd.add.before - simple;", buf.String())
+	assert.Eq(t, "app.cmd.add.before - empty;app.cmd.add.before - simple;", b.ResetGet())
 }
 
 func TestCommand_Hooks_EvtCmdOptParsed(t *testing.T) {
-	buf.Reset()
+	b := byteutil.NewBuffer()
 
 	cli := newNotExitApp()
 	cli.Add(&gcli.Command{
 		Name: "test",
 		Desc: "desc",
 		Config: func(c *gcli.Command) {
-			buf.WriteString("run config;")
+			b.WriteString("run config;")
 			c.On(events.OnCmdOptParsed, func(ctx *gcli.HookCtx) (stop bool) {
 				dump.P(ctx.Strings("args"))
-				buf.WriteString(ctx.Name())
+				b.WriteString(ctx.Name())
 				return
 			})
 		},
 	})
-	assert.Contains(t, buf.String(), "run config;")
 
+	assert.Contains(t, b.String(), "run config;")
 	cli.Run([]string{"test"})
-	assert.Contains(t, buf.String(), events.OnCmdOptParsed)
+	assert.Contains(t, b.String(), events.OnCmdOptParsed)
 }
 
 func TestApp_On_CmdNotFound(t *testing.T) {
-	buf.Reset()
+	b := byteutil.NewBuffer()
 
 	cli := newNotExitApp()
 	cli.Add(simpleCmd)
 
 	fmt.Println("--------- will print command tips ----------")
 	cli.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) bool {
-		buf.WriteString("trigger: " + events.OnCmdNotFound)
-		buf.WriteString("; command: " + ctx.Str("name"))
+		b.WriteString("trigger: " + events.OnCmdNotFound)
+		b.WriteString("; command: " + ctx.Str("name"))
 		return false
 	})
 
 	cli.Run([]string{"top"})
-	assert.Eq(t, "trigger: cmd.not.found; command: top", buf.String())
-	buf.Reset()
+	assert.Eq(t, "trigger: cmd.not.found; command: top", b.ResetGet())
 
 	fmt.Println("--------- dont print command tips ----------")
 	cli.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) bool {
-		buf.WriteString("trigger: " + events.OnCmdNotFound)
-		buf.WriteString("; command: " + ctx.Str("name"))
+		b.WriteString("trigger: " + events.OnCmdNotFound)
+		b.WriteString("; command: " + ctx.Str("name"))
 		return true
 	})
 
 	cli.Run([]string{"top"})
-	assert.Eq(t, "trigger: cmd.not.found; command: top", buf.String())
+	assert.Eq(t, "trigger: cmd.not.found; command: top", b.ResetGet())
 }
 
 func TestApp_On_CmdNotFound_redirect(t *testing.T) {
-	buf.Reset()
+	b := byteutil.NewBuffer()
 	simpleCmd.Init()
 	simpleCmd.ResetData()
 	assert.Eq(t, nil, simpleCmd.Ctx.Get("simple"))
@@ -122,17 +121,17 @@ func TestApp_On_CmdNotFound_redirect(t *testing.T) {
 
 	fmt.Println("--------- redirect to run another command ----------")
 	cli.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) bool {
-		buf.WriteString("trigger:" + events.OnCmdNotFound)
-		buf.WriteString(" - command:" + ctx.Str("name"))
-		buf.WriteString("; redirect:simple - ")
+		b.WriteString("trigger:" + events.OnCmdNotFound)
+		b.WriteString(" - command:" + ctx.Str("name"))
+		b.WriteString("; redirect:simple - ")
 
 		err := ctx.App.Exec(simpleCmd.Name, nil)
 		assert.NoErr(t, err)
-		buf.WriteString("value:" + simpleCmd.Ctx.Str("simple"))
+		b.WriteString("value:" + simpleCmd.Ctx.Str("simple"))
 		return true
 	})
 
 	cli.Run([]string{"top"})
 	want := "trigger:cmd.not.found - command:top; redirect:simple - value:simple command"
-	assert.Eq(t, want, buf.String())
+	assert.Eq(t, want, b.String())
 }

@@ -8,6 +8,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
+	"github.com/gookit/goutil/byteutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/testutil/assert"
 )
@@ -180,9 +181,9 @@ func TestApp_Run_noCommands(t *testing.T) {
 	app.Run([]string{})
 
 	// disable color code, re-set output for test
-	buf := new(bytes.Buffer)
+	b := byteutil.NewBuffer()
 	color.Disable()
-	color.SetOutput(buf)
+	color.SetOutput(b)
 	gcli.SetVerbose(gcli.VerbCrazy)
 
 	defer func() {
@@ -192,8 +193,7 @@ func TestApp_Run_noCommands(t *testing.T) {
 
 	// run
 	code := app.Run([]string{})
-	str := buf.String()
-	buf.Reset()
+	str := b.ResetGet()
 
 	is.Eq(0, code)
 	is.Contains(str, "1.3.9")
@@ -244,7 +244,7 @@ func TestApp_Run_command_withArguments(t *testing.T) {
 
 	err = app.Exec("not-exists", []string{})
 	is.Err(err)
-	is.Eq(`exec unknown command "not-exists"`, err.Error())
+	is.ErrMsg(err, `exec unknown command "not-exists"`)
 	// other
 	// app.AddError(fmt.Errorf("test error"))
 }
@@ -283,9 +283,9 @@ func TestApp_Run_command_withOptions(t *testing.T) {
 	app.Run([]string{"test", "-h"})
 
 	// disable color code, reset output for test
-	buf := new(bytes.Buffer)
+	b := byteutil.NewBuffer()
 	color.Disable()
-	color.SetOutput(buf)
+	color.SetOutput(b)
 	gcli.SetVerbose(gcli.VerbCrazy)
 
 	defer func() {
@@ -294,7 +294,7 @@ func TestApp_Run_command_withOptions(t *testing.T) {
 	}()
 
 	app.Run([]string{"test", "-h"})
-	s := buf.String()
+	s := b.String()
 	fmt.Println(s)
 	is.Contains(s, "-o, --opt1 string")
 }
@@ -347,37 +347,37 @@ func TestApp_showCommandHelp(t *testing.T) {
 	app.Run([]string{"help", "test"})
 
 	// disable color code, re-set output for test
-	buf := new(bytes.Buffer)
+	b := new(bytes.Buffer)
 	color.Disable()
-	color.SetOutput(buf)
+	color.SetOutput(b)
 	defer color.ResetOptions()
 
 	// show command help
 	code := app.Run([]string{"help", "test"})
-	str := buf.String()
-	buf.Reset()
+	str := b.String()
+	b.Reset()
 	is.Eq(0, code)
 	is.Contains(str, "Name: test")
 	is.Contains(str, "Desc for test command")
 
 	// show command help: arg error
 	code = app.Run([]string{"help", "test", "more"})
-	str = buf.String()
-	buf.Reset()
+	str = b.String()
+	b.Reset()
 	is.Eq(gcli.ERR.ToInt(), code)
 	is.Contains(str, "ERROR: Too many arguments given.")
 
 	// show command help for 'help'
 	code = app.Run([]string{"help", "help"})
-	str = buf.String()
-	buf.Reset()
+	str = b.String()
+	b.Reset()
 	is.Eq(gcli.OK.ToInt(), code)
 	is.Contains(str, "Display help message for application or command.")
 
 	// show command help: unknown command
 	code = app.Run([]string{"help", "not-exist"})
-	str = buf.String()
-	buf.Reset()
+	str = b.String()
+	b.Reset()
 	is.Eq(gcli.ERR.ToInt(), code)
 	is.Contains(str, "Unknown command name 'not-exist'")
 }
@@ -393,14 +393,13 @@ func TestApp_showVersion(t *testing.T) {
 	app.Run([]string{"--version"})
 
 	// disable color code, re-set output for test
-	buf := new(bytes.Buffer)
+	b := byteutil.NewBuffer()
 	color.Disable()
-	color.SetOutput(buf)
+	color.SetOutput(b)
 	defer color.ResetOptions()
 
 	app.Run([]string{"--version"})
-	str := buf.String()
-	buf.Reset()
+	str := b.ResetGet()
 	assert.Contains(t, str, "Version: 1.3.9")
 	assert.Contains(t, str, "Application desc")
 	assert.Contains(t, str, "MY-LOGO")
@@ -414,14 +413,13 @@ func TestApp_showCommandTips(t *testing.T) {
 	app.Run([]string{"emp"})
 
 	// disable color code, re-set output for test
-	buf := new(bytes.Buffer)
+	b := byteutil.NewBuffer()
 	color.Disable()
-	color.SetOutput(buf)
+	color.SetOutput(b)
 	defer color.ResetOptions()
 
 	app.Run([]string{"emp"})
-	str := buf.String()
-	buf.Reset()
+	str := b.ResetGet()
 	assert.Contains(t, str, "ERROR: unknown input command \"emp\"")
 	assert.Contains(t, str, `Maybe you mean:
   empty`)
@@ -465,4 +463,20 @@ func (uc *UserCommand) Config(c *gcli.Command) {
 
 func (uc *UserCommand) Execute(_ *gcli.Command, _ []string) error {
 	return nil
+}
+
+func TestApp_default_command(t *testing.T) {
+	b := byteutil.NewBuffer()
+
+	app := gcli.NewApp(func(a *gcli.App) {
+		a.SetDefaultCommand("test")
+	})
+	app.Add(gcli.NewCommand("test", "desc").WithFunc(func(c *gcli.Command, args []string) error {
+		b.Println("the", c.Name, "command is run completed")
+		return nil
+	}))
+
+	assert.True(t, app.HasCommand("test"))
+	assert.Eq(t, 0, app.Run([]string{}))
+	assert.Eq(t, b.ResetGet(), "the test command is run completed\n")
 }

@@ -404,12 +404,15 @@ func (app *App) findCommandName() (name string, fState FoundState) {
 	// not input command, will try to run app.defaultCommand
 	if len(args) == 0 {
 		name = app.defaultCommand
-		// It is not an valid command name. TODO default is command ID.
-		if name != "" && !app.IsCommand(name) {
+		if name != "" {
+			// check is a valid command name. TODO support command ID. eg: 'top:sub'
+			if app.IsCommand(name) {
+				return name, Founded
+			}
 			Logf(VerbError, "the default command '<cyan>%s</>' is invalid", name)
 			return "", NotFound // invalid, return empty string.
 		}
-		return name, Founded
+		return
 	}
 
 	name = strings.TrimSpace(args[0])
