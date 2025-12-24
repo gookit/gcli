@@ -409,7 +409,7 @@ func (app *App) findCommandName() (name string, fState FoundState) {
 			Logf(VerbError, "the default command '<cyan>%s</>' is invalid", name)
 			return "", NotFound // invalid, return empty string.
 		}
-		return
+		return name, Founded
 	}
 
 	name = strings.TrimSpace(args[0])

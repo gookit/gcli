@@ -38,7 +38,7 @@ const (
 	GOON PrepareState = -1
 )
 
-// FoundState for match command name
+// FoundState for match command name. 0=not found, 1=found
 type FoundState int8
 
 const (
