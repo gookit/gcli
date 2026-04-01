@@ -22,7 +22,7 @@ type Runner interface {
 	//
 	// TIP:
 	// 	args is the remain arguments after parse flags(options and arguments).
-	Run(c *Command, args []string) error
+	Run(c *Command, remainArgs []string) error
 }
 
 // RunnerFunc definition
@@ -30,11 +30,11 @@ type Runner interface {
 // TIP:
 //
 //	args is the remain arguments after parse flags(options and arguments).
-type RunnerFunc func(c *Command, args []string) error
+type RunnerFunc func(c *Command, remainArgs []string) error
 
 // Run implement the Runner interface
-func (f RunnerFunc) Run(c *Command, args []string) error {
-	return f(c, args)
+func (f RunnerFunc) Run(c *Command, remainArgs []string) error {
+	return f(c, remainArgs)
 }
 
 const maxFunc = 64

@@ -27,6 +27,7 @@
 
 # ai agent
 /openspec
+.omc/
 /.iflow
 AGENTS.md
 IFLOW.md

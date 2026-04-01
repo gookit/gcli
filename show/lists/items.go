@@ -96,7 +96,7 @@ func NewItems(data any) *Items {
 			items.List = append(items.List, item)
 			keyWidth = item.maxLen(keyWidth)
 		}
-	case reflect.String:
+	case reflect.String, reflect.Bool:
 		items.List = append(items.List, newItem("", rv, 0))
 	default:
 		if reflects.IsAnyInt(kind) {
