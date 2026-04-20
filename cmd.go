@@ -273,8 +273,8 @@ func (c *Command) initialize() {
 	// format description
 	if len(c.Desc) > 0 {
 		c.Desc = strutil.UpperFirst(c.Desc)
-		if strings.Contains(c.Desc, "{$cmd}") {
-			c.Desc = strings.Replace(c.Desc, "{$cmd}", c.Name, -1)
+		if strings.Contains(c.Desc, "{$") {
+			c.Desc = strings.ReplaceAll(c.Desc, "{$cmd}", c.Name)
 		}
 	}
 
@@ -710,8 +710,8 @@ func (c *Command) HelpDesc() (desc string) {
 	// dump.P(desc)
 	desc = strutil.UpperFirst(c.Desc)
 	// contains help var "{$cmd}". replace on here is for 'app help'
-	if strings.Contains(desc, "{$cmd}") {
-		desc = strings.Replace(desc, "{$cmd}", color.WrapTag(c.Name, "mga"), -1)
+	if strings.Contains(desc, "{$") {
+		desc = strings.ReplaceAll(desc, "{$cmd}", color.WrapTag(c.Name, "mga"))
 	}
 
 	return wrapColor2string(desc)

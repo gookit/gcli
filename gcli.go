@@ -193,10 +193,10 @@ func (g *GlobalOpts) bindingOpts(fs *gflag.Parser) {
 
 	// up: allow use int and string.
 	fs.VarOpt(&g.Verbose, "verbose", "verb", "Set logs reporting level(quiet 0 - 5 crazy)")
-	fs.BoolOpt(&g.NoColor, "no-color", "nc", g.NoColor, "Disable color when outputting message")
-	fs.BoolOpt(&g.NoProgress, "no-progress", "np", g.NoProgress, "Disable display progress message")
+	// fs.BoolOpt(&g.NoColor, "no-color", "nc", g.NoColor, "Disable color when outputting message")
+	// fs.BoolOpt(&g.NoProgress, "no-progress", "np", g.NoProgress, "Disable display progress message")
 	fs.BoolOpt(&g.ShowVersion, "version", "V", false, "Display app version information")
-	fs.BoolOpt(&g.NoInteractive, "no-interactive", "ni", g.NoInteractive, "Disable interactive confirmation operation")
+	// fs.BoolOpt(&g.NoInteractive, "no-interactive", "ni", g.NoInteractive, "Disable interactive confirmation operation")
 	// fs.BoolOpt(&g.inShell, "ishell", "", false, "Run in an interactive shell environment(`TODO`)")
 }
 
@@ -206,6 +206,9 @@ func newGlobalOpts() *GlobalOpts {
 		// init error level.
 		Verbose: defaultVerb,
 		NoColor: envutil.GetBool("NO_COLOR", false),
+		// more settings by ENV
+		NoProgress:    envutil.GetBool("NO_PROGRESS", false),
+		NoInteractive: envutil.GetBool("NO_INTERACTIVE", false),
 	}
 
 	return opts
