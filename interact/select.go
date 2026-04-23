@@ -116,12 +116,12 @@ func (s *Select) render(keys []string) {
 
 	buf.WriteString(color.Comment.Render(s.Title))
 	for _, opt := range keys {
-		buf.WriteString(fmt.Sprintf("\n  %s) %s", green(opt), s.valMap[opt]))
+		fmt.Fprintf(buf, "\n  %s) %s", green(opt), s.valMap[opt])
 	}
 
 	if !s.DisableQuit {
 		s.valMap["q"] = "quit"
-		buf.WriteString(fmt.Sprintf("\n  %s) quit", green("q")))
+		fmt.Fprintf(buf, "\n  %s) quit", green("q"))
 	}
 
 	// render select and options message to terminal
