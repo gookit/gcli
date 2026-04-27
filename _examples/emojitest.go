@@ -3,8 +3,8 @@ package main
 import (
 	"fmt"
 
-	"github.com/gookit/gcli/v3/show/emoji"
-	"github.com/gookit/gcli/v3/show/symbols"
+	"github.com/gookit/cliui/show/emoji"
+	"github.com/gookit/cliui/show/symbols"
 )
 
 // go run ./_examples/test.go

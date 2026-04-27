@@ -3,9 +3,9 @@ package cmd
 import (
 	"fmt"
 
+	"github.com/gookit/cliui/show/emoji"
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/show/emoji"
 )
 
 var EmojiDemo = &gcli.Command{
@@ -18,10 +18,10 @@ An render example
   {$fullCmd} render ":car: a message text, contains emoji :smile:"
 An search example
   {$fullCmd} search smi`,
-  	Subs: []*gcli.Command{
+	Subs: []*gcli.Command{
 		{
-			Name: "render",
-			Desc: "render given string, will replace special char to emoji",
+			Name:    "render",
+			Desc:    "render given string, will replace special char to emoji",
 			Aliases: []string{"r"},
 			Config: func(c *gcli.Command) {
 				c.AddArg("msg", "The message string for render", true)
@@ -32,8 +32,8 @@ An search example
 			},
 		},
 		{
-			Name: "search",
-			Desc: "search emojis by given keywords",
+			Name:    "search",
+			Desc:    "search emojis by given keywords",
 			Aliases: []string{"s"},
 			Config: func(c *gcli.Command) {
 				c.AddArg("keyword", "The keyword string for search", true)

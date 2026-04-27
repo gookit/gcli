@@ -5,11 +5,11 @@ import (
 	"os"
 	"strings"
 
+	"github.com/gookit/cliui/interact"
+	"github.com/gookit/cliui/show"
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/helper"
-	"github.com/gookit/gcli/v3/interact"
-	"github.com/gookit/gcli/v3/show"
 	"github.com/gookit/goutil/cliutil"
 )
 

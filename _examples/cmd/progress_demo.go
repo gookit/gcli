@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/gookit/cliui/progress"
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/progress"
 )
 
 var pdOpts = struct {

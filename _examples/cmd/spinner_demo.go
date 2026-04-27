@@ -3,8 +3,8 @@ package cmd
 import (
 	"time"
 
+	"github.com/gookit/cliui/progress"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/progress"
 )
 
 type spinnerDemo struct {

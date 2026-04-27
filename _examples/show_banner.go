@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/gookit/gcli/v3/show/banner"
-	"github.com/gookit/gcli/v3/show/showcom"
+	"github.com/gookit/cliui/show/banner"
+	"github.com/gookit/cliui/show/showcom"
 	"github.com/gookit/goutil/comdef"
 	"github.com/gookit/goutil/x/termenv"
 	"golang.org/x/term"

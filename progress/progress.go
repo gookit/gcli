@@ -1,5 +1,7 @@
 // Package progress provide terminal progress bar display.
 // Such as: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` ...
+//
+// Deperacted please use github.com/gookit/cliui/progress instead.
 package progress
 
 import (
