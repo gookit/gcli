@@ -1,4 +1,4 @@
 // Package interact provide some command-line interactive util methods
 //
-// Deperacted please use github.com/gookit/cliui/progress instead.
+// Deprecated: please direct use github.com/gookit/cliui/interact instead.
 package interact

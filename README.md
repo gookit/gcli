@@ -36,8 +36,7 @@ Including running commands, color styles, data display, progress display, intera
 - `colorable` - supports rich color output. provide by [gookit/color](https://github.com/gookit/color)
   - Supports html tab-style color rendering, compatible with Windows
   - Built-in `info, error, success, danger` and other styles, can be used directly
-- `interact` Built-in user interaction methods: `ReadLine`, `Confirm`, `Select`, `MultiSelect` ...
-- `progress` Built-in progress display methods: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` ...
+- `show`, `interact` and `progress` provide by [gookit/cliui](https://github.com/gookit/cliui)
 - Automatically generate command help information and support color display
 - When the command entered is incorrect, a similar command will be prompted(including an alias prompt)
 - Supports generation of `zsh` and `bash` command completion script files
@@ -522,10 +521,10 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 
 ## Progress display
 
-Package progress provide terminal progress bar display.
+Package progress provide terminal progress bar display. Such as: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` ...
 
-Such as: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` ...
- 
+> Provide by [gookit/cliui](https://github.com/gookit/cliui)
+
 - `progress.Bar` progress bar
 
 Demo: `./cliapp prog bar`
@@ -561,7 +560,7 @@ package main
 import (
 	"time"
 
-	"github.com/gookit/gcli/v3/progress"
+	"github.com/gookit/cliui/progress"
 )
 
 func main()  {
@@ -593,16 +592,9 @@ go run ./_examples/cliapp.go prog roundTrip
 
 ## Interactive methods
    
-console interactive methods
+console interactive methods, eg: `ReadInput`,`ReadLine`,`ReadFirst`,`Confirm`,`Select/Choice`,`MultiSelect/Checkbox`,`Question/Ask`,`ReadPassword`
 
-- `interact.ReadInput`
-- `interact.ReadLine`
-- `interact.ReadFirst`
-- `interact.Confirm`
-- `interact.Select/Choice`
-- `interact.MultiSelect/Checkbox`
-- `interact.Question/Ask`
-- `interact.ReadPassword`
+> Provide by [gookit/cliui](https://github.com/gookit/cliui)
 
 Examples:
 
@@ -612,7 +604,7 @@ package main
 import (
 	"fmt"
 
-	"github.com/gookit/gcli/v3/interact"
+	"github.com/gookit/cliui/interact"
 )
 
 func main() {
@@ -628,67 +620,23 @@ func main() {
 }
 ```
 
-### Read Input
-
-read user input message
-
-```go
-ans, _ := interact.ReadLine("Your name? ")
-
-if ans != "" {
-    color.Println("Your input: ", ans)
-} else {
-    color.Cyan.Println("No input!")
-}
-```
+- `ReadInput` read user input message
 
 ![interact-read](_examples/images/interact/read.jpg)
 
-### Select/Choice
-
-```go
-ans := interact.SelectOne(
-    "Your city name(use array)?",
-    []string{"chengdu", "beijing", "shanghai"},
-    "",
-)
-color.Comment.Println("your select is: ", ans)
-```
+- `Select/Choice` 
 
 ![interact-select](_examples/images/interact/select.jpg)
 
-### Multi Select/Checkbox
-
-```go
-ans := interact.MultiSelect(
-    "Your city name(use array)?",
-    []string{"chengdu", "beijing", "shanghai"},
-    nil,
-)
-color.Comment.Println("your select is: ", ans)
-```
+- Multi Select/Checkbox
 
 ![interact-select](_examples/images/interact/m-select.jpg)
 
-### Confirm Message
-
-```go
-if interact.Confirm("Ensure continue") {
-    fmt.Println(emoji.Render(":smile: Confirmed"))
-} else {
-    color.Warn.Println("Unconfirmed")
-}
-```
+- Confirm Message
 
 ![interact-confirm](_examples/images/interact/confirm.jpg)
 
-### Read Password
-
-```go
-pwd := interact.ReadPassword()
-
-color.Comment.Println("your input password is: ", pwd)
-```
+- Read Password
 
 ![interact-passwd](_examples/images/interact/passwd.jpg)
 
@@ -764,7 +712,6 @@ func main() {
 
 - `inhere/console` https://github/inhere/php-console
 - `issue9/term` https://github.com/issue9/term
-- `beego/bee` https://github.com/beego/bee
 - [ANSI escape code](https://en.wikipedia.org/wiki/ANSI_escape_code)
 
 ## License

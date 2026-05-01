@@ -31,11 +31,10 @@ The english introduction please ses **[README](README.md)**
 - `argument` 支持绑定 `参数` 到指定名称(参数 _是指flag绑定后剩余的参数信息_)
   - 支持参数设置 可选/必须 `Required`，数组 `isArray`
   - 运行命令时将会自动检测，并按对应关系收集参数
-- `colorable` 支持丰富的颜色渲染输出, 由[gookit/color](https://github.com/gookit/color)提供
+- `colorable` 支持丰富的颜色渲染输出, 由 [gookit/color](https://github.com/gookit/color) 提供
   - 同时支持html标签式的颜色渲染，兼容Windows
   - 内置`info,error,success,danger`等多种风格，可直接使用
-- `interact` 内置提供用户交互方法: `ReadLine`, `Confirm`, `Select`, `MultiSelect` 等
-- `progress` 内置提供进度显示方法: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` 等
+- `show`, `progress`, `interact` 内置提供显示，进度显示，交互方法等，由 [gookit/cliui](https://github.com/gookit/cliui) 提供
 - 输入的命令错误时，将会提示相似命令（包含别名提示）
 - 自动处理返回错误，`error` 会自动渲染为错误提示信息
 - 自动根据命令生成帮助信息，并且支持颜色显示
@@ -76,7 +75,7 @@ func main() {
     app.Add(&gcli.Command{
         Name: "demo",
         // allow color tag and {$cmd} will be replace to 'demo'
-        Desc: "this is a description <info>message</> for command", 
+        Desc: "this is a description <info>message</> for command",
         Aliases: []string{"dm"},
         Func: func (cmd *gcli.Command, args []string) error {
             gcli.Println("hello, in the demo command")
@@ -95,7 +94,7 @@ func main() {
 先使用本项目下的 [demo](_examples/) 示例代码构建一个小的cli demo应用
 
 ```bash
-% go build ./_examples/cliapp.go                                                           
+% go build ./_examples/cliapp.go
 ```
 
 #### 打印版本信息
@@ -103,9 +102,9 @@ func main() {
 打印我们在创建cli应用时设置的版本信息。如果你还设置了字符LOGO，也会显示出来。
 
 ```bash
-% ./cliapp --version      
-# or use -V                                                 
-% ./cliapp -V                                                     
+% ./cliapp --version
+# or use -V
+% ./cliapp -V
 ```
 
 ![app-version](_examples/images/app-version.jpg)
@@ -178,7 +177,7 @@ import  "github.com/gookit/gcli/v3/builtin"
 ```bash
 % go build ./_examples/cliapp.go && ./cliapp genac -h // 使用帮助
 % go build ./_examples/cliapp.go && ./cliapp genac // 开始生成, 你将会看到类似的信息
-INFO: 
+INFO:
   {shell:zsh binName:cliapp output:auto-completion.zsh}
 
 Now, will write content to file auto-completion.zsh
@@ -189,12 +188,12 @@ OK, auto-complete file generate successful
 
 > 运行后就会在当前目录下生成一个 `auto-completion.{zsh|bash}` 文件， shell 环境名是自动获取的。当然你可以在运行时手动指定
 
-生成的shell script 文件请参看： 
+生成的shell script 文件请参看：
 
-- bash 环境 [auto-completion.bash](resource/auto-completion.bash) 
+- bash 环境 [auto-completion.bash](resource/auto-completion.bash)
 - zsh 环境 [auto-completion.zsh](resource/auto-completion.zsh)
 
-预览效果: 
+预览效果:
 
 ![auto-complete-tips](_examples/images/auto-complete-tips.jpg)
 
@@ -206,7 +205,7 @@ OK, auto-complete file generate successful
 app.Add(&gcli.Command{
     Name: "demo",
     // allow color tag and {$cmd} will be replace to 'demo'
-    Desc: "this is a description <info>message</> for command", 
+    Desc: "this is a description <info>message</> for command",
     Aliases: []string{"dm"},
     Func: func (cmd *gcli.Command, args []string) error {
         gcli.Print("hello, in the demo command\n")
@@ -457,7 +456,7 @@ var MyCommand = &gcli.Command{
     Func: func(c *gcli.Command, args []string) error {
         arg0 := c.Arg("arg0").String()
         arg1 := c.Arg("arg1").Int()
-        
+
         fmt.Println(arg0, arg1)
         return nil
     },
@@ -465,7 +464,11 @@ var MyCommand = &gcli.Command{
 ```
 
 ## 进度显示
- 
+
+progress provide terminal progress bar display. Such as: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` ...
+
+> Provide by [gookit/cliui](https://github.com/gookit/cliui)
+
 - `progress.Bar` 通用的进度条
 
 Demo: `./cliapp prog bar`
@@ -483,7 +486,7 @@ Demo: `./cliapp prog txt`
 ![prog-demo](_examples/images/progress/prog-spinner.jpg)
 
 - `progress.Counter` 计数
-- `progress.RoundTrip` 来回滚动的进度条 
+- `progress.RoundTrip` 来回滚动的进度条
 
 ```text
 [===     ] -> [    === ] -> [ ===    ]
@@ -498,8 +501,11 @@ Demo: `./cliapp prog txt`
 ```go
 package main
 
-import "time"
-import "github.com/gookit/gcli/v3/progress"
+import (
+	"time"
+
+	"github.com/gookit/cliui/progress"
+)
 
 func main()  {
 	speed := 100
@@ -529,17 +535,11 @@ go run ./_examples/cliapp.go prog roundTrip
 ![prog-other](_examples/images/progress/prog-other.jpg)
 
 ## 交互方法
-   
-控制台交互方法，包含读取输入，进行确认，单选，多选，询问问题等等
 
-- `interact.ReadInput`
-- `interact.ReadLine`
-- `interact.ReadFirst`
-- `interact.Confirm`
-- `interact.Select/Choice`
-- `interact.MultiSelect/Checkbox`
-- `interact.Question/Ask`
-- `interact.ReadPassword`
+控制台交互方法，包含读取输入，进行确认，单选，多选，询问问题等等。
+eg: `ReadInput`,`ReadLine`,`ReadFirst`,`Confirm`,`Select/Choice`,`MultiSelect/Checkbox`,`Question/Ask`,`ReadPassword`
+
+> Provide by [gookit/cliui](https://github.com/gookit/cliui)
 
 示例:
 
@@ -549,81 +549,39 @@ package main
 import (
 	"fmt"
 
-	"github.com/gookit/gcli/v3/interact"
+	"github.com/gookit/cliui/interact"
 )
 
 func main() {
 	username, _ := interact.ReadLine("Your name?")
 	password := interact.ReadPassword("Your password?")
-	
+
 	ok := interact.Confirm("ensure continue?")
 	if !ok {
 		// do something...
 	}
-    
+
 	fmt.Printf("username: %s, password: %s\n", username, password)
 }
 ```
 
-### 读取输入
-
-```go
-ans, _ := interact.ReadLine("Your name? ")
-
-if ans != "" {
-    color.Println("Your input: ", ans)
-} else {
-    color.Cyan.Println("No input!")
-}
-```
+- `ReadLine` 读取输入
 
 ![interact-read](_examples/images/interact/read.jpg)
 
-### 单选
-
-```go
-ans := interact.SelectOne(
-    "Your city name(use array)?",
-    []string{"chengdu", "beijing", "shanghai"},
-    "",
-)
-color.Comment.Println("your select is: ", ans)
-```
+- `SelectOne` 单选
 
 ![interact-select](_examples/images/interact/select.jpg)
 
-### 多选
-
-```go
-ans := interact.MultiSelect(
-    "Your city name(use array)?",
-    []string{"chengdu", "beijing", "shanghai"},
-    nil,
-)
-color.Comment.Println("your select is: ", ans)
-```
+- `MultiSelect` 多选
 
 ![interact-select](_examples/images/interact/m-select.jpg)
 
-### 确认消息
-
-```go
-if interact.Confirm("Ensure continue") {
-    fmt.Println(emoji.Render(":smile: Confirmed"))
-} else {
-    color.Warn.Println("Unconfirmed")
-}
-```
+- `Confirm` 确认消息
 
 ![interact-confirm](_examples/images/interact/confirm.jpg)
 
-### 读取密码输入
-
-```go
-pwd := interact.ReadPassword()
-
-color.Comment.Println("your input password is: ", pwd)
-```
+- `ReadPassword` 读取密码输入
 
 ![interact-passwd](_examples/images/interact/passwd.jpg)
 
@@ -656,13 +614,13 @@ func main() {
 	color.Info.Println("message")
 	color.Warn.Println("message")
 	color.Error.Println("message")
-	
+
 	// custom color
 	color.New(color.FgWhite, color.BgBlack).Println("custom color style")
 
 	// can also:
 	color.Style{color.FgCyan, color.OpBold}.Println("custom color style")
-	
+
 	// use defined color tag
 	color.Print("use color tag: <suc>he</><comment>llo</>, <cyan>wel</><red>come</>\n")
 
@@ -734,7 +692,7 @@ color.Print("<fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
 ## Gookit 工具包
 
 - [gookit/ini](https://github.com/gookit/ini) INI配置读取管理，支持多文件加载，数据覆盖合并, 解析ENV变量, 解析变量引用
-- [gookit/rux](https://github.com/gookit/rux) Simple and fast request router for golang HTTP 
+- [gookit/rux](https://github.com/gookit/rux) Simple and fast request router for golang HTTP
 - [gookit/gcli](https://github.com/gookit/gcli) Go的命令行应用，工具库，运行CLI命令，支持命令行色彩，用户交互，进度显示，数据格式化显示
 - [gookit/event](https://github.com/gookit/event) Go实现的轻量级的事件管理、调度程序库, 支持设置监听器的优先级, 支持对一组事件进行监听
 - [gookit/cache](https://github.com/gookit/cache) 通用的缓存使用包装库，通过包装各种常用的驱动，来提供统一的使用API
