@@ -5,7 +5,7 @@ go 1.22
 require (
 	github.com/gookit/cliui v0.3.0
 	github.com/gookit/color v1.6.1
-	github.com/gookit/goutil v0.7.5
+	github.com/gookit/goutil v0.7.6
 )
 
 require (
