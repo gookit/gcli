@@ -200,6 +200,28 @@ func main() {
 }
 ```
 
+### Command/Option category
+
+Both commands and options support a `Category` for grouped display in the help
+message. When no category is set, the output is the same as before (commands go
+to `Available Commands`, options are listed directly under `Options:`).
+
+```go
+// command category
+app.Add(&gcli.Command{Name: "migrate", Desc: "run db migrate", Category: "database"})
+app.Add(&gcli.Command{Name: "serve", Desc: "start http server"}) // default group
+
+// option category
+cmd.StrVar(&dsn, &gcli.CliOpt{Name: "db-dsn", Desc: "database dsn", Category: "database"})
+cmd.StrOpt2(&port, "port", "bind port", gflag.WithCategory("network"))
+```
+
+Groups keep the order of first appearance; commands inside a group are sorted by name.
+
+> NOTE: the log level is no longer controlled by a global `--verbose` option.
+> Use the env `GCLI_VERBOSE` (eg `GCLI_VERBOSE=debug`) or `gcli.SetVerbose()` instead,
+> so it won't pollute the option list of the host application.
+
 ### Bind arguments
 
 **About arguments**:

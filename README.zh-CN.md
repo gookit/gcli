@@ -388,6 +388,39 @@ func main() {
 }
 ```
 
+### 命令/选项分类
+
+命令和选项都支持设置 `Category` 进行分组，用于在帮助信息中分类显示。
+未设置分类时输出与原先一致（命令归入 `Available Commands`、选项直接列在 `Options:` 下）。
+
+为命令设置分类：
+
+```go
+app.Add(&gcli.Command{Name: "migrate", Desc: "run db migrate", Category: "database"})
+app.Add(&gcli.Command{Name: "seed", Desc: "seed db data", Category: "database"})
+app.Add(&gcli.Command{Name: "serve", Desc: "start http server"}) // 默认分组
+```
+
+为选项设置分类（结构体字面量或 `WithCategory`）：
+
+```go
+cmd.StrVar(&dsn, &gcli.CliOpt{Name: "db-dsn", Desc: "database dsn", Category: "database"})
+// 或使用配置函数
+cmd.StrOpt2(&port, "port", "bind port", gflag.WithCategory("network"))
+```
+
+帮助信息中将按分类分组展示（分组顺序为首次出现的顺序，组内按名称排序）：
+
+```text
+Available Commands:
+  serve       Start http server
+Database:
+  migrate     Run db migrate
+  seed        Seed db data
+```
+
+> 提示：日志级别不再通过全局 `--verbose` 选项控制，改由环境变量 `GCLI_VERBOSE`（如 `GCLI_VERBOSE=debug`）或代码 `gcli.SetVerbose()` 设置，避免污染上层应用的选项列表。
+
 ### 绑定参数
 
 关于参数定义：
