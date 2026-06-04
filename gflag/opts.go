@@ -511,14 +511,19 @@ func (co *CliOpts) ParseOpts(args []string) (err error) {
 	if err = co.fSet.Parse(args); err != nil {
 		return
 	}
+	return co.validateAll()
+}
 
-	// call validations after parsed
-	for _, opt := range co.opts {
-		if err = opt.Validate(opt.flag.Value.String()); err != nil {
+// validateAll runs Validate for all options after parsed. single source of
+// truth for both ParseOpts and Parser.Parse.
+func (co *CliOpts) validateAll() error {
+	for name, opt := range co.opts {
+		fItem := co.fSet.Lookup(name)
+		if err := opt.Validate(fItem.Value.String()); err != nil {
 			return err
 		}
 	}
-	return
+	return nil
 }
 
 /***********************************************************************

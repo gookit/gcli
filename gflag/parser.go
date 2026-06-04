@@ -207,7 +207,7 @@ func (p *Parser) Parse(args []string) (err error) {
 		return err
 	}
 
-	// do parsing options. TODO p.ParseOpts(args)
+	// do parsing options
 	if err = p.fSet.Parse(args); err != nil {
 		return err
 	}
@@ -219,17 +219,9 @@ func (p *Parser) Parse(args []string) (err error) {
 		}
 	}
 
-	// call options validations
-	for name, opt := range p.opts {
-		fItem := p.fSet.Lookup(name)
-		if err = opt.Validate(fItem.Value.String()); err != nil {
-			return err
-		}
-	}
-
-	// parsing named arguments. TODO
-	// err = p.ParseArgs(p.fSet.Args())
-	return
+	// call options validations(shared with ParseOpts)
+	// parsing named arguments. TODO err = p.ParseArgs(p.fSet.Args())
+	return p.validateAll()
 }
 
 func (p *Parser) prepare() error {
