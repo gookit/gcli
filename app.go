@@ -112,7 +112,9 @@ func NewApp(fns ...func(app *App)) *App {
 
 	// init
 	app.base = newBase()
-	app.opts = newGlobalOpts()
+	// 复用包级 gOpts 作为全局选项的单一数据源(verbose/help/version/strict/completion)，
+	// 避免实例副本与包级单例割裂。注意 ResetGOpts 是就地赋值，持有的指针始终有效。
+	app.opts = gOpts
 
 	// set a default value
 	app.Version = "1.0.0"
@@ -179,7 +181,7 @@ func (app *App) bindAppOpts() {
 	app.opts.bindingOpts(fs)
 	// add more ...
 	// This is an internal option
-	fs.BoolVar(&gOpts.inCompletion, &gflag.CliOpt{
+	fs.BoolVar(&app.opts.inCompletion, &gflag.CliOpt{
 		Name: "in-completion",
 		Desc: "generate completion scripts for bash/zsh",
 		// hidden it
@@ -319,10 +321,7 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 		ccolor.Disable()
 	}
 
-	// verbose 由环境变量 GCLI_VERBOSE 通过包级 gOpts 控制。
-	// 同步到 app.opts，使读取 app.Opts() 的用户代码也能拿到一致的级别。
-	app.opts.Verbose = gOpts.Verbose
-
+	// verbose 由环境变量 GCLI_VERBOSE / gcli.SetVerbose() 控制，app.opts 即 gOpts，无需再同步。
 	Debugf("app options parsed, verbose: <mgb>%s</>, options: %#v", app.opts.Verbose.String(), app.opts)
 
 	// TODO show auto-completion for bash/zsh

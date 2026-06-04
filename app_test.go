@@ -174,6 +174,24 @@ func TestApp_CommandsByGroup(t *testing.T) {
 	is.Eq("seed", groups[0].Cmds[1].Name)
 }
 
+func TestApp_Opts_singleSource(t *testing.T) {
+	is := assert.New(t)
+	defer gcli.ResetVerbose()
+
+	app := gcli.NewApp(func(a *gcli.App) { a.ExitOnEnd = false })
+
+	// App 复用包级 gOpts —— 同一指针
+	is.True(app.Opts() == gcli.GOpts())
+
+	// SetVerbose 写 gOpts，app.Opts() 立即可见(无需同步)
+	gcli.SetVerbose(gcli.VerbDebug)
+	is.Eq(gcli.VerbDebug, app.Opts().Verbose)
+
+	// ResetGOpts 就地刷新，App 持有的指针同步可见
+	gcli.ResetGOpts()
+	is.Eq(gcli.VerbError, app.Opts().Verbose)
+}
+
 func TestApp_AddAliases(t *testing.T) {
 	app := gcli.NewApp(func(a *gcli.App) {
 		a.ExitOnEnd = false
