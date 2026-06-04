@@ -440,8 +440,34 @@ func (co *CliOpts) checkFlagInfo(opt *CliOpt) string {
 	co.names[name] = helpLen
 	// storage opt and name
 	co.opts[name] = opt
+	// record option category in insertion order, for grouped help
+	co.recordOptCategory(opt.Category, name)
 	return name
 }
+
+// record option category name in insertion order, append the option name to it.
+func (co *CliOpts) recordOptCategory(cat, optName string) {
+	for i := range co.categories {
+		if co.categories[i].Name == cat {
+			co.categories[i].OptNames = append(co.categories[i].OptNames, optName)
+			return
+		}
+	}
+	co.categories = append(co.categories, OptCategory{Name: cat, OptNames: []string{optName}})
+}
+
+// hasOptCategory reports whether any named(non-default) option category exists.
+func (co *CliOpts) hasOptCategory() bool {
+	for _, c := range co.categories {
+		if c.Name != "" {
+			return true
+		}
+	}
+	return false
+}
+
+// OptCategories get all option categories in insertion order.
+func (co *CliOpts) OptCategories() []OptCategory { return co.categories }
 
 // check short names
 func (co *CliOpts) checkShortNames(name string, shorts []string) {
@@ -588,6 +614,11 @@ func WithValidator(fn func(val string) error) CliOptFn {
 	return func(opt *CliOpt) { opt.Validator = fn }
 }
 
+// WithCategory setting for option. see CliOpt.Category
+func WithCategory(name string) CliOptFn {
+	return func(opt *CliOpt) { opt.Category = name }
+}
+
 // CliOpt define for a flag option
 type CliOpt struct {
 	// go flag value
@@ -622,8 +653,8 @@ type CliOpt struct {
 	Validator func(val string) error
 	// Handler callback hook. will call it after the flag value is set. like flag.Func
 	Handler func(val string) error
-	// TODO Category name for the option
-	// Category string
+	// Category name for the option. used for grouped display on help.
+	Category string
 	// TODO interactive question for collect value
 	// Question string
 }

@@ -27,6 +27,29 @@ func TestCliOpts_useShorts(t *testing.T) {
 	assert.Eq(t, "val", str)
 }
 
+func TestCliOpts_category(t *testing.T) {
+	is := assert.New(t)
+	co := newFlagOptions()
+
+	var s string
+	var b bool
+	co.StrVar(&s, &gflag.CliOpt{Name: "host", Desc: "bind host"})
+	co.StrVar(&s, &gflag.CliOpt{Name: "port", Desc: "bind port", Category: "network"})
+	co.BoolVar(&b, &gflag.CliOpt{Name: "verbose", Desc: "verbose log"})
+	co.StrVar(&s, &gflag.CliOpt{Name: "db-dsn", Desc: "database dsn", Category: "database"})
+
+	cats := co.OptCategories()
+	is.Len(cats, 3)
+	// insertion order: ""(default) -> network -> database
+	is.Eq("", cats[0].Name)
+	is.Eq("network", cats[1].Name)
+	is.Eq("database", cats[2].Name)
+
+	is.Eq([]string{"host", "verbose"}, cats[0].OptNames)
+	is.Eq([]string{"port"}, cats[1].OptNames)
+	is.Eq([]string{"db-dsn"}, cats[2].OptNames)
+}
+
 func TestCliOpt_basic(t *testing.T) {
 	opt := gflag.NewOpt("opt1", "a option", "")
 	opt.WithOptFns(gflag.WithDefault("abc"), gflag.WithRequired(), gflag.WithShorts("o", "a"))

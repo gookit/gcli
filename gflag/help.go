@@ -3,6 +3,7 @@ package gflag
 import (
 	"bytes"
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/gookit/color"
@@ -53,7 +54,18 @@ func (p *Parser) BuildHelp() string {
 }
 
 // BuildOptsHelp string.
+//
+// - no named category configured: flat render, keep flag alphabetical order.
+// - has named category: render grouped, the default(uncategorized) group first.
 func (p *Parser) BuildOptsHelp() string {
+	if !p.hasOptCategory() {
+		return p.buildFlatOptsHelp()
+	}
+	return p.buildGroupedOptsHelp()
+}
+
+// flat render all options, keep flag.FlagSet alphabetical order.
+func (p *Parser) buildFlatOptsHelp() string {
 	var sb strings.Builder
 
 	p.fSet.VisitAll(func(f *Flag) {
@@ -63,6 +75,54 @@ func (p *Parser) BuildOptsHelp() string {
 			sb.WriteByte('\n')
 		}
 	})
+
+	return sb.String()
+}
+
+// render options grouped by category. default(uncategorized) group has no
+// sub-title and is rendered first; named groups follow in insertion order.
+func (p *Parser) buildGroupedOptsHelp() string {
+	var sb strings.Builder
+
+	render := func(cat OptCategory) {
+		names := append([]string(nil), cat.OptNames...)
+		sort.Strings(names)
+
+		// build group body first, skip the group if all options are hidden.
+		var body strings.Builder
+		for _, name := range names {
+			if f := p.fSet.Lookup(name); f != nil {
+				if line := p.formatOneFlag(f); line != "" {
+					body.WriteString(line)
+					body.WriteByte('\n')
+				}
+			}
+		}
+		if body.Len() == 0 {
+			return
+		}
+
+		if cat.Name != "" {
+			if sb.Len() > 0 {
+				sb.WriteByte('\n')
+			}
+			sb.WriteString(fmt.Sprintf("  <comment>%s:</>\n", strutil.UpperFirst(cat.Name)))
+		}
+		sb.WriteString(body.String())
+	}
+
+	// default(uncategorized) group first
+	for _, cat := range p.categories {
+		if cat.Name == "" {
+			render(cat)
+		}
+	}
+	// then named groups, in insertion order
+	for _, cat := range p.categories {
+		if cat.Name != "" {
+			render(cat)
+		}
+	}
 
 	return sb.String()
 }
