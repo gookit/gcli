@@ -18,4 +18,4 @@
   - [x] A：全局选项单一数据源
   - [x] G：`findCommandName` 去副作用
   - [x] H：`helper/`→`internal/helper/`、清理 `gclicom/` 与死代码
-- [ ] 发版前：CHANGELOG/Release Notes 注明 v3.4.0 的破坏性变更（移除 `helper`/`gclicom` 公共包）与 A 的「多 App 共享全局选项」
+- [x] 发版前：CHANGELOG/Release Notes（见 [CHANGELOG.md](../CHANGELOG.md) v3.4.0），并将 `version` 常量更新为 3.4.0
