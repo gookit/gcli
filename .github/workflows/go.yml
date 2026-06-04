@@ -2,56 +2,55 @@ name: action-tests
 on:
   pull_request:
     paths:
-      - 'go.mod'
-      - '**.go'
-      - '**.yml'
+      - "go.mod"
+      - "**.go"
+      - "**.yml"
   push:
     branches: # Only trigger branch pushes; tag pushes are ignored.
-      - '**'
+      - "**"
     paths:
-      - 'go.mod'
-      - '**.go'
-      - '**.yml'
+      - "go.mod"
+      - "**.go"
+      - "**.yml"
 
 jobs:
-
   test:
     name: Test on go ${{ matrix.go_version }}
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go_version: [1.22, 1.23, 1.24, stable]
+        go_version: [1.22, 1.23, 1.24, 1.25, stable]
 
     steps:
-    - name: Check out codes
-      uses: actions/checkout@v6
+      - name: Check out codes
+        uses: actions/checkout@v6
 
-    - name: Setup Go SDK
-      uses: actions/setup-go@v6
-      timeout-minutes: 3
-      with:
-        go-version: ${{ matrix.go_version }}
+      - name: Setup Go SDK
+        uses: actions/setup-go@v6
+        timeout-minutes: 3
+        with:
+          go-version: ${{ matrix.go_version }}
 
-    - name: Revive check
-      uses: morphy2k/revive-action@v2.7.8
-      if: ${{ matrix.os == 'ubuntu-latest' && matrix.go_version == 'stable' }}
-      with:
-        # Exclude patterns, separated by semicolons (optional)
-        exclude: "./internal/..."
+      - name: Revive check
+        uses: morphy2k/revive-action@v2.7.8
+        if: ${{ matrix.os == 'ubuntu-latest' && matrix.go_version == 'stable' }}
+        with:
+          # Exclude patterns, separated by semicolons (optional)
+          exclude: "./internal/..."
 
-    - name: Run staticcheck
-      uses: reviewdog/action-staticcheck@v1
-      if: ${{ github.event_name == 'pull_request'}}
-      with:
-        github_token: ${{ secrets.github_token }}
-        # Change reviewdog reporter if you need [github-pr-check,github-check,github-pr-review].
-        reporter: github-pr-check
-        # Report all results. [added,diff_context,file,nofilter].
-        filter_mode: added
-        # Exit with 1 when it find at least one finding.
-        fail_on_error: true
+      - name: Run staticcheck
+        uses: reviewdog/action-staticcheck@v1
+        if: ${{ github.event_name == 'pull_request'}}
+        with:
+          github_token: ${{ secrets.github_token }}
+          # Change reviewdog reporter if you need [github-pr-check,github-check,github-pr-review].
+          reporter: github-pr-check
+          # Report all results. [added,diff_context,file,nofilter].
+          filter_mode: added
+          # Exit with 1 when it find at least one finding.
+          fail_on_error: true
 
-    - name: Tidy go mod
-      run: go mod tidy
-    - name: Run tests
-      run: go test -v -cover ./...
+      - name: Tidy go mod
+        run: go mod tidy
+      - name: Run tests
+        run: go test -v -cover ./...
