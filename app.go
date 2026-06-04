@@ -343,12 +343,16 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 //	- check global options
 //	- get command name and command args
 func (app *App) prepareRun() (code PrepareState, name string) {
-	// find command name.
-	var fState FoundState
-	name, fState = app.findCommandName()
+	// find command name. (pure parse; apply the result here in one place)
+	fc := app.findCommandName(app.args)
+	app.args = fc.args
+	if fc.raw != "" {
+		app.inputName = fc.raw
+	}
+	name = fc.name
 
 	// is a valid command name.
-	if fState == Founded {
+	if fc.state == Founded {
 		if name == HelpCommand {
 			if len(app.args) == 0 { // like 'help'
 				app.showApplicationHelp()
@@ -389,48 +393,48 @@ func (app *App) prepareRun() (code PrepareState, name string) {
 	return
 }
 
-// result for find command TODO
+// foundCmd carries the result of resolving the input args into a command name.
+// it is side-effect free: the caller(prepareRun) decides how to apply
+// fc.args / fc.raw to the app state.
 type foundCmd struct {
 	state FoundState
-	name  string
-	raw   string
-	parts []string // split from raw input
+	name  string   // resolved (top-level) command name
+	raw   string   // raw input name(args[0]); empty when no name parsed
+	args  []string // remaining args after stripping the command name
 }
 
-func (app *App) findCommandName() (name string, fState FoundState) {
-	args := app.args
+// findCommandName resolves the command name from the given args WITHOUT
+// mutating app.args / app.inputName. caller applies the returned foundCmd.
+func (app *App) findCommandName(args []string) foundCmd {
 	// not input command, will try to run app.defaultCommand
 	if len(args) == 0 {
-		name = app.defaultCommand
+		name := app.defaultCommand
 		if name != "" {
 			// check is a valid command name. TODO support command ID. eg: 'top:sub'
 			if app.IsCommand(name) {
-				return name, Founded
+				return foundCmd{state: Founded, name: name, args: args}
 			}
 			Logf(VerbError, "the default command '<cyan>%s</>' is invalid", name)
-			return "", NotFound // invalid, return empty string.
+			return foundCmd{state: NotFound, args: args} // invalid, empty name.
 		}
-		return
+		return foundCmd{state: NotFound, args: args}
 	}
 
-	name = strings.TrimSpace(args[0])
+	name := strings.TrimSpace(args[0])
 	// is empty string or is an option
 	if name == "" || name[0] == '-' {
-		return "", NotFound
+		return foundCmd{state: NotFound, args: args}
 	}
 
-	// check is valid ID/name string.
-	app.inputName = name
-	if !helper.IsGoodCmdId(name) {
-		app.args = args[1:]
-		Logf(VerbWarn, "the input command name(%s) string is invalid", name)
-		return name, NotFound
-	}
-
-	// backup raw name
+	// backup raw name. (was set to app.inputName by side-effect)
 	rawName := name
-	nodes := splitPath2names(name)
+	// check is valid ID/name string.
+	if !helper.IsGoodCmdId(name) {
+		Logf(VerbWarn, "the input command name(%s) string is invalid", name)
+		return foundCmd{state: NotFound, name: name, raw: rawName, args: args[1:]}
+	}
 
+	nodes := splitPath2names(name)
 	// Is command ID. eg: "top:sub"
 	if len(nodes) > 1 {
 		name = app.ResolveAlias(nodes[0])
@@ -447,22 +451,23 @@ func (app *App) findCommandName() (name string, fState FoundState) {
 		}
 	}
 
-	// update app.args
+	// build remaining args after stripping the command name
+	var remain []string
 	if len(nodes) > 1 {
-		app.args = append(nodes[1:], args[1:]...)
+		remain = append(nodes[1:], args[1:]...)
 	} else {
-		app.args = args[1:]
+		remain = args[1:]
 	}
 
 	// it is an exists command name.
 	if app.IsCommand(name) {
-		Debugf("the raw input command: '<cyan>%s</>'; real name: '<green>%s</>', args: %v", rawName, name, app.args)
-		return name, Founded
+		Debugf("the raw input command: '<cyan>%s</>'; real name: '<green>%s</>', args: %v", rawName, name, remain)
+		return foundCmd{state: Founded, name: name, raw: rawName, args: remain}
 	}
 
 	// command doesn't exist
 	Logf(VerbInfo, "the input command name '%s' is not exists. nodes: %v", rawName, nodes)
-	return rawName, NotFound
+	return foundCmd{state: NotFound, name: rawName, raw: rawName, args: remain}
 }
 
 /*************************************************************
