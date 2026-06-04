@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/gcli/v3/internal/helper"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/structs"

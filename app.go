@@ -9,7 +9,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/gcli/v3/internal/helper"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/cliutil/cmdline"
 	"github.com/gookit/goutil/errorx"

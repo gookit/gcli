@@ -6,7 +6,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/gcli/v3/internal/helper"
 	"github.com/gookit/goutil/cflag"
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/mathutil"

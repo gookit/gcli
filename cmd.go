@@ -10,7 +10,7 @@ import (
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/gcli/v3/internal/helper"
 	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/strutil"

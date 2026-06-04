@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/gcli/v3/internal/helper"
 	"github.com/gookit/goutil/x/goinfo"
 )
 

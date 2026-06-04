@@ -9,7 +9,7 @@ import (
 	"github.com/gookit/cliui/show"
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/helper"
+	"github.com/gookit/gcli/v3/internal/helper"
 	"github.com/gookit/goutil/cliutil"
 )
 
