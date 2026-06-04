@@ -588,3 +588,17 @@ func TestFlags_PrintHelpPanel_IndentLongOpt(t *testing.T) {
 	fmt.Println("Flag Help - enable IndentLongOpt:")
 	fs.PrintHelpPanel()
 }
+
+func TestParser_Parse_recoverPanic(t *testing.T) {
+	is := assert.New(t)
+
+	var name string
+	fs := gflag.New("test")
+	fs.StrVar(&name, &gcli.CliOpt{Name: "name"})
+	// AfterParse 内部 panic，Parse 必须把它转成 error 返回，而非静默吞掉。
+	fs.AfterParse = func(_ *gflag.Flags) error { panic("boom on after parse") }
+
+	err := fs.Parse([]string{"--name", "inhere"})
+	is.Err(err)
+	is.StrContains(err.Error(), "panic")
+}

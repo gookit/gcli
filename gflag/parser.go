@@ -196,8 +196,9 @@ func (p *Parser) Run(args []string) {
 //	err := gf.Parse(os.Args[1:])
 func (p *Parser) Parse(args []string) (err error) {
 	defer func() {
-		if err := recover(); err != nil {
-			color.Errorln("gflag.Parse Error:", err)
+		// NOTE: 必须赋值给具名返回值 err，否则 panic 会被静默吞掉、对外仍返回 nil。
+		if re := recover(); re != nil {
+			err = fmt.Errorf("gflag: parse options panic: %v", re)
 		}
 	}()
 
