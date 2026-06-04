@@ -72,7 +72,7 @@ func showProgressBar(maxStep int) {
 	}
 
 	p := progress.CustomBar(40, cs)
-	p.MaxSteps = uint(maxStep)
+	p.MaxSteps = int64(maxStep)
 	p.Format = progress.FullBarFormat
 	// p.Overwrite = true
 
@@ -92,7 +92,7 @@ func showAllProgressBar(maxStep int) {
 			p := progress.CustomBar(40, style)
 
 			// p.Newline = true
-			p.MaxSteps = uint(maxStep)
+			p.MaxSteps = int64(maxStep)
 			// p.Format = progress.FullBarFormat
 			p.Format = progress.BarFormat
 			p.AddMessage("message", fmt.Sprintf("Bar %d", i+1))
@@ -154,7 +154,7 @@ func dynamicTextBar(maxStep int) {
 
 func runLoadingBar(maxStep int) {
 	p := progress.LoadingBar(progress.RandomCharsTheme())
-	p.MaxSteps = uint(maxStep)
+	p.MaxSteps = int64(maxStep)
 	p.AddMessage("message", " data loading ... ...")
 
 	// running
