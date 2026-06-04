@@ -319,10 +319,9 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 		ccolor.Disable()
 	}
 
-	// if not set verbose, use global options
-	if app.opts.Verbose != defaultVerb {
-		app.opts.Verbose = gOpts.Verbose
-	}
+	// verbose 由环境变量 GCLI_VERBOSE 通过包级 gOpts 控制。
+	// 同步到 app.opts，使读取 app.Opts() 的用户代码也能拿到一致的级别。
+	app.opts.Verbose = gOpts.Verbose
 
 	Debugf("app options parsed, verbose: <mgb>%s</>, options: %#v", app.opts.Verbose.String(), app.opts)
 

@@ -191,8 +191,8 @@ func (g *GlobalOpts) bindingOpts(fs *gflag.Parser) {
 		return
 	}
 
-	// up: allow use int and string.
-	fs.VarOpt(&g.Verbose, "verbose", "verb", "Set logs reporting level(quiet 0 - 5 crazy)")
+	// NOTE: 不再自动绑定全局 --verbose 选项，避免污染上层应用的选项列表。
+	// 日志级别请通过环境变量 GCLI_VERBOSE 控制(见 VerbEnvName)，或调用 gcli.SetVerbose()。
 	// fs.BoolOpt(&g.NoColor, "no-color", "nc", g.NoColor, "Disable color when outputting message")
 	// fs.BoolOpt(&g.NoProgress, "no-progress", "np", g.NoProgress, "Disable display progress message")
 	fs.BoolOpt(&g.ShowVersion, "version", "V", false, "Display app version information")
