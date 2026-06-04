@@ -13,8 +13,9 @@
 
 ## 结构性重构（待评审 → 待实施）
 
-- [ ] A / F / G / H 四项重构，详见 [plans/refactor-A-F-G.md](plans/refactor-A-F-G.md)
-  - F：合并 `Parse`/`ParseOpts` 重复校验（低风险）
-  - A：全局选项单一数据源（中风险）
-  - G：`findCommandName` 去副作用（中风险）
-  - H：`helper/`→`internal/helper/`、清理 `gclicom/` 与死代码（机械，但对外破坏性）
+- [x] A / F / G / H 四项重构均已完成，详见 [plans/refactor-A-F-G.md](plans/refactor-A-F-G.md)
+  - [x] F：合并 `Parse`/`ParseOpts` 重复校验
+  - [x] A：全局选项单一数据源
+  - [x] G：`findCommandName` 去副作用
+  - [x] H：`helper/`→`internal/helper/`、清理 `gclicom/` 与死代码
+- [ ] 发版前：CHANGELOG/Release Notes 注明 v3.4.0 的破坏性变更（移除 `helper`/`gclicom` 公共包）与 A 的「多 App 共享全局选项」
