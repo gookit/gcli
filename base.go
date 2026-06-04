@@ -180,6 +180,9 @@ type base struct {
 	cmdNames map[string]int
 	// sub command aliases map. {alias: name}
 	cmdAliases *structs.Aliases
+	// command category names in insertion order. "" means the default group.
+	// useful for render grouped commands on help.
+	cmdCategories []string
 
 	// raw input command name
 	inputName string
@@ -318,6 +321,19 @@ func (b *base) addCommand(pName string, c *Command) {
 	Logf(VerbCrazy, "register command '%s'(parent: %s), aliases: %v", cName, pName, c.Aliases)
 	b.cmdAliases.AddAliases(c.Name, c.Aliases)
 	b.commands[cName] = c
+
+	// record category in insertion order, for grouped help render
+	b.recordCmdCategory(c.Category)
+}
+
+// record command category name in insertion order. ignore duplicate.
+func (b *base) recordCmdCategory(cat string) {
+	for _, name := range b.cmdCategories {
+		if name == cat {
+			return
+		}
+	}
+	b.cmdCategories = append(b.cmdCategories, cat)
 }
 
 // Match command by path names. eg: ["top", "sub"]

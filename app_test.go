@@ -149,6 +149,31 @@ func TestApp_AddCommand(t *testing.T) {
 	}, "GCli: the command name '+xdd' is invalid, must match: ^[a-zA-Z][\\w-]*$")
 }
 
+func TestApp_CommandsByGroup(t *testing.T) {
+	is := assert.New(t)
+
+	app := gcli.NewApp(func(a *gcli.App) { a.ExitOnEnd = false })
+	app.Add(&gcli.Command{Name: "migrate", Desc: "d", Category: "database"})
+	app.Add(&gcli.Command{Name: "serve", Desc: "d"}) // default group
+	app.Add(&gcli.Command{Name: "seed", Desc: "d", Category: "database"})
+	app.Add(&gcli.Command{Name: "commit", Desc: "d", Category: "git"})
+
+	groups := app.CommandsByGroup("Available Commands")
+	is.Len(groups, 3)
+
+	// keep category insertion order
+	is.Eq("database", groups[0].Name)
+	is.Eq("Database", groups[0].Title)
+	is.Eq("", groups[1].Name)
+	is.Eq("Available Commands", groups[1].Title)
+	is.Eq("git", groups[2].Name)
+
+	// commands inside a group sorted by name
+	is.Len(groups[0].Cmds, 2)
+	is.Eq("migrate", groups[0].Cmds[0].Name)
+	is.Eq("seed", groups[0].Cmds[1].Name)
+}
+
 func TestApp_AddAliases(t *testing.T) {
 	app := gcli.NewApp(func(a *gcli.App) {
 		a.ExitOnEnd = false

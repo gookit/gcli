@@ -2,6 +2,7 @@ package gcli
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 	"text/template"
 
@@ -19,6 +20,49 @@ type HelpConfig struct {
 	AfterCmdText string
 	// FooterText add help footer text on help end
 	FooterText string
+}
+
+// CmdGroup is a group of commands by category. used for render help.
+type CmdGroup struct {
+	// Name is the category name. "" means the default group.
+	Name string
+	// Title is the display title for help. eg: "Available Commands"
+	Title string
+	// Cmds are the visible commands of this group, sorted by name.
+	Cmds []*Command
+}
+
+// CommandsByGroup group all visible commands by their Category field.
+//
+// - groups keep the category insertion order(see base.cmdCategories).
+// - the default group(empty Category) uses defaultTitle as its title.
+// - returns nil when there is no visible command.
+func (b *base) CommandsByGroup(defaultTitle string) []*CmdGroup {
+	groups := make([]*CmdGroup, 0, len(b.cmdCategories))
+
+	for _, cat := range b.cmdCategories {
+		var cmds []*Command
+		for _, c := range b.commands {
+			if c.Category == cat && c.Visible() {
+				cmds = append(cmds, c)
+			}
+		}
+		if len(cmds) == 0 {
+			continue
+		}
+
+		sort.Slice(cmds, func(i, j int) bool {
+			return cmds[i].Name < cmds[j].Name
+		})
+
+		title := defaultTitle
+		if cat != "" {
+			title = strutil.UpperFirst(cat)
+		}
+		groups = append(groups, &CmdGroup{Name: cat, Title: title, Cmds: cmds})
+	}
+
+	return groups
 }
 
 /*************************************************************
@@ -61,9 +105,9 @@ var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
 
 <comment>Global Options:</>
 {{.GOpts}}
-<comment>Available Commands:</>{{range $cmdName, $c := .Cs}}{{if $c.Visible}}
-  <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}{{end}}
-  <info>{{ paddingName "help" }}</> Display help information
+{{range $g := .CmdGroups}}<comment>{{$g.Title}}:</>{{range $c := $g.Cmds}}
+  <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
+{{end}}  <info>{{ paddingName "help" }}</> Display help information
 
 {{.Help.AfterCmdText}}Use "<cyan>{$binName} COMMAND -h</>" for more information about a command.{{.Help.FooterText}}
 `
@@ -76,8 +120,8 @@ func (app *App) showApplicationHelp() bool {
 	// cmdHelpTemplate = color.ReplaceTag(cmdHelpTemplate)
 	// render help text template
 	s := helper.RenderText(AppHelpTemplate, map[string]any{
-		"Cs":    app.commands,
-		"GOpts": app.fs.BuildOptsHelp(),
+		"CmdGroups": app.CommandsByGroup("Available Commands"),
+		"GOpts":     app.fs.BuildOptsHelp(),
 		// app version
 		"Version": app.Version,
 		"HasSubs": app.hasSubcommands,
@@ -196,7 +240,7 @@ var CmdHelpTemplate = `{{.Desc}}
 {{if .Cmd.NotStandalone}}
 <comment>Name:</> {{.Cmd.Name}}{{if .Cmd.Aliases}} (alias: <info>{{.Cmd.Aliases.String}}</>){{end}}{{end}}
 <comment>Usage:</>
-  {$binName} [global options] {{if .Cmd.NotStandalone}}<cyan>{{.Cmd.Path}}</> {{end}}[--options ...] [arguments ...]{{ if .Subs }}
+  {$binName} [global options] {{if .Cmd.NotStandalone}}<cyan>{{.Cmd.Path}}</> {{end}}[--options ...] [arguments ...]{{ if .SubGroups }}
   {$binName} [global options] {{if .Cmd.NotStandalone}}<cyan>{{.Cmd.Path}}</> {{end}}<cyan>SUBCOMMAND</> [--options ...] [arguments ...]{{end}}
 {{if .GOpts}}
 <comment>Global Options:</>
@@ -204,9 +248,9 @@ var CmdHelpTemplate = `{{.Desc}}
 <comment>Options:</>
 {{.Options}}{{end}}{{if .ArgsHelp}}
 <comment>Arguments:</>
-{{.ArgsHelp}}{{end}}{{ if .Subs }}
-<comment>Subcommands:</>{{range $n,$c := .Subs}}{{if $c.Visible}}
-  <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}{{end}}
+{{.ArgsHelp}}{{end}}{{range $g := .SubGroups}}
+<comment>{{$g.Title}}:</>{{range $c := $g.Cmds}}
+  <info>{{$c.Name | paddingName }}</> {{$c.HelpDesc}}{{if $c.Aliases}} (alias: <green>{{ join $c.Aliases ","}}</>){{end}}{{end}}
 {{end}}{{.Help.AfterCmdText}}{{if .Cmd.Examples}}
 <comment>Examples:</>
 {{.Cmd.Examples}}{{end}}{{if .Cmd.Help}}
@@ -234,8 +278,8 @@ func (c *Command) ShowHelp() (err error) {
 	}
 
 	vars := map[string]any{
-		"Cmd":  c,
-		"Subs": c.commands,
+		"Cmd":       c,
+		"SubGroups": c.CommandsByGroup("Subcommands"),
 		// global options
 		// - on standalone
 		"GOpts": nil,
