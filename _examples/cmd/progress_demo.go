@@ -115,7 +115,7 @@ func showAllProgressBar(maxStep int) {
 }
 
 func runRoundTripBar(max int) {
-	p := progress.RoundTrip(0).WithMaxSteps(max)
+	p := progress.RoundTrip(0).WithMaxSteps(int64(max))
 
 	// running
 	runProgressBar(p, max, 120)
@@ -124,7 +124,7 @@ func runRoundTripBar(max int) {
 }
 
 func txtProgressBar(maxStep int) {
-	txt := progress.Txt(maxStep)
+	txt := progress.Txt(int64(maxStep))
 	txt.AddMessage("message", "Handling ... ")
 	// txt.Overwrite = false
 	// running
@@ -144,7 +144,7 @@ func dynamicTextBar(maxStep int) {
 	}
 
 	// maxStep = 10
-	p := progress.DynamicText(messages, maxStep)
+	p := progress.DynamicText(messages, int64(maxStep))
 	// p.Overwrite = false
 
 	// running
