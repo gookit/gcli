@@ -1,14 +1,15 @@
-# 重构实现计划：A / F / G
+# 重构实现计划：A / F / G / H
 
 > 状态：**待评审**（评审通过后再实施）
-> 范围：`gcli` 包结构性优化，均为**纯重构**，对外行为/公共 API 尽量保持不变
-> 建议实施顺序：**F → A → G**（按风险从低到高）
+> 范围：`gcli` 包结构性优化。A/F/G 为**纯重构**(对外 API 不变)；**H 含对外破坏性变更**(需配合次版本号)。
+> 建议实施顺序：**F → A → G → H**（H 与前三项正交，可独立进行）
 
-本计划对应前期分析中的三个结构性问题：
+本计划对应的结构性问题：
 
 - **A**：`gOpts`（包级单例）与 `app.opts`（实例级副本）双份割裂
 - **F**：`CliOpts.ParseOpts` 与 `Parser.Parse` 解析+校验逻辑重复
 - **G**：`findCommandName` 以副作用方式就地修改 `app.args`
+- **H**：把内部工具 `helper/` 收敛进 `internal/`，并清理无引用的死代码（`internal/help_tpl.go`、`gclicom/`）
 
 ---
 
@@ -160,6 +161,58 @@
 
 ---
 
+## H. 收敛内部 API 到 internal + 清理死代码
+
+> 范围：**最小 + 一并清 gclicom**（评审结论）。**含对外破坏性变更**，需配合次版本号与 CHANGELOG。
+
+### 前置结论（已核实）
+
+- **`base` 不迁、不动**：`base` 已是包私有类型（`base.go:154` `type base`，小写），外部无法引用——真正对外的只是它提升到 `App`/`Command` 上的方法。把 `base` 抽到独立 `internal` 包会触发 **import 环**：`base` 持有 `map[string]*Command`、返回 `*Command/*App`（引用 10 处），`internal` 需 `import gcli`，而 `gcli` 又要 `import internal` 内嵌 `base`。除非泛型/接口大改否则不可行，且收益≈0。**本项不处理 base。**
+- `internal/` 目前仅有 `help_tpl.go`，内容是 3 行空壳（`// var AppHelp` 注释），**无人引用**。
+- `gclicom/`（`Output/SetOutput/ResetOutput` + `TextPos/BorderPos`，共 39 行）**全仓零引用**（go 源码、`_examples`、README、docs 均无），疑为 show/progress 移除后的遗留。
+
+### H1. `helper/` → `internal/helper/`
+
+`helper` 导出 `IsGoodName/IsGoodCmdId/IsGoodCmdName/Panicf/RenderText` + 正则常量，纯内部工具。模块内 7 个调用方：
+`help.go`、`app.go`、`cmd.go`、`util.go`、`builtin/gen_auto_complete.go`、`gflag/args.go`、`gflag/opts.go`。
+
+做法（一次原子提交）：
+
+1. `git mv helper internal/helper`（包名保持 `package helper` 不变）。
+2. 7 个文件的 import 路径：`gcli/v3/helper` → `gcli/v3/internal/helper`；调用处 `helper.X` **无需改**（包名不变）。
+3. `internal/helper` 对模块内全部可见（internal 规则允许模块根下任意包导入），`gflag`/`builtin` 等照常引用。
+
+> **破坏性**：外部若直接 `import gcli/v3/helper` 将失效。这些是内部校验/渲染工具，不属常规对外用法，可接受。
+
+### H2. 删除死代码 `internal/help_tpl.go`
+
+3 行空壳、无引用 → 直接 `git rm internal/help_tpl.go`（H1 后 `internal/` 由 `internal/helper/` 承载，不留空包）。
+
+### H3. 清理未引用的 `gclicom/`
+
+全仓零引用。两种处理（**推荐删除**，移动死代码意义不大）：
+
+- **推荐**：`git rm -r gclicom`（破坏性移除）。
+- 备选：若想保留这些类型供日后用，`git mv gclicom internal/gclicom`（同样对外破坏，但至少不再属公共 API）。
+
+> 删除/迁移均为对外破坏性变更，需在 CHANGELOG 注明。
+
+### 兼容性 / 风险
+
+- **无行为变化**，纯包归属调整；构建在 import 全部改完前会断，故每步**单提交内保持可编译**。
+- 破坏性仅限外部直接 import `helper/`、`gclicom/` 的用户 → **建议随次版本号发布**并在 CHANGELOG/Release Notes 列明。
+
+### 测试
+
+- 无需新增用例；以 `go build ./...`、`go test ./. ./gflag`、`go build ./_examples/cliapp` 全绿为准。
+
+### 提交拆分（2 个提交）
+
+- `refactor(helper): 迁移 helper 至 internal/helper，删除空壳 internal/help_tpl.go`
+- `chore: 移除未引用的 gclicom 包`
+
+---
+
 ## 总览与排期
 
 | 项 | 风险 | 影响文件 | 公共 API | 预估改动 |
@@ -167,12 +220,15 @@
 | F | 低 | `gflag/opts.go`、`gflag/parser.go` | 不变 | ~30 行 |
 | A | 中 | `app.go`、（`gcli.go` 核对）| 不变 | ~15 行 + 测试 |
 | G | 中 | `app.go` | 不变 | ~60 行 + 测试 |
+| H | 低(机械)，但**破坏性** | `helper/`→`internal/helper/`、7 处 import、删 `gclicom/`、`internal/help_tpl.go` | **破坏**(移除 `helper`/`gclicom` 公共包) | 机械移动 |
 
-**建议顺序 F → A → G**，每项独立提交、独立跑全量 `go test . ./gflag` 后再进入下一项。
+**建议顺序 F → A → G → H**，每项独立提交、独立跑全量 `go test . ./gflag` 后再进入下一项。
+H 与 A/F/G 正交，可单独/最后做；因含破坏性，**建议随次版本号一起发布**。
 
 ### 实施清单（实施时勾选）
 
 - [ ] F：抽 `validateAll`，`Parse`/`ParseOpts` 复用；全量测试通过
 - [ ] A：`App` 复用 `gOpts`，删同步补丁，统一 `inCompletion`；补单测；全量测试通过
 - [ ] G：`findCommandName` 改 `foundCmd` 无副作用；补分支单测；全量回归通过
-- [ ] 在 CHANGELOG/README 注明 A 的「多 App 共享全局选项」行为说明
+- [ ] H：`helper`→`internal/helper`、删 `internal/help_tpl.go` 与 `gclicom/`；`go build ./... && go test` 全绿
+- [ ] 在 CHANGELOG/README 注明：A 的「多 App 共享全局选项」、H 的「移除 helper/gclicom 公共包」
