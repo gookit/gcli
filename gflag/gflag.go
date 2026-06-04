@@ -42,7 +42,7 @@ const (
 	FlagTypeString = "string"
 	FlagTypeBool   = "bool"
 	FlagTypeFloat  = "float" // float*
-	FlagTypeDur = "dur"      // time.Duration
+	FlagTypeDur    = "dur"   // time.Duration
 	FlagTypeVar    = "var"
 	FlagTypeFunc   = "func"
 )

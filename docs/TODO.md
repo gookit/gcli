@@ -9,7 +9,7 @@
   已改为复制 map 后再加 `help`。
 - [x] **`TestApp_showCommandHelp` 断言失效**：改为每场景全新 app + `StrContains`，
   并验证「去掉 help 修复则测试 FAIL」，确保断言真正生效；新增防污染回归测试。
-- [ ] 预存 gofmt 漂移：`gflag/gflag.go`、`gflag/util.go`、`builtin/tcpproxy/tcp_proxy.go`。
+- [x] 预存 gofmt 漂移：`gflag/gflag.go`、`gflag/util.go`、`builtin/tcpproxy/tcp_proxy.go`。
 
 ## 结构性重构（待评审 → 待实施）
 

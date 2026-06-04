@@ -43,7 +43,7 @@ func panicf(format string, v ...any) {
 //	default
 var (
 	// real keys
-	flagTagKeys  = arrutil.Strings{"name", "desc", "required", "default", "shorts"}
+	flagTagKeys = arrutil.Strings{"name", "desc", "required", "default", "shorts"}
 	// use for parse named rule.
 	//  - short: alias for shorts
 	namedTagKeys = arrutil.Strings{"name", "desc", "required", "default", "shorts", "short"}

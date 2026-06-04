@@ -8,8 +8,9 @@ import (
 
 // TCPProxy definition.
 // refs:
-// 	https://www.jianshu.com/p/53e219fbf3c5
-// 	https://github.com/yangxikun/gsproxy
+//
+//	https://www.jianshu.com/p/53e219fbf3c5
+//	https://github.com/yangxikun/gsproxy
 type TCPProxy struct {
 	lock sync.Mutex
 }
