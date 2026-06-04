@@ -339,9 +339,9 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 
 // prepare to run command
 //
-//	- parse args
-//	- check global options
-//	- get command name and command args
+//   - parse args
+//   - check global options
+//   - get command name and command args
 func (app *App) prepareRun() (code PrepareState, name string) {
 	// find command name. (pure parse; apply the result here in one place)
 	fc := app.findCommandName(app.args)
