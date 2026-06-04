@@ -459,8 +459,9 @@ func (app *App) findCommandName(args []string) foundCmd {
 		remain = args[1:]
 	}
 
-	// it is an exists command name.
-	if app.IsCommand(name) {
+	// it is an exists command name, or the built-in 'help' command.
+	// NOTE: 'help' 不在 cmdNames 中，由 prepareRun 的 name==HelpCommand 分支处理。
+	if name == HelpCommand || app.IsCommand(name) {
 		Debugf("the raw input command: '<cyan>%s</>'; real name: '<green>%s</>', args: %v", rawName, name, remain)
 		return foundCmd{state: Founded, name: name, raw: rawName, args: remain}
 	}

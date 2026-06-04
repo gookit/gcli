@@ -381,48 +381,60 @@ func TestApp_AddAliases_and_run(t *testing.T) {
 func TestApp_showCommandHelp(t *testing.T) {
 	is := assert.New(t)
 
-	app := gcli.NewApp(func(a *gcli.App) {
-		a.ExitOnEnd = false
-	})
+	// 每个场景使用全新 app，避免跨次 Run 的状态干扰(原测试靠一次 warmup 运行
+	// 触发 findSimilarCmd 污染 cmdNames 才能"碰巧"通过，已随 help 修复一并修正)
+	runHelp := func(args []string) (int, string) {
+		app := gcli.NewApp(func(a *gcli.App) { a.ExitOnEnd = false })
+		app.AddCommand(gcli.NewCommand("test", "desc for test command"))
 
-	app.AddCommand(gcli.NewCommand("test", "desc for test command"))
+		b := new(bytes.Buffer)
+		color.Disable()
+		color.SetOutput(b)
+		defer color.ResetOptions()
 
-	app.Run([]string{"help", "test"})
+		code := app.Run(args)
+		return code, b.String()
+	}
 
-	// disable color code, re-set output for test
+	// show command help
+	code, str := runHelp([]string{"help", "test"})
+	is.Eq(gcli.OK.ToInt(), code)
+	is.StrContains(str, "Name: test")
+	is.StrContains(str, "Desc for test command")
+
+	// show command help: arg error
+	code, str = runHelp([]string{"help", "test", "more"})
+	is.Eq(gcli.ERR.ToInt(), code)
+	is.StrContains(str, "Too many arguments given.")
+
+	// show command help for 'help'
+	code, str = runHelp([]string{"help", "help"})
+	is.Eq(gcli.OK.ToInt(), code)
+	is.StrContains(str, "Display help message for application or command.")
+
+	// show command help: unknown command
+	code, str = runHelp([]string{"help", "not-exist"})
+	is.Eq(gcli.ERR.ToInt(), code)
+	is.StrContains(str, "Unknown command name 'not-exist'")
+}
+
+func TestApp_findSimilarCmd_noPollution(t *testing.T) {
+	is := assert.New(t)
+	app := gcli.NewApp(func(a *gcli.App) { a.ExitOnEnd = false })
+	app.AddCommand(gcli.NewCommand("test", "desc"))
+
 	b := new(bytes.Buffer)
 	color.Disable()
 	color.SetOutput(b)
 	defer color.ResetOptions()
 
-	// show command help
-	code := app.Run([]string{"help", "test"})
-	str := b.String()
-	b.Reset()
-	is.Eq(0, code)
-	is.Contains(str, "Name: test")
-	is.Contains(str, "Desc for test command")
+	// 拼错的命令会触发 findSimilarCmd，给出相似命令提示
+	app.Run([]string{"helpp"})
+	is.StrContains(b.String(), "Maybe you mean")
 
-	// show command help: arg error
-	code = app.Run([]string{"help", "test", "more"})
-	str = b.String()
-	b.Reset()
-	is.Eq(gcli.ERR.ToInt(), code)
-	is.Contains(str, "ERROR: Too many arguments given.")
-
-	// show command help for 'help'
-	code = app.Run([]string{"help", "help"})
-	str = b.String()
-	b.Reset()
-	is.Eq(gcli.OK.ToInt(), code)
-	is.Contains(str, "Display help message for application or command.")
-
-	// show command help: unknown command
-	code = app.Run([]string{"help", "not-exist"})
-	str = b.String()
-	b.Reset()
-	is.Eq(gcli.ERR.ToInt(), code)
-	is.Contains(str, "Unknown command name 'not-exist'")
+	// 关键回归：findSimilarCmd 不能把 'help' 写进真实的命令注册表
+	is.False(app.IsCommand("help"))
+	is.Len(app.CmdNameMap(), 1)
 }
 
 func TestApp_showVersion(t *testing.T) {

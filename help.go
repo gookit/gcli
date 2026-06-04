@@ -194,8 +194,14 @@ func (app *App) findSimilarCmd(input string) []string {
 	// fmt.Print(input, ins)
 	ln := len(input)
 
-	names := app.CmdNameMap()
-	names["help"] = 4 // add 'help' command
+	// NOTE: copy the map. CmdNameMap() returns the real cmdNames map, mutating it
+	// here would pollute the command registry(eg add a phantom 'help' command).
+	src := app.CmdNameMap()
+	names := make(map[string]int, len(src)+1)
+	for n, l := range src {
+		names[n] = l
+	}
+	names["help"] = 4 // add built-in 'help' command for matching
 
 	// find from command names
 	for name := range names {
