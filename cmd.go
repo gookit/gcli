@@ -676,7 +676,9 @@ func (c *Command) Copy() *Command {
 	nc := *c
 	// reset some fields
 	nc.Func = nil
-	nc.Hooks.ResetHooks() // TODO bug, will clear c.Hooks
+	// 副本需独立的 Hooks：base 内嵌的是 *Hooks 指针，浅拷贝会与原命令共享，
+	// 直接 ResetHooks() 会清空原命令的钩子，这里改为赋予一个全新的空 Hooks。
+	nc.Hooks = &Hooks{}
 
 	return &nc
 }

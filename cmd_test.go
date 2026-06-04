@@ -482,3 +482,17 @@ func TestBooleans(t *testing.T) {
 	err = val.Set("abc")
 	is.Err(err)
 }
+
+func TestCommand_Copy(t *testing.T) {
+	is := assert.New(t)
+
+	c := gcli.NewCommand("orig", "desc")
+	c.On(gcli.EvtCmdInit, func(ctx *gcli.HookCtx) bool { return false })
+	is.True(c.HasHook(gcli.EvtCmdInit))
+
+	nc := c.Copy()
+	// 副本不应继承原命令的钩子
+	is.False(nc.HasHook(gcli.EvtCmdInit))
+	// 关键回归点：Copy 不能清空原命令的钩子
+	is.True(c.HasHook(gcli.EvtCmdInit))
+}
