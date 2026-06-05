@@ -15,6 +15,19 @@ const (
 	BashShell = "bash"
 )
 
+// hasMetaFlag 判断 args 中是否含补全/生成元选项 token(--in-completion / --gen-completion),
+// 兼容 --gen-completion 与 --gen-completion=bash 两种写法。
+// 命中时本次运行为补全/生成请求, 需进入静默模式(抑制用户生命周期钩子)。
+func hasMetaFlag(args []string) bool {
+	for _, arg := range args {
+		if arg == "--in-completion" || strings.HasPrefix(arg, "--in-completion=") ||
+			arg == "--gen-completion" || strings.HasPrefix(arg, "--gen-completion=") {
+			return true
+		}
+	}
+	return false
+}
+
 // resolveCompletion 计算运行期动态补全候选。
 //
 // 输入 words 是 shell 传入、已去掉 bin 名的命令行片段(--in-completion 选项本身已被解析消费)。
@@ -155,38 +168,74 @@ func filterAndSort(items []string, prefix string) []string {
 	return out
 }
 
-// shellTpls 内置的各 shell 补全脚本模板表
+// shellTpls 内置的各 shell **静态**补全脚本模板表(嵌入式: 把命令/选项硬编码进脚本)。
 var shellTpls = map[string]string{
 	ZshShell:  zshCompleteScriptTpl,
 	BashShell: bashCompleteScriptTpl,
 }
 
-// GenCompletionScript 生成指定 shell 的静态补全脚本文本。
+// dynamicShellTpls 内置的各 shell **动态(瘦)**补全脚本模板表。
+// 瘦脚本不硬编码命令/选项, 而是回调二进制 `bin --in-completion <已输入词...>` 取候选, 零维护。
+var dynamicShellTpls = map[string]string{
+	ZshShell:  zshDynamicTpl,
+	BashShell: bashDynamicTpl,
+}
+
+// normalizeBinName 取脚本中使用的 bin 名: 允许调用方覆盖, 否则用当前应用 bin 名;
+// 并规整(去掉 ./ 前缀与 .exe 后缀)。
+func (app *App) normalizeBinName(binName ...string) string {
+	rawBin := app.BinName()
+	if len(binName) > 0 && binName[0] != "" {
+		rawBin = binName[0]
+	}
+	return strings.TrimSuffix(strings.Trim(rawBin, "./"), ".exe")
+}
+
+// GenCompletionScript 生成指定 shell 的**动态(瘦)**补全脚本文本(默认方式)。
+//
+// 瘦脚本不硬编码命令/选项, 而是回调 `bin --in-completion <已输入词...>` 动态取候选,
+// 命令/选项变化后无需重新生成脚本, 零维护。
+//
+//   - shell: 目标 shell, 取值 bash|zsh, 其它返回 error。
+//   - binName: 可选, 覆盖脚本中使用的 bin 名(如 genac 的 --bin-name);
+//     不传则使用当前应用的 bin 名。
+func (app *App) GenCompletionScript(shell string, binName ...string) (string, error) {
+	tpl, ok := dynamicShellTpls[shell]
+	if !ok {
+		return "", fmt.Errorf("gcli: unsupported shell %q for completion, only allow: bash, zsh", shell)
+	}
+
+	name := app.normalizeBinName(binName...)
+	data := map[string]any{
+		"Shell":    shell,
+		"BinName":  name,
+		"FileName": name + "." + shell,
+	}
+
+	return helper.RenderText(tpl, &data, nil), nil
+}
+
+// GenStaticCompletionScript 生成指定 shell 的**静态(嵌入式)**补全脚本文本。
+//
+// 静态脚本把当前已注册的命令名/描述/选项硬编码进脚本; 命令/选项变化后需重新生成。
+// 一般推荐使用 GenCompletionScript(瘦/动态); 仅在无法回调二进制等场景下用此 opt-in 方式。
 //
 //   - shell: 目标 shell, 取值 bash|zsh, 其它返回 error。
 //   - binName: 可选, 覆盖脚本中使用的 bin 名(如 genac 的 --bin-name);
 //     不传则使用当前应用的 bin 名。
 //
 // 生成所需的数据(BinName、命令名/描述、各命令选项等)均从 app 当前已注册的命令中取得。
-func (app *App) GenCompletionScript(shell string, binName ...string) (string, error) {
+func (app *App) GenStaticCompletionScript(shell string, binName ...string) (string, error) {
 	tpl, ok := shellTpls[shell]
 	if !ok {
 		return "", fmt.Errorf("gcli: unsupported shell %q for completion, only allow: bash, zsh", shell)
 	}
 
-	// bin 名称: 允许调用方覆盖, 否则用当前应用 bin 名
-	rawBin := app.BinName()
-	if len(binName) > 0 && binName[0] != "" {
-		rawBin = binName[0]
-	}
-	// 规整: 去掉 ./ 前缀与 .exe 后缀
-	name := strings.TrimSuffix(strings.Trim(rawBin, "./"), ".exe")
-	fileName := name + "." + shell
-
+	name := app.normalizeBinName(binName...)
 	data := map[string]any{
 		"Shell":    shell,
 		"BinName":  name,
-		"FileName": fileName,
+		"FileName": name + "." + shell,
 	}
 
 	if shell == BashShell {
@@ -391,3 +440,53 @@ func fmtDes(str string) string {
 	str = color.ClearTag(str)
 	return strings.NewReplacer("`", "", "[", "", "]", "").Replace(str)
 }
+
+// bashDynamicTpl 瘦(动态) bash 补全脚本模板:
+// 把"光标前的已输入词(含当前词)"传给 `bin --in-completion`, 每行输出作为一个候选喂给 compgen。
+var bashDynamicTpl = `#!/usr/bin/env {{.Shell}}
+
+# ------------------------------------------------------------------------------
+#          FILE:  {{.FileName}}
+#        AUTHOR:  inhere (https://github.com/inhere)
+#       VERSION:  1.0.0
+#   DESCRIPTION:  dynamic bash complete for cli app: {{.BinName}}
+#                 it delegates candidate computing to: {{.BinName}} --in-completion
+# ------------------------------------------------------------------------------
+# Usage: source {{.FileName}}
+
+_complete_for_{{.BinName}} () {
+    local cur words
+    cur="${COMP_WORDS[COMP_CWORD]}"
+    # 已输入的词(从命令名之后到当前光标处, 含当前正在输入的词), 交给二进制计算候选
+    words=("${COMP_WORDS[@]:1:$COMP_CWORD}")
+
+    local IFS=$'\n'
+    # 2>/dev/null 丢弃 stderr, 只取 stdout 的候选行
+    COMPREPLY=( $(compgen -W "$("{{.BinName}}" --in-completion "${words[@]}" 2>/dev/null)" -- "$cur") )
+}
+
+# complete -F {auto_complete_func} {bin_filename}
+complete -F _complete_for_{{.BinName}} {{.BinName}} {{.BinName}}.exe
+`
+
+// zshDynamicTpl 瘦(动态) zsh 补全脚本模板:
+// 把"命令名之后的已输入词"传给 `bin --in-completion`, 按行切分后用 compadd 作为候选。
+var zshDynamicTpl = `#compdef {{.BinName}}
+# ------------------------------------------------------------------------------
+#          FILE:  {{.FileName}}
+#        AUTHOR:  inhere (https://github.com/inhere)
+#       VERSION:  1.0.0
+#   DESCRIPTION:  dynamic zsh complete for cli app: {{.BinName}}
+#                 it delegates candidate computing to: {{.BinName}} --in-completion
+# ------------------------------------------------------------------------------
+# Usage: source {{.FileName}}
+
+_complete_for_{{.BinName}} () {
+    local -a candidates
+    # ${words[@]:1} 去掉命令名, 余下为已输入词(含当前词); ${(@f)...} 按行切分为数组
+    candidates=("${(@f)$("{{.BinName}}" --in-completion "${words[@]:1}" 2>/dev/null)}")
+    compadd -- $candidates
+}
+
+compdef _complete_for_{{.BinName}} {{.BinName}}
+`

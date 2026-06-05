@@ -22,6 +22,7 @@ var genOpts = &struct {
 	shell   string
 	binName string
 	output  string
+	static  bool
 }{}
 
 // GenAutoComplete create command
@@ -58,6 +59,13 @@ func GenAutoComplete(fns ...func(c *gcli.Command)) *gcli.Command {
 		"o",
 		"auto-completion."+shell,
 		"output shell auto completion script file name.",
+	)
+	c.BoolOpt(
+		&genOpts.static,
+		"static",
+		"S",
+		false,
+		"generate static(embedded) completion script instead of the default dynamic(thin) one.",
 	)
 
 	for _, fn := range fns {
@@ -98,9 +106,14 @@ func doGen(c *gcli.Command, _ []string) (err error) {
 		return
 	}
 
-	// 复用 gcli 内置的静态补全脚本生成逻辑(模板/取数已下沉到 gcli 包)
-	// 传入 genOpts.binName 以保留 --bin-name 定制能力
-	str, err := c.App().GenCompletionScript(genOpts.shell, genOpts.binName)
+	// 默认生成动态(瘦)脚本; --static/-S 时生成静态(嵌入式)脚本。
+	// 传入 genOpts.binName 以保留 --bin-name 定制能力。
+	var str string
+	if genOpts.static {
+		str, err = c.App().GenStaticCompletionScript(genOpts.shell, genOpts.binName)
+	} else {
+		str, err = c.App().GenCompletionScript(genOpts.shell, genOpts.binName)
+	}
 	if err != nil {
 		return c.NewErrf("%s", err.Error())
 	}

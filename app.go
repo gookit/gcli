@@ -79,6 +79,11 @@ type App struct {
 	// the default command name.
 	// if is empty, will render help message.
 	defaultCommand string
+
+	// completionMode 标记本次运行是否为补全/生成请求(--in-completion / --gen-completion)。
+	// 为 true 时抑制用户生命周期钩子(OnAppInit*/OnApp(Global)OptsParsed)的触发,
+	// 保证 stdout 只剩补全候选或脚本本身, 不被钩子里的输出污染(委托式脚本会解析这些输出)。
+	completionMode bool
 }
 
 // New alias of the NewApp()
@@ -155,7 +160,16 @@ func (app *App) initialize() {
 	}
 
 	app.initialized = true
-	app.Fire(events.OnAppInitBefore, nil)
+	// 关键: initialize 常由首个 Add() 触发, 早于 Run() 设定 completionMode。
+	// 故此处再次从 os.Args 兜底判定: 若本次是补全/生成请求, 进入静默模式,
+	// 抑制后续 init 钩子(否则钩子输出会在 Add 阶段就污染补全候选/脚本)。
+	if !app.completionMode {
+		app.completionMode = hasMetaFlag(os.Args[1:])
+	}
+	// 补全模式下不触发用户 init 钩子, 避免钩子输出污染补全候选/脚本
+	if !app.completionMode {
+		app.Fire(events.OnAppInitBefore, nil)
+	}
 	Logf(VerbCrazy, "initialize the cli application")
 
 	// init some info
@@ -167,7 +181,9 @@ func (app *App) initialize() {
 		app.On(events.OnAppRunError, defaultErrHandler)
 	}
 
-	app.Fire(events.OnAppInitAfter, nil)
+	if !app.completionMode {
+		app.Fire(events.OnAppInitAfter, nil)
+	}
 }
 
 // binding app options
@@ -302,15 +318,19 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 	}
 
 	app.args = app.fs.FSetArgs()
-	evtData := map[string]any{"args": app.args}
-	if app.Fire(events.OnAppOptsParsed, evtData) {
-		Logf(VerbDebug, "stop running on the event %s return True", events.OnGlobalOptsParsed)
-		return
-	}
+	// 补全模式下不触发 opts-parsed 用户钩子(只在非补全模式下 Fire 并判断返回值),
+	// 保持原有"Fire 返回 true 即 return"的语义。
+	if !app.completionMode {
+		evtData := map[string]any{"args": app.args}
+		if app.Fire(events.OnAppOptsParsed, evtData) {
+			Logf(VerbDebug, "stop running on the event %s return True", events.OnGlobalOptsParsed)
+			return
+		}
 
-	if app.Fire(events.OnGlobalOptsParsed, evtData) {
-		Debugf("stop running on the event %s return True", events.OnGlobalOptsParsed)
-		return
+		if app.Fire(events.OnGlobalOptsParsed, evtData) {
+			Debugf("stop running on the event %s return True", events.OnGlobalOptsParsed)
+			return
+		}
 	}
 
 	// check global options
@@ -506,13 +526,17 @@ func (app *App) QuickRun() int { return app.Run(os.Args[1:]) }
 //	// custom args
 //	app.Run([]string{"cmd", "--name", "inhere"})
 func (app *App) Run(args []string) (code int) {
-	// ensure application initialized
-	app.initialize()
-
 	// if not input args
 	if args == nil {
 		args = os.Args[1:] // exclude first arg, it's binFile.
 	}
+
+	// 在 initialize() 之前判定本次是否为补全/生成请求, 以便 init 阶段抑制用户钩子,
+	// 保证 stdout 只剩补全候选/脚本本身。
+	app.completionMode = hasMetaFlag(args)
+
+	// ensure application initialized
+	app.initialize()
 
 	Debugf("will begin run application. input-args: %v", args)
 

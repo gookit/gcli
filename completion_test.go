@@ -32,12 +32,67 @@ func newCompletionApp() *gcli.App {
 	return app
 }
 
+// TestApp_GenCompletionScript 默认产**瘦(动态)**脚本: 委托 --in-completion 取候选,
+// 脚本里不应硬编码命令名/选项名。
 func TestApp_GenCompletionScript(t *testing.T) {
 	app := newCompletionApp()
 	binName := app.BinName()
 
 	t.Run("bash", func(t *testing.T) {
 		script, err := app.GenCompletionScript(gcli.BashShell)
+		assert.NoErr(t, err)
+		assert.NotEmpty(t, script)
+
+		// 瘦脚本特征: bin 名、委托回调、bash 注册指令
+		assert.StrContains(t, script, binName)
+		assert.StrContains(t, script, "--in-completion")
+		assert.StrContains(t, script, "_complete_for_")
+		assert.StrContains(t, script, "complete -F")
+		// 不应硬编码命令名/选项名(交给 --in-completion 动态计算)
+		assert.StrNotContains(t, script, "build")
+		assert.StrNotContains(t, script, "clean")
+		assert.StrNotContains(t, script, "--name")
+		assert.StrNotContains(t, script, "--force")
+	})
+
+	t.Run("zsh", func(t *testing.T) {
+		script, err := app.GenCompletionScript(gcli.ZshShell)
+		assert.NoErr(t, err)
+		assert.NotEmpty(t, script)
+
+		assert.StrContains(t, script, binName)
+		assert.StrContains(t, script, "--in-completion")
+		assert.StrContains(t, script, "compdef")
+		// 不应硬编码命令名
+		assert.StrNotContains(t, script, "build")
+		assert.StrNotContains(t, script, "clean")
+	})
+
+	t.Run("invalid shell", func(t *testing.T) {
+		script, err := app.GenCompletionScript("pwsh")
+		assert.Err(t, err)
+		assert.Empty(t, script)
+	})
+
+	t.Run("override bin name", func(t *testing.T) {
+		// 传入自定义 bin 名(对应 genac 的 --bin-name), 脚本正文应使用它
+		script, err := app.GenCompletionScript(gcli.BashShell, "./myapp.exe")
+		assert.NoErr(t, err)
+		// 规整后应为 myapp
+		assert.StrContains(t, script, "_complete_for_myapp")
+		assert.StrContains(t, script, "complete -F _complete_for_myapp myapp")
+		// 委托回调使用规整后的 bin 名
+		assert.StrContains(t, script, `"myapp" --in-completion`)
+	})
+}
+
+// TestApp_GenStaticCompletionScript 静态(嵌入式)脚本应把命令名/选项名硬编码进脚本。
+func TestApp_GenStaticCompletionScript(t *testing.T) {
+	app := newCompletionApp()
+	binName := app.BinName()
+
+	t.Run("bash", func(t *testing.T) {
+		script, err := app.GenStaticCompletionScript(gcli.BashShell)
 		assert.NoErr(t, err)
 		assert.NotEmpty(t, script)
 
@@ -52,7 +107,7 @@ func TestApp_GenCompletionScript(t *testing.T) {
 	})
 
 	t.Run("zsh", func(t *testing.T) {
-		script, err := app.GenCompletionScript(gcli.ZshShell)
+		script, err := app.GenStaticCompletionScript(gcli.ZshShell)
 		assert.NoErr(t, err)
 		assert.NotEmpty(t, script)
 
@@ -65,16 +120,14 @@ func TestApp_GenCompletionScript(t *testing.T) {
 	})
 
 	t.Run("invalid shell", func(t *testing.T) {
-		script, err := app.GenCompletionScript("pwsh")
+		script, err := app.GenStaticCompletionScript("pwsh")
 		assert.Err(t, err)
 		assert.Empty(t, script)
 	})
 
 	t.Run("override bin name", func(t *testing.T) {
-		// 传入自定义 bin 名(对应 genac 的 --bin-name), 脚本正文应使用它
-		script, err := app.GenCompletionScript(gcli.BashShell, "./myapp.exe")
+		script, err := app.GenStaticCompletionScript(gcli.BashShell, "./myapp.exe")
 		assert.NoErr(t, err)
-		// 规整后应为 myapp
 		assert.StrContains(t, script, "_complete_for_myapp")
 		assert.StrContains(t, script, "complete -F _complete_for_myapp myapp")
 	})
