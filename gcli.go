@@ -137,7 +137,7 @@ type GlobalOpts struct {
 	// Disable auto binding global options
 	Disable bool
 	NoColor bool
-	// message report level.
+	// set the message report level.
 	//
 	// can set by env: GCLI_VERBOSE=debug. see VerbEnvName
 	Verbose VerbLevel
@@ -152,14 +152,15 @@ type GlobalOpts struct {
 	// TODO Run application an interactive shell environment
 	inShell bool
 	// TODO auto format shorts `-a` to POSIX or UNIX style.
-	// StrictMode use strict mode for parse flags
-	// If True(default):
+	// StrictMode use strict mode for parse flags. default: false
+	//
+	// If True:
 	// 	- short opt must be begin "-", long opt must be begin "--"
 	//	- will convert like "-ab" to "-a -b"
 	// 	- will check invalid arguments, like to many arguments
 	strictMode bool
-	// command auto completion mode.
-	// eg "./cli --cmd-completion [COMMAND --OPT ARG]"
+	// TODO command auto completion mode.
+	// eg "./cli --gen-completion [COMMAND --OPT ARG]"
 	inCompletion bool
 }
 

@@ -182,7 +182,7 @@ func (app *App) bindAppOpts() {
 	// add more ...
 	// This is an internal option
 	fs.BoolVar(&app.opts.inCompletion, &gflag.CliOpt{
-		Name: "in-completion",
+		Name: "gen-completion",
 		Desc: "generate completion scripts for bash/zsh",
 		// hidden it
 		Hidden: true,
@@ -317,7 +317,7 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 
 	// disable cli color
 	if app.opts.NoColor {
-		color.Enable = false
+		color.Disable()
 		ccolor.Disable()
 	}
 
@@ -607,7 +607,12 @@ func (app *App) Exec(path string, args []string) error {
 // Opts get the app GlobalOpts
 func (app *App) Opts() *GlobalOpts { return app.opts }
 
-// Flags get
+// Flags get. TIP: you can custom binding applicaton options
+//
+// Usage:
+//
+//	app.Flags().BoolOpt(...)
+//	app.Flags().StrOpt(...)
 func (app *App) Flags() *Flags { return app.fs }
 
 // Exit get the app GlobalFlags

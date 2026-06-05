@@ -71,6 +71,10 @@ func main() {
     app.Desc = "this is my cli application"
     // app.SetVerbose(gcli.VerbDebug)
 
+    // TIP: 添加绑定app级别的选项设置(与内置的 -h/--help 同等级)
+    app.Flags().BoolOpt(...)
+    app.Flags().StrOpt(...)
+
     app.Add(cmd.Example)
     app.Add(&gcli.Command{
         Name: "demo",

@@ -84,6 +84,10 @@ func main() {
     app.Desc = "this is my cli application"
     // app.SetVerbose(gcli.VerbDebug)
 
+    // TIP: Add binding app-level option settings (same level as the built-in -h/--help)
+    app.Flags().BoolOpt(...)
+    app.Flags().StrOpt(...)
+
     app.Add(cmd.Example)
     app.Add(&gcli.Command{
         Name: "demo",
