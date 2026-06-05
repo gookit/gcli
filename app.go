@@ -203,11 +203,11 @@ func (app *App) bindAppOpts() {
 		// hidden it
 		Hidden: true,
 	})
-	// 内置静态补全选项: 直接生成 bash/zsh 补全脚本并打印到 stdout, 然后退出。
+	// 内置补全选项: 直接生成 bash/zsh/pwsh 补全脚本并打印到 stdout, 然后退出。
 	// 非隐藏, 会出现在帮助信息中, 用户无需注册 genac 命令即可使用。
 	fs.StrVar(&app.opts.genCompletion, &gflag.CliOpt{
 		Name: "gen-completion",
-		Desc: "generate and output shell(bash/zsh) completion script then exit",
+		Desc: "generate and output shell(bash/zsh/pwsh) completion script then exit",
 	})
 
 	// support binding custom global options

@@ -68,8 +68,21 @@ func TestApp_GenCompletionScript(t *testing.T) {
 		assert.StrNotContains(t, script, "clean")
 	})
 
+	t.Run("pwsh", func(t *testing.T) {
+		script, err := app.GenCompletionScript(gcli.PwshShell)
+		assert.NoErr(t, err)
+		assert.NotEmpty(t, script)
+
+		// pwsh 瘦脚本特征: 注册原生补全 + 委托回调 + bin 名
+		assert.StrContains(t, script, "Register-ArgumentCompleter")
+		assert.StrContains(t, script, "--in-completion")
+		assert.StrContains(t, script, binName)
+		// 不应硬编码命令名
+		assert.StrNotContains(t, script, "build")
+	})
+
 	t.Run("invalid shell", func(t *testing.T) {
-		script, err := app.GenCompletionScript("pwsh")
+		script, err := app.GenCompletionScript("fish")
 		assert.Err(t, err)
 		assert.Empty(t, script)
 	})
@@ -119,8 +132,15 @@ func TestApp_GenStaticCompletionScript(t *testing.T) {
 		assert.StrContains(t, script, "packages and dependencies")
 	})
 
+	t.Run("pwsh not supported for static", func(t *testing.T) {
+		// pwsh 仅支持动态(瘦)脚本, 静态嵌入不支持 -> 返回 error
+		script, err := app.GenStaticCompletionScript(gcli.PwshShell)
+		assert.Err(t, err)
+		assert.Empty(t, script)
+	})
+
 	t.Run("invalid shell", func(t *testing.T) {
-		script, err := app.GenStaticCompletionScript("pwsh")
+		script, err := app.GenStaticCompletionScript("fish")
 		assert.Err(t, err)
 		assert.Empty(t, script)
 	})

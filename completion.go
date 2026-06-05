@@ -13,6 +13,7 @@ import (
 const (
 	ZshShell  = "zsh"
 	BashShell = "bash"
+	PwshShell = "pwsh" // PowerShell
 )
 
 // hasMetaFlag 判断 args 中是否含补全/生成元选项 token(--in-completion / --gen-completion),
@@ -179,6 +180,25 @@ var shellTpls = map[string]string{
 var dynamicShellTpls = map[string]string{
 	ZshShell:  zshDynamicTpl,
 	BashShell: bashDynamicTpl,
+	PwshShell: pwshDynamicTpl,
+}
+
+// unsupportedShellErr 构造"不支持的 shell"错误, 允许列表由实际可用的模板表动态给出。
+func unsupportedShellErr(shell string, tpls map[string]string) error {
+	allow := make([]string, 0, len(tpls))
+	for name := range tpls {
+		allow = append(allow, name)
+	}
+	sort.Strings(allow)
+	return fmt.Errorf("gcli: unsupported shell %q for completion, only allow: %s", shell, strings.Join(allow, ", "))
+}
+
+// completionFileName 推荐的脚本文件名: pwsh 用 .ps1 扩展名, 其余用 shell 名作扩展名。
+func completionFileName(name, shell string) string {
+	if shell == PwshShell {
+		return name + ".ps1"
+	}
+	return name + "." + shell
 }
 
 // normalizeBinName 取脚本中使用的 bin 名: 允许调用方覆盖, 否则用当前应用 bin 名;
@@ -202,14 +222,14 @@ func (app *App) normalizeBinName(binName ...string) string {
 func (app *App) GenCompletionScript(shell string, binName ...string) (string, error) {
 	tpl, ok := dynamicShellTpls[shell]
 	if !ok {
-		return "", fmt.Errorf("gcli: unsupported shell %q for completion, only allow: bash, zsh", shell)
+		return "", unsupportedShellErr(shell, dynamicShellTpls)
 	}
 
 	name := app.normalizeBinName(binName...)
 	data := map[string]any{
 		"Shell":    shell,
 		"BinName":  name,
-		"FileName": name + "." + shell,
+		"FileName": completionFileName(name, shell),
 	}
 
 	return helper.RenderText(tpl, &data, nil), nil
@@ -228,14 +248,14 @@ func (app *App) GenCompletionScript(shell string, binName ...string) (string, er
 func (app *App) GenStaticCompletionScript(shell string, binName ...string) (string, error) {
 	tpl, ok := shellTpls[shell]
 	if !ok {
-		return "", fmt.Errorf("gcli: unsupported shell %q for completion, only allow: bash, zsh", shell)
+		return "", unsupportedShellErr(shell, shellTpls)
 	}
 
 	name := app.normalizeBinName(binName...)
 	data := map[string]any{
 		"Shell":    shell,
 		"BinName":  name,
-		"FileName": name + "." + shell,
+		"FileName": completionFileName(name, shell),
 	}
 
 	if shell == BashShell {
@@ -489,4 +509,37 @@ _complete_for_{{.BinName}} () {
 }
 
 compdef _complete_for_{{.BinName}} {{.BinName}}
+`
+
+// pwshDynamicTpl PowerShell 动态(瘦)补全脚本: 注册原生参数补全, 回调 bin --in-completion 取候选。
+// 注: PowerShell 模板里无反引号(避免与 Go 原始字符串冲突), $ 与单 { } 不会被 Go 模板引擎处理。
+var pwshDynamicTpl = `# ------------------------------------------------------------------------------
+#          FILE:  {{.FileName}}
+#        AUTHOR:  inhere (https://github.com/inhere)
+#       VERSION:  1.0.0
+#   DESCRIPTION:  dynamic powershell complete for cli app: {{.BinName}}
+#                 it delegates candidate computing to: {{.BinName}} --in-completion
+# ------------------------------------------------------------------------------
+# Usage: add to your $PROFILE, or dot-source it: . {{.FileName}}
+# NOTE: recommend PowerShell 7+ (better native empty-arg passing).
+
+Register-ArgumentCompleter -Native -CommandName '{{.BinName}}' -ScriptBlock {
+    param($wordToComplete, $commandAst, $cursorPosition)
+
+    # collect typed words, skip the executable name (CommandElements[0])
+    $words = @()
+    for ($i = 1; $i -lt $commandAst.CommandElements.Count; $i++) {
+        $words += $commandAst.CommandElements[$i].ToString()
+    }
+    # trailing space(completing a new word): wordToComplete is empty and not in
+    # $words, append '' as the "current word" so the binary completes children.
+    if ([string]::IsNullOrEmpty($wordToComplete)) {
+        $words += ''
+    }
+
+    # delegate candidate computing to the binary(one per line), drop stderr.
+    & '{{.BinName}}' --in-completion @words 2>$null | ForEach-Object {
+        [System.Management.Automation.CompletionResult]::new($_, $_, 'ParameterValue', $_)
+    }
+}
 `

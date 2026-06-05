@@ -44,7 +44,7 @@ func GenAutoComplete(fns ...func(c *gcli.Command)) *gcli.Command {
 		"shell",
 		"s",
 		shell,
-		"the shell env name for want generated, allow: zsh,bash",
+		"the shell env name for want generated, allow: zsh,bash,pwsh(pwsh only for dynamic)",
 	)
 	c.StrOpt(
 		&genOpts.binName,
