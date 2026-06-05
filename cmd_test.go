@@ -2,6 +2,7 @@ package gcli_test
 
 import (
 	"bytes"
+	"errors"
 	"fmt"
 	"testing"
 
@@ -138,6 +139,63 @@ func TestCommand_Run(t *testing.T) {
 
 	err = c.Run([]string{"-h"})
 	is.NoErr(err)
+}
+
+func TestCommand_Run_recoverPanic(t *testing.T) {
+	// c.Run 会改包级 gOpts, 跑完后重置
+	defer gcli.ResetGOpts()
+
+	// 1. 主函数 panic 被恢复成 error
+	t.Run("func panic", func(t *testing.T) {
+		c := gcli.NewCommand("test-panic-func", "desc")
+		c.SetFunc(func(c *gcli.Command, args []string) error {
+			panic("boom func")
+		})
+
+		var err error
+		assert.NotPanics(t, func() {
+			err = c.Run([]string{})
+		})
+		assert.Err(t, err)
+		assert.StrContains(t, err.Error(), "boom func")
+	})
+
+	// 2. 中间件 panic 同样被恢复, 且主函数不会被执行
+	t.Run("middleware panic", func(t *testing.T) {
+		funcCalled := false
+		c := gcli.NewCommand("test-panic-mw", "desc")
+		c.Use(func(c *gcli.Command, args []string) error {
+			panic("boom mw")
+		})
+		c.SetFunc(func(c *gcli.Command, args []string) error {
+			funcCalled = true
+			return nil
+		})
+
+		var err error
+		assert.NotPanics(t, func() {
+			err = c.Run([]string{})
+		})
+		assert.Err(t, err)
+		assert.StrContains(t, err.Error(), "boom mw")
+		// 中间件 panic 后主函数不应被执行
+		assert.False(t, funcCalled)
+	})
+
+	// 3. panic 为 error 类型时原样返回
+	t.Run("panic with error", func(t *testing.T) {
+		wantErr := errors.New("xx panic err")
+		c := gcli.NewCommand("test-panic-err", "desc")
+		c.SetFunc(func(c *gcli.Command, args []string) error {
+			panic(wantErr)
+		})
+
+		var err error
+		assert.NotPanics(t, func() {
+			err = c.Run([]string{})
+		})
+		assert.Eq(t, wantErr, err)
+	})
 }
 
 func TestNewCommand_Run(t *testing.T) {

@@ -546,17 +546,19 @@ func (c *Command) doExecute(args []string) (err error) {
 
 	Debugf("cmd: %s - run command func with extra-args %v", c.Name, fnArgs)
 
-	// recover panics
-	if re := recover(); re != nil {
-		var ok bool
-		err, ok = re.(error)
-		if !ok {
-			err = panicErr{val: re}
+	// recover panics from middleware/command func, convert to error.
+	// NOTE: recover 必须在 defer 内调用才有效; 仅在确实 panic 时触发 fireAfterExec,
+	// 正常路径下方已 fireAfterExec, 不会重复。
+	defer func() {
+		if re := recover(); re != nil {
+			var ok bool
+			err, ok = re.(error)
+			if !ok {
+				err = panicErr{val: re}
+			}
+			c.fireAfterExec(err)
 		}
-
-		c.fireAfterExec(err)
-		return
-	}
+	}()
 
 	// do run middlewares and command func
 	err = c.runWithMiddles(fnArgs)
