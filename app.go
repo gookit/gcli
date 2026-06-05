@@ -64,6 +64,9 @@ type App struct {
 	// Func on run app, if is empty will display help.
 	Func func(app *App, args []string) error
 
+	// middles 应用级中间件: 对所有命令生效, 在命令自身中间件与主函数之前依次执行。
+	middles HandlersChain
+
 	// ExitOnEnd call os.Exit on running end
 	// ExitOnEnd bool
 	// ExitFunc default is os.Exit
@@ -251,6 +254,12 @@ func (app *App) AddCommand(c *Command) {
 	app.addCommand(app.Name, c)
 
 	app.fireWithCmd(events.OnAppCmdAdded, c, nil)
+}
+
+// Use 注册应用级中间件, 对所有命令在其自身中间件与主函数之前执行; 返回 app 以便链式调用。
+func (app *App) Use(handlers ...RunnerFunc) *App {
+	app.middles = append(app.middles, handlers...)
+	return app
 }
 
 // AddHandler to the application

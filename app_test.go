@@ -535,3 +535,83 @@ func TestApp_default_command(t *testing.T) {
 	assert.Eq(t, 0, app.Run([]string{}))
 	assert.Eq(t, b.ResetGet(), "the test command is run completed\n")
 }
+
+func TestApp_Use(t *testing.T) {
+	t.Run("order", func(t *testing.T) {
+		defer gcli.ResetGOpts()
+
+		var calls []string
+		app := gcli.NewApp(gcli.NotExitOnEnd())
+
+		ret := app.Use(func(c *gcli.Command, args []string) error {
+			calls = append(calls, "app-mw1")
+			return nil
+		}, func(c *gcli.Command, args []string) error {
+			calls = append(calls, "app-mw2")
+			return nil
+		})
+		// 链式: Use 返回 *App
+		assert.True(t, ret == app)
+
+		cmd := gcli.NewCommand("c1", "desc").WithFunc(func(c *gcli.Command, args []string) error {
+			calls = append(calls, "func")
+			return nil
+		})
+		cmd.Use(func(c *gcli.Command, args []string) error {
+			calls = append(calls, "cmd-mw")
+			return nil
+		})
+		app.Add(cmd)
+
+		assert.Eq(t, 0, app.Run([]string{"c1"}))
+		assert.Eq(t, []string{"app-mw1", "app-mw2", "cmd-mw", "func"}, calls)
+	})
+
+	t.Run("abort", func(t *testing.T) {
+		defer gcli.ResetGOpts()
+
+		var calls []string
+		app := gcli.NewApp(gcli.NotExitOnEnd())
+
+		app.Use(func(c *gcli.Command, args []string) error {
+			calls = append(calls, "app-mw")
+			return fmt.Errorf("abort by app middleware")
+		})
+
+		cmd := gcli.NewCommand("c1", "desc").WithFunc(func(c *gcli.Command, args []string) error {
+			calls = append(calls, "func")
+			return nil
+		})
+		cmd.Use(func(c *gcli.Command, args []string) error {
+			calls = append(calls, "cmd-mw")
+			return nil
+		})
+		app.Add(cmd)
+
+		app.Run([]string{"c1"})
+		// app 级中间件返回 error, 命令级中间件与 func 都不执行
+		assert.Eq(t, []string{"app-mw"}, calls)
+	})
+
+	t.Run("all commands", func(t *testing.T) {
+		defer gcli.ResetGOpts()
+
+		var hits int
+		app := gcli.NewApp(gcli.NotExitOnEnd())
+		app.Use(func(c *gcli.Command, args []string) error {
+			hits++
+			return nil
+		})
+
+		app.Add(gcli.NewCommand("c1", "desc").WithFunc(func(c *gcli.Command, args []string) error {
+			return nil
+		}))
+		app.Add(gcli.NewCommand("c2", "desc").WithFunc(func(c *gcli.Command, args []string) error {
+			return nil
+		}))
+
+		assert.Eq(t, 0, app.Run([]string{"c1"}))
+		assert.Eq(t, 0, app.Run([]string{"c2"}))
+		assert.Eq(t, 2, hits)
+	})
+}

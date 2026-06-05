@@ -569,6 +569,14 @@ func (c *Command) doExecute(args []string) (err error) {
 // runWithMiddles 依次执行中间件(任一返回 error 即中止, 后续中间件与主函数都不再执行),
 // 全部通过后执行命令主函数。未注册中间件时等价于直接调用 c.Func。
 func (c *Command) runWithMiddles(fnArgs []string) error {
+	// app 级中间件先于命令级执行(独立命令运行时 c.app 为 nil, 跳过)
+	if c.app != nil {
+		for _, mw := range c.app.middles {
+			if err := mw(c, fnArgs); err != nil {
+				return err
+			}
+		}
+	}
 	for _, mw := range c.middles {
 		if err := mw(c, fnArgs); err != nil {
 			return err
