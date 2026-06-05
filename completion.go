@@ -75,6 +75,18 @@ func (app *App) resolveCompletion(words []string) []string {
 		curCmd = next
 	}
 
+	// 3.5 选项值补全: 当前词不是选项, 且前一个词是"取值型"选项时, 补全该选项的候选值。
+	//     - 有 Choices: 给候选值; 无 Choices: 返回空(交给 shell 做文件名补全)。
+	//     - 前一个词是 bool 选项(不取值)时: 跳过, 落到下面的命令/子命令补全。
+	if !strings.HasPrefix(cur, "-") && len(prev) > 0 {
+		last := prev[len(prev)-1]
+		if strings.HasPrefix(last, "-") {
+			if opt := optByRef(optsOfNode(curCmd, app), last); opt != nil && opt.TakesValue() {
+				return filterAndSort(opt.Choices, cur)
+			}
+		}
+	}
+
 	// 4. 根据 cur 产出候选
 	var items []string
 	if strings.HasPrefix(cur, "-") {
@@ -146,6 +158,35 @@ func completionOptNames(node *Command, app *App) []string {
 		addOpts(node.Opts(), node.ShortNames)
 	}
 	return names
+}
+
+// optsOfNode 返回某节点的选项元数据表: node 为 nil 时取 app 全局选项, 否则取命令自身选项。
+func optsOfNode(node *Command, app *App) map[string]*CliOpt {
+	if node == nil {
+		return app.fs.Opts()
+	}
+	return node.Opts()
+}
+
+// optByRef 按命令行里的选项引用(--name / -x)解析出对应的 CliOpt; 找不到返回 nil。
+func optByRef(opts map[string]*CliOpt, ref string) *CliOpt {
+	name := strings.TrimLeft(ref, "-")
+	if name == "" {
+		return nil
+	}
+	// 长名直接命中
+	if opt, ok := opts[name]; ok {
+		return opt
+	}
+	// 否则按短名匹配
+	for _, opt := range opts {
+		for _, s := range opt.Shorts {
+			if s == name {
+				return opt
+			}
+		}
+	}
+	return nil
 }
 
 // filterAndSort 用 prefix 做前缀过滤, 并对结果去重、排序。

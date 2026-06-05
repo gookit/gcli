@@ -624,6 +624,11 @@ func WithCategory(name string) CliOptFn {
 	return func(opt *CliOpt) { opt.Category = name }
 }
 
+// WithChoices setting candidate values for option. see CliOpt.Choices
+func WithChoices(choices ...string) CliOptFn {
+	return func(opt *CliOpt) { opt.Choices = choices }
+}
+
 // CliOpt define for a flag option
 type CliOpt struct {
 	// go flag value
@@ -660,9 +665,15 @@ type CliOpt struct {
 	Handler func(val string) error
 	// Category name for the option. used for grouped display on help.
 	Category string
+	// Choices candidate values for the option. used for shell completion(value candidates).
+	Choices []string
 	// TODO interactive question for collect value
 	// Question string
 }
+
+// TakesValue reports whether the option consumes a value(ie. is not a bool flag).
+// useful for shell completion to decide value-completion vs command-completion.
+func (m *CliOpt) TakesValue() bool { return m.flagType != FlagTypeBool }
 
 // NewOpt quick create an CliOpt instance
 func NewOpt(nameAndShorts, desc string, defVal any, setFns ...CliOptFn) *CliOpt {

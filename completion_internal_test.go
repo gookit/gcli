@@ -8,20 +8,27 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/x/assert"
 )
 
 // newCompletionApp 构造一个用于补全测试的应用夹具:
 //   - 顶层命令: build(别名 b)、run、help 为内置;
-//   - build 含子命令 module(别名 mod) 与选项 --output/-o、--verbose/-v;
+//   - build 含子命令 module(别名 mod) 与选项 --output/-o、--verbose/-v、
+//     带候选值的 --format/-f、bool 选项 --force/-F;
 //   - run 含选项 --name/-n。
 func newCompletionApp() *App {
 	app := NewApp(func(a *App) { a.ExitOnEnd = false })
 
 	build := NewCommand("build", "build desc", func(c *Command) {
-		var out, verbose string
+		var out, verbose, format string
+		var force bool
 		c.StrOpt(&out, "output", "o", "the output dir")
 		c.StrOpt(&verbose, "verbose", "v", "verbose mode")
+		// 带候选值的取值型选项, 用于选项值补全
+		c.StrOpt2(&format, "format,f", "output format", gflag.WithChoices("json", "yaml", "text"))
+		// bool 选项: 不取值, 其后补全应落到子命令
+		c.BoolOpt(&force, "force", "F", false, "force build")
 
 		c.AddSubs(NewCommand("module", "module desc", func(sc *Command) {
 			sc.Aliases = []string{"mod"}
@@ -118,6 +125,35 @@ func TestApp_resolveCompletion(t *testing.T) {
 		is.Contains(got, "--help")
 		is.Contains(got, "--gen-completion")
 		is.NotContains(got, "--in-completion")
+	})
+
+	t.Run("option value choices", func(t *testing.T) {
+		// build --format <cur> -> 补全该选项的候选值(去重排序)
+		got := app.resolveCompletion([]string{"build", "--format", ""})
+		is.Eq([]string{"json", "text", "yaml"}, got)
+	})
+
+	t.Run("option value choices prefix", func(t *testing.T) {
+		got := app.resolveCompletion([]string{"build", "--format", "j"})
+		is.Eq([]string{"json"}, got)
+	})
+
+	t.Run("option value choices via short", func(t *testing.T) {
+		// 短名 -f 同样解析到 --format 并补全候选值
+		got := app.resolveCompletion([]string{"build", "-f", ""})
+		is.Eq([]string{"json", "text", "yaml"}, got)
+	})
+
+	t.Run("value option without choices returns empty", func(t *testing.T) {
+		// --output 取值但无 Choices: 返回空(交给 shell 文件名补全), 不落到子命令
+		got := app.resolveCompletion([]string{"build", "--output", ""})
+		is.Empty(got)
+	})
+
+	t.Run("bool option falls through to subcommands", func(t *testing.T) {
+		// --force 是 bool(不取值), 其后应补全 build 的子命令
+		got := app.resolveCompletion([]string{"build", "--force", ""})
+		is.Eq([]string{"mod", "module"}, got)
 	})
 }
 

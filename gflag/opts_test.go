@@ -122,3 +122,21 @@ func TestCliOpt_Validate(t *testing.T) {
 	assert.NoErr(t, err)
 	assert.Eq(t, "value", handledVal)
 }
+
+func TestCliOpt_WithChoices(t *testing.T) {
+	opt := gflag.NewOpt("format", "output format", "", gflag.WithChoices("json", "yaml", "text"))
+	assert.Eq(t, []string{"json", "yaml", "text"}, opt.Choices)
+}
+
+func TestCliOpt_TakesValue(t *testing.T) {
+	fo := newFlagOptions()
+
+	var s string
+	var b bool
+	fo.StrVar(&s, &gflag.CliOpt{Name: "str"})
+	fo.BoolVar(&b, &gflag.CliOpt{Name: "bl"})
+
+	// 取值型选项 TakesValue 为 true; bool 选项为 false
+	assert.True(t, fo.Opt("str").TakesValue())
+	assert.False(t, fo.Opt("bl").TakesValue())
+}
