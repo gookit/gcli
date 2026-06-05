@@ -207,7 +207,7 @@ func (app *App) bindAppOpts() {
 	// 非隐藏, 会出现在帮助信息中, 用户无需注册 genac 命令即可使用。
 	fs.StrVar(&app.opts.genCompletion, &gflag.CliOpt{
 		Name: "gen-completion",
-		Desc: "generate and output shell(bash/zsh/pwsh) completion script then exit",
+		Desc: "generate completion script for shell(bash/zsh/pwsh)",
 	})
 
 	// support binding custom global options

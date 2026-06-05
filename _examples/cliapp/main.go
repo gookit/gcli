@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/_examples/cmd"
@@ -29,7 +27,7 @@ func main() {
 		app.Desc = "this is my cli application"
 		app.On(gcli.EvtAppInit, func(ctx *gcli.HookCtx) bool {
 			// do something...
-			fmt.Println("init app event", ctx.Name())
+			gcli.Debugf("init app event", ctx.Name())
 			return false
 		})
 
@@ -73,7 +71,7 @@ func main() {
 	)
 
 	app.Add(builtin.GenEmojiMap)
-	app.Add(builtin.GenAutoComplete())
+	// app.Add(builtin.GenAutoComplete())
 
 	// app.Add(filewatcher.FileWatcher(nil))
 	// app.Add(reverseproxy.ReverseProxyCommand())
