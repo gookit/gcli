@@ -41,7 +41,6 @@
 
 ### 其余 TODO（低优先，按需）
 
-- **测试隔离债**：`go test -shuffle=on` 偶发失败（约 3/6），因包级可变共享 fixture
-  `r`/`bf`/`appWithMl`/gOpts 跨用例复用（预存，CI 固定顺序通过）。宜逐步改为每用例独立构造。
+- [x] **测试隔离债**：已改为每用例独立工厂函数 + 补 gOpts 重置，`-shuffle` 40 次 0 失败（commit 2a6af97）
 - B3 交互式 shell `inShell`；C 类边角：`parser.go:223` ParseArgs 未接、`help.go:153` 多级子命令帮助、
   `cmd.go:510` `prepare()` 空桩、`ext.go:165` `HookCtx.err` 未用、`builtin/gen_emoji_codeMap.go:59` 打印 "TODO"。
