@@ -31,7 +31,7 @@ func TestApp_Hooks_EvtAppInit(t *testing.T) {
 		b.WriteString("trigger " + ctx.Name())
 		return false
 	})
-	cli.Add(simpleCmd)
+	cli.Add(newSimpleCmd())
 	assert.Eq(t, "trigger "+events.OnAppInitAfter, b.ResetGet())
 
 	cli.On(events.OnGlobalOptsParsed, func(ctx *gcli.HookCtx) bool {
@@ -54,10 +54,10 @@ func TestApp_Hooks_OnAppCmdAdd(t *testing.T) {
 		return
 	})
 
-	cli.Add(emptyCmd)
+	cli.Add(newEmptyCmd())
 	assert.Eq(t, "app.cmd.add.before - empty;", b.String())
 
-	cli.Add(simpleCmd)
+	cli.Add(newSimpleCmd())
 	assert.Eq(t, "app.cmd.add.before - empty;app.cmd.add.before - simple;", b.ResetGet())
 }
 
@@ -87,7 +87,7 @@ func TestApp_On_CmdNotFound(t *testing.T) {
 	b := byteutil.NewBuffer()
 
 	cli := newNotExitApp()
-	cli.Add(simpleCmd)
+	cli.Add(newSimpleCmd())
 
 	fmt.Println("--------- will print command tips ----------")
 	cli.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) bool {
@@ -112,6 +112,7 @@ func TestApp_On_CmdNotFound(t *testing.T) {
 
 func TestApp_On_CmdNotFound_redirect(t *testing.T) {
 	b := byteutil.NewBuffer()
+	simpleCmd := newSimpleCmd()
 	simpleCmd.Init()
 	simpleCmd.ResetData()
 	assert.Eq(t, nil, simpleCmd.Ctx.Get("simple"))

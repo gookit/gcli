@@ -228,83 +228,90 @@ func TestNewCommand_Run(t *testing.T) {
 	is.NoErr(err)
 }
 
-var bf = new(bytes.Buffer)
+// newGitCmd 构造一个与原共享 r 等价的 git 命令树, 每个用例独立调用获得全新实例,
+// 各 Func 闭包写入返回的局部 bf, 避免跨用例共享可变状态(支持 -shuffle=on)。
+func newGitCmd() (*gcli.Command, *bytes.Buffer) {
+	bf := new(bytes.Buffer)
 
-// l0: root command
-var r = &gcli.Command{
-	Name: "git",
-	Desc: "git usage",
-	Subs: []*gcli.Command{
-		// l1: sub command 1
-		{
-			Name: "add",
-			Desc: "the add command for git",
-			Config: func(c *gcli.Command) {
-				c.AddArg("files", "added files", true)
-			},
-			Func: func(c *gcli.Command, args []string) error {
-				bf.WriteString("command path: " + c.Path())
-				dump.Println(c.Name, args)
-				return nil
-			},
-		},
-		// l1: sub command 2
-		{
-			Name:    "pull",
-			Desc:    "the pull command for git",
-			Aliases: []string{"pul"},
-			Func: func(c *gcli.Command, args []string) error {
-				bf.WriteString("command path: " + c.Path())
-				dump.Println(c.Name, args)
-				return nil
-			},
-		},
-		// l1: sub command 3
-		{
-			Name:    "remote",
-			Desc:    "remote command for git",
-			Aliases: []string{"rmt"},
-			Func: func(c *gcli.Command, args []string) error {
-				dump.Println(c.Path())
-				return nil
-			},
-			Subs: []*gcli.Command{
-				// l2: sub command 4
-				{
-					Name: "add",
-					Desc: "add command for git remote",
-					Config: func(c *gcli.Command) {
-						c.AddArg("name", "the remote name", true)
-						c.AddArg("address", "the remote address", true)
-					},
-					Func: func(c *gcli.Command, args []string) error {
-						bf.WriteString("command path: " + c.Path())
-						dump.Println(c.Path(), args)
-						return nil
-					},
+	// l0: root command
+	r := &gcli.Command{
+		Name: "git",
+		Desc: "git usage",
+		Subs: []*gcli.Command{
+			// l1: sub command 1
+			{
+				Name: "add",
+				Desc: "the add command for git",
+				Config: func(c *gcli.Command) {
+					c.AddArg("files", "added files", true)
 				},
-				// l2: sub command 5
-				{
-					Name:    "set-url",
-					Desc:    "set-url command for git remote",
-					Aliases: []string{"su"},
-					Func: func(c *gcli.Command, args []string) error {
-						bf.WriteString("command path: " + c.Path())
-						dump.Println(c.Path(), args)
-						return nil
-					},
+				Func: func(c *gcli.Command, args []string) error {
+					bf.WriteString("command path: " + c.Path())
+					dump.Println(c.Name, args)
+					return nil
 				},
 			},
+			// l1: sub command 2
+			{
+				Name:    "pull",
+				Desc:    "the pull command for git",
+				Aliases: []string{"pul"},
+				Func: func(c *gcli.Command, args []string) error {
+					bf.WriteString("command path: " + c.Path())
+					dump.Println(c.Name, args)
+					return nil
+				},
+			},
+			// l1: sub command 3
+			{
+				Name:    "remote",
+				Desc:    "remote command for git",
+				Aliases: []string{"rmt"},
+				Func: func(c *gcli.Command, args []string) error {
+					dump.Println(c.Path())
+					return nil
+				},
+				Subs: []*gcli.Command{
+					// l2: sub command 4
+					{
+						Name: "add",
+						Desc: "add command for git remote",
+						Config: func(c *gcli.Command) {
+							c.AddArg("name", "the remote name", true)
+							c.AddArg("address", "the remote address", true)
+						},
+						Func: func(c *gcli.Command, args []string) error {
+							bf.WriteString("command path: " + c.Path())
+							dump.Println(c.Path(), args)
+							return nil
+						},
+					},
+					// l2: sub command 5
+					{
+						Name:    "set-url",
+						Desc:    "set-url command for git remote",
+						Aliases: []string{"su"},
+						Func: func(c *gcli.Command, args []string) error {
+							bf.WriteString("command path: " + c.Path())
+							dump.Println(c.Path(), args)
+							return nil
+						},
+					},
+				},
+			},
 		},
-	},
-	Func: func(c *gcli.Command, args []string) error {
-		bf.WriteString("command path: " + c.Path())
-		// dump.Println(c.Path(), args)
-		return nil
-	},
+		Func: func(c *gcli.Command, args []string) error {
+			bf.WriteString("command path: " + c.Path())
+			// dump.Println(c.Path(), args)
+			return nil
+		},
+	}
+
+	return r, bf
 }
 
 func TestCommand_MatchByPath(t *testing.T) {
+	r, _ := newGitCmd()
 	c := r.MatchByPath("add")
 
 	assert.NotNil(t, c)
@@ -328,6 +335,7 @@ func TestCommand_MatchByPath(t *testing.T) {
 }
 
 func TestCommand_Sub(t *testing.T) {
+	r, _ := newGitCmd()
 	r.MatchByPath("") // use for init
 
 	assert.True(t, r.IsRoot())
@@ -341,7 +349,7 @@ func TestCommand_Sub(t *testing.T) {
 }
 
 func TestCommand_Run_top(t *testing.T) {
-	bf.Reset() // reset buffer
+	r, bf := newGitCmd()
 
 	err := r.Run([]string{})
 	assert.NoErr(t, err)
@@ -349,14 +357,14 @@ func TestCommand_Run_top(t *testing.T) {
 }
 
 func TestCommand_Run_oneLevelSub(t *testing.T) {
-	bf.Reset() // reset buffer
+	r, _ := newGitCmd()
 
 	err := r.Run([]string{"add", "./"})
 	assert.NoErr(t, err)
 }
 
 func TestCommand_Run_moreLevelSub(t *testing.T) {
-	bf.Reset() // reset buffer
+	r, bf := newGitCmd()
 	err := r.Run([]string{
 		"remote",
 		"add",
@@ -372,33 +380,40 @@ func TestCommand_Run_moreLevelSub(t *testing.T) {
 	assert.Eq(t, "command path: git remote add", bf.String())
 }
 
-var int0 int
-var str0 string
+// c0Opts 保存 newC0Cmd 绑定的选项值, 每个用例独立持有, 避免共享可变状态。
+type c0Opts struct {
+	int0 int
+	str0 string
+}
 
-var c0 = gcli.NewCommand("test", "desc for test command", func(c *gcli.Command) {
-	c.IntOpt(&int0, "int", "", 0, "int desc")
-	c.StrOpt(&str0, "str", "", "", "str desc")
-	c.AddArg("arg0", "arg0 desc")
-	c.AddArg("arg1", "arg1 desc")
-	c.Func = func(c *gcli.Command, args []string) error {
-		bf.WriteString("name=" + c.Name)
-		c.Ctx.Set("name", c.Name)
-		c.Ctx.Set("args", args)
-		// dump.P(c.ID(), "command Func is exec")
-		return nil
-	}
-})
+// newC0Cmd 构造一个与原共享 c0 等价的命令, 每个用例独立调用获得全新实例,
+// 返回命令本身、其写入缓冲 bf 以及绑定的选项值容器。
+func newC0Cmd() (*gcli.Command, *bytes.Buffer, *c0Opts) {
+	bf := new(bytes.Buffer)
+	opts := &c0Opts{}
 
-func resetCmd(c *gcli.Command) {
-	c.ResetData()
-	gcli.ResetGOpts()
+	c0 := gcli.NewCommand("test", "desc for test command", func(c *gcli.Command) {
+		c.IntOpt(&opts.int0, "int", "", 0, "int desc")
+		c.StrOpt(&opts.str0, "str", "", "", "str desc")
+		c.AddArg("arg0", "arg0 desc")
+		c.AddArg("arg1", "arg1 desc")
+		c.Func = func(c *gcli.Command, args []string) error {
+			bf.WriteString("name=" + c.Name)
+			c.Ctx.Set("name", c.Name)
+			c.Ctx.Set("args", args)
+			// dump.P(c.ID(), "command Func is exec")
+			return nil
+		}
+	})
+
+	return c0, bf, opts
 }
 
 func TestCommand_Run_emptyArgs(t *testing.T) {
-	bf.Reset()
 	is := assert.New(t)
+	c0, bf, _ := newC0Cmd()
 
-	resetCmd(c0)
+	defer gcli.ResetGOpts()
 	gcli.SetVerbose(gcli.VerbCrazy)
 	defer gcli.ResetVerbose()
 
@@ -415,9 +430,10 @@ func TestCommand_Run_emptyArgs(t *testing.T) {
 
 func TestCommand_Run_showHelp1(t *testing.T) {
 	is := assert.New(t)
+	c0, _, _ := newC0Cmd()
 
-	bf.Reset()
-	resetCmd(c0)
+	// SetDisable 会改包级 gOpts, 跑完后重置, 避免污染其它用例(如 --version 选项)
+	defer gcli.ResetGOpts()
 	gcli.Config(func(opts *gcli.GlobalOpts) {
 		opts.SetDisable()
 	})
@@ -427,9 +443,8 @@ func TestCommand_Run_showHelp1(t *testing.T) {
 
 func TestCommand_Run_showHelp2(t *testing.T) {
 	is := assert.New(t)
-
-	bf.Reset()
-	resetCmd(c0)
+	c0, bf, _ := newC0Cmd()
+	defer gcli.ResetGOpts()
 
 	// no color
 	color.Disable()
@@ -448,10 +463,10 @@ func TestCommand_Run_showHelp2(t *testing.T) {
 }
 
 func TestCommand_Run_parseOptions(t *testing.T) {
-	bf.Reset()
 	is := assert.New(t)
+	c0, _, opts := newC0Cmd()
 
-	resetCmd(c0)
+	defer gcli.ResetGOpts()
 	gcli.SetDebugMode()
 	defer gcli.ResetVerbose()
 
@@ -466,8 +481,8 @@ func TestCommand_Run_parseOptions(t *testing.T) {
 	is.Eq("txt", c0.Arg("arg0").String())
 	is.Empty(c0.Ctx.Get("args"))
 
-	is.Eq(10, int0)
-	is.Eq("abc", str0)
+	is.Eq(10, opts.int0)
+	is.Eq("abc", opts.str0)
 	is.Eq([]string{"txt"}, c0.FSetArgs())
 	is.Eq("txt", c0.RawArg(0))
 
@@ -476,9 +491,10 @@ func TestCommand_Run_parseOptions(t *testing.T) {
 		maxSteps  int
 		overwrite bool
 	}{}
+	var int1 int
 
 	c1 := gcli.NewCommand("test1", "desc test", func(c *gcli.Command) {
-		c.IntOpt(&int0, "int", "", 0, "desc")
+		c.IntOpt(&int1, "int", "", 0, "desc")
 		c.IntOpt(&co.maxSteps, "max-step", "", 0, "setting the max step value")
 		c.AddArg("arg0", "arg0 desc")
 	}).WithFunc(func(c *gcli.Command, args []string) error {
@@ -490,7 +506,7 @@ func TestCommand_Run_parseOptions(t *testing.T) {
 	is.Eq("test1", c1.Name)
 	err = c1.Run([]string{"--int", "10", "--max-step=100", "txt"})
 	is.NoErr(err)
-	is.Eq(10, int0)
+	is.Eq(10, int1)
 	is.Eq(100, co.maxSteps)
 	is.Eq("[txt]", fmt.Sprint(c0.RawArgs()))
 }

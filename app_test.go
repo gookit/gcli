@@ -13,12 +13,18 @@ import (
 	"github.com/gookit/goutil/x/assert"
 )
 
-var (
-	emptyCmd = &gcli.Command{
+// 以下夹具改为工厂函数, 每个用例独立构造全新实例, 消除跨用例的可变状态共享,
+// 使 go test -shuffle=on 稳定通过。
+
+func newEmptyCmd() *gcli.Command {
+	return &gcli.Command{
 		Name: "empty",
 		Desc: "an test command",
 	}
-	simpleCmd = &gcli.Command{
+}
+
+func newSimpleCmd() *gcli.Command {
+	return &gcli.Command{
 		Name: "simple",
 		Desc: "an simple command",
 		Func: func(c *gcli.Command, args []string) error {
@@ -27,7 +33,10 @@ var (
 			return nil
 		},
 	}
-	subCmd = &gcli.Command{
+}
+
+func newSubCmd() *gcli.Command {
+	return &gcli.Command{
 		Name: "sub",
 		Desc: "an simple sub command",
 		Func: func(c *gcli.Command, args []string) error {
@@ -35,8 +44,12 @@ var (
 			return nil
 		},
 	}
+}
 
-	appWithMl = gcli.New(func(app *gcli.App) {
+// newAppWithMl 构造一个与原共享 appWithMl 等价的多级命令应用(top1/sub1/sub1-1/top2),
+// 每个用例独立调用获得全新实例。
+func newAppWithMl() *gcli.App {
+	return gcli.New(func(app *gcli.App) {
 		app.ExitOnEnd = false
 		app.Add(&gcli.Command{
 			Name: "top1",
@@ -67,7 +80,7 @@ var (
 			Desc: "desc for top2",
 		})
 	})
-)
+}
 
 func TestApp_MatchByPath(t *testing.T) {
 	// is := assert.New(t)
@@ -77,7 +90,8 @@ func TestApp_MatchByPath(t *testing.T) {
 		gcli.NewCommand("cmd2", "desc2"),
 	)
 
-	simpleCmd.AddCommand(subCmd)
+	simpleCmd := newSimpleCmd()
+	simpleCmd.AddCommand(newSubCmd())
 	app.AddCommand(simpleCmd)
 
 	assert.True(t, app.HasCommand(simpleCmd.Name))
@@ -87,7 +101,7 @@ func TestApp_MatchByPath(t *testing.T) {
 	assert.Eq(t, "sub", c.Name)
 	assert.Eq(t, "simple", c.ParentName())
 
-	c = appWithMl.FindByPath("top1:sub1")
+	c = newAppWithMl().FindByPath("top1:sub1")
 	assert.Eq(t, "sub1", c.Name)
 }
 
@@ -130,7 +144,7 @@ func TestApp_AddCommand(t *testing.T) {
 		a.ExitOnEnd = false
 	})
 
-	app.AddCommand(emptyCmd)
+	app.AddCommand(newEmptyCmd())
 
 	cmd1 := gcli.NewCommand("cmd1", "desc")
 	cmd1.Disable()
@@ -345,22 +359,24 @@ func TestApp_Run_command_withOptions(t *testing.T) {
 func TestApp_Run_subcommand(t *testing.T) {
 	is := assert.New(t)
 	id := "top1:sub1"
+	app := newAppWithMl()
 
-	appWithMl.Ctx.Set(id, "TestApp_Run_subcommand")
-	appWithMl.Run([]string{"top1", "sub1"})
+	app.Ctx.Set(id, "TestApp_Run_subcommand")
+	app.Run([]string{"top1", "sub1"})
 
-	c := appWithMl.FindCommand(id)
+	c := app.FindCommand(id)
 	is.NotEmpty(c)
 	is.Eq("TestApp_Run_subcommand", c.Ctx.Get("msg"))
 }
 
 func TestApp_Run_by_cmd_ID(t *testing.T) {
 	is := assert.New(t)
+	app := newAppWithMl()
 
-	appWithMl.Ctx.Set("top1:sub1", "TestApp_Run_by_cmd_ID")
-	appWithMl.Run([]string{"top1:sub1"})
+	app.Ctx.Set("top1:sub1", "TestApp_Run_by_cmd_ID")
+	app.Run([]string{"top1:sub1"})
 
-	c := appWithMl.FindCommand("top1:sub1")
+	c := app.FindCommand("top1:sub1")
 	is.NotEmpty(c)
 	is.Eq("TestApp_Run_by_cmd_ID", c.Ctx.Get("msg"))
 }
@@ -368,12 +384,13 @@ func TestApp_Run_by_cmd_ID(t *testing.T) {
 func TestApp_AddAliases_and_run(t *testing.T) {
 	is := assert.New(t)
 	id := "top1:sub1"
+	app := newAppWithMl()
 
-	appWithMl.AddAliases(id, "ts1")
-	appWithMl.Ctx.Set(id, "TestApp_AddAliases_and_run")
-	appWithMl.Run([]string{"ts1"})
+	app.AddAliases(id, "ts1")
+	app.Ctx.Set(id, "TestApp_AddAliases_and_run")
+	app.Run([]string{"ts1"})
 
-	c := appWithMl.FindCommand(id)
+	c := app.FindCommand(id)
 	is.NotEmpty(c)
 	is.Eq("TestApp_AddAliases_and_run", c.Ctx.Get("msg"))
 }
@@ -464,7 +481,7 @@ func TestApp_showCommandTips(t *testing.T) {
 	app := gcli.NewApp()
 	app.ExitOnEnd = false
 
-	app.AddCommand(emptyCmd)
+	app.AddCommand(newEmptyCmd())
 	app.Run([]string{"emp"})
 
 	// disable color code, re-set output for test
