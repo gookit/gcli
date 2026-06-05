@@ -30,7 +30,7 @@ type CliOpts struct {
 	// the options flag set
 	fSet *FlagSet
 	// metadata for all options, key is option name.
-	opts map[string]*CliOpt // TODO support option category
+	opts map[string]*CliOpt
 	// all cli option names, without short names.
 	//
 	// format: {name: length} // TODO delete, move len to opts.

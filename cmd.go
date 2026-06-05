@@ -67,7 +67,7 @@ type Command struct {
 
 	// Aliases is the command name's alias names
 	Aliases arrutil.Strings
-	// Category for the command TODO
+	// Category for grouped command display on help
 	Category string
 	// Config func, will call on `initialize`.
 	//

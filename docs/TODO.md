@@ -19,3 +19,18 @@
   - [x] G：`findCommandName` 去副作用
   - [x] H：`helper/`→`internal/helper/`、清理 `gclicom/` 与死代码
 - [x] 发版前：CHANGELOG/Release Notes（见 [CHANGELOG.md](../CHANGELOG.md) v3.4.0），并将 `version` 常量更新为 3.4.0
+
+## 功能规划（TODO 扫描后立项，待实施）
+
+> 扫描明细见 `tmp/todo-scan.md`（工作产物，未入库）。
+
+- [x] A：清理本轮已实现功能的陈旧 TODO 注释（命令/选项 Category）
+- [ ] **B1** 运行期动态补全 — [plans/feat-B1-completion.md](plans/feat-B1-completion.md)
+- [ ] **B2** 命令中间件 — [plans/feat-B2-middleware.md](plans/feat-B2-middleware.md)
+- [ ] **B4+B5** POSIX 短选项增强 — [plans/feat-B4-B5-posix-options.md](plans/feat-B4-B5-posix-options.md)
+- [ ] **B6+B7** 结构体标签增强 + 声明式交互收集 — [plans/feat-B6-B7-struct-tag-question.md](plans/feat-B6-B7-struct-tag-question.md)
+
+### 其余 TODO（低优先，按需）
+
+- B3 交互式 shell `inShell`；C 类边角：`parser.go:223` ParseArgs 未接、`help.go:153` 多级子命令帮助、
+  `cmd.go:510` `prepare()` 空桩、`ext.go:165` `HookCtx.err` 未用、`builtin/gen_emoji_codeMap.go:59` 打印 "TODO"。
