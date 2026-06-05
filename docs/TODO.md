@@ -25,13 +25,13 @@
 > 扫描明细见 `tmp/todo-scan.md`（工作产物，未入库）。
 
 - [x] A：清理本轮已实现功能的陈旧 TODO 注释（命令/选项 Category）
-- [ ] **B1** 内置补全选项 — [plans/feat-B1-completion.md](plans/feat-B1-completion.md)
+- [x] **B1** 内置补全选项 — [plans/feat-B1-completion.md](plans/feat-B1-completion.md)
   - [x] 静态 `--gen-completion`（commit 3a76280）
   - [x] 动态 `--in-completion` 候选计算 + showAutoCompletion（commit 88d70e9）
   - [x] 脚本委托动态(默认瘦脚本) + 静默模式 + genac --static opt-in（子阶段 3）
   - [x] PowerShell(pwsh) 动态补全（`--gen-completion pwsh`，`.ps1`；静态 pwsh 不支持）
-  - [ ] 选项值候选 `CliOpt.Choices`（子阶段 4，可选）
-  - [ ] bash/zsh/pwsh 实际 Tab 交互的人工验证（shell 胶水层无法自动测）
+  - [x] 选项值候选 `CliOpt.Choices`（子阶段 4，commit 75bc031）
+  - [ ] 收尾(按需)：bash/zsh/pwsh 实际 Tab 交互的人工验证；隐藏命令过滤
 - [ ] **B2** 命令中间件 — [plans/feat-B2-middleware.md](plans/feat-B2-middleware.md)
 - [ ] **B4+B5** POSIX 短选项增强 — [plans/feat-B4-B5-posix-options.md](plans/feat-B4-B5-posix-options.md)
 - [ ] **B6+B7** 结构体标签增强 + 声明式交互收集 — [plans/feat-B6-B7-struct-tag-question.md](plans/feat-B6-B7-struct-tag-question.md)
