@@ -53,8 +53,15 @@
 
 ## 提交拆分
 
-1. `feat(cmd): 中间件注册 Use() 与链式执行接入 doExecute`
-2. `feat(app): App.Use() 应用级中间件`（可选）
+1. ✅ `feat(cmd): 命令级中间件 Use()`（commit 7cec911）—— `Command.Use` + `runWithMiddles`
+   线性执行接入 `doExecute`，测试覆盖顺序/中止/无中间件回归/链式。
+2. `feat(app): App.Use() 应用级中间件`（可选，未做）
+
+> **遗留/发现**：
+> - `doExecute` 里那段 `recover()` 是**内联调用(非 defer)**，实为 no-op，不能捕获 panic
+>   （pre-existing）。本轮按现状保留、未做中间件 panic 恢复。如需真正的 panic→error，
+>   应单独修该 recover 为 defer 形式（建议另起 fix 提交）。
+> - 子命令未继承父命令中间件（仅作用于注册命令本身）；按需可后续支持继承。
 
 ## 体量预估
 
