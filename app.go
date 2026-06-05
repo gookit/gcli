@@ -187,6 +187,12 @@ func (app *App) bindAppOpts() {
 		// hidden it
 		Hidden: true,
 	})
+	// 内置静态补全选项: 直接生成 bash/zsh 补全脚本并打印到 stdout, 然后退出。
+	// 非隐藏, 会出现在帮助信息中, 用户无需注册 genac 命令即可使用。
+	fs.StrVar(&app.opts.genCompletion, &gflag.CliOpt{
+		Name: "gen-completion",
+		Desc: "generate and output shell(bash/zsh) completion script then exit",
+	})
 
 	// support binding custom global options
 	app.Fire(events.OnAppBindOptsAfter, nil)
@@ -327,6 +333,17 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 	// TODO show auto-completion for bash/zsh
 	if app.opts.inCompletion {
 		app.showAutoCompletion(app.args)
+		return
+	}
+
+	// 静态生成补全脚本: 命中即生成并打印到 stdout, 然后停止后续运行(退出)。
+	if app.opts.genCompletion != "" {
+		script, err := app.GenCompletionScript(app.opts.genCompletion)
+		if err != nil {
+			color.Error.Tips(err.Error())
+		} else {
+			color.Print(script)
+		}
 		return
 	}
 
