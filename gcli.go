@@ -141,13 +141,13 @@ type GlobalOpts struct {
 	//
 	// can set by env: GCLI_VERBOSE=debug. see VerbEnvName
 	Verbose VerbLevel
-	// ShowHelp show help information
+	// ShowHelp show help information, then exit.
 	ShowHelp bool
-	// ShowVersion show version information
+	// ShowVersion show version information, then exit.
 	ShowVersion bool
-	// NoProgress dont display progress
+	// NoProgress dont display progress. env: NO_PROGRESS
 	NoProgress bool
-	// NoInteractive close interactive confirm
+	// NoInteractive close interactive confirm. env: NO_INTERACTIVE
 	NoInteractive bool
 	// TODO Run application an interactive shell environment
 	inShell bool
@@ -159,9 +159,12 @@ type GlobalOpts struct {
 	//	- will convert like "-ab" to "-a -b"
 	// 	- will check invalid arguments, like to many arguments
 	strictMode bool
-	// TODO command auto completion mode.
-	// eg "./cli --gen-completion [COMMAND --OPT ARG]"
+	// TODO dynamic command auto completion mode.
+	// eg "./cli --in-completion [COMMAND --OPT ARG]"
 	inCompletion bool
+	// TODO direct generate shell auto completion scripts, then exit.
+	// eg "./cli --gen-completion bash|zsh|pwsh"
+	genCompletion string
 }
 
 // SetVerbose value

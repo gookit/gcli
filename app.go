@@ -182,8 +182,8 @@ func (app *App) bindAppOpts() {
 	// add more ...
 	// This is an internal option
 	fs.BoolVar(&app.opts.inCompletion, &gflag.CliOpt{
-		Name: "gen-completion",
-		Desc: "generate completion scripts for bash/zsh",
+		Name: "in-completion",
+		Desc: "dynamic generate completion scripts for bash/zsh",
 		// hidden it
 		Hidden: true,
 	})
