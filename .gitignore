@@ -30,3 +30,6 @@
 .omc/
 go.wor*
 .xenv.toml
+
+# project working dir (R003 artifacts)
+/tmp/
