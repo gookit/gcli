@@ -11,7 +11,7 @@ import (
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/testutil"
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 )
 
 func TestFlags_Basic(t *testing.T) {

@@ -3,7 +3,7 @@ package gcli
 import (
 	"testing"
 
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 )
 
 // white-box test: findCommandName 现为无副作用纯函数，逐分支覆盖。

@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3/gflag"
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 )
 
 func newFlagOptions() gflag.CliOpts {
