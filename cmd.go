@@ -173,6 +173,12 @@ func (c *Command) WithHidden() *Command {
 	return c
 }
 
+// Use 注册一个或多个中间件, 按注册顺序在命令主函数前依次执行; 返回 c 以便链式调用。
+func (c *Command) Use(handlers ...RunnerFunc) *Command {
+	c.middles = append(c.middles, handlers...)
+	return c
+}
+
 // AttachTo attach the command to CLI application
 func (c *Command) AttachTo(app *App) { app.AddCommand(c) }
 
@@ -552,10 +558,21 @@ func (c *Command) doExecute(args []string) (err error) {
 		return
 	}
 
-	// do run func
-	err = c.Func(c, fnArgs)
+	// do run middlewares and command func
+	err = c.runWithMiddles(fnArgs)
 	c.fireAfterExec(err)
 	return
+}
+
+// runWithMiddles 依次执行中间件(任一返回 error 即中止, 后续中间件与主函数都不再执行),
+// 全部通过后执行命令主函数。未注册中间件时等价于直接调用 c.Func。
+func (c *Command) runWithMiddles(fnArgs []string) error {
+	for _, mw := range c.middles {
+		if err := mw(c, fnArgs); err != nil {
+			return err
+		}
+	}
+	return c.Func(c, fnArgs)
 }
 
 func (c *Command) fireAfterExec(err error) {

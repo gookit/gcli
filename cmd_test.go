@@ -496,3 +496,79 @@ func TestCommand_Copy(t *testing.T) {
 	// 关键回归点：Copy 不能清空原命令的钩子
 	is.True(c.HasHook(gcli.EvtCmdInit))
 }
+
+func TestCommand_Use(t *testing.T) {
+	t.Run("order", func(t *testing.T) {
+		defer gcli.ResetGOpts()
+
+		var order []string
+		c := gcli.NewCommand("mw-order", "test middleware order")
+		ret := c.Use(
+			func(c *gcli.Command, args []string) error {
+				order = append(order, "mw1")
+				return nil
+			},
+			func(c *gcli.Command, args []string) error {
+				order = append(order, "mw2")
+				return nil
+			},
+		)
+		// 链式：Use 返回 *Command
+		assert.Eq(t, c, ret)
+
+		c.SetFunc(func(c *gcli.Command, args []string) error {
+			order = append(order, "func")
+			return nil
+		})
+
+		err := c.Run([]string{})
+		assert.NoErr(t, err)
+		// 按注册顺序: mw1 -> mw2 -> func
+		assert.Eq(t, []string{"mw1", "mw2", "func"}, order)
+	})
+
+	t.Run("abort on error", func(t *testing.T) {
+		defer gcli.ResetGOpts()
+
+		var order []string
+		wantErr := fmt.Errorf("mw1 abort")
+
+		c := gcli.NewCommand("mw-abort", "test middleware abort")
+		c.Use(
+			func(c *gcli.Command, args []string) error {
+				order = append(order, "mw1")
+				return wantErr
+			},
+			func(c *gcli.Command, args []string) error {
+				order = append(order, "mw2")
+				return nil
+			},
+		)
+		c.SetFunc(func(c *gcli.Command, args []string) error {
+			order = append(order, "func")
+			return nil
+		})
+
+		err := c.Run([]string{})
+		// 第一个中间件返回 error, 错误向上返回
+		assert.Err(t, err)
+		assert.Eq(t, wantErr, err)
+		// 第二个中间件与主函数都不应执行
+		assert.Eq(t, []string{"mw1"}, order)
+	})
+
+	t.Run("no middleware regression", func(t *testing.T) {
+		defer gcli.ResetGOpts()
+
+		called := false
+		c := gcli.NewCommand("mw-none", "test no middleware")
+		c.SetFunc(func(c *gcli.Command, args []string) error {
+			called = true
+			return nil
+		})
+
+		err := c.Run([]string{})
+		assert.NoErr(t, err)
+		assert.True(t, called)
+	})
+}
