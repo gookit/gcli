@@ -182,9 +182,13 @@ func (app *App) showCommandHelp(list []string) (code PrepareState) {
 	return
 }
 
-// show bash/zsh completion
-func (app *App) showAutoCompletion(_ []string) {
-	// TODO ...
+// showAutoCompletion 计算并逐行打印运行期动态补全候选(纯文本, 无颜色), 供 shell 脚本解析。
+//
+// words 为 shell 传入、已去掉 bin 名的命令行片段; 无候选时不输出。
+func (app *App) showAutoCompletion(words []string) {
+	for _, item := range app.resolveCompletion(words) {
+		fmt.Println(item)
+	}
 }
 
 // findSimilarCmd find similar cmd by input string

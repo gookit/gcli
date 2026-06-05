@@ -2,6 +2,7 @@ package gcli
 
 import (
 	"fmt"
+	"sort"
 	"strings"
 
 	"github.com/gookit/color"
@@ -13,6 +14,146 @@ const (
 	ZshShell  = "zsh"
 	BashShell = "bash"
 )
+
+// resolveCompletion 计算运行期动态补全候选。
+//
+// 输入 words 是 shell 传入、已去掉 bin 名的命令行片段(--in-completion 选项本身已被解析消费)。
+// 约定: 最后一个元素是"当前正在输入的词"(可能为空), 其余是"已完成的前序词"。
+//
+// 返回去重、排序后的候选列表(命令名/子命令名/选项名)。
+func (app *App) resolveCompletion(words []string) []string {
+	// 1. 没有任何片段: 返回所有顶层命令名 + 别名 + help
+	if len(words) == 0 {
+		return app.topLevelNames()
+	}
+
+	// 2. 拆分: cur 为当前正在输入的词, prev 为已完成的前序词
+	cur := words[len(words)-1]
+	prev := words[:len(words)-1]
+
+	// 3. 用 prev 定位"当前命令上下文": 从 app 顶层开始, 逐个处理非选项词并尝试下钻。
+	//    - 选项词(以 - 开头)在定位时直接跳过;
+	//    - 非选项词若是当前层的命令/子命令(经 ResolveAlias 解析别名)则下钻;
+	//    - 一旦遇到不是命令的非选项词(视为参数), 立即停止下钻。
+	var curCmd *Command // 当前定位到的命令节点(nil 表示仍在 app 顶层)
+	for _, word := range prev {
+		if strings.HasPrefix(word, "-") {
+			// 选项词不参与命令定位
+			continue
+		}
+
+		name := word
+		var next *Command
+		if curCmd == nil {
+			// 仍在 app 顶层: 解析顶层别名后查找命令
+			name = app.ResolveAlias(name)
+			next, _ = app.Command(name)
+		} else {
+			// 已在某命令下: 解析该命令的子命令别名后查找子命令
+			name = curCmd.ResolveAlias(name)
+			next, _ = curCmd.Command(name)
+		}
+
+		if next == nil {
+			// 当前词不是命令(视为参数), 停止下钻, 上下文保持不变
+			break
+		}
+		curCmd = next
+	}
+
+	// 4. 根据 cur 产出候选
+	var items []string
+	if strings.HasPrefix(cur, "-") {
+		// cur 以 - 开头: 候选为当前节点的选项名(长选项 --name / 短选项 -x)
+		items = completionOptNames(curCmd, app)
+	} else if curCmd == nil {
+		// 当前节点为 app 顶层: 候选为顶层命令名 + 别名 + help
+		items = app.topLevelNames()
+	} else {
+		// 当前节点为某命令: 候选为其子命令名
+		items = completionSubNames(curCmd)
+	}
+
+	// 5. 用 cur 做前缀过滤, 去重、排序后返回
+	return filterAndSort(items, cur)
+}
+
+// topLevelNames 返回顶层补全名: 所有顶层命令名 + 命令别名 + 内置 help(去重、排序)。
+func (app *App) topLevelNames() []string {
+	var names []string
+	for name := range app.CmdNameMap() {
+		names = append(names, name)
+	}
+	// 顶层命令别名
+	for alias := range app.AliasesMapping() {
+		names = append(names, alias)
+	}
+	// 内置 help 命令
+	names = append(names, HelpCommand)
+
+	return filterAndSort(names, "")
+}
+
+// completionSubNames 返回命令 c 的子命令名 + 子命令别名(去重、排序)。
+func completionSubNames(c *Command) []string {
+	var names []string
+	for name := range c.CmdNameMap() {
+		names = append(names, name)
+	}
+	for alias := range c.AliasesMapping() {
+		names = append(names, alias)
+	}
+	return names
+}
+
+// completionOptNames 返回某节点的选项名候选: 长选项 --name 与短选项 -x。
+// node 为 nil 时表示 app 顶层, 取 app 的全局选项。
+func completionOptNames(node *Command, app *App) []string {
+	var names []string
+
+	addOpts := func(opts map[string]*CliOpt, shortFn func(string) []string) {
+		for name, opt := range opts {
+			// 跳过隐藏选项(如框架内部的 --in-completion), 不应出现在补全候选中
+			if opt.Hidden {
+				continue
+			}
+			names = append(names, "--"+name)
+			// 收集该选项的短名
+			for _, short := range shortFn(name) {
+				names = append(names, "-"+short)
+			}
+		}
+	}
+
+	if node == nil {
+		// app 顶层: 全局选项
+		addOpts(app.fs.Opts(), app.fs.ShortNames)
+	} else {
+		addOpts(node.Opts(), node.ShortNames)
+	}
+	return names
+}
+
+// filterAndSort 用 prefix 做前缀过滤, 并对结果去重、排序。
+func filterAndSort(items []string, prefix string) []string {
+	seen := make(map[string]struct{}, len(items))
+	var out []string
+	for _, it := range items {
+		if it == "" {
+			continue
+		}
+		if prefix != "" && !strings.HasPrefix(it, prefix) {
+			continue
+		}
+		if _, ok := seen[it]; ok {
+			continue
+		}
+		seen[it] = struct{}{}
+		out = append(out, it)
+	}
+	sort.Strings(out)
+	return out
+}
 
 // shellTpls 内置的各 shell 补全脚本模板表
 var shellTpls = map[string]string{
