@@ -34,11 +34,14 @@
   - [ ] 收尾(按需)：bash/zsh/pwsh 实际 Tab 交互的人工验证；隐藏命令过滤
 - [~] **B2** 命令中间件 — [plans/feat-B2-middleware.md](plans/feat-B2-middleware.md)
   - [x] 命令级 `Command.Use()`（commit 7cec911）
-  - [ ] App 级 `App.Use()`（可选）；修 doExecute 内联 recover(no-op) 为 defer(另起 fix)
+  - [x] 修 doExecute 内联 recover(no-op) 为 defer，真正捕获 panic（commit 467d883）
+  - [ ] App 级 `App.Use()`（可选）
 - [ ] **B4+B5** POSIX 短选项增强 — [plans/feat-B4-B5-posix-options.md](plans/feat-B4-B5-posix-options.md)
 - [ ] **B6+B7** 结构体标签增强 + 声明式交互收集 — [plans/feat-B6-B7-struct-tag-question.md](plans/feat-B6-B7-struct-tag-question.md)
 
 ### 其余 TODO（低优先，按需）
 
+- **测试隔离债**：`go test -shuffle=on` 偶发失败（约 3/6），因包级可变共享 fixture
+  `r`/`bf`/`appWithMl`/gOpts 跨用例复用（预存，CI 固定顺序通过）。宜逐步改为每用例独立构造。
 - B3 交互式 shell `inShell`；C 类边角：`parser.go:223` ParseArgs 未接、`help.go:153` 多级子命令帮助、
   `cmd.go:510` `prepare()` 空桩、`ext.go:165` `HookCtx.err` 未用、`builtin/gen_emoji_codeMap.go:59` 打印 "TODO"。
