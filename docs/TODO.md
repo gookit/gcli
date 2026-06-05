@@ -27,7 +27,8 @@
 - [x] A：清理本轮已实现功能的陈旧 TODO 注释（命令/选项 Category）
 - [ ] **B1** 内置补全选项 — [plans/feat-B1-completion.md](plans/feat-B1-completion.md)
   - [x] 静态 `--gen-completion`（commit 3a76280）
-  - [ ] 动态 `--in-completion`（`showAutoCompletion` 候选计算）
+  - [x] 动态 `--in-completion` 候选计算 + showAutoCompletion（commit 88d70e9）
+  - [ ] 生成脚本委托 `--in-completion`（子阶段 3）；选项值候选 `Choices`（子阶段 4，可选）
 - [ ] **B2** 命令中间件 — [plans/feat-B2-middleware.md](plans/feat-B2-middleware.md)
 - [ ] **B4+B5** POSIX 短选项增强 — [plans/feat-B4-B5-posix-options.md](plans/feat-B4-B5-posix-options.md)
 - [ ] **B6+B7** 结构体标签增强 + 声明式交互收集 — [plans/feat-B6-B7-struct-tag-question.md](plans/feat-B6-B7-struct-tag-question.md)
