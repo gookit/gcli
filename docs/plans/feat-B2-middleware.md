@@ -55,7 +55,7 @@
 
 1. ✅ `feat(cmd): 命令级中间件 Use()`（commit 7cec911）—— `Command.Use` + `runWithMiddles`
    线性执行接入 `doExecute`，测试覆盖顺序/中止/无中间件回归/链式。
-2. `feat(app): App.Use() 应用级中间件`（可选，未做）
+2. ✅ `feat(app): App.Use() 应用级中间件`（commit 66502f7）
 
 > **遗留/发现**：
 > - `doExecute` 里那段 `recover()` 是**内联调用(非 defer)**，实为 no-op，不能捕获 panic

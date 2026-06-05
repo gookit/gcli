@@ -32,10 +32,10 @@
   - [x] PowerShell(pwsh) 动态补全（`--gen-completion pwsh`，`.ps1`；静态 pwsh 不支持）
   - [x] 选项值候选 `CliOpt.Choices`（子阶段 4，commit 75bc031）
   - [ ] 收尾(按需)：bash/zsh/pwsh 实际 Tab 交互的人工验证；隐藏命令过滤
-- [~] **B2** 命令中间件 — [plans/feat-B2-middleware.md](plans/feat-B2-middleware.md)
+- [x] **B2** 命令中间件 — [plans/feat-B2-middleware.md](plans/feat-B2-middleware.md)
   - [x] 命令级 `Command.Use()`（commit 7cec911）
   - [x] 修 doExecute 内联 recover(no-op) 为 defer，真正捕获 panic（commit 467d883）
-  - [ ] App 级 `App.Use()`（可选）
+  - [x] App 级 `App.Use()`（commit 66502f7）
 - [ ] **B4+B5** POSIX 短选项增强 — [plans/feat-B4-B5-posix-options.md](plans/feat-B4-B5-posix-options.md)
 - [ ] **B6+B7** 结构体标签增强 + 声明式交互收集 — [plans/feat-B6-B7-struct-tag-question.md](plans/feat-B6-B7-struct-tag-question.md)
 
