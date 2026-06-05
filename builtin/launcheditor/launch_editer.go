@@ -3,7 +3,6 @@ package launcheditor
 import (
 	"crypto/rand"
 	"fmt"
-	"io/ioutil"
 	"os"
 	"os/exec"
 )
@@ -51,7 +50,7 @@ func LaunchWithFilename(editor, filename string) (content []byte, err error) {
 		}
 	}
 
-	content, err = ioutil.ReadFile(filename)
+	content, err = os.ReadFile(filename)
 	if err != nil {
 		return []byte{}, nil
 	}
