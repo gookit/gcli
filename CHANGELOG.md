@@ -7,6 +7,8 @@ and this project adheres to semantic-ish versioning.
 
 ## [v3.5.0] - 2026-06-06
 
+**Highlights:** more flexible struct binding (a new `field` tag rule plus automatic anonymous-field expansion), declarative interactive input via `Question`, and opt-in POSIX short-option merging through `EnhanceShort` — configurable per command or globally with `gcli.SetEnhanceShort()`.
+
 ### Added
 
 - **Struct binding: `TagRuleField` tag rule.** A new rule for `FromStruct` that
