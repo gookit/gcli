@@ -25,6 +25,8 @@ Including running commands, color styles, data display, progress display, intera
 - Support for adding multiple commands and supporting command **aliases**
 - Support binding command options from structure
     - example `flag:"name=int0;shorts=i;required=true;desc=int option message"`
+    - three tag rules: `named`(default) / `simple` / `field`(use field name + auto expand anonymous structs)
+    - support interactive value collect by `Question` when the option value is empty
 - Support for adding multi-level commands, each level of command supports binding its own options
 - `option/flag` - support option binding `--long`, support for adding short options(`-s`)
   - POSIX-style short flag combining (`-ab` = `-a -b`): requires enabling `EnhanceShort` (gflag `Config`) or the command strict mode `SetStrictMode(true)`. Only combinations where **all** members are bool short options are split; `EnhanceShort=2` additionally supports attached-value form `-Ostdout` = `-O stdout`. Disabled by default for compatibility.
@@ -203,6 +205,54 @@ func main() {
 	}
 }
 ```
+
+#### Struct tag rules
+
+`FromStruct` supports three tag rules, selected by `c.FromStruct(ptr, ruleType)`:
+
+- `gcli.TagRuleNamed` (default): `flag:"name=int0;shorts=i;required=true;desc=message"`
+- `gcli.TagRuleSimple`: `flag:"desc;required;default;shorts"`
+- `gcli.TagRuleField`: use the **field name** (SnakeCase) as the option name, read meta
+  from independent tag keys. **Anonymous nested structs are expanded** automatically.
+
+```go
+type commonOpts struct {
+	Verbose bool `flag:"v" desc:"enable verbose output"`
+}
+type demoOpts struct {
+	commonOpts        // anonymous: expands to a --verbose/-v option
+	UserName string `flag:"u" desc:"the user name" required:"true"`
+	Age      int    `desc:"the user age" default:"18"`
+}
+
+c.MustFromStruct(&demoOpts{}, gcli.TagRuleField)
+// => options: --user-name/-u (required), --age (default 18), --verbose/-v
+```
+
+#### Interactive collect by Question
+
+When an option value is empty, you can auto-collect it via an interactive question
+(a built-in default collector). `Collector` has higher priority than `Question`.
+
+```go
+c.StrOpt2(&token, "token", "the access token",
+	gflag.WithQuestion("Please input your access token: "))
+// run without --token will prompt: "Please input your access token: "
+```
+
+#### POSIX short option enhance
+
+Combined short options are disabled by default. Enable via `Config.EnhanceShort`:
+
+```go
+c.ParserCfg().EnhanceShort = gcli.EnhanceShortMerge  // 1: -aux => -a -u -x (all bool)
+c.ParserCfg().EnhanceShort = gcli.EnhanceShortAttach // 2: also -Ostdout => -O stdout
+```
+
+Only groups where **all** members are bool short options are split; mixed forms are kept
+as-is to avoid mis-parsing value-taking short options.
+
+> Runnable demos in `_examples/cmd`: `struct-flag` (B6), `short-merge` (B4+B5), `ask-demo` (B7).
 
 ### Command/Option category
 

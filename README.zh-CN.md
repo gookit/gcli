@@ -24,6 +24,8 @@ The english introduction please ses **[README](README.md)**
 - 支持添加多个命令，并且支持给命令添加别名
 - 支持从结构体绑定命令选项
   - 示例 `flag:"name=int0;shorts=i;required=true;desc=int option message"`
+  - 三种标签规则：`named`(默认) / `simple` / `field`(用字段名做选项名 + 自动展开匿名嵌套结构体)
+  - 选项值为空时支持通过 `Question` 声明式交互收集输入
 - 支持添加多级命令，每级命令均支持绑定自己的选项
 - `option/flag` 快速方便的添加选项绑定(`--long`)，支持添加多个短选项（eg: `-s`）
   - 选项支持设置 `Required`，表明为必须的选项参数
@@ -391,6 +393,51 @@ func main() {
 	}
 }
 ```
+
+#### 结构体标签规则
+
+`FromStruct` 支持三种标签规则，通过 `c.FromStruct(ptr, ruleType)` 选择：
+
+- `gcli.TagRuleNamed`（默认）：`flag:"name=int0;shorts=i;required=true;desc=message"`
+- `gcli.TagRuleSimple`：`flag:"desc;required;default;shorts"`
+- `gcli.TagRuleField`：用**字段名**(SnakeCase) 做选项名，元数据从独立 tag 键读取，并**自动展开匿名嵌套结构体**。
+
+```go
+type commonOpts struct {
+	Verbose bool `flag:"v" desc:"enable verbose output"`
+}
+type demoOpts struct {
+	commonOpts        // 匿名嵌套：展开为 --verbose/-v 选项
+	UserName string `flag:"u" desc:"the user name" required:"true"`
+	Age      int    `desc:"the user age" default:"18"`
+}
+
+c.MustFromStruct(&demoOpts{}, gcli.TagRuleField)
+// => 选项: --user-name/-u (必填), --age (默认 18), --verbose/-v
+```
+
+#### 通过 Question 交互收集
+
+当选项值为空时，可用一个交互式问题自动收集输入（内置默认收集器）。`Collector` 优先级高于 `Question`。
+
+```go
+c.StrOpt2(&token, "token", "the access token",
+	gflag.WithQuestion("Please input your access token: "))
+// 不带 --token 运行将提示: "Please input your access token: "
+```
+
+#### POSIX 短选项增强
+
+组合短选项默认关闭，通过 `Config.EnhanceShort` 开启：
+
+```go
+c.ParserCfg().EnhanceShort = gcli.EnhanceShortMerge  // 1: -aux => -a -u -x (全为 bool 才拆)
+c.ParserCfg().EnhanceShort = gcli.EnhanceShortAttach // 2: 额外支持 -Ostdout => -O stdout
+```
+
+仅当组合中**全部**是 bool 短选项时才拆分；混合写法原样保留，避免误伤取值型短选项。
+
+> 可运行示例见 `_examples/cmd`：`struct-flag`(B6)、`short-merge`(B4+B5)、`ask-demo`(B7)。
 
 ### 命令/选项分类
 
