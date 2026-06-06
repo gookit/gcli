@@ -1,39 +1,33 @@
 # What's New in GCli v3.5 — A Friendly Tour Since v3.3.1
 
-> [GCli](https://github.com/gookit/gcli) is a simple-to-use, full-featured
-> command-line application & tool library for Go. The **v3.5** release — capping
-> the v3.4–v3.5 cycle —
-> brings a batch of features focused on **developer experience** and
-> **robustness**. This post walks through everything new since `v3.3.1`,
-> from the things you'll use every day to the more advanced bits.
+> [GCli](https://github.com/gookit/gcli) is a simple-to-use, full-featured command-line application & tool library
+> for Go. The **v3.5** release — capping the v3.4–v3.5 cycle — brings a batch of features focused on **developer
+> experience** and **robustness**. This post walks through everything new since `v3.3.1`, from the things you'll use
+> every day to the more advanced bits.
 
-If you build CLI tools in Go, this update is worth a look. Let's start with the
-highlights, then dig into each feature with real, runnable examples.
+If you build CLI tools in Go, this update is worth a look. Let's start with the highlights, then dig into each feature
+with real, runnable examples.
 
 ## Highlights at a glance
 
-- 🧠 **Smarter shell completion** — zero-registration generation and a new
-  **dynamic** mode that needs no script maintenance (bash / zsh / PowerShell).
+- 🧠 **Smarter shell completion** — zero-registration generation and a new **dynamic** mode that needs no script maintenance (bash / zsh / PowerShell).
 - 🧅 **Command middleware** — `Command.Use()` / `App.Use()` for auth, logging, timing and other cross-cutting concerns.
 - 🗂️ **Grouped help** — organize commands and options into titled sections via `Category`.
 - 🏷️ **More flexible struct binding** — a new `field` tag rule plus automatic **anonymous struct** expansion.
-- 💬 **Declarative interactive input** — collect a missing value with a single
-  `Question`.
+- 💬 **Declarative interactive input** — collect a missing value with a single `Question`.
 - ➖ **POSIX short-option merging** — `-aux` = `-a -u -x`, opt-in and safe.
-- 🛡️ **Robustness fixes** — panics are no longer swallowed, `help <cmd>` works
-  on first call, and more.
+- 🛡️ **Robustness fixes** — panics are no longer swallowed, `help <cmd>` works on first call, and more.
 - ⚠️ **A few breaking changes** with a clear migration table (see the end).
 
 ---
 
 ## 1. Smarter shell completion
 
-Shell completion used to mean generating a **static** script that hard-codes your
-command and option names. The moment you add a command, the script is stale and
-must be regenerated. GCli now fixes this from both ends.
+Shell completion used to mean generating a **static** script that hard-codes your command and option names. The moment
+you add a command, the script is stale and must be regenerated. GCli now fixes this from both ends.
 
-**Zero-registration static generation.** You no longer need to register the
-`genac` command. Every app now has a built-in global option:
+**Zero-registration static generation.** You no longer need to register the `genac` command. Every app now has a
+built-in global option:
 
 ```bash
 # generate a completion script for your shell, then source it
@@ -44,13 +38,11 @@ myapp --gen-completion zsh  > _myapp
 myapp --gen-completion pwsh > myapp.ps1
 ```
 
-**Dynamic completion (zero maintenance).** By default the generated script is a
-*thin* one: instead of hard-coding names, it calls back into your binary to ask
-for candidates at completion time via the built-in `--in-completion` option.
-Add a command tomorrow and Tab-completion just works — no regeneration needed.
+**Dynamic completion (zero maintenance).** By default the generated script is a *thin* one: instead of hard-coding
+names, it calls back into your binary to ask for candidates at completion time via the built-in `--in-completion`
+option. Add a command tomorrow and Tab-completion just works — no regeneration needed.
 
-**Value candidates for options.** Want completion to also suggest *values* for an
-option? Give it a `Choices` list:
+**Value candidates for options.** Want completion to also suggest *values* for an option? Give it a `Choices` list:
 
 ```go
 c.StrOpt2(&format, "format", "output format",
@@ -58,17 +50,16 @@ c.StrOpt2(&format, "format", "output format",
 // typing `--format <Tab>` now suggests: json  yaml  table
 ```
 
-The candidate computation is fully unit-tested; the shell glue (bash/zsh/pwsh)
-is delegated to that single dynamic entry point, so behavior stays consistent.
+The candidate computation is fully unit-tested; the shell glue (bash/zsh/pwsh) is delegated to that single dynamic
+entry point, so behavior stays consistent.
 
 ## 2. Command middleware
 
-Need to run auth checks, logging, or timing before a command's main logic —
-without copy-pasting that code into every command? Middleware is here.
+Need to run auth checks, logging, or timing before a command's main logic — without copy-pasting that code into every
+command? Middleware is here.
 
-Register one or more handlers with `Use()`. They run **in registration order,
-before** the command's main `Func`. If any handler returns an error, the chain
-stops and the error propagates (the main `Func` is skipped).
+Register one or more handlers with `Use()`. They run **in registration order, before** the command's main `Func`. If
+any handler returns an error, the chain stops and the error propagates (the main `Func` is skipped).
 
 ```go
 // command-level middleware
@@ -86,13 +77,13 @@ app.Use(func(c *gcli.Command, args []string) error {
 })
 ```
 
-Both `Command.Use()` and `App.Use()` return the receiver, so they chain nicely.
-Apps with no middleware behave exactly as before.
+Both `Command.Use()` and `App.Use()` return the receiver, so they chain nicely. Apps with no middleware behave exactly
+as before.
 
 ## 3. Grouped help
 
-As an app grows, a flat list of commands and options gets hard to scan. Now you
-can group them under titled sections with a `Category`.
+As an app grows, a flat list of commands and options gets hard to scan. Now you can group them under titled sections
+with a `Category`.
 
 ```go
 // group commands
@@ -104,22 +95,19 @@ cmd.StrVar(&dsn, &gcli.CliOpt{Name: "db-dsn", Desc: "database dsn", Category: "d
 cmd.StrOpt2(&port, "port", "bind port", gflag.WithCategory("network"))
 ```
 
-Groups keep their first-appearance order; items inside a group are sorted by
-name. When no category is set, output is identical to before — fully backward
-compatible.
+Groups keep their first-appearance order; items inside a group are sorted by name. When no category is set, output is
+identical to before — fully backward compatible.
 
 ## 4. More flexible struct binding
 
-GCli has long supported binding options straight from a struct. This release adds
-a third tag rule and anonymous-field support.
+GCli has long supported binding options straight from a struct. This release adds a third tag rule and anonymous-field
+support.
 
 `FromStruct` now supports three rules, chosen via `c.FromStruct(ptr, ruleType)`:
 
 - `gcli.TagRuleNamed` (default): `flag:"name=int0;shorts=i;required=true;desc=message"`
 - `gcli.TagRuleSimple`: `flag:"desc;required;default;shorts"`
-- `gcli.TagRuleField` **(new)**: use the **field name** (SnakeCase) as the option
-  name, and read metadata from independent tag keys. **Anonymous nested structs
-  are expanded automatically** — great for sharing a common option set.
+- `gcli.TagRuleField` **(new)**: use the **field name** (SnakeCase) as the option name, and read metadata from independent tag keys. **Anonymous nested structs are expanded automatically** — great for sharing a common option set.
 
 ```go
 type commonOpts struct {
@@ -136,15 +124,13 @@ c.MustFromStruct(&demoOpts{}, gcli.TagRuleField)
 // => options: --user-name/-u (required), --age (default 18), --verbose/-v
 ```
 
-The `field` rule is the most concise: the option name comes from the field, and
-`desc` / `default` / `required` live in their own tag keys — easy to read and
-maintain.
+The `field` rule is the most concise: the option name comes from the field, and `desc` / `default` / `required` live in
+their own tag keys — easy to read and maintain.
 
 ## 5. Declarative interactive input
 
-Sometimes a value is required but the user forgot to pass it. Instead of writing
-a manual collector, just attach a `Question`: when the option value is empty,
-GCli prompts for it interactively (a built-in default collector).
+Sometimes a value is required but the user forgot to pass it. Instead of writing a manual collector, just attach a
+`Question`: when the option value is empty, GCli prompts for it interactively (a built-in default collector).
 
 ```go
 c.StrOpt2(&token, "token", "the access token",
@@ -160,8 +146,8 @@ If you also set a custom `Collector`, it takes priority over `Question`.
 
 ## 6. POSIX short-option merging
 
-Classic POSIX tools let you combine short flags: `-a -u -x` becomes `-aux`. GCli
-now supports this — carefully, and **opt-in** so nothing changes by default.
+Classic POSIX tools let you combine short flags: `-a -u -x` becomes `-aux`. GCli now supports this — carefully, and
+**opt-in** so nothing changes by default.
 
 Turn it on via `Config.EnhanceShort`, using the new self-documenting constants:
 
@@ -170,8 +156,7 @@ c.ParserCfg().EnhanceShort = gcli.EnhanceShortMerge  // 1: -aux => -a -u -x
 c.ParserCfg().EnhanceShort = gcli.EnhanceShortAttach // 2: also -Ostdout => -O stdout
 ```
 
-Prefer one switch for the whole app? Set it **globally** — a command's own setting
-still wins:
+Prefer one switch for the whole app? Set it **globally** — a command's own setting still wins:
 
 ```go
 gcli.SetEnhanceShort(gcli.EnhanceShortMerge) // applies to every command
@@ -183,23 +168,18 @@ gcli.SetEnhanceShort(gcli.EnhanceShortMerge) // applies to every command
 | 1 | `EnhanceShortMerge` | split a group **only when all members are bool** shorts |
 | 2 | `EnhanceShortAttach` | also support value-attached form `-Ostdout` = `-O stdout` |
 
-The key safety rule: a group is split **only if every character is a bool short
-option**. Mixed forms like `-aO` (where `O` takes a value) are left untouched, so
-value-taking shorts are never mis-parsed. (Strict mode now drives this same safe
-path internally, replacing the old "blind split".)
+The key safety rule: a group is split **only if every character is a bool short option**. Mixed forms like `-aO` (where
+`O` takes a value) are left untouched, so value-taking shorts are never mis-parsed. (Strict mode now drives this same
+safe path internally, replacing the old "blind split".)
 
 ## 7. Robustness fixes
 
 Several long-standing rough edges were smoothed out:
 
-- **Panics are no longer swallowed.** `gflag.Parser.Parse` used to print and
-  ignore a recovered panic; it now returns it as an error so your code can react.
-- **`help <command>` works on the first call.** Previously it could print
-  `unknown input command "help"`.
-- **`findSimilarCmd` no longer pollutes the command registry** with a phantom
-  `help` entry on unknown-command runs.
-- **`Command.Copy()` no longer clears the source command's hooks** (a shared
-  pointer used to reset the original).
+- **Panics are no longer swallowed.** `gflag.Parser.Parse` used to print and ignore a recovered panic; it now returns it as an error so your code can react.
+- **`help <command>` works on the first call.** Previously it could print `unknown input command "help"`.
+- **`findSimilarCmd` no longer pollutes the command registry** with a phantom `help` entry on unknown-command runs.
+- **`Command.Copy()` no longer clears the source command's hooks** (a shared pointer used to reset the original).
 
 ## ⚠️ Breaking changes & migration
 
@@ -211,13 +191,11 @@ A small number of cleanups require action if you depended on them:
 | `import ".../gcli/v3/gclicom"` | removed (was unused after the cliui migration) |
 | global `--verbose 4` flag | env `GCLI_VERBOSE=debug`, or `gcli.SetVerbose(gcli.VerbDebug)` / `gcli.SetDebugMode()` |
 
-Why remove `--verbose`? It bound to a per-app copy that the logger never read, so
-it had no real effect — it only cluttered your app's option list. Control the log
-level via the environment variable or code instead.
+Why remove `--verbose`? It bound to a per-app copy that the logger never read, so it had no real effect — it only
+cluttered your app's option list. Control the log level via the environment variable or code instead.
 
-> Note: multiple `App` instances in one process now share the global options
-> (verbose / help / version / strict / completion), as part of unifying them into
-> a single source of truth.
+> Note: multiple `App` instances in one process now share the global options (verbose / help / version / strict /
+> completion), as part of unifying them into a single source of truth.
 
 ## Upgrade
 
@@ -226,18 +204,16 @@ go get -u github.com/gookit/gcli/v3@latest
 ```
 
 Then explore the runnable demos under [`_examples/cmd`](https://github.com/gookit/gcli/tree/master/_examples):
-`struct-flag` (field tag + anonymous), `short-merge` (EnhanceShort), and
-`ask-demo` (Question).
+`struct-flag` (field tag + anonymous), `short-merge` (EnhanceShort), and `ask-demo` (Question).
 
 ## Wrapping up
 
-v3.5 is all about making GCli nicer to build with — completion that maintains
-itself, middleware for the boring-but-necessary cross-cutting logic, cleaner help
-output, and more flexible flag binding — while quietly fixing several robustness
-issues underneath.
+v3.5 is all about making GCli nicer to build with — completion that maintains itself, middleware for the
+boring-but-necessary cross-cutting logic, cleaner help output, and more flexible flag binding — while quietly fixing
+several robustness issues underneath.
 
-Give it a try, and if you hit anything or have ideas, issues and PRs are very
-welcome on [GitHub](https://github.com/gookit/gcli). Happy CLI building! 🎉
+Give it a try, and if you hit anything or have ideas, issues and PRs are very welcome on
+[GitHub](https://github.com/gookit/gcli). Happy CLI building! 🎉
 
 ---
 
