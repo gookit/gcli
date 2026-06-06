@@ -70,6 +70,13 @@ func main() {
 		cmd.InteractDemo,
 	)
 
+	// demos for recent features: B6(struct tag) / B4+B5(short merge) / B7(question)
+	app.Add(
+		cmd.StructFlagDemo,
+		cmd.ShortMergeDemo,
+		cmd.QuestionDemo,
+	)
+
 	app.Add(builtin.GenEmojiMap)
 	// app.Add(builtin.GenAutoComplete())
 
