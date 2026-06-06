@@ -461,6 +461,13 @@ func TestFlags_FromStruct_fieldRule(t *testing.T) {
 	assert.Eq(t, "tom", opt.UserName)
 	assert.True(t, opt.Verbose)
 	assert.Eq(t, 18, opt.Age) // default value take effect
+
+	// verify the other short `n` also works, and gcli.TagRuleField re-export is usable
+	fs2 := gcli.NewFlags("test2")
+	opt2 := &fieldOpts{}
+	assert.NoErr(t, fs2.FromStruct(opt2, gcli.TagRuleField))
+	assert.NoErr(t, fs2.Parse([]string{"-n", "jody"}))
+	assert.Eq(t, "jody", opt2.UserName)
 }
 
 func TestFlags_FromStruct_anonymous(t *testing.T) {

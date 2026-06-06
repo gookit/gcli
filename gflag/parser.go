@@ -328,11 +328,11 @@ func (p *Parser) fromStructValue(v reflect.Value, tagName string) error {
 		// only treat as an option field when one of flag/desc/default/required tag exists.
 		var str string
 		if p.cfg.TagRuleType == TagRuleField {
-			if flagTag, has := sf.Tag.Lookup(tagName); has && flagTag == "-" {
+			flagTag, hasFlag := sf.Tag.Lookup(tagName)
+			if hasFlag && flagTag == "-" {
 				continue // explicit skip by `flag:"-"`
 			}
 
-			_, hasFlag := sf.Tag.Lookup(tagName)
 			_, hasDesc := sf.Tag.Lookup("desc")
 			_, hasDef := sf.Tag.Lookup("default")
 			_, hasReq := sf.Tag.Lookup("required")

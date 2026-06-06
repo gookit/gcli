@@ -106,6 +106,17 @@ type CliOpt = gflag.CliOpt
 // FlagsConfig alias of the gflag.Config
 type FlagsConfig = gflag.Config
 
+// TagRule* alias of the gflag struct-tag rule type consts. see Flags.FromStruct
+const (
+	// TagRuleNamed struct tag use named k-v rule. eg: `flag:"name=int0;shorts=i;required=true;desc=message"`
+	TagRuleNamed = gflag.TagRuleNamed
+	// TagRuleSimple struct tag use simple rule. eg: `flag:"name;desc;required;default;shorts"`
+	TagRuleSimple = gflag.TagRuleSimple
+	// TagRuleField struct tag use field name as option name, read meta from independent tag keys.
+	// eg: `flag:"shorts" desc:"message" default:"val" required:"true"`
+	TagRuleField = gflag.TagRuleField
+)
+
 // NewFlags create new gflag.Flags
 func NewFlags(nameWithDesc ...string) *gflag.Flags {
 	return gflag.New(nameWithDesc...)
