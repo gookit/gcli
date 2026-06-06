@@ -1,16 +1,14 @@
-# GCli v3.4 新特性一览 —— 自 v3.3.1 以来的改进之旅
+# GCli v3.5 新特性一览 —— 自 v3.3.1 以来的改进之旅
 
-> [GCli](https://github.com/gookit/gcli) 是一个简单易用、功能丰富的 Go 命令行
-> 应用与工具库。**v3.4** 版本带来了一批聚焦**开发体验**与**健壮性**的更新。
+> [GCli](https://github.com/gookit/gcli) 是一个简单易用、功能丰富的 Go 命令行应用与工具库。
+> **v3.5** 版本（收尾 v3.4–v3.5 这一周期）带来了一批聚焦**开发体验**与**健壮性**的更新。
 > 本文将带你逐一了解自 `v3.3.1` 以来的所有新特性——从日常最常用的，到进阶的能力。
 
-如果你用 Go 写命令行工具，这次更新值得一看。我们先速览亮点，再用可运行的真实示例
-逐个展开。
+如果你用 Go 写命令行工具，这次更新值得一看。我们先速览亮点，再用可运行的真实示例逐个展开。
 
 ## 亮点速览
 
-- 🧠 **更聪明的 Shell 自动补全** —— 零注册即可生成，并新增**动态补全**模式，
-  脚本零维护（支持 bash / zsh / PowerShell）。
+- 🧠 **更聪明的 Shell 自动补全** —— 零注册即可生成，并新增**动态补全**模式，脚本零维护（支持 bash / zsh / PowerShell）。
 - 🧅 **命令中间件** —— `Command.Use()` / `App.Use()`，用于鉴权、日志、计时等横切逻辑。
 - 🗂️ **帮助信息分组** —— 通过 `Category` 把命令与选项归入带标题的分组。
 - 🏷️ **更灵活的结构体绑定** —— 新增 `field` 标签规则，并支持**匿名嵌套结构体**自动展开。
@@ -23,8 +21,7 @@
 
 ## 1. 更聪明的 Shell 自动补全
 
-过去做补全意味着生成一份**静态**脚本，把命令名和选项名都硬编码进去。可一旦你新增了
-命令，脚本立刻过时，必须重新生成。v3.4 从两端解决了这个痛点。
+过去做补全意味着生成一份**静态**脚本，把命令名和选项名都硬编码进去。可一旦你新增了命令，脚本立刻过时，必须重新生成。GCli 现在从两端解决了这个痛点。
 
 **零注册的静态生成。** 你不再需要注册 `genac` 命令。现在每个应用都内置了一个全局选项：
 
@@ -98,7 +95,7 @@ cmd.StrOpt2(&port, "port", "bind port", gflag.WithCategory("network"))
 
 ## 4. 更灵活的结构体绑定
 
-GCli 一直支持直接从结构体绑定选项。v3.4 新增了第三种标签规则与匿名字段支持。
+GCli 一直支持直接从结构体绑定选项。本次新增了第三种标签规则与匿名字段支持。
 
 `FromStruct` 现在支持三种规则，通过 `c.FromStruct(ptr, ruleType)` 选择：
 
@@ -154,6 +151,12 @@ c.ParserCfg().EnhanceShort = gcli.EnhanceShortMerge  // 1: -aux => -a -u -x
 c.ParserCfg().EnhanceShort = gcli.EnhanceShortAttach // 2: 额外支持 -Ostdout => -O stdout
 ```
 
+想给整个应用一次性开启？可以**全局**设置——命令自身的设置仍然优先：
+
+```go
+gcli.SetEnhanceShort(gcli.EnhanceShortMerge) // 作用于每个命令
+```
+
 | 等级 | 常量 | 行为 |
 |------|------|------|
 | 0 | `EnhanceShortNone` | 关闭（默认）—— 完全兼容 |
@@ -202,7 +205,7 @@ go get -u github.com/gookit/gcli/v3@latest
 
 ## 结语
 
-v3.4 的主题，就是让用 GCli 构建命令行应用变得更舒服——会自我维护的补全、承接那些
+v3.5 的主题，就是让用 GCli 构建命令行应用变得更舒服——会自我维护的补全、承接那些
 "枯燥但必要"的横切逻辑的中间件、更整洁的帮助输出、更灵活的选项绑定——同时在底层悄悄
 修复了若干健壮性问题。
 
@@ -213,4 +216,4 @@ v3.4 的主题，就是让用 GCli 构建命令行应用变得更舒服——会
 
 *相关链接：[GitHub](https://github.com/gookit/gcli) ·
 [GoDoc](https://pkg.go.dev/github.com/gookit/gcli/v3) ·
-[English version](../gcli-v3.4-whats-new.md)*
+[English version](../gcli-v3.5-whats-new.md)*

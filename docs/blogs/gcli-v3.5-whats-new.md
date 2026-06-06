@@ -1,7 +1,8 @@
-# What's New in GCli v3.4 — A Friendly Tour Since v3.3.1
+# What's New in GCli v3.5 — A Friendly Tour Since v3.3.1
 
 > [GCli](https://github.com/gookit/gcli) is a simple-to-use, full-featured
-> command-line application & tool library for Go. The **v3.4** release line
+> command-line application & tool library for Go. The **v3.5** release — capping
+> the v3.4–v3.5 cycle —
 > brings a batch of features focused on **developer experience** and
 > **robustness**. This post walks through everything new since `v3.3.1`,
 > from the things you'll use every day to the more advanced bits.
@@ -13,12 +14,9 @@ highlights, then dig into each feature with real, runnable examples.
 
 - 🧠 **Smarter shell completion** — zero-registration generation and a new
   **dynamic** mode that needs no script maintenance (bash / zsh / PowerShell).
-- 🧅 **Command middleware** — `Command.Use()` / `App.Use()` for auth, logging,
-  timing and other cross-cutting concerns.
-- 🗂️ **Grouped help** — organize commands and options into titled sections via
-  `Category`.
-- 🏷️ **More flexible struct binding** — a new `field` tag rule plus automatic
-  **anonymous struct** expansion.
+- 🧅 **Command middleware** — `Command.Use()` / `App.Use()` for auth, logging, timing and other cross-cutting concerns.
+- 🗂️ **Grouped help** — organize commands and options into titled sections via `Category`.
+- 🏷️ **More flexible struct binding** — a new `field` tag rule plus automatic **anonymous struct** expansion.
 - 💬 **Declarative interactive input** — collect a missing value with a single
   `Question`.
 - ➖ **POSIX short-option merging** — `-aux` = `-a -u -x`, opt-in and safe.
@@ -32,7 +30,7 @@ highlights, then dig into each feature with real, runnable examples.
 
 Shell completion used to mean generating a **static** script that hard-codes your
 command and option names. The moment you add a command, the script is stale and
-must be regenerated. v3.4 fixes this from both ends.
+must be regenerated. GCli now fixes this from both ends.
 
 **Zero-registration static generation.** You no longer need to register the
 `genac` command. Every app now has a built-in global option:
@@ -112,8 +110,8 @@ compatible.
 
 ## 4. More flexible struct binding
 
-GCli has long supported binding options straight from a struct. v3.4 adds a third
-tag rule and anonymous-field support.
+GCli has long supported binding options straight from a struct. This release adds
+a third tag rule and anonymous-field support.
 
 `FromStruct` now supports three rules, chosen via `c.FromStruct(ptr, ruleType)`:
 
@@ -172,6 +170,13 @@ c.ParserCfg().EnhanceShort = gcli.EnhanceShortMerge  // 1: -aux => -a -u -x
 c.ParserCfg().EnhanceShort = gcli.EnhanceShortAttach // 2: also -Ostdout => -O stdout
 ```
 
+Prefer one switch for the whole app? Set it **globally** — a command's own setting
+still wins:
+
+```go
+gcli.SetEnhanceShort(gcli.EnhanceShortMerge) // applies to every command
+```
+
 | Level | Constant | Behavior |
 |------|----------|----------|
 | 0 | `EnhanceShortNone` | off (default) — full compatibility |
@@ -226,7 +231,7 @@ Then explore the runnable demos under [`_examples/cmd`](https://github.com/gooki
 
 ## Wrapping up
 
-v3.4 is all about making GCli nicer to build with — completion that maintains
+v3.5 is all about making GCli nicer to build with — completion that maintains
 itself, middleware for the boring-but-necessary cross-cutting logic, cleaner help
 output, and more flexible flag binding — while quietly fixing several robustness
 issues underneath.
@@ -238,4 +243,4 @@ welcome on [GitHub](https://github.com/gookit/gcli). Happy CLI building! 🎉
 
 *Links: [GitHub](https://github.com/gookit/gcli) ·
 [GoDoc](https://pkg.go.dev/github.com/gookit/gcli/v3) ·
-[Chinese version](zh-CN/gcli-v3.4-whats-new.md)*
+[Chinese version](zh-CN/gcli-v3.5-whats-new.md)*
