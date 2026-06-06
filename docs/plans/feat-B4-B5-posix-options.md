@@ -1,6 +1,6 @@
 # 功能实现计划：B4+B5 POSIX 短选项增强
 
-> 状态：**待评审**
+> 状态：**已完成**
 > 范围：合并 strictFormatArgs（B4）与 EnhanceShort（B5），提供标准 POSIX 短选项解析。
 
 ## 现状（含一处文档与实现不符）
@@ -46,11 +46,18 @@
   `--`、未知短名、与长选项混合。
 - level 0/1/2 三档各跑一遍，确认 0 档与现状一致。
 
-## 提交拆分
+## 提交拆分（实际落地）
 
-1. `feat(gflag): expandShortArgs 短选项规范化(EnhanceShort 1/2)`
-2. `refactor(gflag): strictFormatArgs 收敛进短选项规范化`
-3. `docs: 修正短选项合并的说明(需 EnhanceShort/strict)`
+1. ✅ `feat(gflag): EnhanceShort 短选项规范化预处理(expandShortArgs)` — `daf0646`
+2. ✅ `refactor(gcli): strictMode 收敛为驱动 gflag EnhanceShort，弃用盲拆短选项` — `c23dc37`
+3. ✅ `docs: 修正短选项合并说明(需 EnhanceShort/strict 开启)` — `2da8714`
+
+> 实现要点：
+> - `gflag/shorts.go` 新增纯函数 `expandShortArgs`（level≥1 仅当**全为 bool** 才拆 `-aux`→`-a -u -x`；
+>   level≥2 支持 `-Ostdout`→`-O stdout`；混合/含=/长选项/未知短名一律原样保留，不猜测）+ `FlagSet.isBoolShort`。
+> - 接入 `Parser.Parse`（`EnhanceShort>0` 时），默认 0 → 行为零变化。
+> - 主包 `strictFormatArgs` 删除盲拆分支（只保留 `--a/---name` 长选项规范化），`cmd.go` 的 strictMode
+>   改为驱动 `EnhanceShort=1`，修复了"盲拆误伤取值短选项"的旧 bug。`TestSetStrictMode` 等回归全绿。
 
 ## 体量预估
 
