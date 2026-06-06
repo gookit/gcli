@@ -435,6 +435,12 @@ c.ParserCfg().EnhanceShort = gcli.EnhanceShortMerge  // 1: -aux => -a -u -x (全
 c.ParserCfg().EnhanceShort = gcli.EnhanceShortAttach // 2: 额外支持 -Ostdout => -O stdout
 ```
 
+也可以一次性**全局**设置，作用于所有命令——命令自身的设置（若有）仍然优先：
+
+```go
+gcli.SetEnhanceShort(gcli.EnhanceShortMerge) // 作用于每个命令
+```
+
 仅当组合中**全部**是 bool 短选项时才拆分；混合写法原样保留，避免误伤取值型短选项。
 
 > 可运行示例见 `_examples/cmd`：`struct-flag`(B6)、`short-merge`(B4+B5)、`ask-demo`(B7)。

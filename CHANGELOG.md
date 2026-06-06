@@ -5,6 +5,67 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to semantic-ish versioning.
 
+## [v3.5.0] - 2026-06-06
+
+### Added
+
+- **Struct binding: `TagRuleField` tag rule.** A new rule for `FromStruct` that
+  uses the **field name** (SnakeCase) as the option name and reads metadata from
+  independent tag keys (`flag` for shorts, plus `desc` / `default` / `required`).
+  Select it via `c.FromStruct(ptr, gcli.TagRuleField)`.
+- **Struct binding: anonymous field expansion.** Anonymous nested structs are now
+  expanded automatically, so a shared option set can be embedded and reused.
+- **Declarative interactive input: `CliOpt.Question`.** When an option value is
+  empty, GCli can collect it via an interactive prompt (a built-in default
+  collector). Set it with `gflag.WithQuestion("...")`. A custom `Collector` still
+  takes priority over `Question`.
+- **POSIX short-option enhancement: `Config.EnhanceShort`.** Opt-in combining of
+  short options with self-documenting levels `EnhanceShortNone` (0, default),
+  `EnhanceShortMerge` (1, `-aux` => `-a -u -x` when all are bool), and
+  `EnhanceShortAttach` (2, also `-Ostdout` => `-O stdout`). A group is split only
+  when **all** members are bool short options, so value-taking shorts are never
+  mis-parsed.
+- **Global `EnhanceShort` setting.** `gcli.SetEnhanceShort(level)` /
+  `gcli.EnhanceShort()` apply a level to every command at once; a command's own
+  `Config.EnhanceShort` still takes priority.
+- **Demo commands** under `_examples/cmd`: `struct-flag` (field tag + anonymous),
+  `short-merge` (EnhanceShort), `ask-demo` (Question).
+
+### Changed
+
+- Strict mode now drives the safe `EnhanceShort` path internally instead of the
+  old "blind split", which used to mis-split value-taking short options (e.g.
+  `-Ostdout`). `strictFormatArgs` is reduced to long-option normalization only.
+
+[v3.5.0]: https://github.com/gookit/gcli/compare/v3.4.1...v3.5.0
+
+## [v3.4.1] - 2026-06-05
+
+### Added
+
+- **Built-in shell completion (no `genac` registration needed).**
+  - `--gen-completion <bash|zsh|pwsh>` statically generates a completion script
+    and exits.
+  - `--in-completion` computes completion candidates at runtime; generated
+    scripts are *thin* and delegate to it, so they need no regeneration when
+    commands change.
+  - PowerShell (pwsh) dynamic completion via `Register-ArgumentCompleter`.
+  - A silent completion mode suppresses lifecycle hooks so stdout only contains
+    candidates / the script.
+- **Option value candidates: `CliOpt.Choices`** (`gflag.WithChoices(...)`) feed
+  value completion for an option.
+- **Command middleware: `Command.Use(...)`** runs handlers in registration order
+  before the command's main `Func`; any handler returning an error aborts the
+  chain.
+- **Application middleware: `App.Use(...)`** applies before every command.
+
+### Fixed
+
+- `doExecute`'s `recover()` is now a proper `defer`, so panics during command
+  execution are actually caught.
+
+[v3.4.1]: https://github.com/gookit/gcli/compare/v3.4.0...v3.4.1
+
 ## [v3.4.0] - 2026-06-04
 
 ### ⚠️ Breaking Changes

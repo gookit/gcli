@@ -249,6 +249,13 @@ c.ParserCfg().EnhanceShort = gcli.EnhanceShortMerge  // 1: -aux => -a -u -x (all
 c.ParserCfg().EnhanceShort = gcli.EnhanceShortAttach // 2: also -Ostdout => -O stdout
 ```
 
+Or enable it **globally** for all commands with one call — a command's own setting
+(if any) still takes priority:
+
+```go
+gcli.SetEnhanceShort(gcli.EnhanceShortMerge) // applies to every command
+```
+
 Only groups where **all** members are bool short options are split; mixed forms are kept
 as-is to avoid mis-parsing value-taking short options.
 
