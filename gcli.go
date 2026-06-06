@@ -117,6 +117,16 @@ const (
 	TagRuleField = gflag.TagRuleField
 )
 
+// EnhanceShort* alias of the gflag short-option enhance level consts. see Flags Config.EnhanceShort
+const (
+	// EnhanceShortNone do not enhance short option parse. (default)
+	EnhanceShortNone = gflag.EnhanceShortNone
+	// EnhanceShortMerge merge bool short option group. eg: `-aux` = `-a -u -x`
+	EnhanceShortMerge = gflag.EnhanceShortMerge
+	// EnhanceShortAttach also support value-attached short. eg: `-Ostdout` = `-O stdout`
+	EnhanceShortAttach = gflag.EnhanceShortAttach
+)
+
 // NewFlags create new gflag.Flags
 func NewFlags(nameWithDesc ...string) *gflag.Flags {
 	return gflag.New(nameWithDesc...)

@@ -23,10 +23,10 @@ var ShortMergeDemo = &gcli.Command{
   <cyan>{$fullCmd} -Ostdout</>        # = -O stdout (取值短选项紧贴写法，需 level2)
   <cyan>{$fullCmd} -au -O file.txt</> # 混合写法`,
 	Config: func(c *gcli.Command) {
-		// 开启 EnhanceShort=2：
-		//   level1 -> 全为 bool 的短选项组合拆分(-aux => -a -u -x)
-		//   level2 -> 额外支持取值短选项紧贴写法(-Ostdout => -O stdout)
-		c.ParserCfg().EnhanceShort = 2
+		// 开启 EnhanceShortAttach(level2)：
+		//   Merge(level1)  -> 全为 bool 的短选项组合拆分(-aux => -a -u -x)
+		//   Attach(level2) -> 额外支持取值短选项紧贴写法(-Ostdout => -O stdout)
+		c.ParserCfg().EnhanceShort = gcli.EnhanceShortAttach
 
 		c.BoolOpt(&shortMergeOpts.all, "all", "a", false, "the all option (bool)")
 		c.BoolOpt(&shortMergeOpts.upload, "upload", "u", false, "the upload option (bool)")

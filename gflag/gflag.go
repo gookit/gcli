@@ -36,6 +36,20 @@ const (
 	TagRuleField
 )
 
+// EnhanceShort* enum for Config.EnhanceShort, control POSIX short option parse level.
+const (
+	// EnhanceShortNone do not enhance short option parse. (default)
+	EnhanceShortNone uint8 = iota
+	// EnhanceShortMerge merge and split a short option group when ALL of them are bool options.
+	//
+	// eg: `-aux` => `-a -u -x`
+	EnhanceShortMerge
+	// EnhanceShortAttach based on Merge, also support value-attached short option writing.
+	//
+	// eg: `-Ostdout` => `-O stdout`
+	EnhanceShortAttach
+)
+
 // flag type value enum
 const (
 	FlagTypeInt    = "int" // int*
@@ -69,11 +83,11 @@ type Config struct {
 	DisableArg bool
 	// IndentLongOpt indent long option name on print help
 	IndentLongOpt bool
-	// EnhanceShort enhance short option parse. TODO
+	// EnhanceShort enhance short option parse level. see EnhanceShortNone/Merge/Attach
 	//
-	// 	0 - none
-	// 	1 - multi short bool options. eg: `-aux` = `-a -u -x`
-	// 	2 - allow name with value as one node. eg: `-Ostdout` = `-O stdout`
+	// 	EnhanceShortNone(0)   - none, no enhance
+	// 	EnhanceShortMerge(1)  - merge multi bool short options. eg: `-aux` = `-a -u -x`
+	// 	EnhanceShortAttach(2) - also allow value-attached short. eg: `-Ostdout` = `-O stdout`
 	EnhanceShort uint8
 }
 
