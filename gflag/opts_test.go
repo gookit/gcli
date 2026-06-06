@@ -2,9 +2,12 @@ package gflag_test
 
 import (
 	"errors"
+	"io"
+	"strings"
 	"testing"
 
 	"github.com/gookit/gcli/v3/gflag"
+	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/x/assert"
 )
 
@@ -88,6 +91,52 @@ func TestCliOpt_Collector(t *testing.T) {
 		}))
 		assert.ErrMsg(t, fo1.ParseOpts(nil), "collect error")
 		assert.Eq(t, 0, optInt)
+	})
+}
+
+func TestCliOpt_Question(t *testing.T) {
+	oldIn, oldOut := cliutil.Input, cliutil.Output
+	defer func() { cliutil.Input, cliutil.Output = oldIn, oldOut }()
+	cliutil.Output = io.Discard // silence question prompt in test output
+
+	t.Run("collect_on_empty", func(t *testing.T) {
+		cliutil.Input = strings.NewReader("tom\n")
+
+		opt := gflag.NewOpt("opt1", "a option", "", gflag.WithQuestion("your name? "))
+		fo := newFlagOptions()
+		var str string
+		fo.StrVar(&str, opt)
+
+		assert.NoErr(t, fo.ParseOpts(nil))
+		assert.Eq(t, "tom", str)
+		assert.Eq(t, "tom", opt.Value().String())
+	})
+
+	t.Run("collector_priority_over_question", func(t *testing.T) {
+		cliutil.Input = strings.NewReader("byQuestion\n")
+
+		opt := gflag.NewOpt("opt1", "a option", "",
+			gflag.WithCollector(func() (string, error) { return "byCollector", nil }),
+			gflag.WithQuestion("ignored? "),
+		)
+		fo := newFlagOptions()
+		var str string
+		fo.StrVar(&str, opt)
+
+		assert.NoErr(t, fo.ParseOpts(nil))
+		assert.Eq(t, "byCollector", str)
+	})
+
+	t.Run("no_ask_when_not_empty", func(t *testing.T) {
+		cliutil.Input = strings.NewReader("shouldNotUse\n")
+
+		opt := gflag.NewOpt("opt1", "a option", "", gflag.WithQuestion("q? "))
+		fo := newFlagOptions()
+		var str string
+		fo.StrVar(&str, opt)
+
+		assert.NoErr(t, fo.ParseOpts([]string{"--opt1", "given"}))
+		assert.Eq(t, "given", str)
 	})
 }
 

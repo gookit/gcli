@@ -1,6 +1,6 @@
 # 功能实现计划：B6 结构体标签增强 + B7 声明式交互收集
 
-> 状态：**待评审**
+> 状态：B6 **待评审** / B7 **已完成**
 > 范围：两个独立小特性，可分别实施。
 
 ---
@@ -67,7 +67,11 @@
 
 ### 提交拆分
 
-1. `feat(gflag): CliOpt.Question 声明式交互收集(内置默认 Collector)`
+1. ✅ `feat(gflag): CliOpt.Question 声明式交互收集(内置默认 Collector)`
+
+> 实现要点（已落地）：启用 `Question` 字段 + `WithQuestion()`；`Validate` 空值分支统一为
+> "Collector 优先，否则用基于 `cliutil.ReadLine(Question)` 的内置默认 collector"；收集后重算
+> `valEmpty`，顺带修复"Required+收集成功后仍误报 required"的潜在问题。测试覆盖三态。
 
 ---
 

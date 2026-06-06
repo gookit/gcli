@@ -8,6 +8,7 @@ import (
 
 	"github.com/gookit/gcli/v3/internal/helper"
 	"github.com/gookit/goutil/cflag"
+	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/envutil"
 	"github.com/gookit/goutil/mathutil"
 	"github.com/gookit/goutil/structs"
@@ -609,6 +610,11 @@ func WithCollector(fn func() (string, error)) CliOptFn {
 	return func(opt *CliOpt) { opt.Collector = fn }
 }
 
+// WithQuestion setting for option. see CliOpt.Question
+func WithQuestion(q string) CliOptFn {
+	return func(opt *CliOpt) { opt.Question = q }
+}
+
 // WithHandler setting for option. see CliOpt.Handler
 func WithHandler(fn func(val string) error) CliOptFn {
 	return func(opt *CliOpt) { opt.Handler = fn }
@@ -667,8 +673,11 @@ type CliOpt struct {
 	Category string
 	// Choices candidate values for the option. used for shell completion(value candidates).
 	Choices []string
-	// TODO interactive question for collect value
-	// Question string
+	// Question interactive question for collect value when the option value is empty.
+	// it will build a built-in default Collector based on this question.
+	//
+	// NOTE: Collector has higher priority than Question.
+	Question string
 }
 
 // TakesValue reports whether the option consumes a value(ie. is not a bool flag).
@@ -794,17 +803,26 @@ func (m *CliOpt) valIsEmpty(val string) bool {
 func (m *CliOpt) Validate(val string) error {
 	valEmpty := m.valIsEmpty(val)
 
-	// feat: call custom value collector on input empty value
-	if m.Collector != nil && valEmpty {
-		valNew, err := m.Collector()
-		// set new value
-		if err == nil && val != valNew {
-			err = m.flag.Value.Set(valNew)
+	// feat: call custom value collector OR built-in question collector on empty value
+	if valEmpty {
+		collector := m.Collector
+		// build a built-in default collector based on Question
+		if collector == nil && m.Question != "" {
+			collector = func() (string, error) { return cliutil.ReadLine(m.Question) }
 		}
-		if err != nil {
-			return err
+		if collector != nil {
+			valNew, err := collector()
+			// set new value
+			if err == nil && val != valNew {
+				err = m.flag.Value.Set(valNew)
+			}
+			if err != nil {
+				return err
+			}
+			val = valNew
+			// re-eval empty state after collected, so the Required check below is correct
+			valEmpty = m.valIsEmpty(val)
 		}
-		val = valNew
 	}
 
 	// check required
