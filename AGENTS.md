@@ -133,7 +133,7 @@ app.Add(builtin.GenAutoComplete())
 ## 项目特点
 
 - 丰富的功能且易于使用
-- POSIX 风格的短选项合并（`-a -b` = `-ab`）
+- POSIX 风格的短选项合并（`-ab` = `-a -b`）：需开启 `EnhanceShort`(gflag `Config`) 或命令的严格模式 `SetStrictMode(true)`；仅当组合中**全部是 bool 短选项**时才拆分，`EnhanceShort=2` 额外支持取值紧贴写法 `-Ostdout` = `-O stdout`。默认关闭以保持兼容。
 - 支持设置 `Required` 选项参数
 - 支持自定义参数验证器
 - 自动检测并收集命令运行时的参数

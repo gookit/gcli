@@ -27,7 +27,7 @@ Including running commands, color styles, data display, progress display, intera
     - example `flag:"name=int0;shorts=i;required=true;desc=int option message"`
 - Support for adding multi-level commands, each level of command supports binding its own options
 - `option/flag` - support option binding `--long`, support for adding short options(`-s`)
-  - POSIX-style short flag combining (`-a -b` = `-ab`)
+  - POSIX-style short flag combining (`-ab` = `-a -b`): requires enabling `EnhanceShort` (gflag `Config`) or the command strict mode `SetStrictMode(true)`. Only combinations where **all** members are bool short options are split; `EnhanceShort=2` additionally supports attached-value form `-Ostdout` = `-O stdout`. Disabled by default for compatibility.
   - Support setting `Required`, indicating a required option parameter
   - Support setting `Validator`, which can customize the validation input parameters
 - `argument` - support binding argument to specify name
