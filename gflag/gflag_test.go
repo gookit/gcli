@@ -463,6 +463,52 @@ func TestFlags_FromStruct_fieldRule(t *testing.T) {
 	assert.Eq(t, 18, opt.Age) // default value take effect
 }
 
+func TestFlags_FromStruct_anonymous(t *testing.T) {
+	type CommonOpts struct {
+		Verbose bool `flag:"name=verbose;shorts=V;desc=verbose mode"`
+	}
+
+	t.Run("anonymous struct", func(t *testing.T) {
+		type cmdOpts struct {
+			CommonOpts
+			Name string `flag:"name=name;shorts=n;desc=name message"`
+		}
+
+		fs := gcli.NewFlags("test")
+		opt := &cmdOpts{}
+		err := fs.FromStruct(opt)
+		assert.NoErr(t, err)
+
+		assert.True(t, fs.HasOption("verbose")) // anonymous expanded
+		assert.True(t, fs.HasOption("name"))
+
+		err = fs.Parse([]string{"-V", "-n", "tom"})
+		assert.NoErr(t, err)
+		assert.True(t, opt.Verbose)
+		assert.Eq(t, "tom", opt.Name)
+	})
+
+	t.Run("anonymous pointer struct", func(t *testing.T) {
+		type cmdOpts struct {
+			*CommonOpts
+			Name string `flag:"name=name;shorts=n;desc=name message"`
+		}
+
+		fs := gcli.NewFlags("test")
+		opt := &cmdOpts{CommonOpts: &CommonOpts{}}
+		err := fs.FromStruct(opt)
+		assert.NoErr(t, err)
+
+		assert.True(t, fs.HasOption("verbose")) // anonymous ptr expanded
+		assert.True(t, fs.HasOption("name"))
+
+		err = fs.Parse([]string{"-V", "-n", "tom"})
+		assert.NoErr(t, err)
+		assert.True(t, opt.Verbose)
+		assert.Eq(t, "tom", opt.Name)
+	})
+}
+
 func TestFlags_FromStruct_noNameStruct(t *testing.T) {
 	logOpts := struct {
 		Abbrev    bool        `flag:"Only display the abbrev commit ID"`

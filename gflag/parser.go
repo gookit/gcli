@@ -305,6 +305,25 @@ func (p *Parser) fromStructValue(v reflect.Value, tagName string) error {
 			continue
 		}
 
+		// support anonymous struct field: recursively expand its inner fields
+		if sf.Anonymous {
+			aft := sf.Type
+			afv := v.Field(i)
+			if aft.Kind() == reflect.Ptr {
+				if afv.IsNil() {
+					continue // anonymous nil pointer, skip expand
+				}
+				aft = aft.Elem()
+				afv = afv.Elem()
+			}
+			if aft.Kind() == reflect.Struct {
+				if err := p.fromStructValue(afv, tagName); err != nil {
+					return err
+				}
+			}
+			continue // anonymous field itself is not a single option
+		}
+
 		// field rule: use field name as option name, read meta from independent tag keys.
 		// only treat as an option field when one of flag/desc/default/required tag exists.
 		var str string

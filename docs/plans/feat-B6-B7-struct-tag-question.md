@@ -1,6 +1,6 @@
 # 功能实现计划：B6 结构体标签增强 + B7 声明式交互收集
 
-> 状态：B6 **待评审** / B7 **已完成**
+> 状态：B6 **已完成** / B7 **已完成**
 > 范围：两个独立小特性，可分别实施。
 
 ---
@@ -35,8 +35,8 @@
 
 ### 提交拆分
 
-1. `feat(gflag): FromStruct 支持 TagRuleField 标签规则`
-2. `feat(gflag): FromStruct 支持匿名嵌套字段展开`
+1. ✅ `feat(gflag): FromStruct 支持 TagRuleField 标签规则`
+2. ✅ `feat(gflag): FromStruct 支持匿名嵌套字段展开`
 
 ---
 
