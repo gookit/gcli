@@ -207,6 +207,11 @@ func (p *Parser) Parse(args []string) (err error) {
 		return err
 	}
 
+	// POSIX 短选项规范化预处理(EnhanceShort>0 时生效，默认 0 不改变行为)
+	if p.cfg.EnhanceShort > 0 {
+		args = expandShortArgs(args, p.fSet.shorts, p.fSet.isBoolShort, p.cfg.EnhanceShort)
+	}
+
 	// do parsing options
 	if err = p.fSet.Parse(args); err != nil {
 		return err
