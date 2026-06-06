@@ -49,11 +49,12 @@ func main() {
 	// }
 
 	app.On(events.OnAppBindOptsAfter, func(ctx *gcli.HookCtx) (stop bool) {
-		ctx.App.Flags().StrVar(&customGOpt, &gcli.CliOpt{
-			Name: "custom",
-			Desc: "desc message for the option",
-		})
+		gcli.Debugf("event OnAppBindOptsAfter", ctx.Name())
 		return false
+	})
+	app.Flags().StrVar(&customGOpt, &gcli.CliOpt{
+		Name: "custom",
+		Desc: "desc message for the option",
 	})
 
 	// app.Strict = true
