@@ -137,6 +137,68 @@ func TestSetStrictMode(t *testing.T) {
 	assert.True(t, opts.bl)
 }
 
+// TestStrictMode_safeShortSplit 验证 strictMode 收敛为驱动 gflag EnhanceShort 后,
+// 取值型短选项不再被旧的"盲拆"逻辑错误拆分(回归 B4+B5)。
+func TestStrictMode_safeShortSplit(t *testing.T) {
+	stm := gcli.StrictMode()
+	defer gcli.SetStrictMode(stm)
+
+	// 每个用例独立构建 app/opts，避免上一次 Run 的状态干扰
+	build := func() (*gcli.App, *struct {
+		out     string
+		verbose bool
+	}) {
+		opts := &struct {
+			out     string
+			verbose bool
+		}{}
+		app := gcli.NewApp(gcli.NotExitOnEnd())
+		app.Add(&gcli.Command{
+			Name: "test",
+			Config: func(c *gcli.Command) {
+				c.StrOpt(&opts.out, "out", "O", "", "out file")      // 取值型短选项
+				c.BoolOpt(&opts.verbose, "verbose", "V", false, "v") // bool 短选项
+			},
+			Func: func(c *gcli.Command, _ []string) error { return nil },
+		})
+		return app, opts
+	}
+
+	gcli.SetStrictMode(true)
+
+	// 混合写法: -VO 含取值型短选项 O，非全 bool。
+	// 旧盲拆会错拆为 -V -O 并把后续 "val" 吞作 O 的值(verbose=true,out="val");
+	// 新方案下 -VO 不拆，整体作为未知长选项解析失败，opt 值不被污染(保持零值)。
+	t.Run("mixed value-short not blindly split", func(t *testing.T) {
+		app, opts := build()
+		app.Run([]string{"test", "-VO", "val"})
+		assert.False(t, opts.verbose) // 未被盲拆污染
+		assert.Eq(t, "", opts.out)    // "val" 未被错误吞为 O 的值
+	})
+
+	// 纯 bool 组合: 拆分仍正常工作。
+	t.Run("all-bool short still split", func(t *testing.T) {
+		app, opts := build()
+		app.Run([]string{"test", "-VV"})
+		assert.True(t, opts.verbose)
+	})
+
+	// 单个 bool 短选项正常。
+	t.Run("single bool short", func(t *testing.T) {
+		app, opts := build()
+		app.Run([]string{"test", "-V"})
+		assert.True(t, opts.verbose)
+	})
+
+	// 取值型短选项分开写正常取值，未受影响。
+	t.Run("value-short with separate value", func(t *testing.T) {
+		app, opts := build()
+		app.Run([]string{"test", "-V", "-O", "val"})
+		assert.True(t, opts.verbose)
+		assert.Eq(t, "val", opts.out)
+	})
+}
+
 func TestString(t *testing.T) {
 	s := gcli.String("ab,cd")
 	assert.Eq(t, "ab,cd", s.String())

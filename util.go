@@ -100,11 +100,16 @@ func aliasNameCheck(name string) {
 	panicf("alias name '%s' is invalid, must match: %s", name, helper.RegGoodCmdName)
 }
 
-// strictFormatArgs
-// TODO mode:
+// strictFormatArgs 仅做长选项形态规范化，例如:
 //
-//	POSIX '-ab' will split to '-a -b', '--o' -> '-o'
-//	UNIX '-ab' will split to '-a b'
+//	'=' 透传(如 '--test=x', '-t=x')
+//	'--a'    -> '-a'
+//	'---name' -> '--name'
+//
+// 注意: 短选项的安全拆分(如 '-ab' = '-a -b')不再在此处盲拆，
+// 已交由 gflag 的 EnhanceShort 完成(仅当组合全为 bool 短选项时才拆分，
+// level2 额外支持取值紧贴写法 '-Ostdout' = '-O stdout')，
+// 以避免误伤取值型短选项(如 '-Ostdout' 被错拆成多个单字符 flag)。
 func strictFormatArgs(args []string) (fmtArgs []string) {
 	if len(args) == 0 {
 		return args
@@ -119,26 +124,13 @@ func strictFormatArgs(args []string) (fmtArgs []string) {
 			continue
 		}
 
-		// eg: --a ---name
+		// eg: --a ---name  长选项形态规范化
 		if strings.HasPrefix(arg, "--") {
 			farg := strings.TrimLeft(arg, "-")
 			if rl := len(farg); rl == 1 { // fix: "--a" -> "-a"
 				arg = "-" + farg
 			} else if rl > 1 { // fix: "---name" -> "--name"
 				arg = "--" + farg
-			}
-
-			// TODO No change remain OR remove like "--" "---"
-			// maybe ...
-
-		} else if strings.HasPrefix(arg, "-") {
-			ln := len(arg)
-			// fix: "-abc" -> "-a -b -c"
-			if ln > 2 {
-				for _, s := range arg[1:] {
-					fmtArgs = append(fmtArgs, "-"+string(s))
-				}
-				continue
 			}
 		}
 

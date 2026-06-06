@@ -493,7 +493,11 @@ func (c *Command) innerExecute(args []string, igrErrHelp bool) (err error) {
 func (c *Command) parseOptions(args []string) (ss []string, err error) {
 	// strict format options
 	if gOpts.strictMode && len(args) > 0 {
-		args = strictFormatArgs(args)
+		args = strictFormatArgs(args) // 长选项形态规范化(--a/---name)
+		// 短选项安全拆分交由 gflag EnhanceShort(仅全 bool 才拆，修复盲拆误伤取值短选项)
+		if c.ParserCfg().EnhanceShort == 0 {
+			c.ParserCfg().EnhanceShort = 1
+		}
 	}
 
 	// fix and compatible
