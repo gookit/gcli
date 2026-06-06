@@ -172,7 +172,6 @@ type GlobalOpts struct {
 	NoInteractive bool
 	// TODO Run application an interactive shell environment
 	inShell bool
-	// TODO auto format shorts `-a` to POSIX or UNIX style.
 	// StrictMode use strict mode for parse flags. default: false
 	//
 	// If True:
@@ -180,6 +179,9 @@ type GlobalOpts struct {
 	//	- will convert like "-ab" to "-a -b"
 	// 	- will check invalid arguments, like to many arguments
 	strictMode bool
+	// enhanceShort global POSIX short-option enhance level, applied to every command
+	// that does not set its own Config.EnhanceShort. see EnhanceShortNone/Merge/Attach
+	enhanceShort uint8
 	// TODO dynamic command auto completion mode.
 	// eg "./cli --in-completion [COMMAND --OPT ARG]"
 	inCompletion bool
@@ -196,6 +198,11 @@ func (g *GlobalOpts) SetVerbose(verbose VerbLevel) {
 // SetStrictMode option
 func (g *GlobalOpts) SetStrictMode(strictMode bool) {
 	g.strictMode = strictMode
+}
+
+// SetEnhanceShort global level. see EnhanceShortNone/Merge/Attach
+func (g *GlobalOpts) SetEnhanceShort(level uint8) {
+	g.enhanceShort = level
 }
 
 // SetDisable global options
@@ -290,6 +297,16 @@ func StrictMode() bool { return gOpts.strictMode }
 
 // SetStrictMode for parse flags
 func SetStrictMode(strict bool) { gOpts.SetStrictMode(strict) }
+
+// EnhanceShort get the global POSIX short-option enhance level.
+func EnhanceShort() uint8 { return gOpts.enhanceShort }
+
+// SetEnhanceShort set the global POSIX short-option enhance level for all commands.
+//
+// level: EnhanceShortNone(0) / EnhanceShortMerge(1) / EnhanceShortAttach(2).
+//
+// NOTE: a command's own Config.EnhanceShort (if set non-zero) takes priority over this.
+func SetEnhanceShort(level uint8) { gOpts.SetEnhanceShort(level) }
 
 // IsGteVerbose get is strict mode
 func IsGteVerbose(verb VerbLevel) bool { return gOpts.Verbose >= verb }

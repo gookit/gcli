@@ -199,6 +199,67 @@ func TestStrictMode_safeShortSplit(t *testing.T) {
 	})
 }
 
+// TestSetEnhanceShort 验证全局 EnhanceShort 设置：一次设置作用于所有命令，
+// 且命令自身的 Config.EnhanceShort 优先于全局设置。
+func TestSetEnhanceShort(t *testing.T) {
+	defer gcli.SetEnhanceShort(gcli.EnhanceShortNone) // 还原全局状态
+
+	type testOpts struct {
+		a, u, x bool
+		output  string
+	}
+	build := func(cfgFn func(*gcli.Command)) (*gcli.App, *testOpts) {
+		opts := &testOpts{}
+		app := gcli.NewApp(gcli.NotExitOnEnd())
+		app.Add(&gcli.Command{
+			Name: "test",
+			Config: func(c *gcli.Command) {
+				c.BoolOpt(&opts.a, "all", "a", false, "a")
+				c.BoolOpt(&opts.u, "upload", "u", false, "u")
+				c.BoolOpt(&opts.x, "extract", "x", false, "x")
+				c.StrOpt(&opts.output, "output", "O", "", "O")
+				if cfgFn != nil {
+					cfgFn(c)
+				}
+			},
+			Func: func(c *gcli.Command, _ []string) error { return nil },
+		})
+		return app, opts
+	}
+
+	// 全局 Merge 作用于未单独设置的命令
+	t.Run("global merge applies", func(t *testing.T) {
+		gcli.SetEnhanceShort(gcli.EnhanceShortMerge)
+		assert.Eq(t, gcli.EnhanceShortMerge, gcli.EnhanceShort())
+
+		app, opts := build(nil)
+		app.Run([]string{"test", "-aux"})
+		assert.True(t, opts.a)
+		assert.True(t, opts.u)
+		assert.True(t, opts.x)
+	})
+
+	// 默认 None: -aux 不拆(未定义选项), 均保持 false
+	t.Run("default none not split", func(t *testing.T) {
+		gcli.SetEnhanceShort(gcli.EnhanceShortNone)
+		app, opts := build(nil)
+		app.Run([]string{"test", "-aux"})
+		assert.False(t, opts.a)
+		assert.False(t, opts.u)
+		assert.False(t, opts.x)
+	})
+
+	// 命令级设置优先: 全局 Merge, 但命令设 Attach -> -Ostdout 被拆(全局 Merge 不支持紧贴取值)
+	t.Run("command-level overrides global", func(t *testing.T) {
+		gcli.SetEnhanceShort(gcli.EnhanceShortMerge)
+		app, opts := build(func(c *gcli.Command) {
+			c.ParserCfg().EnhanceShort = gcli.EnhanceShortAttach
+		})
+		app.Run([]string{"test", "-Ostdout"})
+		assert.Eq(t, "stdout", opts.output)
+	})
+}
+
 func TestString(t *testing.T) {
 	s := gcli.String("ab,cd")
 	assert.Eq(t, "ab,cd", s.String())

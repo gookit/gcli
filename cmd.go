@@ -491,6 +491,11 @@ func (c *Command) innerExecute(args []string, igrErrHelp bool) (err error) {
 
 // do parse option flags, remaining is cmd args
 func (c *Command) parseOptions(args []string) (ss []string, err error) {
+	// apply global EnhanceShort to commands that don't set their own (command-level wins)
+	if c.ParserCfg().EnhanceShort == EnhanceShortNone && gOpts.enhanceShort > EnhanceShortNone {
+		c.ParserCfg().EnhanceShort = gOpts.enhanceShort
+	}
+
 	// strict format options
 	if gOpts.strictMode && len(args) > 0 {
 		args = strictFormatArgs(args) // 长选项形态规范化(--a/---name)
