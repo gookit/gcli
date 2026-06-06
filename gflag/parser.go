@@ -279,15 +279,22 @@ func (p *Parser) FromStruct(ptr any, ruleType ...uint8) (err error) {
 		v = v.Elem()
 	}
 
-	t := v.Type()
-	if t.Kind() != reflect.Struct {
+	if v.Type().Kind() != reflect.Struct {
 		return errNotAnStruct
 	}
 
-	tagName := p.cfg.GetTagName()
 	if len(ruleType) > 0 {
 		p.SetRuleType(ruleType[0])
 	}
+
+	tagName := p.cfg.GetTagName()
+	return p.fromStructValue(v, tagName)
+}
+
+// fromStructValue parse the struct value fields and bind them as flag options.
+// it is split from FromStruct so that anonymous nested fields can recurse.
+func (p *Parser) fromStructValue(v reflect.Value, tagName string) error {
+	t := v.Type()
 
 	var mp maputil.SMap
 	for i := 0; i < t.NumField(); i++ {
@@ -298,15 +305,31 @@ func (p *Parser) FromStruct(ptr any, ruleType ...uint8) (err error) {
 			continue
 		}
 
-		// TODO support anonymous field by sf.Anonymous
-		// eg: "name=int0;shorts=i;required=true;desc=int option message"
-		str := sf.Tag.Get(tagName)
-		if str == "" {
-			continue
+		// field rule: use field name as option name, read meta from independent tag keys.
+		// only treat as an option field when one of flag/desc/default/required tag exists.
+		var str string
+		if p.cfg.TagRuleType == TagRuleField {
+			if flagTag, has := sf.Tag.Lookup(tagName); has && flagTag == "-" {
+				continue // explicit skip by `flag:"-"`
+			}
+
+			_, hasFlag := sf.Tag.Lookup(tagName)
+			_, hasDesc := sf.Tag.Lookup("desc")
+			_, hasDef := sf.Tag.Lookup("default")
+			_, hasReq := sf.Tag.Lookup("required")
+			if !hasFlag && !hasDesc && !hasDef && !hasReq {
+				continue // not an option field
+			}
+		} else {
+			// eg: "name=int0;shorts=i;required=true;desc=int option message"
+			str = sf.Tag.Get(tagName)
+			if str == "" {
+				continue
+			}
 		}
 
 		fv := v.Field(i)
-		ft := t.Field(i).Type
+		ft := sf.Type
 		if !fv.CanInterface() {
 			continue
 		}
@@ -326,12 +349,20 @@ func (p *Parser) FromStruct(ptr any, ruleType ...uint8) (err error) {
 
 		// eg: "name=int0;shorts=i;required=true;desc=int option message"
 		if p.cfg.TagRuleType == TagRuleNamed {
+			var err error
 			mp, err = structs.ParseTagValueNamed(name, str, namedTagKeys...)
 			if err != nil {
 				return err
 			}
 		} else if p.cfg.TagRuleType == TagRuleSimple {
 			mp = parseSimpleRule(str)
+		} else if p.cfg.TagRuleType == TagRuleField {
+			mp = maputil.SMap{
+				"desc":     sf.Tag.Get("desc"),
+				"default":  sf.Tag.Get("default"),
+				"required": sf.Tag.Get("required"),
+				"shorts":   sf.Tag.Get(tagName), // flag tag as shorts
+			}
 		} else {
 			return errTagRuleType
 		}

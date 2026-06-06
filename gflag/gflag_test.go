@@ -436,6 +436,33 @@ func TestFlags_FromStruct_ptrField(t *testing.T) {
 	fs.PrintHelpPanel()
 }
 
+func TestFlags_FromStruct_fieldRule(t *testing.T) {
+	type fieldOpts struct {
+		UserName string `flag:"n,u" desc:"input user name" required:"true"`
+		Age      int    `desc:"input age" default:"18"`
+		Verbose  bool   `flag:"V" desc:"verbose mode"`
+		Ignored  string `flag:"-"`
+		NoTag    string
+	}
+
+	fs := gcli.NewFlags("test")
+	opt := &fieldOpts{}
+	err := fs.FromStruct(opt, gflag.TagRuleField)
+	assert.NoErr(t, err)
+
+	assert.True(t, fs.HasOption("user-name"))
+	assert.True(t, fs.HasOption("age"))
+	assert.True(t, fs.HasOption("verbose"))
+	assert.False(t, fs.HasOption("ignored"))
+	assert.False(t, fs.HasOption("no-tag"))
+
+	err = fs.Parse([]string{"-u", "tom", "-V"})
+	assert.NoErr(t, err)
+	assert.Eq(t, "tom", opt.UserName)
+	assert.True(t, opt.Verbose)
+	assert.Eq(t, 18, opt.Age) // default value take effect
+}
+
 func TestFlags_FromStruct_noNameStruct(t *testing.T) {
 	logOpts := struct {
 		Abbrev    bool        `flag:"Only display the abbrev commit ID"`
