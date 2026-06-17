@@ -276,6 +276,37 @@ func (app *App) GenCompletionScript(shell string, binName ...string) (string, er
 	return helper.RenderText(tpl, &data, nil), nil
 }
 
+// GenCompletionHelp 生成 --gen-completion 的使用与 shell profile 配置说明。
+func (app *App) GenCompletionHelp(binName ...string) string {
+	name := app.normalizeBinName(binName...)
+	return fmt.Sprintf(`Generate shell completion script:
+
+Supported shells: <info>bash, zsh, pwsh</>
+
+<ylw1>Quick try in current shell</>:
+
+  eval "$(%[1]s --gen-completion bash)"
+  eval "$(%[1]s --gen-completion zsh)"
+  %[1]s --gen-completion pwsh | Invoke-Expression
+
+<ylw1>Recommended profile setup</>:
+
+  # bash
+  %[1]s --gen-completion bash > ~/.%[1]s-completion.bash
+  echo 'source ~/.%[1]s-completion.bash' >> ~/.bashrc
+
+  # zsh
+  %[1]s --gen-completion zsh > ~/.%[1]s-completion.zsh
+  echo 'source ~/.%[1]s-completion.zsh' >> ~/.zshrc
+
+  # PowerShell
+  %[1]s --gen-completion pwsh > $HOME\%[1]s-completion.ps1
+  Add this line to $PROFILE:
+    . $HOME\%[1]s-completion.ps1
+
+`, name)
+}
+
 // GenStaticCompletionScript 生成指定 shell 的**静态(嵌入式)**补全脚本文本。
 //
 // 静态脚本把当前已注册的命令名/描述/选项硬编码进脚本; 命令/选项变化后需重新生成。

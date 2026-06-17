@@ -367,9 +367,15 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 
 	// 静态生成补全脚本: 命中即生成并打印到 stdout, 然后停止后续运行(退出)。
 	if app.opts.genCompletion != "" {
+		if shell := app.opts.genCompletion; shell == HelpCommand || shell == "-h" || shell == "--help" {
+			color.Print(app.GenCompletionHelp())
+			return
+		}
+
 		script, err := app.GenCompletionScript(app.opts.genCompletion)
 		if err != nil {
 			color.Error.Tips(err.Error())
+			color.Info.Tips("Run %s --gen-completion help for setup guide", app.BinName())
 		} else {
 			color.Print(script)
 		}

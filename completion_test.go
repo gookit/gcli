@@ -1,9 +1,11 @@
 package gcli_test
 
 import (
+	"bytes"
 	"strings"
 	"testing"
 
+	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/x/assert"
 )
@@ -36,7 +38,7 @@ func newCompletionApp() *gcli.App {
 // 脚本里不应硬编码命令名/选项名。
 func TestApp_GenCompletionScript(t *testing.T) {
 	app := newCompletionApp()
-	binName := app.BinName()
+	binName := strings.TrimSuffix(app.BinName(), ".exe")
 
 	t.Run("bash", func(t *testing.T) {
 		script, err := app.GenCompletionScript(gcli.BashShell)
@@ -99,10 +101,22 @@ func TestApp_GenCompletionScript(t *testing.T) {
 	})
 }
 
+func TestApp_GenCompletionHelp(t *testing.T) {
+	app := newCompletionApp()
+
+	help := app.GenCompletionHelp("./myapp.exe")
+	assert.StrContains(t, help, "myapp --gen-completion bash")
+	assert.StrContains(t, help, "myapp --gen-completion zsh")
+	assert.StrContains(t, help, "myapp --gen-completion pwsh")
+	assert.StrContains(t, help, `eval "$(myapp --gen-completion zsh)"`)
+	assert.StrContains(t, help, "$PROFILE")
+	assert.StrNotContains(t, help, "./myapp.exe")
+}
+
 // TestApp_GenStaticCompletionScript 静态(嵌入式)脚本应把命令名/选项名硬编码进脚本。
 func TestApp_GenStaticCompletionScript(t *testing.T) {
 	app := newCompletionApp()
-	binName := app.BinName()
+	binName := strings.TrimSuffix(app.BinName(), ".exe")
 
 	t.Run("bash", func(t *testing.T) {
 		script, err := app.GenStaticCompletionScript(gcli.BashShell)
@@ -167,4 +181,25 @@ func TestApp_genCompletionOpt(t *testing.T) {
 	// 帮助信息中应包含该(非隐藏)选项
 	help := app.Flags().BuildHelp()
 	assert.True(t, strings.Contains(help, "gen-completion"))
+}
+
+func TestApp_genCompletionOptHelp(t *testing.T) {
+	defer gcli.ResetGOpts()
+	defer color.ResetOptions()
+
+	app := newCompletionApp()
+	buf := new(bytes.Buffer)
+	color.Disable()
+	color.SetOutput(buf)
+
+	code := app.Run([]string{"--gen-completion", "help"})
+	out := buf.String()
+
+	assert.Eq(t, 0, code)
+	assert.StrContains(t, out, "Generate shell completion script")
+	assert.StrContains(t, out, "Supported shells: bash, zsh, pwsh")
+	assert.StrContains(t, out, "--gen-completion bash")
+	assert.StrContains(t, out, `eval "$(`)
+	assert.StrContains(t, out, "$PROFILE")
+	assert.Eq(t, "", app.CommandName())
 }
