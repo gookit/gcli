@@ -10,16 +10,46 @@ import (
 	"github.com/gookit/goutil/maputil"
 )
 
-// constants for hooks event, there are default allowed event names
+// constants for hooks event, there are default allowed event names.
+//
+// These are aliases for the gevent.* event names. So user code can reference
+// them directly from gcli without importing the gevent package.
 const (
+	// EvtAppInitBefore on app init before
+	EvtAppInitBefore = gevent.OnAppInitBefore
+	// EvtAppInit on app init after
 	EvtAppInit = gevent.OnAppInitAfter
+	// EvtAppExit on app exit
+	EvtAppExit = gevent.OnAppExit
 
+	// EvtAppBindOptsBefore before bind app options
+	EvtAppBindOptsBefore = gevent.OnAppBindOptsBefore
+	// EvtAppBindOptsAfter after bind app options
+	EvtAppBindOptsAfter = gevent.OnAppBindOptsAfter
+
+	// EvtAppCmdAdd on app cmd add before
+	EvtAppCmdAdd = gevent.OnAppCmdAdd
+	// EvtAppCmdAdded on app cmd added
+	EvtAppCmdAdded = gevent.OnAppCmdAdded
+
+	// EvtAppOptsParsed on app options parsed
+	EvtAppOptsParsed = gevent.OnAppOptsParsed
+
+	// EvtAppHelpBefore before render app help
+	EvtAppHelpBefore = gevent.OnAppHelpBefore
+	// EvtAppHelpAfter after render app help
+	EvtAppHelpAfter = gevent.OnAppHelpAfter
+
+	// EvtAppPrepareAfter prepare for run, after the EvtAppOptsParsed
 	EvtAppPrepareAfter = gevent.OnAppPrepared
 
 	EvtAppRunBefore = gevent.OnAppRunBefore
 	EvtAppRunAfter  = gevent.OnAppRunAfter
 	EvtAppRunError  = gevent.OnAppRunError
 
+	// EvtCmdInitBefore on cmd init before
+	EvtCmdInitBefore = gevent.OnCmdInitBefore
+	// EvtCmdInit on cmd init after
 	EvtCmdInit = gevent.OnCmdInitAfter
 
 	// EvtCmdNotFound app or sub command not found
