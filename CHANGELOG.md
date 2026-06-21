@@ -5,6 +5,37 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to semantic-ish versioning.
 
+## [Unreleased]
+
+### ⚠️ Breaking Changes
+
+- **Renamed package `github.com/gookit/gcli/v3/events` → `github.com/gookit/gcli/v3/gevent`.**
+  The directory, file, and package name were renamed for naming consistency with
+  the other sub-packages (e.g. `gflag`). The old `events` package no longer
+  exists; update your imports. The event-name constants themselves are unchanged
+  (`OnAppInitAfter`, `OnCmdRunBefore`, ...).
+
+### Added
+
+- **Full event-name aliases on the `gcli` package.** Every event name is now
+  exposed as a `gcli.Evt*` constant (1:1 with the `gevent.On*` names), so you can
+  reference event names directly from `gcli` **without importing the event
+  package**. New aliases: `EvtAppInitBefore`, `EvtAppExit`,
+  `EvtAppBindOptsBefore`, `EvtAppBindOptsAfter`, `EvtAppCmdAdd`, `EvtAppCmdAdded`,
+  `EvtAppOptsParsed`, `EvtAppHelpBefore`, `EvtAppHelpAfter`, `EvtCmdInitBefore`.
+
+### Migration
+
+| Before | After |
+|---|---|
+| `import "github.com/gookit/gcli/v3/events"` | `import "github.com/gookit/gcli/v3/gevent"` |
+| `events.OnAppInitAfter` | `gevent.OnAppInitAfter` — or `gcli.EvtAppInit` (no import needed) |
+| `events.OnCmdRunBefore` | `gevent.OnCmdRunBefore` — or `gcli.EvtCmdRunBefore` (no import needed) |
+
+> Tip: prefer the `gcli.Evt*` aliases to drop the event-package import entirely.
+
+[Unreleased]: https://github.com/gookit/gcli/compare/v3.5.0...HEAD
+
 ## [v3.5.0] - 2026-06-06
 
 **Highlights:** more flexible struct binding (a new `field` tag rule plus automatic anonymous-field expansion), declarative interactive input via `Question`, and opt-in POSIX short-option merging through `EnhanceShort` — configurable per command or globally with `gcli.SetEnhanceShort()`.

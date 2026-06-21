@@ -53,6 +53,10 @@ The english introduction please ses **[README](README.md)**
 go get github.com/gookit/gcli/v3
 ```
 
+> **升级提示：** 事件包 `gcli/v3/events` 已重命名为 `gcli/v3/gevent`。请更新导入路径；
+> 或直接使用 `gcli.Evt*` 别名（如 `gcli.EvtCmdRunBefore`）引用事件名，即可无需导入该包。
+> 详见 [CHANGELOG](CHANGELOG.md)。
+
 ## 快速开始
 
 如下，引入当前包就可以快速的编写cli应用了

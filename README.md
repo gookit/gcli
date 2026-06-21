@@ -67,6 +67,11 @@ Including running commands, color styles, data display, progress display, intera
 go get github.com/gookit/gcli/v3
 ```
 
+> **Upgrade note:** the event package `gcli/v3/events` was renamed to
+> `gcli/v3/gevent`. Update your imports, or reference event names directly via the
+> `gcli.Evt*` aliases (e.g. `gcli.EvtCmdRunBefore`) to avoid the import entirely.
+> See [CHANGELOG](CHANGELOG.md) for details.
+
 ## Quick start
 
 an example for quick start:
