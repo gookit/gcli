@@ -505,8 +505,9 @@ func (c *Command) parseOptions(args []string) (ss []string, err error) {
 		}
 	}
 
-	// args reorder(默认开启)在子命令名处停止, 确保多级命令时只重排最终执行命令的 args。
-	c.Flags.SetReorderStop(c.isReorderStopName)
+	// fix and compatible
+	// args = moveArgumentsToEnd(args)
+	// Debugf("cmd: %s - option flags on after format: %v", c.Name, args)
 
 	Debugf("cmd: %s - will parse options from args: %v", c.Name, args)
 

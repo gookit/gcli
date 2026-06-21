@@ -114,9 +114,6 @@ func NewApp(fns ...func(app *App)) *App {
 		opt.WithoutType = true
 		opt.IndentLongOpt = true
 		opt.Alignment = gflag.AlignLeft
-		// global pre-parse is not a command execution, keep strict order here.
-		// args reorder is applied at the executed command level (see parseOptions).
-		opt.DisableReorderArgs = true
 	})
 
 	Logf(VerbCrazy, "create a new cli application, and create base ")

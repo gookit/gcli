@@ -23,6 +23,23 @@ and this project adheres to semantic-ish versioning.
   package**. New aliases: `EvtAppInitBefore`, `EvtAppExit`,
   `EvtAppBindOptsBefore`, `EvtAppBindOptsAfter`, `EvtAppCmdAdd`, `EvtAppCmdAdded`,
   `EvtAppOptsParsed`, `EvtAppHelpBefore`, `EvtAppHelpAfter`, `EvtCmdInitBefore`.
+- **Auto-reorder of input args (`Config.DisableReorderArgs`, enabled by default).**
+  Before parsing options, the input args are rearranged into the canonical
+  `--options... arguments` form, so options written *after* positional arguments
+  are still parsed instead of being silently dropped — e.g. `cmd arg --name tom`
+  now works the same as `cmd --name tom arg`. A known value-taking option keeps
+  its value (`--name tom`); bool options, `--opt=val`, negative-number tokens
+  (`-5`), a lone `-`, and everything after `--` are handled correctly. In a
+  multi-level app **only the final executed command's args are reordered** —
+  reordering stops at a sub-command name, so parent/sub option sets never mix.
+  Disable per parser via `gflag.WithReorderArgs(false)` or
+  `Config.DisableReorderArgs = true` to restore the strict std-flag order.
+
+### Changed
+
+- Mixed `arguments` + `--options` input on a command no longer loses the options.
+  This is a **behavior change** but strictly more permissive: any input that
+  parsed before still parses the same; only previously-failing orders now succeed.
 
 ### Migration
 

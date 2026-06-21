@@ -35,6 +35,7 @@ Including running commands, color styles, data display, progress display, intera
 - `argument` - support binding argument to specify name
   - Support `required`, optional, `array` settings
   - It will be automatically detected and collected when the command is run.
+  - Mixed order is accepted: options written **after** arguments are auto-reordered, so `cmd arg --name tom` works like `cmd --name tom arg` (enabled by default; disable via `gflag.WithReorderArgs(false)`)
 - `colorable` - supports rich color output. provide by [gookit/color](https://github.com/gookit/color)
   - Supports html tab-style color rendering, compatible with Windows
   - Built-in `info, error, success, danger` and other styles, can be used directly

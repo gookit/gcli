@@ -33,6 +33,7 @@ The english introduction please ses **[README](README.md)**
 - `argument` 支持绑定 `参数` 到指定名称(参数 _是指flag绑定后剩余的参数信息_)
   - 支持参数设置 可选/必须 `Required`，数组 `isArray`
   - 运行命令时将会自动检测，并按对应关系收集参数
+  - 选项/参数顺序可混写：写在参数 **之后** 的选项会被自动调整解析，`cmd arg --name tom` 等同于 `cmd --name tom arg`（默认开启，可用 `gflag.WithReorderArgs(false)` 关闭）
 - `colorable` 支持丰富的颜色渲染输出, 由 [gookit/color](https://github.com/gookit/color) 提供
   - 同时支持html标签式的颜色渲染，兼容Windows
   - 内置`info,error,success,danger`等多种风格，可直接使用
