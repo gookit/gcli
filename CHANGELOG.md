@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to semantic-ish versioning.
 
-## [Unreleased]
+## [v3.6.0] - 2026-06-21
 
 ### ⚠️ Breaking Changes
 
@@ -34,7 +34,7 @@ and this project adheres to semantic-ish versioning.
 
 > Tip: prefer the `gcli.Evt*` aliases to drop the event-package import entirely.
 
-[Unreleased]: https://github.com/gookit/gcli/compare/v3.5.0...HEAD
+[v3.6.0]: https://github.com/gookit/gcli/compare/v3.5.0...v3.6.0
 
 ## [v3.5.0] - 2026-06-06
 
