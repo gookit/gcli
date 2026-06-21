@@ -5,43 +5,43 @@ import (
 	"fmt"
 	"strings"
 
-	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/gcli/v3/gevent"
 	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/maputil"
 )
 
 // constants for hooks event, there are default allowed event names
 const (
-	EvtAppInit = events.OnAppInitAfter
+	EvtAppInit = gevent.OnAppInitAfter
 
-	EvtAppPrepareAfter = events.OnAppPrepared
+	EvtAppPrepareAfter = gevent.OnAppPrepared
 
-	EvtAppRunBefore = events.OnAppRunBefore
-	EvtAppRunAfter  = events.OnAppRunAfter
-	EvtAppRunError  = events.OnAppRunError
+	EvtAppRunBefore = gevent.OnAppRunBefore
+	EvtAppRunAfter  = gevent.OnAppRunAfter
+	EvtAppRunError  = gevent.OnAppRunError
 
-	EvtCmdInit = events.OnCmdInitAfter
+	EvtCmdInit = gevent.OnCmdInitAfter
 
 	// EvtCmdNotFound app or sub command not found
-	EvtCmdNotFound = events.OnCmdNotFound
+	EvtCmdNotFound = gevent.OnCmdNotFound
 	// EvtAppCmdNotFound app command not found
-	EvtAppCmdNotFound = events.OnAppCmdNotFound
+	EvtAppCmdNotFound = gevent.OnAppCmdNotFound
 	// EvtCmdSubNotFound sub command not found
-	EvtCmdSubNotFound = events.OnCmdSubNotFound
+	EvtCmdSubNotFound = gevent.OnCmdSubNotFound
 
-	EvtCmdOptParsed = events.OnCmdOptParsed
+	EvtCmdOptParsed = gevent.OnCmdOptParsed
 
 	// EvtCmdRunBefore cmd run
-	EvtCmdRunBefore = events.OnCmdRunBefore
-	EvtCmdRunAfter  = events.OnCmdRunAfter
-	EvtCmdRunError  = events.OnCmdRunError
+	EvtCmdRunBefore = gevent.OnCmdRunBefore
+	EvtCmdRunAfter  = gevent.OnCmdRunAfter
+	EvtCmdRunError  = gevent.OnCmdRunError
 
 	// EvtCmdExecBefore cmd exec
-	EvtCmdExecBefore = events.OnCmdExecBefore
-	EvtCmdExecAfter  = events.OnCmdExecAfter
-	EvtCmdExecError  = events.OnCmdExecError
+	EvtCmdExecBefore = gevent.OnCmdExecBefore
+	EvtCmdExecAfter  = gevent.OnCmdExecAfter
+	EvtCmdExecError  = gevent.OnCmdExecError
 
-	EvtGOptionsParsed = events.OnGlobalOptsParsed
+	EvtGOptionsParsed = gevent.OnGlobalOptsParsed
 )
 
 // runErr struct

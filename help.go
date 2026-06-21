@@ -7,7 +7,7 @@ import (
 	"text/template"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/gcli/v3/gevent"
 	"github.com/gookit/gcli/v3/internal/helper"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/strutil"
@@ -115,7 +115,7 @@ var AppHelpTemplate = `{{.Desc}} (Version: <info>{{.Version}}</>)
 // display app help and list all commands. showCommandList()
 func (app *App) showApplicationHelp() bool {
 	Debugf("render application help and commands list, replaces=%s", maputil.ToString2(app.Replaces()))
-	app.Fire(events.OnAppHelpBefore, nil)
+	app.Fire(gevent.OnAppHelpBefore, nil)
 
 	// cmdHelpTemplate = color.ReplaceTag(cmdHelpTemplate)
 	// render help text template
@@ -139,7 +139,7 @@ func (app *App) showApplicationHelp() bool {
 
 	// parse help vars and render color tags
 	color.Print(app.ReplacePairs(s))
-	app.Fire(events.OnAppHelpAfter, nil)
+	app.Fire(gevent.OnAppHelpAfter, nil)
 
 	if sysutil.IsLinux() {
 		fmt.Println()

@@ -7,7 +7,7 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/gcli/v3/gevent"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/internal/helper"
 	"github.com/gookit/goutil/cflag"
@@ -102,7 +102,7 @@ func New(fns ...func(app *App)) *App {
 //	// Or with a config func
 //	NewApp(func(a *App) {
 //		// do something before init ....
-//		a.Hooks[events.OnAppInitAfter] = func () {}
+//		a.Hooks[gevent.OnAppInitAfter] = func () {}
 //	})
 func NewApp(fns ...func(app *App)) *App {
 	app := &App{
@@ -171,7 +171,7 @@ func (app *App) initialize() {
 	}
 	// 补全模式下不触发用户 init 钩子, 避免钩子输出污染补全候选/脚本
 	if !app.completionMode {
-		app.Fire(events.OnAppInitBefore, nil)
+		app.Fire(gevent.OnAppInitBefore, nil)
 	}
 	Logf(VerbCrazy, "initialize the cli application")
 
@@ -180,12 +180,12 @@ func (app *App) initialize() {
 	app.bindAppOpts()
 
 	// add default error handler.
-	if !app.HasHook(events.OnAppRunError) {
-		app.On(events.OnAppRunError, defaultErrHandler)
+	if !app.HasHook(gevent.OnAppRunError) {
+		app.On(gevent.OnAppRunError, defaultErrHandler)
 	}
 
 	if !app.completionMode {
-		app.Fire(events.OnAppInitAfter, nil)
+		app.Fire(gevent.OnAppInitAfter, nil)
 	}
 }
 
@@ -194,7 +194,7 @@ func (app *App) bindAppOpts() {
 	Logf(VerbDebug, "will begin binding app global options")
 	// global options flag
 	fs := app.fs
-	app.Fire(events.OnAppBindOptsBefore, nil)
+	app.Fire(gevent.OnAppBindOptsBefore, nil)
 
 	// binding global options
 	app.opts.bindingOpts(fs)
@@ -214,7 +214,7 @@ func (app *App) bindAppOpts() {
 	})
 
 	// support binding custom global options
-	app.Fire(events.OnAppBindOptsAfter, nil)
+	app.Fire(gevent.OnAppBindOptsAfter, nil)
 }
 
 /*************************************************************
@@ -237,7 +237,7 @@ func (app *App) Add(c *Command, more ...*Command) {
 func (app *App) AddCommand(c *Command) {
 	// initialize application before add command
 	app.initialize()
-	app.fireWithCmd(events.OnAppCmdAdd, c, nil)
+	app.fireWithCmd(gevent.OnAppCmdAdd, c, nil)
 
 	// init command
 	c.app = app
@@ -253,7 +253,7 @@ func (app *App) AddCommand(c *Command) {
 	// do add command
 	app.addCommand(app.Name, c)
 
-	app.fireWithCmd(events.OnAppCmdAdded, c, nil)
+	app.fireWithCmd(gevent.OnAppCmdAdded, c, nil)
 }
 
 // Use 注册应用级中间件, 对所有命令在其自身中间件与主函数之前执行; 返回 app 以便链式调用。
@@ -331,13 +331,13 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 	// 保持原有"Fire 返回 true 即 return"的语义。
 	if !app.completionMode {
 		evtData := map[string]any{"args": app.args}
-		if app.Fire(events.OnAppOptsParsed, evtData) {
-			Logf(VerbDebug, "stop running on the event %s return True", events.OnGlobalOptsParsed)
+		if app.Fire(gevent.OnAppOptsParsed, evtData) {
+			Logf(VerbDebug, "stop running on the event %s return True", gevent.OnGlobalOptsParsed)
 			return
 		}
 
-		if app.Fire(events.OnGlobalOptsParsed, evtData) {
-			Debugf("stop running on the event %s return True", events.OnGlobalOptsParsed)
+		if app.Fire(gevent.OnGlobalOptsParsed, evtData) {
+			Debugf("stop running on the event %s return True", gevent.OnGlobalOptsParsed)
 			return
 		}
 	}
@@ -434,10 +434,10 @@ func (app *App) prepareRun() (code PrepareState, name string) {
 	hookData := map[string]any{"name": name, "raw": app.inputName, "args": app.args}
 
 	// fire events
-	if app.Fire(events.OnAppCmdNotFound, hookData) {
+	if app.Fire(gevent.OnAppCmdNotFound, hookData) {
 		return
 	}
-	if app.Fire(events.OnCmdNotFound, hookData) {
+	if app.Fire(gevent.OnCmdNotFound, hookData) {
 		return
 	}
 
@@ -566,7 +566,7 @@ func (app *App) Run(args []string) (code int) {
 		return app.exitOnEnd(int(pCode))
 	}
 
-	app.Fire(events.OnAppPrepared, map[string]any{"name": name})
+	app.Fire(gevent.OnAppPrepared, map[string]any{"name": name})
 
 	// do run input command
 	var exCode int
@@ -608,15 +608,15 @@ func (app *App) RunCmd(name string, args []string) error {
 
 func (app *App) doRunCmd(name string, args []string) (err error) {
 	cmd := app.GetCommand(name)
-	app.fireWithCmd(events.OnAppRunBefore, cmd, map[string]any{"args": args})
+	app.fireWithCmd(gevent.OnAppRunBefore, cmd, map[string]any{"args": args})
 	Debugf("will run app command '%s' with args: %v", name, args)
 
 	// do execute command
 	if err = cmd.innerDispatch(args); err != nil {
 		// err = newRunErr(ERR.ToInt(), err) // TODO need warp it?
-		app.Fire(events.OnAppRunError, map[string]any{"err": err})
+		app.Fire(gevent.OnAppRunError, map[string]any{"err": err})
 	} else {
-		app.Fire(events.OnAppRunAfter, map[string]any{"cmd": name})
+		app.Fire(gevent.OnAppRunAfter, map[string]any{"cmd": name})
 	}
 	return
 }
@@ -625,9 +625,9 @@ func (app *App) doRunFunc(args []string) (code PrepareState) {
 	// do execute command
 	if err := app.Func(app, args); err != nil {
 		code = ERR
-		app.Fire(events.OnAppRunError, map[string]any{"err": err})
+		app.Fire(gevent.OnAppRunError, map[string]any{"err": err})
 	} else {
-		app.Fire(events.OnAppRunAfter, nil)
+		app.Fire(gevent.OnAppRunAfter, nil)
 	}
 	return
 }
@@ -681,7 +681,7 @@ func (app *App) Exit(code int) {
 
 func (app *App) exitOnEnd(code int) int {
 	Debugf("application exit with code: %d", code)
-	app.Fire(events.OnAppExit, map[string]any{"code": code})
+	app.Fire(gevent.OnAppExit, map[string]any{"code": code})
 
 	// if IsGteVerbose(VerbDebug) {
 	// 	app.Infoln("[DEBUG] The Runtime Call Stacks:")

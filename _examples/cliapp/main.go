@@ -5,7 +5,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/_examples/cmd"
 	"github.com/gookit/gcli/v3/builtin"
-	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/gcli/v3/gevent"
 	// "github.com/gookit/gcli/v3/builtin/filewatcher"
 	// "github.com/gookit/gcli/v3/builtin/reverseproxy"
 )
@@ -48,7 +48,7 @@ func main() {
 	// 	opts.StrVar(&customGOpt, &gcli.CliOpt{Name: "custom", Desc: "desc message for the option"})
 	// }
 
-	app.On(events.OnAppBindOptsAfter, func(ctx *gcli.HookCtx) (stop bool) {
+	app.On(gevent.OnAppBindOptsAfter, func(ctx *gcli.HookCtx) (stop bool) {
 		gcli.Debugf("event OnAppBindOptsAfter", ctx.Name())
 		return false
 	})

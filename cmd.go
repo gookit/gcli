@@ -8,7 +8,7 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
-	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/gcli/v3/gevent"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/gcli/v3/internal/helper"
 	"github.com/gookit/goutil/arrutil"
@@ -264,7 +264,7 @@ func (c *Command) initialize() {
 
 	// init base
 	c.initCommandBase(cName)
-	c.Fire(events.OnCmdInitBefore, nil)
+	c.Fire(gevent.OnCmdInitBefore, nil)
 
 	// init for cmd flags parser
 	c.Flags.Init(cName)
@@ -289,7 +289,7 @@ func (c *Command) initialize() {
 		c.Config(c)
 	}
 
-	c.Fire(events.OnCmdInitAfter, nil)
+	c.Fire(gevent.OnCmdInitAfter, nil)
 }
 
 // init base, ctx
@@ -386,8 +386,8 @@ func (c *Command) Run(args []string) (err error) {
 	c.initialize()
 
 	// add default error handler.
-	if !c.HasHook(events.OnCmdRunError) {
-		c.On(events.OnCmdRunError, defaultErrHandler)
+	if !c.HasHook(gevent.OnCmdRunError) {
+		c.On(gevent.OnCmdRunError, defaultErrHandler)
 	}
 
 	// binding global options
@@ -427,10 +427,10 @@ func (c *Command) innerDispatch(args []string) (err error) {
 			return c.ShowHelp()
 		}
 
-		c.Fire(events.OnGlobalOptsParsed, map[string]any{"args": args})
+		c.Fire(gevent.OnGlobalOptsParsed, map[string]any{"args": args})
 	}
 
-	c.Fire(events.OnCmdOptParsed, map[string]any{"args": args})
+	c.Fire(gevent.OnCmdOptParsed, map[string]any{"args": args})
 	Debugf("cmd: %s - remaining args on options parsed: %v", c.Name, args)
 
 	// find sub command
@@ -451,10 +451,10 @@ func (c *Command) innerDispatch(args []string) (err error) {
 			if !c.HasArguments() {
 				// fire events
 				hookData := map[string]any{"name": name, "args": args[1:]}
-				if c.Fire(events.OnCmdSubNotFound, hookData) {
+				if c.Fire(gevent.OnCmdSubNotFound, hookData) {
 					return
 				}
-				if c.Fire(events.OnCmdNotFound, hookData) {
+				if c.Fire(gevent.OnCmdNotFound, hookData) {
 					return
 				}
 
@@ -538,18 +538,18 @@ func (c *Command) doExecute(args []string) (err error) {
 	// collect and binding named argument
 	Debugf("cmd: %s - collect and binding named arguments", c.Name)
 	if err := c.ParseArgs(args); err != nil {
-		c.Fire(events.OnCmdRunError, map[string]any{"cmd": c.Name, "err": err})
+		c.Fire(gevent.OnCmdRunError, map[string]any{"cmd": c.Name, "err": err})
 		Logf(VerbError, "binding command '%s' arguments err: <red>%s</>", c.Name, err.Error())
 		return err
 	}
 
 	fnArgs := c.ExtraArgs()
-	c.Fire(events.OnCmdRunBefore, map[string]any{"args": fnArgs})
+	c.Fire(gevent.OnCmdRunBefore, map[string]any{"args": fnArgs})
 
 	// do call command handler func
 	if c.Func == nil {
 		Logf(VerbWarn, "the command '%s' no handler func to running", c.Name)
-		c.Fire(events.OnCmdRunAfter, nil)
+		c.Fire(gevent.OnCmdRunAfter, nil)
 		return
 	}
 
@@ -596,9 +596,9 @@ func (c *Command) runWithMiddles(fnArgs []string) error {
 
 func (c *Command) fireAfterExec(err error) {
 	if err != nil {
-		c.Fire(events.OnCmdRunError, map[string]any{"err": err})
+		c.Fire(gevent.OnCmdRunError, map[string]any{"err": err})
 	} else {
-		c.Fire(events.OnCmdRunAfter, nil)
+		c.Fire(gevent.OnCmdRunAfter, nil)
 	}
 }
 

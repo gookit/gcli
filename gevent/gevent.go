@@ -1,4 +1,4 @@
-package events
+package gevent
 
 // constants for hooks event, there are default allowed event names
 const (

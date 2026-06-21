@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3"
-	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/gcli/v3/gevent"
 	"github.com/gookit/goutil/byteutil"
 	"github.com/gookit/goutil/dump"
 	"github.com/gookit/goutil/x/assert"
@@ -27,27 +27,27 @@ func TestApp_Hooks_EvtAppInit(t *testing.T) {
 	b := byteutil.NewBuffer()
 
 	cli := newNotExitApp()
-	cli.On(events.OnAppInitAfter, func(ctx *gcli.HookCtx) bool {
+	cli.On(gevent.OnAppInitAfter, func(ctx *gcli.HookCtx) bool {
 		b.WriteString("trigger " + ctx.Name())
 		return false
 	})
 	cli.Add(newSimpleCmd())
-	assert.Eq(t, "trigger "+events.OnAppInitAfter, b.ResetGet())
+	assert.Eq(t, "trigger "+gevent.OnAppInitAfter, b.ResetGet())
 
-	cli.On(events.OnGlobalOptsParsed, func(ctx *gcli.HookCtx) bool {
+	cli.On(gevent.OnGlobalOptsParsed, func(ctx *gcli.HookCtx) bool {
 		b.WriteString("trigger " + ctx.Name() + ", args:" + fmt.Sprintf("%v", ctx.Strings("args")))
 		return false
 	})
 
 	cli.Run([]string{"simple"})
-	assert.Eq(t, "trigger "+events.OnGlobalOptsParsed+", args:[simple]", b.ResetGet())
+	assert.Eq(t, "trigger "+gevent.OnGlobalOptsParsed+", args:[simple]", b.ResetGet())
 }
 
 func TestApp_Hooks_OnAppCmdAdd(t *testing.T) {
 	b := byteutil.NewBuffer()
 
 	cli := newNotExitApp()
-	cli.On(events.OnAppCmdAdd, func(ctx *gcli.HookCtx) (stop bool) {
+	cli.On(gevent.OnAppCmdAdd, func(ctx *gcli.HookCtx) (stop bool) {
 		b.WriteString(ctx.Name())
 		b.WriteString(" - ")
 		b.WriteString(ctx.Cmd.Name + ";")
@@ -70,7 +70,7 @@ func TestCommand_Hooks_EvtCmdOptParsed(t *testing.T) {
 		Desc: "desc",
 		Config: func(c *gcli.Command) {
 			b.WriteString("run config;")
-			c.On(events.OnCmdOptParsed, func(ctx *gcli.HookCtx) (stop bool) {
+			c.On(gevent.OnCmdOptParsed, func(ctx *gcli.HookCtx) (stop bool) {
 				dump.P(ctx.Strings("args"))
 				b.WriteString(ctx.Name())
 				return
@@ -80,7 +80,7 @@ func TestCommand_Hooks_EvtCmdOptParsed(t *testing.T) {
 
 	assert.Contains(t, b.String(), "run config;")
 	cli.Run([]string{"test"})
-	assert.Contains(t, b.String(), events.OnCmdOptParsed)
+	assert.Contains(t, b.String(), gevent.OnCmdOptParsed)
 }
 
 func TestApp_On_CmdNotFound(t *testing.T) {
@@ -90,8 +90,8 @@ func TestApp_On_CmdNotFound(t *testing.T) {
 	cli.Add(newSimpleCmd())
 
 	fmt.Println("--------- will print command tips ----------")
-	cli.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) bool {
-		b.WriteString("trigger: " + events.OnCmdNotFound)
+	cli.On(gevent.OnCmdNotFound, func(ctx *gcli.HookCtx) bool {
+		b.WriteString("trigger: " + gevent.OnCmdNotFound)
 		b.WriteString("; command: " + ctx.Str("name"))
 		return false
 	})
@@ -100,8 +100,8 @@ func TestApp_On_CmdNotFound(t *testing.T) {
 	assert.Eq(t, "trigger: cmd.not.found; command: top", b.ResetGet())
 
 	fmt.Println("--------- dont print command tips ----------")
-	cli.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) bool {
-		b.WriteString("trigger: " + events.OnCmdNotFound)
+	cli.On(gevent.OnCmdNotFound, func(ctx *gcli.HookCtx) bool {
+		b.WriteString("trigger: " + gevent.OnCmdNotFound)
 		b.WriteString("; command: " + ctx.Str("name"))
 		return true
 	})
@@ -121,8 +121,8 @@ func TestApp_On_CmdNotFound_redirect(t *testing.T) {
 	cli.Add(simpleCmd)
 
 	fmt.Println("--------- redirect to run another command ----------")
-	cli.On(events.OnCmdNotFound, func(ctx *gcli.HookCtx) bool {
-		b.WriteString("trigger:" + events.OnCmdNotFound)
+	cli.On(gevent.OnCmdNotFound, func(ctx *gcli.HookCtx) bool {
+		b.WriteString("trigger:" + gevent.OnCmdNotFound)
 		b.WriteString(" - command:" + ctx.Str("name"))
 		b.WriteString("; redirect:simple - ")
 

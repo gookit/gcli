@@ -7,7 +7,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/gookit/gcli/v3/events"
+	"github.com/gookit/gcli/v3/gevent"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/x/assert"
 )
@@ -262,7 +262,7 @@ func TestApp_completionMode_suppressHooks(t *testing.T) {
 	// 在 NewApp 的 config 函数里注册钩子(早于 Add 触发的 initialize)
 	app := NewApp(func(a *App) {
 		a.ExitOnEnd = false
-		a.On(events.OnAppInitAfter, func(_ *HookCtx) bool {
+		a.On(gevent.OnAppInitAfter, func(_ *HookCtx) bool {
 			hookFired = true
 			fmt.Println(noise) // 钩子里的噪声输出, 委托式脚本会误解析
 			return false
@@ -302,7 +302,7 @@ func TestApp_completionMode_hooksFireNormally(t *testing.T) {
 	hookFired := false
 	app := NewApp(func(a *App) {
 		a.ExitOnEnd = false
-		a.On(events.OnAppInitAfter, func(_ *HookCtx) bool {
+		a.On(gevent.OnAppInitAfter, func(_ *HookCtx) bool {
 			hookFired = true
 			return false
 		})
