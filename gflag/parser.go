@@ -46,6 +46,9 @@ type Flags struct {
 	out io.Writer
 	// HandleFunc handle func, will call on Run()
 	HandleFunc HandleFunc
+	// reorderStop optional predicate for args reorder. when it returns true for a
+	// token, reordering stops at that token (used to not cross a sub-command).
+	reorderStop func(name string) bool
 }
 
 func newDefaultFlagConfig() *Config {
@@ -132,6 +135,13 @@ func (p *Parser) SetHandle(fn HandleFunc) *Flags {
 	return p
 }
 
+// SetReorderStop set the stop predicate for args reorder.
+//
+// When it returns true for a token, the auto-reorder stops at that token and
+// keeps the rest verbatim. gcli uses it to avoid reordering across a sub-command
+// boundary, so only the final executed command's args are reordered.
+func (p *Parser) SetReorderStop(fn func(name string) bool) { p.reorderStop = fn }
+
 /***********************************************************************
  * Flags:
  * - parse input flags
@@ -210,6 +220,12 @@ func (p *Parser) Parse(args []string) (err error) {
 	// POSIX 短选项规范化预处理(EnhanceShort>0 时生效，默认 0 不改变行为)
 	if p.cfg.EnhanceShort > 0 {
 		args = expandShortArgs(args, p.fSet.shorts, p.fSet.isBoolShort, p.cfg.EnhanceShort)
+	}
+
+	// 自动重排 args 为标准 "options... arguments" 形态(默认开启)。
+	// 让写在 arguments 之后的 options 仍能被正确解析。
+	if !p.cfg.DisableReorderArgs {
+		args = rearrangeArgs(args, p.fSet, p.reorderStop)
 	}
 
 	// do parsing options

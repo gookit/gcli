@@ -89,6 +89,16 @@ type Config struct {
 	// 	EnhanceShortMerge(1)  - merge multi bool short options. eg: `-aux` = `-a -u -x`
 	// 	EnhanceShortAttach(2) - also allow value-attached short. eg: `-Ostdout` = `-O stdout`
 	EnhanceShort uint8
+	// DisableReorderArgs disable the auto-reorder of input args.
+	//
+	// By default (zero value, enabled), before parsing options the input args are
+	// rearranged into the canonical "--options... arguments" form. So options
+	// written after positional arguments are still parsed correctly, e.g.
+	// `arg --opt val` is handled the same as `--opt val arg`.
+	//
+	// Set true to keep the strict, std-flag behavior (stop options parsing at the
+	// first positional argument).
+	DisableReorderArgs bool
 }
 
 // GetTagName get tag name, default is FlagTagName
@@ -103,6 +113,13 @@ func (c *Config) GetTagName() string {
 func WithIndentLongOpt(yes bool) ConfigFunc {
 	return func(cfg *Config) {
 		cfg.IndentLongOpt = yes
+	}
+}
+
+// WithReorderArgs enable or disable the auto-reorder of input args. default is enabled.
+func WithReorderArgs(enable bool) ConfigFunc {
+	return func(cfg *Config) {
+		cfg.DisableReorderArgs = !enable
 	}
 }
 
