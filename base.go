@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/gookit/color"
+	"github.com/gookit/goutil/arrutil"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/sysutil"
@@ -328,10 +329,8 @@ func (b *base) addCommand(pName string, c *Command) {
 
 // record command category name in insertion order. ignore duplicate.
 func (b *base) recordCmdCategory(cat string) {
-	for _, name := range b.cmdCategories {
-		if name == cat {
-			return
-		}
+	if arrutil.StringsContains(b.cmdCategories, cat) {
+		return
 	}
 	b.cmdCategories = append(b.cmdCategories, cat)
 }
