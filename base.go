@@ -286,6 +286,20 @@ func (b *base) IsCommand(name string) bool {
 	return has
 }
 
+// isReorderStopName reports whether name is a registered (sub)command, command
+// alias, or the help command. used as the args-reorder stop predicate so the
+// reorder does not cross a command boundary - only the final executed command's
+// args are reordered.
+func (b *base) isReorderStopName(name string) bool {
+	if name == "" {
+		return false
+	}
+	if name == HelpCommand {
+		return true
+	}
+	return b.IsCommand(b.ResolveAlias(name))
+}
+
 // add Command to the group
 func (b *base) addCommand(pName string, c *Command) {
 	// ensure init command
