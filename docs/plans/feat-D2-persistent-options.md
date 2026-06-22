@@ -5,6 +5,14 @@
 > 依据：[../compare-with-others.zh-CN.md](../compare-with-others.zh-CN.md) 差距 5；[../TODO.md](../TODO.md) D2。
 > 对标：cobra 的 `PersistentFlags` / `LocalFlags` / `InheritedFlags` 三层模型。
 
+## 修订记录
+
+| 日期 | 变更 |
+|---|---|
+| 2026-06-21 | 初版：三层选项模型(global/shared/local) + `InheritOptsFrom` 合并基元 + 分发合并方案 |
+| 2026-06-21 | 增加「现状 vs 共享选项」输入对照表，澄清 cobra `PersistentFlags` 的含义（父选项下放到子命令树，可写在子命令段） |
+| 2026-06-21 | API 命名定为 **`SharedOpts()`**（原拟 `PersistentFlags`，改为更短、贴 gcli `Opts` 词汇） |
+
 ---
 
 ## 现状
