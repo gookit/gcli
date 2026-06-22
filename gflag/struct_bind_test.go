@@ -54,6 +54,35 @@ func TestFlags_FromStruct_nativeMap(t *testing.T) {
 	assert.Eq(t, "v2", o.Meta["k2"])
 }
 
+// enum tag sets value candidates(choices) + membership validation (D1.4)
+func TestFlags_FromStruct_enum(t *testing.T) {
+	type opts struct {
+		Lang string `flag:"name=lang;shorts=l;desc=language;enum=go,php,java"`
+	}
+
+	t.Run("choices populated for completion", func(t *testing.T) {
+		fs := gflag.New("test")
+		assert.NoErr(t, fs.FromStruct(&opts{}))
+		assert.Eq(t, []string{"go", "php", "java"}, fs.Opt("lang").Choices)
+	})
+
+	t.Run("valid value passes", func(t *testing.T) {
+		o := &opts{}
+		fs := gflag.New("test")
+		assert.NoErr(t, fs.FromStruct(o))
+		assert.NoErr(t, fs.Parse([]string{"--lang", "go"}))
+		assert.Eq(t, "go", o.Lang)
+	})
+
+	t.Run("invalid value rejected", func(t *testing.T) {
+		fs := gflag.New("test")
+		assert.NoErr(t, fs.FromStruct(&opts{}))
+		err := fs.Parse([]string{"--lang", "ruby"})
+		assert.Err(t, err)
+		assert.StrContains(t, err.Error(), "allowed list")
+	})
+}
+
 // unsupported slice elem type reports a clear error, not a panic
 func TestFlags_FromStruct_unsupportedSlice(t *testing.T) {
 	type opts struct {

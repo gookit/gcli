@@ -28,6 +28,17 @@ func panicf(format string, v ...any) {
 	panic(fmt.Sprintf("gflag: "+format, v...))
 }
 
+// enumValidator returns a validator that only allows values within choices.
+// an empty value is allowed (let Required handle emptiness separately).
+func enumValidator(choices []string) func(string) error {
+	return func(val string) error {
+		if val == "" || arrutil.StringsHas(choices, val) {
+			return nil
+		}
+		return fmt.Errorf("value %q is not in the allowed list: %v", val, choices)
+	}
+}
+
 // allowed keys on struct tag.
 //
 // Parse named rule: parse tag named k-v value. item split by ';'
@@ -46,7 +57,7 @@ var (
 	flagTagKeys = arrutil.Strings{"name", "desc", "required", "default", "shorts"}
 	// use for parse named rule.
 	//  - short: alias for shorts
-	namedTagKeys = arrutil.Strings{"name", "desc", "required", "default", "shorts", "short"}
+	namedTagKeys = arrutil.Strings{"name", "desc", "required", "default", "shorts", "short", "enum"}
 	// use for simple rule parse
 	flagTagKeys1 = arrutil.Strings{"desc", "required", "default", "shorts"}
 	flagArgKeys  = arrutil.Strings{"desc", "required", "default"}

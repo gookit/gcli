@@ -403,6 +403,7 @@ func (p *Parser) fromStructValue(v reflect.Value, tagName string) error {
 				"default":  sf.Tag.Get("default"),
 				"required": sf.Tag.Get("required"),
 				"shorts":   sf.Tag.Get(tagName), // flag tag as shorts
+				"enum":     sf.Tag.Get("enum"),
 			}
 		} else {
 			return errTagRuleType
@@ -417,6 +418,14 @@ func (p *Parser) fromStructValue(v reflect.Value, tagName string) error {
 		opt := newOpt(optName, mp["desc"], mp["default"], mp.StrOne("shorts", "short"))
 		if must, has := mp["required"]; has {
 			opt.Required = strutil.QuietBool(must)
+		}
+
+		// enum:"a,b,c" -> value candidates(for completion) + membership validation.
+		if enum := mp["enum"]; enum != "" {
+			opt.Choices = strutil.Split(enum, ",")
+			if opt.Validator == nil { // don't override a user-set validator
+				opt.Validator = enumValidator(opt.Choices)
+			}
 		}
 
 		// field is implements flag.Value
