@@ -56,11 +56,11 @@
   - [x] 泛型 API：`gflag.Opt[T]/BindVar[T]`，类型安全、可扩展，老 API 保留（commit 99ffdfa）
   - 对标：kong / go-arg / go-flags 原生支持 slice/map/enum/Duration（go-arg 连 Duration 都内置）
 
-- [ ] **D2 共享选项(SharedOpts)继承模型**（伤筋动骨、建议独立里程碑）— [plans/feat-D2-persistent-options.md](plans/feat-D2-persistent-options.md)
+- [x] **D2 共享选项(SharedOpts)继承模型**（独立里程碑，已完成）— [plans/feat-D2-persistent-options.md](plans/feat-D2-persistent-options.md)
   - [x] 新增「共享选项」中间层：`Command.SharedOpts() *gflag.Flags` + `Parser.InheritOptsFrom`；
     dispatch 时沿祖先链 merge 进叶子 flag set（与 args 重排契合）；Required 延后到执行命令校验
     （commit 323219f/77f2391/bf4ef0c/87951f0）
-  - [ ] 进程级单例 `gOpts` 改为 per-App 实例，解决多 App/并发共享（CHANGELOG v3.4.0 已记此坑）— 风险高，待评估
+  - [x] 抽出 `AppOptions`：每-App 解析状态(help/version/completion)不再共享单例；全局配置仍走 gOpts（不复现 v3.4.0 verbose 坑）（commit 7e52e9a）
   - [x] 明确「全局(App) / 共享(命令子树) / 局部(命令)」三层语义 + 文档（README/CHANGELOG）+ 专项测试（commit a42019e）
   - [x] help 渲染：祖先继承选项归入 "Inherited Options" 分组；ShowHelp 补幂等合并（commit b704f29）
   - 对标：cobra 的 `PersistentFlags` / `LocalFlags` / `InheritedFlags` 三层模型

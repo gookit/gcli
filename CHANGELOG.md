@@ -14,6 +14,14 @@ and this project adheres to semantic-ish versioning.
   the other sub-packages (e.g. `gflag`). The old `events` package no longer
   exists; update your imports. The event-name constants themselves are unchanged
   (`OnAppInitAfter`, `OnCmdRunBefore`, ...).
+- **Per-app parse state moved out of `GlobalOpts` into a new `AppOptions` type.**
+  The runtime fields `ShowHelp` / `ShowVersion` / `inCompletion` / `genCompletion`
+  are no longer on `GlobalOpts`; each `App` (and standalone command) now owns its
+  own `AppOptions`, so concurrent `App` instances no longer share these. `App.Opts()`
+  still returns the process-level `*GlobalOpts` (so `app.Opts() == gcli.GOpts()` and
+  `app.Opts().Verbose` are unchanged); use the new `App.AppOpts()` for the per-app
+  state. Process-level config (`Verbose` / strict / `EnhanceShort` and the logger)
+  stays in the package singleton, so log-level behavior is unaffected.
 
 ### Added
 

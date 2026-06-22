@@ -1,6 +1,6 @@
 # 功能实现计划：D2 共享选项继承模型（SharedOpts，≈ cobra PersistentFlags）
 
-> 状态：**D2.1 + D2.5 已完成**（提交拆分 1-5 + 复核修复）；D2.6(gOpts per-App) 待评估
+> 状态：**全部完成**（D2.1 + D2.5 + D2.6）。D2.6 采用「抽出 `AppOptions`」方案（见下）。
 > 范围：`cmd.go`（共享选项存储/合并/分发）+ 新增 gflag 合并基元 + 可选的 `gcli.go`（gOpts per-App）。
 > 依据：[../compare-with-others.zh-CN.md](../compare-with-others.zh-CN.md) 差距 5；[../TODO.md](../TODO.md) D2。
 > 对标：cobra 的 `PersistentFlags` / `LocalFlags` / `InheritedFlags` 三层模型。
@@ -199,11 +199,25 @@ if !c.sharedMerged {
 4. ✅ `docs: 三层选项模型说明(README/CHANGELOG)`（commit a42019e）
    - ✅ 复核修复：共享 Required 改用类型感知 `CliOpt.IsEmpty()`（commit 87951f0）
 5. ✅ `feat(gcli): help 渲染继承选项分组(Inherited Options)`（commit b704f29）
-6. ⏳（可选/独立评估）`refactor(gcli): gOpts 改 per-App 实例 + 多 App 测试` — 风险最高，需先确认
+6. ✅ `refactor(gcli): 抽出 AppOptions, 每-App 解析状态不再共享单例`（commit 7e52e9a）
 
-> 1-5（核心 + 文档 + help 分组）已落地并验证；6 风险最高，需先确认再做。
+> 1-6 全部落地并验证。
 > 说明：内置 `help` 命令仅支持单级（help.go 既有 TODO），故 `help top sub` 暂不可用；
 > `top sub -h` 正常。help 分组对两条 ShowHelp 路径均生效（ShowHelp 开头补了幂等合并）。
+
+### D2.6 实施方案（抽出 AppOptions，替代原「整体 per-App」设想）
+
+- **拆分而非整体复制**：把 `GlobalOpts` 里的每-App 解析/运行状态
+  （`ShowHelp/ShowVersion/inCompletion/genCompletion`）抽到新类型 **`AppOptions`**；
+  每个 `App`（及 standalone `Command` 的 `runOpts`，lazy）持有自己的实例 → 并发多 App 不再共享。
+- **全局配置仍走包级单例 `gOpts`**：`Verbose/strict/enhanceShort/NoColor` 与 logger、
+  `gcli.Verbose()/IsDebugMode()/StrictMode()/EnhanceShort()` 全部不动 → **不会复现 v3.4.0 的
+  verbose 失效坑**（这是当年从 per-App 改回单例的根因）。
+- **向后兼容**：`App.Opts()` 仍返回 `*GlobalOpts`（`app.Opts()==GOpts()` 成立、`app.Opts().Verbose`
+  可读，`TestApp_Opts_singleSource` 不变）；新增 `App.AppOpts() *AppOptions` 取每-App 状态。
+  `bindingOpts` 移到 `AppOptions`（读取全局 `Disable`）。
+- **破坏面**：`GlobalOpts` 不再含上述 4 个字段（读 `app.Opts().ShowHelp` 等的代码需改 `AppOpts()`）；
+  已在 CHANGELOG 标注。
 
 ### 实施备注（复核发现）
 
