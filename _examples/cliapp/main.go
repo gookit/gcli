@@ -74,6 +74,7 @@ func main() {
 	// demos for recent features: B6(struct tag) / B4+B5(short merge) / B7(question)
 	app.Add(
 		cmd.StructFlagDemo,
+		cmd.StructTypesDemo,
 		cmd.ShortMergeDemo,
 		cmd.QuestionDemo,
 		cmd.ReorderDemo,
