@@ -1,6 +1,6 @@
 # 功能实现计划：D2 共享选项继承模型（SharedOpts，≈ cobra PersistentFlags）
 
-> 状态：**待实施**（建议独立里程碑，分阶段推进）
+> 状态：**D2.1 核心已完成**（提交拆分 1-4 + 复核修复）；D2.5(help 分组)/D2.6(gOpts per-App) 待评估
 > 范围：`cmd.go`（共享选项存储/合并/分发）+ 新增 gflag 合并基元 + 可选的 `gcli.go`（gOpts per-App）。
 > 依据：[../compare-with-others.zh-CN.md](../compare-with-others.zh-CN.md) 差距 5；[../TODO.md](../TODO.md) D2。
 > 对标：cobra 的 `PersistentFlags` / `LocalFlags` / `InheritedFlags` 三层模型。
@@ -193,11 +193,20 @@ if !c.sharedMerged {
 
 ## 提交拆分（按 R002）
 
-1. `feat(gflag): 增加 Parser.InheritOptsFrom 选项合并基元`
-2. `feat(gcli): Command.SharedOpts 共享选项定义 + 分发时合并(含幂等)`
-3. `test(gcli): 共享选项继承/任意位置/局部优先/Required 用例`
-4. `docs: 三层选项模型说明(README/CHANGELOG) + struct/示例`
-5. （可选）`feat(gcli): help 渲染继承选项分组(Inherited Options)`
-6. （可选/独立评估）`refactor(gcli): gOpts 改 per-App 实例 + 多 App 测试`
+1. ✅ `feat(gflag): 增加 Parser.InheritOptsFrom 选项合并基元`（commit 323219f）
+2. ✅ `feat(gcli): Command.SharedOpts 共享选项定义 + 分发时合并(含幂等)`（commit 77f2391）
+3. ✅ `test(gcli): 共享选项继承/任意位置/局部优先/Required 用例`（commit bf4ef0c）
+4. ✅ `docs: 三层选项模型说明(README/CHANGELOG)`（commit a42019e）
+   - ✅ 复核修复：共享 Required 改用类型感知 `CliOpt.IsEmpty()`（commit 87951f0）
+5. ⏳（可选）`feat(gcli): help 渲染继承选项分组(Inherited Options)` — 待评估
+6. ⏳（可选/独立评估）`refactor(gcli): gOpts 改 per-App 实例 + 多 App 测试` — 风险最高，需先确认
 
-> 建议先落 1-4（核心 + 文档），5/6 视情况单独推进；其中 6 风险最高，需要先确认。
+> 1-4（核心 + 文档）已落地并验证；5/6 视情况单独推进，其中 6 风险最高需先确认。
+
+### 实施备注（复核发现）
+
+- **Required 共享选项校验时机**：因「自身也并入」会让必填共享选项进入中间祖先命令的 flag set，
+  而共享值常写在叶子段——祖先解析时尚未见到取值会误报必填、中止分发。修正：合并进 `c.Flags` 的
+  **继承副本清除 Required**，必填校验延后到 `doExecute`（执行命令）由 `validateSharedRequired` 沿
+  祖先链统一判定（用类型感知 `CliOpt.IsEmpty()`）。与 cobra persistent-flag 语义一致。
+- **短名冲突**：`InheritOptsFrom` 在短名与目标已有名/短名冲突时**整体跳过**该选项继承，避免 panic。
