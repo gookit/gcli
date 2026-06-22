@@ -3,8 +3,10 @@ package gcli_test
 import (
 	"testing"
 
+	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
+	"github.com/gookit/goutil/byteutil"
 	"github.com/gookit/goutil/x/assert"
 )
 
@@ -259,6 +261,59 @@ func TestSharedOpts_requiredInt(t *testing.T) {
 		is.Eq(0, code)
 		is.True(ran)
 		is.Eq(3, count)
+	})
+}
+
+// help 分组(D2.5): 继承选项在命令 help 里归到 "Inherited Options" 分组, 与本地选项分开。
+func TestSharedOpts_helpGrouping(t *testing.T) {
+	is := assert.New(t)
+
+	newApp := func() *gcli.App {
+		app := gcli.NewApp(gcli.NotExitOnEnd())
+		var gitDir, local string
+		app.Add(&gcli.Command{
+			Name: "top",
+			Desc: "top command",
+			Config: func(c *gcli.Command) {
+				c.SharedOpts().StrOpt(&gitDir, "git-dir", "", "", "the git work dir")
+			},
+			Subs: []*gcli.Command{
+				{
+					Name: "sub",
+					Desc: "sub command",
+					Config: func(c *gcli.Command) {
+						c.StrOpt(&local, "name", "n", "", "the local name")
+					},
+					Func: func(c *gcli.Command, _ []string) error { return nil },
+				},
+			},
+		})
+		return app
+	}
+
+	b := byteutil.NewBuffer()
+	color.Disable()
+	color.SetOutput(b)
+	defer color.ResetOptions()
+
+	// 叶子 sub 的 help: top 的共享选项是「祖先继承」, 应归入 "Inherited Options" 分组
+	t.Run("inherited grouped on leaf (cmd -h)", func(t *testing.T) {
+		b.Reset()
+		newApp().Run([]string{"top", "sub", "-h"})
+		s := b.String()
+		is.StrContains(s, "Inherited Options") // 继承分组标题
+		is.StrContains(s, "--git-dir")         // 祖先继承选项
+		is.StrContains(s, "--name")            // 本地选项
+	})
+
+	// help 命令(单级)展示 top 自身 help: 自身共享选项应显示(验证 ShowHelp 也会合并),
+	// 但作为命令自身选项, 不归入 "Inherited Options" 分组。
+	t.Run("self shared shown via help command", func(t *testing.T) {
+		b.Reset()
+		newApp().Run([]string{"help", "top"})
+		s := b.String()
+		is.StrContains(s, "--git-dir")            // ShowHelp 合并后自身共享选项可见
+		is.NotContains(s, "Inherited Options")    // 自身定义的不标"Inherited"
 	})
 }
 

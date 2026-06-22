@@ -277,6 +277,9 @@ func (c *Command) ShowHelp() (err error) {
 		return
 	}
 
+	// 合并共享(继承)选项, 使 `help CMD` 等不走 parseOptions 的路径也能展示继承选项。幂等。
+	c.mergeSharedOpts()
+
 	// clear space and empty new line
 	if c.Examples != "" {
 		c.Examples = strings.Trim(c.Examples, "\n") + "\n"

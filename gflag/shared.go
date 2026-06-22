@@ -10,9 +10,16 @@ package gflag
 //   - 本地已存在同名选项（局部优先）→ 跳过；
 //   - 选项尚未绑定（opt.flag == nil）→ 跳过（理论上绑定后不会出现）；
 //   - 短名与 p 已有的选项名/短名冲突时，安全起见整体跳过该选项的继承，避免 Var 内部 panic。
-func (p *Parser) InheritOptsFrom(src *Parser) {
+//
+// 可选 category：传入时，继承进来的选项会被归入该 help 分组（仅影响帮助展示，不影响解析）。
+func (p *Parser) InheritOptsFrom(src *Parser, category ...string) {
 	if src == nil {
 		return
+	}
+
+	var cat string
+	if len(category) > 0 {
+		cat = category[0]
 	}
 
 	for name, opt := range src.Opts() {
@@ -37,6 +44,7 @@ func (p *Parser) InheritOptsFrom(src *Parser) {
 			Required:  opt.Required,
 			Validator: opt.Validator,
 			Choices:   opt.Choices,
+			Category:  cat, // 继承选项归入指定 help 分组
 		})
 	}
 }

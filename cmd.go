@@ -192,6 +192,9 @@ func (c *Command) Use(handlers ...RunnerFunc) *Command {
 // AttachTo attach the command to CLI application
 func (c *Command) AttachTo(app *App) { app.AddCommand(c) }
 
+// InheritedOptsCategory 是继承(共享)选项在命令 help 中的分组标题。
+const InheritedOptsCategory = "Inherited Options"
+
 // SharedOpts 返回命令专属的共享选项持有器(惰性创建), 对标 cobra 的 PersistentFlags()。
 //
 // 在它上面像普通选项一样绑定(BoolOpt/StrOpt/Opt[T]/FromStruct/...), 这些选项会被本命令
@@ -573,11 +576,18 @@ func (c *Command) mergeSharedOpts() {
 		c.localOptNames[name] = true
 	}
 
-	// 反向遍历(从根到叶)合并, 使祖先共享选项先注册、局部/更近定义优先
+	// 反向遍历(从根到叶)合并, 使祖先共享选项先注册、局部/更近定义优先。
+	// help 分组: 祖先继承来的归入 InheritedOptsCategory; 自身定义的共享选项视为本命令选项,
+	// 与本地选项同组(不标 Inherited), 对标 cobra(命令自身的 persistent flag 显示在本命令 Flags)。
 	for i := len(chain) - 1; i >= 0; i-- {
 		anc := chain[i]
-		if anc.sharedFs != nil {
+		if anc.sharedFs == nil {
+			continue
+		}
+		if anc == c {
 			c.Flags.InheritOptsFrom(anc.sharedFs)
+		} else {
+			c.Flags.InheritOptsFrom(anc.sharedFs, InheritedOptsCategory)
 		}
 	}
 
