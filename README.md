@@ -11,11 +11,7 @@
 A simple and easy-to-use command-line application and tool library written in Golang.
 Including running commands, color styles, data display, progress display, interactive methods, etc.
 
-## [中文说明](README.zh-CN.md)
-
-中文说明请看 **[README.zh-CN](README.zh-CN.md)**
-
-## Screenshots
+> [中文说明](README.zh-CN.md)
 
 ![app-cmd-list](_examples/images/cmd-list.png)
 
@@ -70,8 +66,7 @@ Rich in functions and easy to use. Highlights grouped by area:
 
 **Extras**
 
-- Color output, interactive input and progress/data display, provided by
-  [gookit/color](https://github.com/gookit/color) and [gookit/cliui](https://github.com/gookit/cliui)
+- Color output, interactive input and progress/data display, provided by [gookit/color](https://github.com/gookit/color) and [gookit/cliui](https://github.com/gookit/cliui)
 
 ## GoDoc
 
@@ -687,8 +682,7 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 
 gcli ships with color output, interactive input (`Confirm` / `Select` / `ReadLine` ...),
 progress display (`Bar` / `Spinner` / `Loading` ...) and data display (table / list / tree),
-provided by [gookit/color](https://github.com/gookit/color) and
-[gookit/cliui](https://github.com/gookit/cliui).
+provided by [gookit/color](https://github.com/gookit/color) and [gookit/cliui](https://github.com/gookit/cliui).
 
 ```go
 color.Info.Tips("processing...")              // colored output
@@ -699,7 +693,9 @@ if !ok {
 }
 
 p := progress.Bar(100)                        // progress bar
-p.Start(); /* p.Advance() in loop */ p.Finish()
+p.Start();
+/* p.Advance() in loop */
+p.Finish()
 ```
 
 > For more usage see [gookit/color](https://github.com/gookit/color) and [gookit/cliui](https://github.com/gookit/cliui).
@@ -710,7 +706,6 @@ p.Start(); /* p.Advance() in loop */ p.Finish()
 - [gookit/rux](https://github.com/gookit/rux) Simple and fast request router for golang HTTP 
 - [gookit/gcli](https://github.com/gookit/gcli) build CLI application, tool library, running CLI commands
 - [gookit/event](https://github.com/gookit/event) Lightweight event manager and dispatcher implements by Go
-- [gookit/cache](https://github.com/gookit/cache) Generic cache use and cache manager for golang. support File, Memory, Redis, Memcached.
 - [gookit/config](https://github.com/gookit/config) Go config management. support JSON, YAML, TOML, INI, HCL, ENV and Flags
 - [gookit/color](https://github.com/gookit/color) A command-line color library with true color support, universal API methods and Windows support
 - [gookit/filter](https://github.com/gookit/filter) Provide filtering, sanitizing, and conversion of golang data

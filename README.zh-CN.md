@@ -8,13 +8,9 @@
 [![Go Report Card](https://goreportcard.com/badge/github.com/gookit/gcli)](https://goreportcard.com/report/github.com/gookit/gcli)
 [![Coverage Status](https://coveralls.io/repos/github/gookit/gcli/badge.svg?branch=master)](https://coveralls.io/github/gookit/gcli?branch=master)
 
-Golang编写的简单易用的命令行应用，工具库。包含运行命令，颜色风格，数据展示，进度显示，交互方法等
+Golang 编写的简单易用的命令行应用，工具库。包含运行命令，颜色风格，数据展示，进度显示，交互方法等
 
-## [ENGLISH](README.md)
-
-The english introduction please ses **[README](README.md)**
-
-## 截图展示
+> [EN RAEDME](README.md)
 
 ![app-cmd-list](_examples/images/cmd-list.png)
 
@@ -69,8 +65,7 @@ The english introduction please ses **[README](README.md)**
 
 **周边**
 
-- 颜色输出、交互输入、进度与数据展示，分别由
-  [gookit/color](https://github.com/gookit/color) 与 [gookit/cliui](https://github.com/gookit/cliui) 提供
+- 颜色输出、交互输入、进度与数据展示，分别由 [gookit/color](https://github.com/gookit/color) 与 [gookit/cliui](https://github.com/gookit/cliui) 提供
 
 ## GoDoc
 
@@ -649,8 +644,7 @@ var MyCommand = &gcli.Command{
 
 gcli 内置了颜色输出、交互输入（`Confirm` / `Select` / `ReadLine` 等）、
 进度显示（`Bar` / `Spinner` / `Loading` 等）以及数据展示（表格 / 列表 / 树），
-分别由 [gookit/color](https://github.com/gookit/color) 与
-[gookit/cliui](https://github.com/gookit/cliui) 提供。
+分别由 [gookit/color](https://github.com/gookit/color) 与 [gookit/cliui](https://github.com/gookit/cliui) 提供。
 
 ```go
 color.Info.Tips("processing...")              // 颜色输出
@@ -661,7 +655,9 @@ if !ok {
 }
 
 p := progress.Bar(100)                        // 进度条
-p.Start(); /* 循环中 p.Advance() */ p.Finish()
+p.Start();
+/* 循环中 p.Advance() */
+p.Finish()
 ```
 
 > 更多用法详见 [gookit/color](https://github.com/gookit/color) 与 [gookit/cliui](https://github.com/gookit/cliui)。
@@ -672,7 +668,6 @@ p.Start(); /* 循环中 p.Advance() */ p.Finish()
 - [gookit/rux](https://github.com/gookit/rux) Simple and fast request router for golang HTTP
 - [gookit/gcli](https://github.com/gookit/gcli) Go的命令行应用，工具库，运行CLI命令，支持命令行色彩，用户交互，进度显示，数据格式化显示
 - [gookit/event](https://github.com/gookit/event) Go实现的轻量级的事件管理、调度程序库, 支持设置监听器的优先级, 支持对一组事件进行监听
-- [gookit/cache](https://github.com/gookit/cache) 通用的缓存使用包装库，通过包装各种常用的驱动，来提供统一的使用API
 - [gookit/config](https://github.com/gookit/config) Go应用配置管理，支持多种格式（JSON, YAML, TOML, INI, HCL, ENV, Flags），多文件加载，远程文件加载，数据合并
 - [gookit/color](https://github.com/gookit/color) CLI 控制台颜色渲染工具库, 拥有简洁的使用API，支持16色，256色，RGB色彩渲染输出
 - [gookit/filter](https://github.com/gookit/filter) 提供对Golang数据的过滤，净化，转换
