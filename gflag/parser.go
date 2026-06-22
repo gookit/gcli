@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"reflect"
+	"time"
 
 	"github.com/gookit/color"
 	"github.com/gookit/color/colorp"
@@ -255,6 +256,7 @@ func (p *Parser) prepare() error {
 
 var (
 	flagValueType  = reflect.TypeOf(new(flag.Value)).Elem()
+	durationType   = reflect.TypeOf(time.Duration(0))
 	errNotPtrValue = errors.New("must provide an ptr value")
 	errNotAnStruct = errors.New("must provide an struct ptr")
 	errTagRuleType = errors.New("invalid tag rule type on struct")
@@ -437,6 +439,13 @@ func (p *Parser) fromStructValue(v reflect.Value, tagName string) error {
 			return fmt.Errorf("field: %s - is not addressable for binding flag", name)
 		}
 		addr := fv.Addr().Interface()
+
+		// time.Duration has Kind()==Int64, must handle before the kind switch.
+		if ft == durationType {
+			p.DurationVar(addr.(*time.Duration), opt)
+			continue
+		}
+
 		switch ft.Kind() {
 		case reflect.Bool:
 			p.BoolVar(addr.(*bool), opt)
@@ -452,11 +461,39 @@ func (p *Parser) fromStructValue(v reflect.Value, tagName string) error {
 			p.Float64Var(addr.(*float64), opt)
 		case reflect.String:
 			p.StrVar(addr.(*string), opt)
+		case reflect.Slice:
+			if !p.bindSliceField(fv, opt) {
+				return fmt.Errorf("field: %s - unsupport slice type(%s) for binding flag", name, ft.String())
+			}
 		default:
 			return fmt.Errorf("field: %s - unsupport type(%s) for binding flag", name, ft.String())
 		}
 	}
 	return nil
+}
+
+// bindSliceField binds a []string / []int / []bool field as a repeatable option.
+//
+// It reuses the cflag list value types (Strings/Ints/Booleans). They share the
+// same underlying type as the native slice, so the field address is pointer-
+// convertible to the value type (no unsafe). Returns false for unsupported elem.
+func (p *Parser) bindSliceField(fv reflect.Value, opt *CliOpt) bool {
+	var target reflect.Type
+	switch fv.Type().Elem().Kind() {
+	case reflect.String:
+		target = reflect.TypeOf(Strings(nil))
+	case reflect.Int:
+		target = reflect.TypeOf(Ints(nil))
+	case reflect.Bool:
+		target = reflect.TypeOf(Booleans(nil))
+	default:
+		return false
+	}
+
+	// *[]T -> *cflag.XXX (identical underlying type, so convertible)
+	pv := fv.Addr().Convert(reflect.PointerTo(target)).Interface().(flag.Value)
+	p.Var(pv, opt)
+	return true
 }
 
 // Required flag option name(s)
