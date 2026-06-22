@@ -5,6 +5,57 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to semantic-ish versioning.
 
+## [v3.8.0] - Unreleased
+
+### ⚠️ Breaking Changes
+
+- **Per-app parse state moved out of `GlobalOpts` into a new `AppOptions` type.**
+  The runtime fields `ShowHelp` / `ShowVersion` / `inCompletion` / `genCompletion`
+  are no longer on `GlobalOpts`; each `App` (and standalone command) now owns its
+  own `AppOptions`, so concurrent `App` instances no longer share these. `App.Opts()`
+  still returns the process-level `*GlobalOpts` (so `app.Opts() == gcli.GOpts()` and
+  `app.Opts().Verbose` are unchanged); use the new `App.AppOpts()` for the per-app
+  state. Process-level config (`Verbose` / strict / `EnhanceShort` and the logger)
+  stays in the package singleton, so log-level behavior is unaffected.
+
+### Added
+
+- **Three-tier option model with shared (inherited) options: `Command.SharedOpts()`**
+  (≈ cobra's `PersistentFlags`). Options bound on `c.SharedOpts()` are inherited by
+  the command **and all of its descendant commands**, sharing the same bound variable
+  (the same `flag.Value`/pointer). This adds a *shared* middle tier between the existing
+  *global* (app) and *local* (per-command) options, so a parent option like
+  `--git-dir` can be written and parsed in any sub-command segment —
+  `app top sub --git-dir /x` and (with arg reorder) `app top sub arg --git-dir /x`
+  both work. Use `c.SharedOpts()` with any binder (`BoolOpt/StrOpt/Opt[T]/FromStruct/...`).
+  A local option of the same name on a sub-command takes priority; `Required` on a
+  shared option is validated at the executing (leaf) command. New gflag primitive
+  `Parser.InheritOptsFrom(src, category...)` re-registers another parser's options by
+  their underlying `flag.Value`. In a sub-command's help, options inherited from
+  ancestors are grouped under an **`Inherited Options`** section (a command's own
+  shared options render with its local options).
+
+[v3.8.0]: https://github.com/gookit/gcli/compare/v3.7.0...HEAD
+
+## [v3.7.0] - 2026-06-22
+
+### Added
+
+- **Struct-tag binding: more field types + `enum`.** `FromStruct` now binds
+  native `[]string` / `[]int` / `[]bool` (repeatable, e.g. `--name a --name b`),
+  `time.Duration` (e.g. `--ttl 1h30m`), and `map[string]string` (repeatable
+  `--meta k=v`) directly — no need to declare the special `gflag.Strings`/`KVString`
+  types. A new `enum:"a,b,c"` tag key sets the option's value candidates (for
+  completion) and adds membership validation. Internally the struct binder no
+  longer uses `unsafe`.
+- **Generic option binding: `gflag.Opt[T]` / `gflag.BindVar[T]`.** A type-safe
+  generic API that dispatches on the pointer type to the matching binder, so one
+  call replaces the per-type `BoolVar/IntVar/StrVar/...`. Supports the same set
+  of types as struct binding (scalars, `time.Duration`, slices, `map[string]string`,
+  and any `flag.Value`). Example: `gflag.Opt(fs, &name, "name", "n", "tom", "user name")`.
+
+[v3.7.0]: https://github.com/gookit/gcli/compare/v3.6.0...v3.7.0
+
 ## [v3.6.0] - 2026-06-21
 
 ### ⚠️ Breaking Changes
@@ -14,14 +65,6 @@ and this project adheres to semantic-ish versioning.
   the other sub-packages (e.g. `gflag`). The old `events` package no longer
   exists; update your imports. The event-name constants themselves are unchanged
   (`OnAppInitAfter`, `OnCmdRunBefore`, ...).
-- **Per-app parse state moved out of `GlobalOpts` into a new `AppOptions` type.**
-  The runtime fields `ShowHelp` / `ShowVersion` / `inCompletion` / `genCompletion`
-  are no longer on `GlobalOpts`; each `App` (and standalone command) now owns its
-  own `AppOptions`, so concurrent `App` instances no longer share these. `App.Opts()`
-  still returns the process-level `*GlobalOpts` (so `app.Opts() == gcli.GOpts()` and
-  `app.Opts().Verbose` are unchanged); use the new `App.AppOpts()` for the per-app
-  state. Process-level config (`Verbose` / strict / `EnhanceShort` and the logger)
-  stays in the package singleton, so log-level behavior is unaffected.
 
 ### Added
 
@@ -42,32 +85,6 @@ and this project adheres to semantic-ish versioning.
   reordering stops at a sub-command name, so parent/sub option sets never mix.
   Disable per parser via `gflag.WithReorderArgs(false)` or
   `Config.DisableReorderArgs = true` to restore the strict std-flag order.
-- **Struct-tag binding: more field types + `enum`.** `FromStruct` now binds
-  native `[]string` / `[]int` / `[]bool` (repeatable, e.g. `--name a --name b`),
-  `time.Duration` (e.g. `--ttl 1h30m`), and `map[string]string` (repeatable
-  `--meta k=v`) directly — no need to declare the special `gflag.Strings`/`KVString`
-  types. A new `enum:"a,b,c"` tag key sets the option's value candidates (for
-  completion) and adds membership validation. Internally the struct binder no
-  longer uses `unsafe`.
-- **Generic option binding: `gflag.Opt[T]` / `gflag.BindVar[T]`.** A type-safe
-  generic API that dispatches on the pointer type to the matching binder, so one
-  call replaces the per-type `BoolVar/IntVar/StrVar/...`. Supports the same set
-  of types as struct binding (scalars, `time.Duration`, slices, `map[string]string`,
-  and any `flag.Value`). Example: `gflag.Opt(fs, &name, "name", "n", "tom", "user name")`.
-- **Three-tier option model with shared (inherited) options: `Command.SharedOpts()`**
-  (≈ cobra's `PersistentFlags`). Options bound on `c.SharedOpts()` are inherited by
-  the command **and all of its descendant commands**, sharing the same bound variable
-  (the same `flag.Value`/pointer). This adds a *shared* middle tier between the existing
-  *global* (app) and *local* (per-command) options, so a parent option like
-  `--git-dir` can be written and parsed in any sub-command segment —
-  `app top sub --git-dir /x` and (with arg reorder) `app top sub arg --git-dir /x`
-  both work. Use `c.SharedOpts()` with any binder (`BoolOpt/StrOpt/Opt[T]/FromStruct/...`).
-  A local option of the same name on a sub-command takes priority; `Required` on a
-  shared option is validated at the executing (leaf) command. New gflag primitive
-  `Parser.InheritOptsFrom(src, category...)` re-registers another parser's options by
-  their underlying `flag.Value`. In a sub-command's help, options inherited from
-  ancestors are grouped under an **`Inherited Options`** section (a command's own
-  shared options render with its local options).
 
 ### Changed
 
