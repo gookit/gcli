@@ -1,7 +1,8 @@
 # gcli 与主流 Go CLI 库对比
 
-> 数据核对日期：2026-06-21。各库版本/状态随时间变化，引用了来源链接，过期请以官方仓库为准。
-> gcli 一侧的描述基于当前代码库（v3.6.0）实际能力。
+> 其他库数据核对日期：2026-06-21（引用了来源链接，过期请以官方仓库为准）。
+> gcli 一侧已更新至 **v3.8.0**（将发布）实际能力：v3.7.0 补齐结构体标签类型 + 泛型 API，
+> v3.8.0 补齐共享选项三层模型与命令文档生成，多项原差距已收敛（见下「差距」段）。
 
 ## 一句话定位
 
@@ -13,7 +14,7 @@
 
 | 库 | 最新状态 | 定位 | 选项绑定 | 内置周边(色/交互/进度) | 补全 | 文档生成(man/md) | flag 在 arg 后 |
 |---|---|---|---|---|---|---|---|
-| **gookit/gcli** | v3.6.0，活跃 | CLI 工具箱 | 代码式 **+** 结构体标签(3 规则) | ✅ 全内置 | bash/zsh/pwsh + 动态 | ❌ | ✅ 默认开(本版新增) |
+| **gookit/gcli** | v3.8.0，活跃 | CLI 工具箱 | 代码式 **+** 结构体标签(3 规则) **+** 泛型 | ✅ 全内置 | bash/zsh/pwsh + 动态 | ✅ md+man(v3.8) | ✅ 默认开 |
 | **spf13/cobra** (+pflag) | cobra v1.10.2 / pflag v1.0.10，活跃 | 命令框架(事实标准) | 代码式 | ❌(需自带) | bash/zsh/fish/pwsh | ✅ man+md | ✅ pflag 默认 interspersed |
 | **urfave/cli** | v3.10.0，活跃(v3 GA) | 轻量命令框架 | 声明式 struct 字面量 | ❌ | bash/zsh/fish/pwsh | ✅(v3 移到 `cli-docs/v3`) | ✅ 支持 |
 | **alecthomas/kong** | v1.x，活跃 | 声明式解析器 | **纯结构体标签** | ❌ | ❌(第三方 kongplete) | ❌ | n/a(声明式无序问题) |
@@ -28,11 +29,11 @@
 ## 逐库差异
 
 ### vs spf13/cobra（最该对标的）
-- **采用度碾压**：kubectl、Docker、GitHub CLI、Hugo 等都用它；配套 `pflag`（POSIX/GNU 标准参考实现）。
-- **三层 flag 模型**：`PersistentFlags()`（向整棵子树继承）/ `Flags()`（局部）/ `InheritedFlags()`。gcli 目前只有「进程级全局选项 + 命令局部选项」两层，无「父命令→子命令继承」中间层。
-- **文档生成**：cobra 能生成 man page 与 markdown（`cobra/doc` 子包）；gcli 暂无。
-- **顺序宽容**：pflag 默认 `interspersed=true`，flag 写在 arg 后本就能解析——gcli 本版新增的 args 重排是**追平**这一体验（并额外做了「多级命令只重排叶子段」的精细处理）。
-- **gcli 的强项**：开箱即用的颜色/交互/进度/展示；cobra 原生**没有**结构体标签绑定（要第三方）；gcli 事件系统更细。
+- **采用度碾压**：kubectl、Docker、GitHub CLI、Hugo 等都用它；配套 `pflag`（POSIX/GNU 标准参考实现）。这是 cobra 当前唯一明显的领先项。
+- **三层 flag 模型**：cobra 有 `PersistentFlags()`/`Flags()`/`InheritedFlags()`。gcli **已补齐**（v3.8.0）：`Command.SharedOpts()`（向子树继承，对标 PersistentFlags）+ 局部选项 + App 全局选项；继承选项在 help 里归入 `Inherited Options` 分组。
+- **文档生成**：cobra 有 `cobra/doc`（man+markdown）。gcli **已补齐**（v3.8.0）：`docgen` 包 + builtin `gendoc` 命令，导出 markdown 与 man page。
+- **顺序宽容**：pflag 默认 `interspersed=true`。gcli 的 args 重排（v3.6.0，默认开）已**追平**，并额外做了「多级命令只重排叶子段」的精细处理。
+- **gcli 的强项**：开箱即用的颜色/交互/进度/展示；cobra 原生**没有**结构体标签绑定（要第三方）；gcli 事件系统更细、并有泛型绑定 API。
 
 ### vs urfave/cli（v3）
 - 风格相近（都偏声明式、内置帮助/补全）。**v3 重大重构**：删除 `cli.App` 与 `cli.Context`，统一为 `cli.Command{}` + 标准 `context.Context`，取值改为 `cmd.String("x")`；并移除了对 stdlib `flag` 的依赖。
@@ -42,8 +43,8 @@
 ### vs kong / go-flags / go-arg（结构体标签流派）
 - 这三家是「声明式标签驱动」的代表，类型安全、声明式做到极致；其中 **kong** 是该流派当前最活跃者（kingpin 作者本人转投 kong）。
 - gcli 的 `FromStruct`（named/simple/field 三规则 + 匿名结构体展开）理念一致，但 gcli 是**双模**：既能标签声明、也能代码式 `BoolOpt/StrOpt`，更灵活。
-- **类型丰富度差距**：kong/go-arg 原生支持 slice / map / enum / `time.Duration` / 自定义类型（`TextUnmarshaler` 等），go-arg 连 `time.Duration` 都内置；gcli 的结构体标签自动绑定目前只覆盖基础类型 + 实现了 `flag.Value` 的字段，slice/duration/map 需手动用 gflag 的特殊类型声明。
-- 实现层面：这三家纯反射；gcli 基础类型绑定用了 `unsafe.Pointer`（可优化为安全的 `Addr().Interface()`）。
+- **类型丰富度（v3.7.0 已基本追平）**：gcli 结构体标签现原生支持 `[]string/[]int/[]bool`、`time.Duration`、`map[string]string`，以及 `enum:"a,b,c"` 标签（候选 + 成员校验）；并新增类型安全的泛型 API `gflag.Opt[T]/BindVar[T]`。与 kong/go-arg 在常见类型上对齐（kong 的自定义 `TextUnmarshaler` 映射器机制仍更完备）。
+- 实现层面：这三家纯反射；gcli 结构体绑定 v3.7.0 已**去除 `unsafe`**，改用安全的 `Addr().Interface()`。
 - 它们都**没有**颜色/交互/进度周边。
 
 ### vs kingpin
@@ -60,22 +61,25 @@
 - 不是一个量级：无子命令、单 `-`、不支持结构体绑定、遇到第一个非 flag 即停止。gcli 的 `gflag` 正是包装并扩展了它。
 
 ## gcli 的优势 / 甜区
-- **一站式**：少有 Go 库把 解析 + 颜色 + 交互 + 进度 + 表格 + 补全 打包在一起（类比 Python 的 click + rich）。
-- **双绑定模式** + 三种标签规则 + 匿名结构体展开，覆盖面广。
+- **一站式**：少有 Go 库把 解析 + 颜色 + 交互 + 进度 + 表格 + 补全 + 文档生成 打包在一起（类比 Python 的 click + rich）。
+- **双绑定模式 + 泛型**：代码式 / 结构体标签（3 规则 + 匿名展开 + slice/map/duration/enum）/ 泛型 `Opt[T]`，覆盖面广。
+- **三层选项模型**（v3.8.0）：全局(App) / 共享(`SharedOpts`，向子树继承) / 局部，对标 cobra 三层。
 - **事件/钩子系统**（gevent）：`app.*`/`cmd.*` 全生命周期命名事件 + `.*` 前缀匹配，比 cobra 的 PreRun/PostRun 更细；并提供 `gcli.Evt*` 别名免 import。
-- **解析人体工学**：args 重排（默认开）、EnhanceShort POSIX 合并（opt-in）、相似命令提示、Required/Validator/Choices、命令与选项的 Category 分组、命令中间件 `Use(...)`、单命令独立运行。
+- **解析人体工学**：args 重排（默认开）、EnhanceShort POSIX 合并（opt-in）、相似命令提示、Required/Validator/Choices、Category 分组、命令中间件 `Use(...)`、单命令独立运行。
+- **文档生成**（v3.8.0）：`docgen` + `gendoc` 导出 markdown / man page。
 - **中英双语文档**，gookit 生态一致性好。
 
 **适合**：想快速做出**彩色、交互式、少拼库**的 CLI，且偏好中文友好生态的团队。
 
 ## gcli 的差距 / 不适合
-1. **采用度/生态**：cobra 体量碾压，插件、教程、招聘熟悉度都更高。
-2. **文档生成**：缺 man page / markdown 命令文档生成（cobra、go-flags 有）。
-3. **POSIX 默认性**：cobra+pflag 的 GNU 行为「默认即标准」；gcli 不少 POSIX 特性是 opt-in（EnhanceShort）。
-4. **类型安全 / 类型丰富度**：结构体绑定用了 `unsafe`，且 slice/map/duration/enum 自动绑定不如 kong/go-arg 完整。
-5. **flag 继承模型**：只有「全局 + 局部」两层，缺 cobra 式「父命令持久选项→子命令继承」；且全局 `gOpts` 为进程级单例（多 App 共享）。
+> v3.7.0/v3.8.0 已收敛原差距 #2(文档生成)、#4(类型丰富度/unsafe)、#5(flag 继承模型)；当前主要剩下：
 
-**不适合**：需要 man/md 文档自动化、强类型声明式解析、或深度依赖社区生态/标准 POSIX 默认行为的项目 → 选 cobra 或 kong 更稳。
+1. **采用度/生态**（主要差距）：cobra 体量碾压，插件、教程、招聘熟悉度都更高——这是短期难追的项。
+2. **POSIX 默认性**：cobra+pflag 的 GNU 行为「默认即标准」；gcli 不少 POSIX 特性是 opt-in（EnhanceShort）。
+3. **补全 shell 覆盖**：gcli 支持 bash/zsh/pwsh（含动态），暂无 fish（cobra/urfave 有）。
+4. **细节**：man 文档的 Examples 暂折叠为单行；kong 的自定义类型映射器机制更完备。
+
+**不适合**：深度依赖社区生态/标准 POSIX 默认行为、或需要最大社区背书的项目 → cobra 更稳。强类型纯声明式解析（无需周边）→ kong 更轻。
 
 ## 选型建议
 - 要**生态最稳、团队熟、文档/补全/man 齐全** → **cobra**。
