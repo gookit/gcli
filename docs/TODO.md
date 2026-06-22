@@ -5,8 +5,7 @@
 - [x] **`help COMMAND` 失效**：`help` 未注册为命令，`findCommandName` 返回 `NotFound`，
   首次输出「unknown input command help」。已在 `findCommandName` 将 `help` 识别为 `Founded`。
 - [x] **`findSimilarCmd` 污染命令注册表**：`CmdNameMap()` 返回真实 `cmdNames` map，
-  `names["help"]=4` 直接写进注册表（导致上面的测试靠一次 warmup 污染才"碰巧"通过）。
-  已改为复制 map 后再加 `help`。
+  `names["help"]=4` 直接写进注册表（导致上面的测试靠一次 warmup 污染才"碰巧"通过）。已改为复制 map 后再加 `help`。
 - [x] **`TestApp_showCommandHelp` 断言失效**：改为每场景全新 app + `StrContains`，
   并验证「去掉 help 修复则测试 FAIL」，确保断言真正生效；新增防污染回归测试。
 - [x] 预存 gofmt 漂移：`gflag/gflag.go`、`gflag/util.go`、`builtin/tcpproxy/tcp_proxy.go`。
@@ -22,8 +21,6 @@
 
 ## 功能规划（TODO 扫描后立项，待实施）
 
-> 扫描明细见 `tmp/todo-scan.md`（工作产物，未入库）。
-
 - [x] A：清理本轮已实现功能的陈旧 TODO 注释（命令/选项 Category）
 - [x] **B1** 内置补全选项 — [plans/feat-B1-completion.md](plans/feat-B1-completion.md)
   - [x] 静态 `--gen-completion`（commit 3a76280）
@@ -31,13 +28,13 @@
   - [x] 脚本委托动态(默认瘦脚本) + 静默模式 + genac --static opt-in（子阶段 3）
   - [x] PowerShell(pwsh) 动态补全（`--gen-completion pwsh`，`.ps1`；静态 pwsh 不支持）
   - [x] 选项值候选 `CliOpt.Choices`（子阶段 4，commit 75bc031）
-  - [ ] 收尾(按需)：bash/zsh/pwsh 实际 Tab 交互的人工验证；隐藏命令过滤
+  - [x] 收尾(按需)：bash/zsh/pwsh 实际 Tab 交互的人工验证；隐藏命令过滤
 - [x] **B2** 命令中间件 — [plans/feat-B2-middleware.md](plans/feat-B2-middleware.md)
   - [x] 命令级 `Command.Use()`（commit 7cec911）
   - [x] 修 doExecute 内联 recover(no-op) 为 defer，真正捕获 panic（commit 467d883）
   - [x] App 级 `App.Use()`（commit 66502f7）
-- [ ] **B4+B5** POSIX 短选项增强 — [plans/feat-B4-B5-posix-options.md](plans/feat-B4-B5-posix-options.md)
-- [ ] **B6+B7** 结构体标签增强 + 声明式交互收集 — [plans/feat-B6-B7-struct-tag-question.md](plans/feat-B6-B7-struct-tag-question.md)
+- [x] **B4+B5** POSIX 短选项增强 — [plans/feat-B4-B5-posix-options.md](plans/feat-B4-B5-posix-options.md)
+- [x] **B6+B7** 结构体标签增强 + 声明式交互收集 — [plans/feat-B6-B7-struct-tag-question.md](plans/feat-B6-B7-struct-tag-question.md)
 
 ### 其余 TODO（低优先，按需）
 
@@ -49,6 +46,7 @@
 
 > 背景与依据见 [compare-with-others.zh-CN.md](compare-with-others.zh-CN.md) 的「gcli 的差距」。
 
+- [ ] 支持 man page / markdown 命令文档生成
 - [ ] **D1 结构体绑定：去 unsafe + 类型丰富度**（增量、低风险，优先）
   - [ ] `gflag/parser.go` `fromStructValue` 基础类型分支去掉 `unsafe.Pointer`/`UnsafeAddr()`，
     改用安全的 `fv.Addr().Interface().(*T)`（其上方 `flag.Value` 分支已是此写法，行为不变）
