@@ -28,7 +28,7 @@ func newTestApp() *gcli.App {
 		Name:     "demo",
 		Desc:     "this is a demo command for test",
 		Help:     "long help message for demo command",
-		Examples: "{$binName} demo --name tom arg0 arg1",
+		Examples: "<cyan>{$fullCmd} --name tom arg0 arg1</> # run the demo",
 		Subs:     []*gcli.Command{sub},
 		Config: func(c *gcli.Command) {
 			var name string
@@ -62,6 +62,10 @@ func TestCmdMarkdown(t *testing.T) {
 	assert.StrContains(t, md, "## Arguments")
 	assert.StrContains(t, md, "others...")
 	assert.StrContains(t, md, "## Examples")
+	// Examples: 颜色标签被清除, 内置变量 {$fullCmd} 被渲染
+	assert.NotContains(t, md, "<cyan>")
+	assert.NotContains(t, md, "{$fullCmd}")
+	assert.StrContains(t, md, "demo --name tom arg0 arg1")
 	assert.StrContains(t, md, "## SubCommands")
 	// 子命令链接文件名应与 tree 命名规则一致
 	assert.StrContains(t, md, "demo_child.md")
@@ -74,6 +78,8 @@ func TestAppMarkdown(t *testing.T) {
 
 	assert.StrContains(t, md, "# demoapp")
 	assert.StrContains(t, md, "the demo app for docgen test")
+	// 应用版本信息
+	assert.StrContains(t, md, "**Version**")
 	assert.StrContains(t, md, "## Commands")
 	assert.StrContains(t, md, "demo.md")
 }

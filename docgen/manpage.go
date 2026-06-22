@@ -36,7 +36,7 @@ func CmdMan(c *gcli.Command) string {
 
 	// NAME
 	buf.WriteString(".SH NAME\n")
-	buf.WriteString(roffLine(c.Path()) + " \\- " + roffLine(c.Desc) + "\n")
+	buf.WriteString(roffLine(c.Path()) + " \\- " + roffLine(renderText(c, c.Desc)) + "\n")
 
 	// SYNOPSIS
 	buf.WriteString(".SH SYNOPSIS\n")
@@ -45,7 +45,7 @@ func CmdMan(c *gcli.Command) string {
 	// DESCRIPTION(长帮助)
 	if c.Help != "" {
 		buf.WriteString(".SH DESCRIPTION\n")
-		buf.WriteString(roffLine(c.Help) + "\n")
+		buf.WriteString(roffLine(renderText(c, c.Help)) + "\n")
 	}
 
 	// OPTIONS(跳过 Hidden)
@@ -60,7 +60,7 @@ func CmdMan(c *gcli.Command) string {
 			buf.WriteString(".TP\n")
 			// 选项名转义, eg: --name -> \-\-name
 			buf.WriteString("\\fB" + escapeRoff(optHelpName(opt)) + "\\fR\n")
-			buf.WriteString(roffLine(opt.Desc) + "\n")
+			buf.WriteString(roffLine(renderText(c, opt.Desc)) + "\n")
 		}
 	}
 
@@ -75,14 +75,14 @@ func CmdMan(c *gcli.Command) string {
 			}
 			buf.WriteString(".TP\n")
 			buf.WriteString("\\fB" + escapeRoff(argName) + "\\fR\n")
-			buf.WriteString(roffLine(arg.Desc) + "\n")
+			buf.WriteString(roffLine(renderText(c, arg.Desc)) + "\n")
 		}
 	}
 
 	// EXAMPLES
 	if c.Examples != "" {
 		buf.WriteString(".SH EXAMPLES\n")
-		buf.WriteString(roffLine(c.Examples) + "\n")
+		buf.WriteString(roffLine(renderText(c, c.Examples)) + "\n")
 	}
 
 	return buf.String()
