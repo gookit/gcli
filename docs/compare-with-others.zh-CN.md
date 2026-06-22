@@ -77,7 +77,7 @@
 1. **采用度/生态**（主要差距）：cobra 体量碾压，插件、教程、招聘熟悉度都更高——这是短期难追的项。
 2. **POSIX 默认性**：cobra+pflag 的 GNU 行为「默认即标准」；gcli 不少 POSIX 特性是 opt-in（EnhanceShort）。
 3. **补全 shell 覆盖**：gcli 支持 bash/zsh/pwsh（含动态），暂无 fish（cobra/urfave 有）。
-4. **细节**：man 文档的 Examples 暂折叠为单行；kong 的自定义类型映射器机制更完备。
+4. **细节**：kong 的自定义类型映射器机制更完备。
 
 **不适合**：深度依赖社区生态/标准 POSIX 默认行为、或需要最大社区背书的项目 → cobra 更稳。强类型纯声明式解析（无需周边）→ kong 更轻。
 

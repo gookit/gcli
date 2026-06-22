@@ -28,7 +28,8 @@ func newTestApp() *gcli.App {
 		Name:     "demo",
 		Desc:     "this is a demo command for test",
 		Help:     "long help message for demo command",
-		Examples: "<cyan>{$fullCmd} --name tom arg0 arg1</> # run the demo",
+		Examples: "<cyan>{$fullCmd} --name tom arg0 arg1</> # run the demo\n" +
+			"<cyan>{$fullCmd} --name tom -v arg0</> # verbose run",
 		Subs:     []*gcli.Command{sub},
 		Config: func(c *gcli.Command) {
 			var name string
@@ -66,6 +67,8 @@ func TestCmdMarkdown(t *testing.T) {
 	assert.NotContains(t, md, "<cyan>")
 	assert.NotContains(t, md, "{$fullCmd}")
 	assert.StrContains(t, md, "demo --name tom arg0 arg1")
+	// Examples: 多行保留(代码块内两行示例均在)
+	assert.StrContains(t, md, "demo --name tom -v arg0")
 	assert.StrContains(t, md, "## SubCommands")
 	// 子命令链接文件名应与 tree 命名规则一致
 	assert.StrContains(t, md, "demo_child.md")
@@ -100,6 +103,11 @@ func TestCmdMan(t *testing.T) {
 	assert.StrContains(t, man, ".SH EXAMPLES")
 	// --name 需被转义为 \-\-name
 	assert.StrContains(t, man, "\\-\\-name")
+	// Examples 多行保留: 用 .nf/.fi 区块逐行输出, 两行示例均在且未被折叠成一行
+	assert.StrContains(t, man, ".nf")
+	assert.StrContains(t, man, ".fi")
+	assert.StrContains(t, man, "demo \\-\\-name tom arg0 arg1 # run the demo")
+	assert.StrContains(t, man, "demo \\-\\-name tom \\-v arg0 # verbose run")
 }
 
 func TestManTree(t *testing.T) {

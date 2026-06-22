@@ -17,14 +17,23 @@ func escapeRoff(s string) string {
 	return s
 }
 
-// roffLine 转义并输出一行文本。
-// roff 中行首的 `.` 与 `'` 是控制字符, 需用 `\&` 零宽前缀保护。
-func roffLine(s string) string {
-	s = escapeRoff(cleanLine(s))
+// protectLeading 保护行首控制字符: roff 中行首的 `.` 与 `'` 是控制字符,
+// 需用 `\&` 零宽前缀保护, 否则该行会被当作宏调用。
+func protectLeading(s string) string {
 	if s != "" && (s[0] == '.' || s[0] == '\'') {
-		s = "\\&" + s
+		return "\\&" + s
 	}
 	return s
+}
+
+// roffLine 转义并输出一行文本(折叠内部换行为空格, 用于单行场景)。
+func roffLine(s string) string {
+	return protectLeading(escapeRoff(cleanLine(s)))
+}
+
+// roffRawLine 转义单行文本但不折叠换行, 用于 .nf/.fi 区块内逐行输出以保留原始换行。
+func roffRawLine(s string) string {
+	return protectLeading(escapeRoff(strings.TrimRight(s, "\r")))
 }
 
 // CmdMan 渲染单个命令为 man page(roff 格式)。
@@ -79,10 +88,14 @@ func CmdMan(c *gcli.Command) string {
 		}
 	}
 
-	// EXAMPLES
+	// EXAMPLES(用 .nf/.fi 关闭填充并逐行输出, 保留多行原样)
 	if c.Examples != "" {
 		buf.WriteString(".SH EXAMPLES\n")
-		buf.WriteString(roffLine(renderText(c, c.Examples)) + "\n")
+		buf.WriteString(".nf\n")
+		for _, line := range strings.Split(strings.Trim(renderText(c, c.Examples), "\n"), "\n") {
+			buf.WriteString(roffRawLine(line) + "\n")
+		}
+		buf.WriteString(".fi\n")
 	}
 
 	return buf.String()
