@@ -46,6 +46,18 @@ and this project adheres to semantic-ish versioning.
   call replaces the per-type `BoolVar/IntVar/StrVar/...`. Supports the same set
   of types as struct binding (scalars, `time.Duration`, slices, `map[string]string`,
   and any `flag.Value`). Example: `gflag.Opt(fs, &name, "name", "n", "tom", "user name")`.
+- **Three-tier option model with shared (inherited) options: `Command.SharedOpts()`**
+  (≈ cobra's `PersistentFlags`). Options bound on `c.SharedOpts()` are inherited by
+  the command **and all of its descendant commands**, sharing the same bound variable
+  (the same `flag.Value`/pointer). This adds a *shared* middle tier between the existing
+  *global* (app) and *local* (per-command) options, so a parent option like
+  `--git-dir` can be written and parsed in any sub-command segment —
+  `app top sub --git-dir /x` and (with arg reorder) `app top sub arg --git-dir /x`
+  both work. Use `c.SharedOpts()` with any binder (`BoolOpt/StrOpt/Opt[T]/FromStruct/...`).
+  A local option of the same name on a sub-command takes priority; `Required` on a
+  shared option is validated at the executing (leaf) command. New gflag primitive
+  `Parser.InheritOptsFrom(src)` re-registers another parser's options by their
+  underlying `flag.Value`.
 
 ### Changed
 

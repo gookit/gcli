@@ -29,6 +29,7 @@ The english introduction please ses **[README](README.md)**
   - `enum:"a,b,c"` 标签：设置取值候选(补全)并做成员校验
   - 选项值为空时支持通过 `Question` 声明式交互收集输入
 - 支持添加多级命令，每级命令均支持绑定自己的选项
+  - 共享(继承)选项 `Command.SharedOpts()`（对标 cobra `PersistentFlags`）：在其上绑定的选项会被该命令及其所有子孙命令继承（共享同一变量），例如父命令的 `--git-dir` 可在任意子命令段使用
 - `option/flag` 快速方便的添加选项绑定(`--long`)，支持添加多个短选项（eg: `-s`）
   - 选项支持设置 `Required`，表明为必须的选项参数
   - 选项支持设置 `Validator`，可以自定义验证输入参数

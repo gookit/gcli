@@ -30,6 +30,7 @@ Including running commands, color styles, data display, progress display, intera
     - `enum:"a,b,c"` tag for value candidates(completion) + membership validation
     - support interactive value collect by `Question` when the option value is empty
 - Support for adding multi-level commands, each level of command supports binding its own options
+  - Shared (inherited) options via `Command.SharedOpts()` (≈ cobra `PersistentFlags`): options bound here are inherited by the command and all its sub-commands (sharing the same variable), e.g. a parent `--git-dir` usable in any sub-command segment
 - `option/flag` - support option binding `--long`, support for adding short options(`-s`)
   - POSIX-style short flag combining (`-ab` = `-a -b`): requires enabling `EnhanceShort` (gflag `Config`) or the command strict mode `SetStrictMode(true)`. Only combinations where **all** members are bool short options are split; `EnhanceShort=2` additionally supports attached-value form `-Ostdout` = `-O stdout`. Disabled by default for compatibility.
   - Support setting `Required`, indicating a required option parameter
