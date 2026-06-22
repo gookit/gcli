@@ -78,6 +78,37 @@ func TestAppMarkdown(t *testing.T) {
 	assert.StrContains(t, md, "demo.md")
 }
 
+func TestCmdMan(t *testing.T) {
+	app := newTestApp()
+	c := app.GetCommand("demo")
+	assert.NotNil(t, c)
+
+	man := docgen.CmdMan(c)
+
+	assert.StrContains(t, man, ".TH")
+	assert.StrContains(t, man, ".SH NAME")
+	assert.StrContains(t, man, ".SH SYNOPSIS")
+	assert.StrContains(t, man, ".SH DESCRIPTION")
+	assert.StrContains(t, man, ".SH OPTIONS")
+	assert.StrContains(t, man, ".SH ARGUMENTS")
+	assert.StrContains(t, man, ".SH EXAMPLES")
+	// --name 需被转义为 \-\-name
+	assert.StrContains(t, man, "\\-\\-name")
+}
+
+func TestManTree(t *testing.T) {
+	app := newTestApp()
+	dir := t.TempDir()
+
+	err := docgen.ManTree(app, dir)
+	assert.NoErr(t, err)
+
+	_, err = os.Stat(filepath.Join(dir, "demo.1"))
+	assert.NoErr(t, err)
+	_, err = os.Stat(filepath.Join(dir, "demo_child.1"))
+	assert.NoErr(t, err)
+}
+
 func TestMarkdownTree(t *testing.T) {
 	app := newTestApp()
 	dir := t.TempDir()
