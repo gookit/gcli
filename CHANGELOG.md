@@ -41,6 +41,16 @@ and this project adheres to semantic-ish versioning.
   `./cliapp gendoc -f md|man -o ./docs` to export docs. Adds a `gflag.CliOpt.TypeName()`
   accessor for the option type name.
 
+### Fixed
+
+- **`FromStruct` now expands anonymous embedded structs of an *unexported type*.**
+  The unexported-field-name skip used to run *before* the anonymous-field check, so
+  an embedded field whose **type name is lowercase** (e.g. `baseFlags`, `commonOpts`
+  — as used by the `struct-flag` demo and the docs) was silently dropped and its
+  options were never generated. The anonymous check now runs first; the exported
+  inner fields of such an embed are reflectable/addressable and bind correctly. This
+  is independent of the tag rule (`TagRuleNamed` / `TagRuleSimple` / `TagRuleField`).
+
 [v3.8.0]: https://github.com/gookit/gcli/compare/v3.7.0...v3.8.0
 
 ## [v3.7.0] - 2026-06-22

@@ -83,6 +83,49 @@ func TestFlags_FromStruct_enum(t *testing.T) {
 	})
 }
 
+// 匿名内嵌*未导出类型*也必须被展开 (回归: 旧实现里未导出字段名跳过会在展开前把它丢掉,
+// 导致 _examples 的 baseFlags / 文档里的 commonOpts 等小写内嵌的选项实际未生成)。
+func TestFlags_FromStruct_anonymousUnexportedEmbed(t *testing.T) {
+	type baseNamed struct {
+		Verbose bool `flag:"name=verbose;shorts=v;desc=verbose"`
+	}
+	type baseField struct {
+		Verbose bool `flag:"v" desc:"verbose"`
+	}
+
+	t.Run("TagRuleNamed expands unexported embed", func(t *testing.T) {
+		type opts struct {
+			baseNamed
+			Name string `flag:"name=name;shorts=n;desc=name"`
+		}
+		o := &opts{}
+		fs := gflag.New("test")
+		assert.NoErr(t, fs.FromStruct(o))
+		assert.True(t, fs.HasOption("verbose"))
+		assert.True(t, fs.HasOption("name"))
+
+		assert.NoErr(t, fs.Parse([]string{"-v", "--name", "tom"}))
+		assert.True(t, o.Verbose)
+		assert.Eq(t, "tom", o.Name)
+	})
+
+	t.Run("TagRuleField expands unexported embed", func(t *testing.T) {
+		type opts struct {
+			baseField
+			UserName string `flag:"u" desc:"user name"`
+		}
+		o := &opts{}
+		fs := gflag.New("test")
+		assert.NoErr(t, fs.FromStruct(o, gflag.TagRuleField))
+		assert.True(t, fs.HasOption("verbose"))
+		assert.True(t, fs.HasOption("user-name"))
+
+		assert.NoErr(t, fs.Parse([]string{"-v", "-u", "tom"}))
+		assert.True(t, o.Verbose)
+		assert.Eq(t, "tom", o.UserName)
+	})
+}
+
 // unsupported slice elem type reports a clear error, not a panic
 func TestFlags_FromStruct_unsupportedSlice(t *testing.T) {
 	type opts struct {

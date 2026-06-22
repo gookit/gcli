@@ -322,12 +322,11 @@ func (p *Parser) fromStructValue(v reflect.Value, tagName string) error {
 	for i := 0; i < t.NumField(); i++ {
 		sf := t.Field(i)
 		name := sf.Name
-		// skip cannot export field
-		if name[0] >= 'a' && name[0] <= 'z' {
-			continue
-		}
 
-		// support anonymous struct field: recursively expand its inner fields
+		// 支持匿名嵌套结构体: 递归展开其内部字段。
+		// 关键: 必须先于下面的"未导出字段名跳过"判断, 否则内嵌的是*未导出类型*
+		// (如 baseFlags)时, 其字段名首字母小写会被误跳过、永远不展开。
+		// 经未导出内嵌访问的导出内部字段仍可反射取址绑定(CanInterface/CanAddr 均为 true)。
 		if sf.Anonymous {
 			aft := sf.Type
 			afv := v.Field(i)
@@ -344,6 +343,11 @@ func (p *Parser) fromStructValue(v reflect.Value, tagName string) error {
 				}
 			}
 			continue // anonymous field itself is not a single option
+		}
+
+		// skip cannot export (non-anonymous) field
+		if name[0] >= 'a' && name[0] <= 'z' {
+			continue
 		}
 
 		// field rule: use field name as option name, read meta from independent tag keys.
