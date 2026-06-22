@@ -48,11 +48,11 @@
 
 - [ ] 支持 man page / markdown 命令文档生成
 - [ ] **D1 结构体绑定：去 unsafe + 类型丰富度**（增量、低风险，优先）— [plans/feat-D1-struct-binding.md](plans/feat-D1-struct-binding.md)
-  - [ ] `gflag/parser.go` `fromStructValue` 基础类型分支去掉 `unsafe.Pointer`/`UnsafeAddr()`，
-    改用安全的 `fv.Addr().Interface().(*T)`（其上方 `flag.Value` 分支已是此写法，行为不变）
-  - [ ] 扩充标签自动绑定的类型：`[]string/[]int` → 复用 `gflag.Strings/Ints`，
-    `time.Duration` → `FlagTypeDur`，`map[string]string` → `KVString`；做「kind→绑定器」注册表并支持自定义类型
-  - [ ] 标签打通 `enum`：复用已有 `CliOpt.Choices` 做声明式校验
+  - [x] `gflag/parser.go` `fromStructValue` 基础类型分支去掉 `unsafe.Pointer`/`UnsafeAddr()`，
+    改用安全的 `fv.Addr().Interface().(*T)`（commit 7830e0e）
+  - [x] 扩充标签自动绑定的类型：原生 `[]string/[]int/[]bool` → `cflag.Strings/Ints/Booleans`，
+    `time.Duration` → `DurationVar`，`map[string]string` → `mapStrValue` 适配器（commit a38d5d5/633e0ff）
+  - [x] 标签打通 `enum`：`enum:"a,b,c"` → `CliOpt.Choices` + 成员校验（commit cd33f51）
   - [ ] （下一步）泛型 API：`gflag.Opt[T]/BindVar[T]`，类型安全、可扩展，老 API 保留
   - 对标：kong / go-arg / go-flags 原生支持 slice/map/enum/Duration（go-arg 连 Duration 都内置）
 

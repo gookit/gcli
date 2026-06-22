@@ -34,6 +34,13 @@ and this project adheres to semantic-ish versioning.
   reordering stops at a sub-command name, so parent/sub option sets never mix.
   Disable per parser via `gflag.WithReorderArgs(false)` or
   `Config.DisableReorderArgs = true` to restore the strict std-flag order.
+- **Struct-tag binding: more field types + `enum`.** `FromStruct` now binds
+  native `[]string` / `[]int` / `[]bool` (repeatable, e.g. `--name a --name b`),
+  `time.Duration` (e.g. `--ttl 1h30m`), and `map[string]string` (repeatable
+  `--meta k=v`) directly — no need to declare the special `gflag.Strings`/`KVString`
+  types. A new `enum:"a,b,c"` tag key sets the option's value candidates (for
+  completion) and adds membership validation. Internally the struct binder no
+  longer uses `unsafe`.
 
 ### Changed
 

@@ -25,6 +25,8 @@ The english introduction please ses **[README](README.md)**
 - 支持从结构体绑定命令选项
   - 示例 `flag:"name=int0;shorts=i;required=true;desc=int option message"`
   - 三种标签规则：`named`(默认) / `simple` / `field`(用字段名做选项名 + 自动展开匿名嵌套结构体)
+  - 字段类型：`bool/int/uint/float/string`、原生 `[]string/[]int/[]bool`(可重复)、`time.Duration`、`map[string]string`(可重复 `--meta k=v`)
+  - `enum:"a,b,c"` 标签：设置取值候选(补全)并做成员校验
   - 选项值为空时支持通过 `Question` 声明式交互收集输入
 - 支持添加多级命令，每级命令均支持绑定自己的选项
 - `option/flag` 快速方便的添加选项绑定(`--long`)，支持添加多个短选项（eg: `-s`）

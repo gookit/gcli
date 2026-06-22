@@ -26,6 +26,8 @@ Including running commands, color styles, data display, progress display, intera
 - Support binding command options from structure
     - example `flag:"name=int0;shorts=i;required=true;desc=int option message"`
     - three tag rules: `named`(default) / `simple` / `field`(use field name + auto expand anonymous structs)
+    - field types: `bool/int/uint/float/string`, native `[]string/[]int/[]bool` (repeatable), `time.Duration`, `map[string]string` (repeatable `--meta k=v`)
+    - `enum:"a,b,c"` tag for value candidates(completion) + membership validation
     - support interactive value collect by `Question` when the option value is empty
 - Support for adding multi-level commands, each level of command supports binding its own options
 - `option/flag` - support option binding `--long`, support for adding short options(`-s`)
