@@ -81,6 +81,7 @@ func main() {
 	)
 
 	app.Add(builtin.GenEmojiMap)
+	app.Add(builtin.GenDoc())
 	// app.Add(builtin.GenAutoComplete())
 
 	// app.Add(filewatcher.FileWatcher(nil))
