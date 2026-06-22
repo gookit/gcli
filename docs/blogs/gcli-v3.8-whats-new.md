@@ -87,6 +87,11 @@ Under the hood, the struct binder **no longer uses `unsafe`** — it now resolve
 `reflect.Value.Addr().Interface()`, closing the last unsafe path in struct binding. Try the
 [`struct-types`](https://github.com/gookit/gcli/tree/master/_examples/cmd/structtypes_demo.go) demo.
 
+> **Anonymous embedded structs expand under any rule.** Embedding a struct (to reuse a shared option set) works with
+> all three tag rules — `named` / `simple` / `field` — not just `field`; each inner field is read using the active
+> rule. v3.8 also fixes expansion for embedded *unexported* types (a lowercase type name like `commonOpts`), which were
+> previously skipped.
+
 ## 3. A type-safe generic API
 
 The classic per-type binders (`BoolVar`, `IntVar`, `StrVar`, `Float64Var`, ...) still work, but v3.7 adds a single

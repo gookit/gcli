@@ -32,7 +32,7 @@ Rich in functions and easy to use. Highlights grouped by area:
 - Generic, type-safe binders: `gflag.Opt[T]` / `gflag.BindVar[T]` — one call covers
   `bool/int/uint/float/string`, `time.Duration`, `[]string/[]int/[]bool`, `map[string]string`
 - Struct-tag binding via `FromStruct`:
-    - three tag rules: `named`(default) / `simple` / `field`(field name + auto-expand anonymous structs)
+    - three tag rules: `named`(default) / `simple` / `field`(field name as option name); anonymous embedded structs auto-expand under any rule
     - field types: `bool/int/uint/float/string`, native `[]string/[]int/[]bool` (repeatable), `time.Duration`, `map[string]string` (repeatable `--meta k=v`)
     - `enum:"a,b,c"` tag for value candidates(completion) + membership validation
 - `Required` / `Validator` / `Choices` per option; option `Category` for grouped help display
@@ -243,7 +243,11 @@ func main() {
 - `gcli.TagRuleNamed` (default): `flag:"name=int0;shorts=i;required=true;desc=message"`
 - `gcli.TagRuleSimple`: `flag:"desc;required;default;shorts"`
 - `gcli.TagRuleField`: use the **field name** (SnakeCase) as the option name, read meta
-  from independent tag keys. **Anonymous nested structs are expanded** automatically.
+  from independent tag keys.
+
+> **Anonymous embedded structs are expanded automatically under all three rules** — each
+> inner field is read using whichever rule is active. This also works for embedded
+> *unexported* types (e.g. `commonOpts` below).
 
 ```go
 type commonOpts struct {

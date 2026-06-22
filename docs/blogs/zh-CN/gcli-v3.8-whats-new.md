@@ -82,6 +82,10 @@ myapp deploy -n a -n b -p 80 -p 443 --ttl 1h30m -m k1=v1 -m k2=v2 -l go
 闭合了结构体绑定里最后一处 unsafe 路径。可试用
 [`struct-types`](https://github.com/gookit/gcli/tree/master/_examples/cmd/structtypes_demo.go) 示例。
 
+> **匿名嵌套结构体在任意规则下都会展开。** 通过内嵌结构体复用一组共享选项，对 `named` / `simple` / `field`
+> 三种标签规则都生效，并非 `field` 专属；内部字段按当前生效的规则读取。v3.8 还修复了内嵌*未导出*类型
+> （类型名小写，如 `commonOpts`）此前被跳过、不展开的问题。
+
 ## 3. 类型安全的泛型 API
 
 经典的逐类型绑定器（`BoolVar`、`IntVar`、`StrVar`、`Float64Var` ...）依然可用，但 v3.7 新增了一个泛型入口，
