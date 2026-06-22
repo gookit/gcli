@@ -153,7 +153,11 @@ func NewArgument(name, desc string, requiredAndArrayed ...bool) *Argument {
  * global options
  *************************************************************************/
 
-// GlobalOpts global flag options
+// GlobalOpts process-level config options. shared across all App instances via
+// the package singleton gOpts; set by gcli.SetVerbose / SetStrictMode / SetEnhanceShort.
+//
+// NOTE: per-app parse/run state (help/version/completion) lives in AppOptions, so
+// multiple App instances in one process don't share it. see App.AppOpts().
 type GlobalOpts struct {
 	// Disable auto binding global options
 	Disable bool
@@ -162,10 +166,6 @@ type GlobalOpts struct {
 	//
 	// can set by env: GCLI_VERBOSE=debug. see VerbEnvName
 	Verbose VerbLevel
-	// ShowHelp show help information, then exit.
-	ShowHelp bool
-	// ShowVersion show version information, then exit.
-	ShowVersion bool
 	// NoProgress dont display progress. env: NO_PROGRESS
 	NoProgress bool
 	// NoInteractive close interactive confirm. env: NO_INTERACTIVE
@@ -182,13 +182,25 @@ type GlobalOpts struct {
 	// enhanceShort global POSIX short-option enhance level, applied to every command
 	// that does not set its own Config.EnhanceShort. see EnhanceShortNone/Merge/Attach
 	enhanceShort uint8
-	// TODO dynamic command auto completion mode.
+}
+
+// AppOptions per-app(or standalone command) parse & run state. Each App owns its
+// own instance, so concurrent App instances in one process don't share these.
+type AppOptions struct {
+	// ShowHelp show help information, then exit.
+	ShowHelp bool
+	// ShowVersion show version information, then exit.
+	ShowVersion bool
+	// inCompletion dynamic command auto completion mode.
 	// eg "./cli --in-completion [COMMAND --OPT ARG]"
 	inCompletion bool
-	// TODO direct generate shell auto completion scripts, then exit.
+	// genCompletion direct generate shell auto completion scripts, then exit.
 	// eg "./cli --gen-completion bash|zsh|pwsh"
 	genCompletion string
 }
+
+// newAppOptions create a new per-app options instance.
+func newAppOptions() *AppOptions { return &AppOptions{} }
 
 // SetVerbose value
 func (g *GlobalOpts) SetVerbose(verbose VerbLevel) {
@@ -208,11 +220,13 @@ func (g *GlobalOpts) SetEnhanceShort(level uint8) {
 // SetDisable global options
 func (g *GlobalOpts) SetDisable() { g.Disable = true }
 
-func (g *GlobalOpts) bindingOpts(fs *gflag.Parser) {
-	fs.BoolOpt(&g.ShowHelp, "help", "h", false, "Display the help information")
+// bindingOpts binds the per-app --help/-h (and --version/-V unless globally
+// disabled) onto the given parser. g provides the process-level Disable toggle.
+func (o *AppOptions) bindingOpts(fs *gflag.Parser, g *GlobalOpts) {
+	fs.BoolOpt(&o.ShowHelp, "help", "h", false, "Display the help information")
 	fs.AfterParse = func(_ *gflag.Parser) error {
 		// return ErrHelp on ShowHelp=true
-		if g.ShowHelp {
+		if o.ShowHelp {
 			return flag.ErrHelp
 		}
 		return nil
@@ -227,7 +241,7 @@ func (g *GlobalOpts) bindingOpts(fs *gflag.Parser) {
 	// 日志级别请通过环境变量 GCLI_VERBOSE 控制(见 VerbEnvName)，或调用 gcli.SetVerbose()。
 	// fs.BoolOpt(&g.NoColor, "no-color", "nc", g.NoColor, "Disable color when outputting message")
 	// fs.BoolOpt(&g.NoProgress, "no-progress", "np", g.NoProgress, "Disable display progress message")
-	fs.BoolOpt(&g.ShowVersion, "version", "V", false, "Display app version information")
+	fs.BoolOpt(&o.ShowVersion, "version", "V", false, "Display app version information")
 	// fs.BoolOpt(&g.NoInteractive, "no-interactive", "ni", g.NoInteractive, "Disable interactive confirmation operation")
 	// fs.BoolOpt(&g.inShell, "ishell", "", false, "Run in an interactive shell environment(`TODO`)")
 }

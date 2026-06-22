@@ -129,6 +129,8 @@ type Command struct {
 	standalone bool
 	// global option binding on standalone. deny error on repeat run.
 	gOptBounded bool
+	// runOpts is the command's own parse state (help/version) when run standalone.
+	runOpts *AppOptions
 
 	// sharedFs holds the command's shared options (≈ cobra PersistentFlags).
 	// 共享选项的定义来源: 本命令及其所有子孙命令都会继承这些选项。lazy 创建于 SharedOpts()。
@@ -194,6 +196,14 @@ func (c *Command) AttachTo(app *App) { app.AddCommand(c) }
 
 // InheritedOptsCategory 是继承(共享)选项在命令 help 中的分组标题。
 const InheritedOptsCategory = "Inherited Options"
+
+// appOpts returns the command's own parse state (used in standalone mode), lazy.
+func (c *Command) appOpts() *AppOptions {
+	if c.runOpts == nil {
+		c.runOpts = newAppOptions()
+	}
+	return c.runOpts
+}
 
 // SharedOpts 返回命令专属的共享选项持有器(惰性创建), 对标 cobra 的 PersistentFlags()。
 //
@@ -419,7 +429,7 @@ func (c *Command) Run(args []string) (err error) {
 	// binding global options
 	if !c.gOptBounded {
 		Debugf("cmd: %s - binding global options on standalone mode", c.Name)
-		gOpts.bindingOpts(&c.Flags)
+		c.appOpts().bindingOpts(&c.Flags, gOpts)
 		c.gOptBounded = true
 	}
 
@@ -448,8 +458,8 @@ func (c *Command) innerDispatch(args []string) (err error) {
 
 	// remaining args
 	if c.standalone {
-		if gOpts.ShowHelp {
-			Debugf("cmd: %s - gOpts.ShowHelp is True, render command help", c.Name)
+		if c.appOpts().ShowHelp {
+			Debugf("cmd: %s - ShowHelp is True, render command help", c.Name)
 			return c.ShowHelp()
 		}
 

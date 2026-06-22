@@ -54,8 +54,9 @@ type App struct {
 	// AppConfig
 
 	fs *Flags
-	// cli input options for app
-	opts *GlobalOpts
+	// per-app parse/run state (help/version/completion). each App owns its own,
+	// so concurrent App instances don't share it. global config is in gOpts.
+	opts *AppOptions
 
 	// Name app name
 	Name string
@@ -123,9 +124,9 @@ func NewApp(fns ...func(app *App)) *App {
 
 	// init
 	app.base = newBase()
-	// 复用包级 gOpts 作为全局选项的单一数据源(verbose/help/version/strict/completion)，
-	// 避免实例副本与包级单例割裂。注意 ResetGOpts 是就地赋值，持有的指针始终有效。
-	app.opts = gOpts
+	// 每-App 独立的解析/运行状态(help/version/completion)，避免并发多 App 互相串扰。
+	// 进程级全局配置(verbose/strict/enhanceShort)仍走包级 gOpts。
+	app.opts = newAppOptions()
 
 	// set a default value
 	app.Version = "1.0.0"
@@ -200,7 +201,7 @@ func (app *App) bindAppOpts() {
 	app.Fire(gevent.OnAppBindOptsBefore, nil)
 
 	// binding global options
-	app.opts.bindingOpts(fs)
+	app.opts.bindingOpts(fs, gOpts)
 	// add more ...
 	// This is an internal option
 	fs.BoolVar(&app.opts.inCompletion, &gflag.CliOpt{
@@ -353,14 +354,14 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 		return app.showVersionInfo()
 	}
 
-	// disable cli color
-	if app.opts.NoColor {
+	// disable cli color (global config)
+	if gOpts.NoColor {
 		color.Disable()
 		ccolor.Disable()
 	}
 
-	// verbose 由环境变量 GCLI_VERBOSE / gcli.SetVerbose() 控制，app.opts 即 gOpts，无需再同步。
-	Debugf("app options parsed, verbose: <mgb>%s</>, options: %#v", app.opts.Verbose.String(), app.opts)
+	// verbose 由环境变量 GCLI_VERBOSE / gcli.SetVerbose() 控制(包级 gOpts)。
+	Debugf("app options parsed, verbose: <mgb>%s</>, app-opts: %#v", gOpts.Verbose.String(), app.opts)
 
 	// TODO show auto-completion for bash/zsh
 	if app.opts.inCompletion {
@@ -663,8 +664,12 @@ func (app *App) Exec(path string, args []string) error {
  * region T:helper methods
  *************************************************************/
 
-// Opts get the app GlobalOpts
-func (app *App) Opts() *GlobalOpts { return app.opts }
+// Opts get the process-level GlobalOpts (verbose/strict/enhanceShort, shared).
+// for the app's own parse state (help/version/completion) use AppOpts().
+func (app *App) Opts() *GlobalOpts { return gOpts }
+
+// AppOpts get the app's own parse/run state (help/version/completion).
+func (app *App) AppOpts() *AppOptions { return app.opts }
 
 // Flags get. TIP: you can custom binding applicaton options
 //
