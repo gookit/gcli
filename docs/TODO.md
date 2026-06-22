@@ -46,7 +46,10 @@
 
 > 背景与依据见 [compare-with-others.zh-CN.md](compare-with-others.zh-CN.md) 的「gcli 的差距」。
 
-- [ ] 支持 man page / markdown 命令文档生成
+- [x] **D3 支持 man page / markdown 命令文档生成**（增量、零破坏）— [plans/feat-D3-doc-generation.md](plans/feat-D3-doc-generation.md)
+  - [x] 新增 `docgen` 包：`CmdMarkdown/AppMarkdown/MarkdownTree` + `CmdMan/ManTree`；builtin `GenDoc()` 命令；`gflag.CliOpt.TypeName()` 访问器
+    （commit ff308c0/58d21b6/9189f4c/a64140e）
+  - 对标：cobra 的 `cobra/doc`（`GenMarkdownTree` / `GenManTree`）
 - [x] **D1 结构体绑定：去 unsafe + 类型丰富度**（增量、低风险）— [plans/feat-D1-struct-binding.md](plans/feat-D1-struct-binding.md)
   - [x] `gflag/parser.go` `fromStructValue` 基础类型分支去掉 `unsafe.Pointer`/`UnsafeAddr()`，
     改用安全的 `fv.Addr().Interface().(*T)`（commit 7830e0e）

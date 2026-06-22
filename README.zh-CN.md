@@ -45,6 +45,7 @@ The english introduction please ses **[README](README.md)**
 - 自动处理返回错误，`error` 会自动渲染为错误提示信息
 - 自动根据命令生成帮助信息，并且支持颜色显示
 - 支持为当前CLI应用生成 `zsh`,`bash` 下的命令补全脚本文件
+- 支持生成 `markdown` / `man page` 命令文档（通过 `docgen` 包 + builtin `GenDoc` 命令）
 - 支持将单个命令当做独立应用运行
 
 ## GoDoc

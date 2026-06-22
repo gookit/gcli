@@ -46,6 +46,7 @@ Including running commands, color styles, data display, progress display, intera
 - Automatically generate command help information and support color display
 - When the command entered is incorrect, a similar command will be prompted(including an alias prompt)
 - Supports generation of `zsh` and `bash` command completion script files
+- Supports generation of `markdown` / `man page` command documentation (via `docgen` package + builtin `GenDoc` command)
 - Supports a single command as a stand-alone application
 
 **Flag Options**:

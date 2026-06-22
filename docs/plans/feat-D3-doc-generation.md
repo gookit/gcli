@@ -1,6 +1,6 @@
 # 功能实现计划：D3 命令文档生成（man / markdown）
 
-> 状态：**待实施**
+> 状态：**已完成**（commit ff308c0/58d21b6/9189f4c/a64140e + 文档）
 > 范围：新增 `docgen` 包 + builtin `GenDoc` 命令 + gflag 小访问器；约 4-6 个文件。
 > 依据：[../compare-with-others.zh-CN.md](../compare-with-others.zh-CN.md) 差距「文档生成」；[../TODO.md](../TODO.md) 对标改进。
 > 对标：cobra 的 `cobra/doc`（`GenMarkdownTree` / `GenManTree`）。
@@ -61,8 +61,8 @@
 - gendoc 命令：run 后目录下生成文件、退出码 0。
 
 ## 提交拆分（按 R002）
-1. `feat(gflag): 增加 CliOpt.TypeName() 类型名访问器`
-2. `feat(docgen): markdown 命令文档生成(CmdMarkdown/AppMarkdown/MarkdownTree)`
-3. `feat(docgen): man page 命令文档生成(CmdMan/ManTree)`
-4. `feat(builtin): GenDoc 命令导出 md/man 文档`
-5. `docs: CHANGELOG/README/TODO 记录文档生成特性`
+1. [x] `feat(gflag): 增加 CliOpt.TypeName() 类型名访问器`（commit ff308c0）
+2. [x] `feat(docgen): markdown 命令文档生成(CmdMarkdown/AppMarkdown/MarkdownTree)`（commit 58d21b6）
+3. [x] `feat(docgen): man page 命令文档生成(CmdMan/ManTree)`（commit 9189f4c）
+4. [x] `feat(builtin): GenDoc 命令导出 md/man 文档`（commit a64140e）
+5. [x] `docs: 记录命令文档生成特性, 标记 D3 完成`

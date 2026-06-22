@@ -34,6 +34,10 @@ and this project adheres to semantic-ish versioning.
   their underlying `flag.Value`. In a sub-command's help, options inherited from
   ancestors are grouped under an **`Inherited Options`** section (a command's own
   shared options render with its local options).
+- **命令文档生成: 新增 `docgen` 包 + builtin `GenDoc` 命令** (≈ cobra 的 `cobra/doc`).
+  `docgen` 可把单命令/整个 App 渲染为 **markdown** (`CmdMarkdown`/`AppMarkdown`/`MarkdownTree`)
+  与 **man page(roff)** (`CmdMan`/`ManTree`)。app 添加 `builtin.GenDoc()` 后即可
+  `./cliapp gendoc -f md|man -o ./docs` 导出。配套新增 `gflag.CliOpt.TypeName()` 类型名访问器。
 
 [v3.8.0]: https://github.com/gookit/gcli/compare/v3.7.0...HEAD
 
