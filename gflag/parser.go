@@ -509,38 +509,6 @@ func (p *Parser) bindSliceField(fv reflect.Value, opt *CliOpt) bool {
 	return true
 }
 
-// mapStrValue binds a flag.Value to a user's map[string]string field.
-// repeatable: `--opt k1=v1 --opt k2=v2`.
-type mapStrValue struct {
-	ref *map[string]string
-	sep string // key-value separator, default "="
-}
-
-func (m *mapStrValue) String() string {
-	if m.ref == nil || *m.ref == nil {
-		return ""
-	}
-	return fmt.Sprintf("%v", *m.ref) // fmt sorts map keys, output is stable
-}
-
-func (m *mapStrValue) Get() any { return *m.ref }
-
-func (m *mapStrValue) Set(s string) error {
-	if *m.ref == nil {
-		*m.ref = make(map[string]string)
-	}
-	if s != "" {
-		k, v := strutil.SplitKV(s, m.sep)
-		if k != "" {
-			(*m.ref)[k] = v
-		}
-	}
-	return nil
-}
-
-// IsRepeatable allow multi `--opt k=v` inputs.
-func (m *mapStrValue) IsRepeatable() bool { return true }
-
 // bindMapField binds a map[string]string field as a repeatable `--opt k=v` option.
 // Returns false for unsupported map key/elem types.
 func (p *Parser) bindMapField(fv reflect.Value, opt *CliOpt) bool {

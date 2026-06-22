@@ -129,26 +129,29 @@ type OptCategory struct {
 	OptNames    []string
 }
 
-// Ints The int flag list, implemented flag.Value interface
-type Ints = cflag.Ints
+// provide some custom flag type, implemented flag.Value interface
+type (
+	// Ints The int flag list, implemented flag.Value interface
+	Ints = cflag.Ints
 
-// IntsString implemented flag.Value interface
-type IntsString = cflag.IntsString
+	// IntsString implemented flag.Value interface
+	IntsString = cflag.IntsString
 
-// String The special string flag, implemented flag.Value interface
-type String = cflag.String
+	// String The special string flag, implemented flag.Value interface
+	String = cflag.String
 
-// Strings The string flag list, implemented flag.Value interface
-type Strings = cflag.Strings
+	// Strings The string flag list, implemented flag.Value interface
+	Strings = cflag.Strings
 
-// Booleans The bool flag list, implemented flag.Value interface
-type Booleans = cflag.Booleans
+	// Booleans The bool flag list, implemented flag.Value interface
+	Booleans = cflag.Booleans
 
-// EnumString The string flag list, implemented flag.Value interface
-type EnumString = cflag.EnumString
+	// EnumString The string flag list, implemented flag.Value interface
+	EnumString = cflag.EnumString
 
-// KVString The key-value string flag, repeatable.
-type KVString = cflag.KVString
+	// KVString The key-value string flag, repeatable.
+	KVString = cflag.KVString
 
-// ConfString The config-string flag, INI format, like nginx-config.
-type ConfString = cflag.ConfString
+	// ConfString The config-string flag, INI format, like nginx-config.
+	ConfString = cflag.ConfString
+)

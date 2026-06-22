@@ -8,6 +8,8 @@ import (
 	"reflect"
 	"strconv"
 	"time"
+
+	"github.com/gookit/goutil/strutil"
 )
 
 // ValidValue is a flag.Value with a validation function.
@@ -254,7 +256,7 @@ func (v textValue) Set(s string) error {
 	return v.p.UnmarshalText([]byte(s))
 }
 
-func (v textValue) Get() interface{} {
+func (v textValue) Get() any {
 	return v.p
 }
 
@@ -273,3 +275,35 @@ type funcValue func(string) error
 func (f funcValue) Set(s string) error { return f(s) }
 
 func (f funcValue) String() string { return "" }
+
+// mapStrValue binds a flag.Value to a user's map[string]string field.
+// repeatable: `--opt k1=v1 --opt k2=v2`.
+type mapStrValue struct {
+	ref *map[string]string
+	sep string // key-value separator, default "="
+}
+
+func (m *mapStrValue) String() string {
+	if m.ref == nil || *m.ref == nil {
+		return ""
+	}
+	return fmt.Sprintf("%v", *m.ref) // fmt sorts map keys, output is stable
+}
+
+func (m *mapStrValue) Get() any { return *m.ref }
+
+func (m *mapStrValue) Set(s string) error {
+	if *m.ref == nil {
+		*m.ref = make(map[string]string)
+	}
+	if s != "" {
+		k, v := strutil.SplitKV(s, m.sep)
+		if k != "" {
+			(*m.ref)[k] = v
+		}
+	}
+	return nil
+}
+
+// IsRepeatable allow multi `--opt k=v` inputs.
+func (m *mapStrValue) IsRepeatable() bool { return true }
