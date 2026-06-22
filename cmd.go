@@ -610,11 +610,8 @@ func (c *Command) validateSharedRequired() error {
 				continue
 			}
 
-			val := ""
-			if fItem := opt.Flag(); fItem != nil {
-				val = fItem.Value.String()
-			}
-			if val == "" {
+			// 类型感知判空(int 的空是 "0"、float 是 "0.0"、string 是 "")
+			if opt.IsEmpty() {
 				return fmt.Errorf("option '%s' is required", name)
 			}
 		}

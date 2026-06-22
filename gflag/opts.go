@@ -854,6 +854,15 @@ func (m *CliOpt) Validate(val string) error {
 // Flag get raw flag.Flag
 func (m *CliOpt) Flag() *Flag { return m.flag }
 
+// IsEmpty reports whether the option's current value is empty, type-aware.
+// eg: int "0" / float "0.0" / string "" are empty; bool/func never empty.
+func (m *CliOpt) IsEmpty() bool {
+	if m.flag == nil {
+		return true
+	}
+	return m.valIsEmpty(m.flag.Value.String())
+}
+
 // Value get raw value flag.Value
 func (m *CliOpt) Value() Value { return m.flag.Value }
 

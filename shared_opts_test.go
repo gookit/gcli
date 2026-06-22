@@ -222,6 +222,46 @@ func TestSharedOpts_required(t *testing.T) {
 	})
 }
 
+// Required 共享(int 类型): 校验需类型感知判空 —— 缺失时值为 "0" 也应判为未提供。
+func TestSharedOpts_requiredInt(t *testing.T) {
+	is := assert.New(t)
+
+	build := func(count *int, ran *bool) *gcli.App {
+		app := gcli.NewApp(gcli.NotExitOnEnd())
+		app.Add(&gcli.Command{
+			Name: "top",
+			Desc: "top command",
+			Config: func(c *gcli.Command) {
+				c.SharedOpts().IntOpt(count, "count", "", 0, "the count", gflag.WithRequired())
+			},
+			Subs: []*gcli.Command{
+				{
+					Name: "sub",
+					Desc: "sub command",
+					Func: func(c *gcli.Command, _ []string) error { *ran = true; return nil },
+				},
+			},
+		})
+		return app
+	}
+
+	t.Run("missing int required", func(t *testing.T) {
+		var count int
+		var ran bool
+		build(&count, &ran).Run([]string{"top", "sub"})
+		is.False(ran) // 缺失(值=0)应判为未提供 -> Func 不执行
+	})
+
+	t.Run("provided int required", func(t *testing.T) {
+		var count int
+		var ran bool
+		code := build(&count, &ran).Run([]string{"top", "sub", "--count", "3"})
+		is.Eq(0, code)
+		is.True(ran)
+		is.Eq(3, count)
+	})
+}
+
 // 未用共享回归: 不定义共享选项时, 行为与之前完全一致(sharedFs==nil, 合并是 no-op)。
 func TestSharedOpts_noSharedRegression(t *testing.T) {
 	is := assert.New(t)
