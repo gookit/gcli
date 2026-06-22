@@ -1,0 +1,255 @@
+package gcli_test
+
+import (
+	"testing"
+
+	"github.com/gookit/gcli/v3"
+	"github.com/gookit/gcli/v3/gflag"
+	"github.com/gookit/goutil/x/assert"
+)
+
+// 继承: top 定义共享 --git-dir, 在子命令 sub 段写出时能被解析。
+func TestSharedOpts_inherit(t *testing.T) {
+	is := assert.New(t)
+	app := gcli.NewApp(gcli.NotExitOnEnd())
+
+	var gitDir string
+	var ran bool
+	app.Add(&gcli.Command{
+		Name: "top",
+		Desc: "top command",
+		Config: func(c *gcli.Command) {
+			c.SharedOpts().StrOpt(&gitDir, "git-dir", "", "", "the git work dir")
+		},
+		Subs: []*gcli.Command{
+			{
+				Name: "sub",
+				Desc: "sub command",
+				Func: func(c *gcli.Command, _ []string) error {
+					ran = true
+					return nil
+				},
+			},
+		},
+	})
+
+	code := app.Run([]string{"top", "sub", "--git-dir", "/x"})
+	is.Eq(0, code)
+	is.True(ran)
+	is.Eq("/x", gitDir)
+}
+
+// 任意位置(配合重排): 共享选项写在 arguments 之后也能解析, arg 仍正常。
+func TestSharedOpts_anyPosition(t *testing.T) {
+	is := assert.New(t)
+	app := gcli.NewApp(gcli.NotExitOnEnd())
+
+	var gitDir string
+	var a0 string
+	app.Add(&gcli.Command{
+		Name: "top",
+		Desc: "top command",
+		Config: func(c *gcli.Command) {
+			c.SharedOpts().StrOpt(&gitDir, "git-dir", "", "", "the git work dir")
+		},
+		Subs: []*gcli.Command{
+			{
+				Name: "sub",
+				Desc: "sub command",
+				Config: func(c *gcli.Command) {
+					c.AddArg("arg0", "arg0 desc")
+				},
+				Func: func(c *gcli.Command, _ []string) error {
+					a0 = c.Arg("arg0").String()
+					return nil
+				},
+			},
+		},
+	})
+
+	code := app.Run([]string{"top", "sub", "myarg", "--git-dir", "/x"})
+	is.Eq(0, code)
+	is.Eq("/x", gitDir)
+	is.Eq("myarg", a0)
+}
+
+// 多级继承: 三层 a -> b -> c, a 的共享选项在叶子 c 可用。
+func TestSharedOpts_multiLevel(t *testing.T) {
+	is := assert.New(t)
+	app := gcli.NewApp(gcli.NotExitOnEnd())
+
+	var aShared string
+	var ran bool
+	app.Add(&gcli.Command{
+		Name: "a",
+		Desc: "a command",
+		Config: func(c *gcli.Command) {
+			c.SharedOpts().StrOpt(&aShared, "a-opt", "", "", "shared opt from a")
+		},
+		Subs: []*gcli.Command{
+			{
+				Name: "b",
+				Desc: "b command",
+				Subs: []*gcli.Command{
+					{
+						Name: "c",
+						Desc: "c command",
+						Func: func(c *gcli.Command, _ []string) error {
+							ran = true
+							return nil
+						},
+					},
+				},
+			},
+		},
+	})
+
+	code := app.Run([]string{"a", "b", "c", "--a-opt", "vvv"})
+	is.Eq(0, code)
+	is.True(ran)
+	is.Eq("vvv", aShared)
+}
+
+// 局部优先: 子命令定义同名局部选项时, 继承被跳过, 父子变量互不写串。
+func TestSharedOpts_localPriority(t *testing.T) {
+	is := assert.New(t)
+	app := gcli.NewApp(gcli.NotExitOnEnd())
+
+	var shared string // top 的共享变量
+	var local string  // sub 的局部同名变量
+	app.Add(&gcli.Command{
+		Name: "top",
+		Desc: "top command",
+		Config: func(c *gcli.Command) {
+			c.SharedOpts().StrOpt(&shared, "name", "", "", "shared name")
+		},
+		Subs: []*gcli.Command{
+			{
+				Name: "sub",
+				Desc: "sub command",
+				Config: func(c *gcli.Command) {
+					// 同名局部选项, 应优先于继承
+					c.StrOpt(&local, "name", "", "", "local name")
+				},
+				Func: func(c *gcli.Command, _ []string) error { return nil },
+			},
+		},
+	})
+
+	code := app.Run([]string{"top", "sub", "--name", "L"})
+	is.Eq(0, code)
+	// 写回的是局部变量, 共享变量不受影响
+	is.Eq("L", local)
+	is.Eq("", shared)
+}
+
+// 自身可用: 共享选项写在子命令名之前, 由定义它的命令段即可识别。
+func TestSharedOpts_selfUsable(t *testing.T) {
+	is := assert.New(t)
+	app := gcli.NewApp(gcli.NotExitOnEnd())
+
+	var gitDir string
+	var ran bool
+	app.Add(&gcli.Command{
+		Name: "top",
+		Desc: "top command",
+		Config: func(c *gcli.Command) {
+			c.SharedOpts().StrOpt(&gitDir, "git-dir", "", "", "the git work dir")
+		},
+		Subs: []*gcli.Command{
+			{
+				Name: "sub",
+				Desc: "sub command",
+				Func: func(c *gcli.Command, _ []string) error {
+					ran = true
+					return nil
+				},
+			},
+		},
+	})
+
+	code := app.Run([]string{"top", "--git-dir", "/x", "sub"})
+	is.Eq(0, code)
+	is.True(ran)
+	is.Eq("/x", gitDir)
+}
+
+// buildRequiredApp 构造一个 top 定义 required 共享选项、sub 在 Func 标记运行的 app。
+// 用独立 app 实例避免「同一命令重复 Parse」的非典型场景。
+func buildRequiredApp(gitDir *string, ran *bool) *gcli.App {
+	app := gcli.NewApp(gcli.NotExitOnEnd())
+	app.Add(&gcli.Command{
+		Name: "top",
+		Desc: "top command",
+		Config: func(c *gcli.Command) {
+			c.SharedOpts().StrOpt2(gitDir, "git-dir", "the git work dir", gflag.WithRequired())
+		},
+		Subs: []*gcli.Command{
+			{
+				Name: "sub",
+				Desc: "sub command",
+				Func: func(c *gcli.Command, _ []string) error {
+					*ran = true
+					return nil
+				},
+			},
+		},
+	})
+	return app
+}
+
+// Required 共享: 共享选项设 Required, 缺失时执行命令报错, Func 不应运行; 提供后正常执行。
+func TestSharedOpts_required(t *testing.T) {
+	is := assert.New(t)
+
+	t.Run("missing required", func(t *testing.T) {
+		var gitDir string
+		var ran bool
+		app := buildRequiredApp(&gitDir, &ran)
+		// 缺失 required 共享选项: parseOptions 校验失败, sub.Func 不执行
+		app.Run([]string{"top", "sub"})
+		is.False(ran)
+	})
+
+	t.Run("provided required", func(t *testing.T) {
+		var gitDir string
+		var ran bool
+		app := buildRequiredApp(&gitDir, &ran)
+		code := app.Run([]string{"top", "sub", "--git-dir", "/x"})
+		is.Eq(0, code)
+		is.True(ran)
+		is.Eq("/x", gitDir)
+	})
+}
+
+// 未用共享回归: 不定义共享选项时, 行为与之前完全一致(sharedFs==nil, 合并是 no-op)。
+func TestSharedOpts_noSharedRegression(t *testing.T) {
+	is := assert.New(t)
+	app := gcli.NewApp(gcli.NotExitOnEnd())
+
+	var name string
+	var a0 string
+	app.Add(&gcli.Command{
+		Name: "top",
+		Desc: "top command",
+		Subs: []*gcli.Command{
+			{
+				Name: "sub",
+				Desc: "sub command",
+				Config: func(c *gcli.Command) {
+					c.StrOpt(&name, "name", "n", "", "name opt")
+					c.AddArg("arg0", "arg0 desc")
+				},
+				Func: func(c *gcli.Command, _ []string) error {
+					a0 = c.Arg("arg0").String()
+					return nil
+				},
+			},
+		},
+	})
+
+	code := app.Run([]string{"top", "sub", "av", "--name", "tom"})
+	is.Eq(0, code)
+	is.Eq("tom", name)
+	is.Eq("av", a0)
+}
