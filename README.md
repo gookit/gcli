@@ -474,6 +474,11 @@ You can see:
 
 ## Generate Auto Completion Scripts
 
+There are two ways to generate command completion scripts:
+
+- Directly use the global option `./cliapp --gen-completion bash|zsh > ~/.cliapp-completion.sh` to generate
+- Register the built-in `GenAutoComplete` command and then generate it using `./cliapp genac -o ~/.cliapp-completion.sh`
+
 ```go
 import  "github.com/gookit/gcli/v3/builtin"
 
@@ -505,11 +510,6 @@ OK, auto-complete file generate successful
 > After running, it will generate an `auto-completion.{zsh|bash}` file in the current directory,
  and the shell environment name is automatically obtained.
  Of course, you can specify it manually at runtime
-
-Generated shell script file ref： 
-
-- bash env [auto-completion.bash](resource/auto-completion.bash) 
-- zsh env [auto-completion.zsh](resource/auto-completion.zsh)
 
 Preview: 
 

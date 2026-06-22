@@ -197,6 +197,11 @@ func main() {
 
 ## 生成命令补全脚本
 
+生成命令补全脚本有两种方式：
+
+- 直接使用全局选项 `./cliapp --gen-completion bash|zsh > ~/.cliapp-completion.sh` 生成
+- 注册内置的 `GenAutoComplete` 命令，然后使用 `./cliapp genac -o ~/.cliapp-completion.sh` 生成
+
 ```go
 import  "github.com/gookit/gcli/v3/builtin"
 
@@ -221,11 +226,6 @@ OK, auto-complete file generate successful
 ```
 
 > 运行后就会在当前目录下生成一个 `auto-completion.{zsh|bash}` 文件， shell 环境名是自动获取的。当然你可以在运行时手动指定
-
-生成的shell script 文件请参看：
-
-- bash 环境 [auto-completion.bash](resource/auto-completion.bash)
-- zsh 环境 [auto-completion.zsh](resource/auto-completion.zsh)
 
 预览效果:
 
