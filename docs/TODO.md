@@ -47,7 +47,7 @@
 > 背景与依据见 [compare-with-others.zh-CN.md](compare-with-others.zh-CN.md) 的「gcli 的差距」。
 
 - [ ] 支持 man page / markdown 命令文档生成
-- [ ] **D1 结构体绑定：去 unsafe + 类型丰富度**（增量、低风险，优先）
+- [ ] **D1 结构体绑定：去 unsafe + 类型丰富度**（增量、低风险，优先）— [plans/feat-D1-struct-binding.md](plans/feat-D1-struct-binding.md)
   - [ ] `gflag/parser.go` `fromStructValue` 基础类型分支去掉 `unsafe.Pointer`/`UnsafeAddr()`，
     改用安全的 `fv.Addr().Interface().(*T)`（其上方 `flag.Value` 分支已是此写法，行为不变）
   - [ ] 扩充标签自动绑定的类型：`[]string/[]int` → 复用 `gflag.Strings/Ints`，
