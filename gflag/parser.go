@@ -8,7 +8,6 @@ import (
 	"io"
 	"os"
 	"reflect"
-	"unsafe"
 
 	"github.com/gookit/color"
 	"github.com/gookit/color/colorp"
@@ -432,30 +431,27 @@ func (p *Parser) fromStructValue(v reflect.Value, tagName string) error {
 			}
 		}
 
-		// get field ptr addr
-		ptr := unsafe.Pointer(fv.UnsafeAddr())
+		// get the field address safely. struct is passed by pointer, so its
+		// fields (and deref'd pointer fields) are always addressable.
+		if !fv.CanAddr() {
+			return fmt.Errorf("field: %s - is not addressable for binding flag", name)
+		}
+		addr := fv.Addr().Interface()
 		switch ft.Kind() {
 		case reflect.Bool:
-			p.BoolVar((*bool)(ptr), opt)
+			p.BoolVar(addr.(*bool), opt)
 		case reflect.Int:
-			p.IntVar((*int)(ptr), opt)
-			// if isNilPtr {
-			// 	fv.SetInt(0)
-			// 	newPtr := unsafe.Pointer(fv.UnsafeAddr())
-			// 	p.IntVar((*int)(newPtr), opt)
-			// } else {
-			// 	p.IntVar((*int)(ptr), opt)
-			// }
+			p.IntVar(addr.(*int), opt)
 		case reflect.Int64:
-			p.Int64Var((*int64)(ptr), opt)
+			p.Int64Var(addr.(*int64), opt)
 		case reflect.Uint:
-			p.UintVar((*uint)(ptr), opt)
+			p.UintVar(addr.(*uint), opt)
 		case reflect.Uint64:
-			p.Uint64Var((*uint64)(ptr), opt)
+			p.Uint64Var(addr.(*uint64), opt)
 		case reflect.Float64:
-			p.Float64Var((*float64)(ptr), opt)
+			p.Float64Var(addr.(*float64), opt)
 		case reflect.String:
-			p.StrVar((*string)(ptr), opt)
+			p.StrVar(addr.(*string), opt)
 		default:
 			return fmt.Errorf("field: %s - unsupport type(%s) for binding flag", name, ft.String())
 		}
