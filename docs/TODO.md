@@ -56,7 +56,7 @@
   - [x] 泛型 API：`gflag.Opt[T]/BindVar[T]`，类型安全、可扩展，老 API 保留（commit 99ffdfa）
   - 对标：kong / go-arg / go-flags 原生支持 slice/map/enum/Duration（go-arg 连 Duration 都内置）
 
-- [ ] **D2 持久化选项继承模型**（伤筋动骨、建议独立里程碑）
+- [ ] **D2 持久化选项继承模型**（伤筋动骨、建议独立里程碑）— [plans/feat-D2-persistent-options.md](plans/feat-D2-persistent-options.md)
   - [ ] 新增「持久化选项」中间层：`Command.PersistentFlags()` 或 `CliOpt.Persistent` 标记；
     dispatch 到子命令时把祖先链持久选项 merge 进叶子 flag set（与 args 重排契合：可写在叶子段任意位置）
   - [ ] 进程级单例 `gOpts` 改为 per-App 实例，解决多 App/并发共享（CHANGELOG v3.4.0 已记此坑）
