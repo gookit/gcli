@@ -253,11 +253,18 @@ func (b *base) ResetData() {
 	}
 }
 
-// GetCommand get a command by top name
+// GetCommand get a direct children command by name, not support alias.
 func (b *base) GetCommand(name string) *Command { return b.commands[name] }
 
-// Command gets a command by top name
+// Command gets a direct children command by name, not support alias.
 func (b *base) Command(name string) (c *Command, exist bool) {
+	c, exist = b.commands[name]
+	return
+}
+
+// ResolveCommand gets a direct children command by name or alias.
+func (b *base) ResolveCommand(name string) (c *Command, exist bool) {
+	name = b.ResolveAlias(name)
 	c, exist = b.commands[name]
 	return
 }

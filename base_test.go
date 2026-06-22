@@ -59,6 +59,11 @@ func TestApp_Hooks_OnAppCmdAdd(t *testing.T) {
 
 	cli.Add(newSimpleCmd())
 	assert.Eq(t, "app.cmd.add.before - empty;app.cmd.add.before - simple;", b.ResetGet())
+
+	cmd, ok := cli.ResolveCommand("simple")
+	assert.True(t, ok)
+	assert.NotNil(t, cmd)
+	assert.Eq(t, cmd.Name, "simple")
 }
 
 func TestCommand_Hooks_EvtCmdOptParsed(t *testing.T) {
