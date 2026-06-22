@@ -37,14 +37,6 @@ type Logo struct {
 	Style string // eg "info"
 }
 
-// AppConfig struct
-type AppConfig struct {
-	BeforeRun     func() bool
-	AfterRun      func() bool
-	BeforeAddOpts func(opts *Flags)
-	AfterAddOpts  func(app *App) bool
-}
-
 // App the cli app definition
 type App struct {
 	// internal use

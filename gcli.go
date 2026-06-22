@@ -184,24 +184,6 @@ type GlobalOpts struct {
 	enhanceShort uint8
 }
 
-// AppOptions per-app(or standalone command) parse & run state. Each App owns its
-// own instance, so concurrent App instances in one process don't share these.
-type AppOptions struct {
-	// ShowHelp show help information, then exit.
-	ShowHelp bool
-	// ShowVersion show version information, then exit.
-	ShowVersion bool
-	// inCompletion dynamic command auto completion mode.
-	// eg "./cli --in-completion [COMMAND --OPT ARG]"
-	inCompletion bool
-	// genCompletion direct generate shell auto completion scripts, then exit.
-	// eg "./cli --gen-completion bash|zsh|pwsh"
-	genCompletion string
-}
-
-// newAppOptions create a new per-app options instance.
-func newAppOptions() *AppOptions { return &AppOptions{} }
-
 // SetVerbose value
 func (g *GlobalOpts) SetVerbose(verbose VerbLevel) {
 	g.Verbose = verbose
@@ -219,6 +201,38 @@ func (g *GlobalOpts) SetEnhanceShort(level uint8) {
 
 // SetDisable global options
 func (g *GlobalOpts) SetDisable() { g.Disable = true }
+
+func newGlobalOpts() *GlobalOpts {
+	opts := &GlobalOpts{
+		strictMode: false,
+		// init error level.
+		Verbose: defaultVerb,
+		NoColor: envutil.GetBool("NO_COLOR", false),
+		// more settings by ENV
+		NoProgress:    envutil.GetBool("NO_PROGRESS", false),
+		NoInteractive: envutil.GetBool("NO_INTERACTIVE", false),
+	}
+
+	return opts
+}
+
+// AppOptions per-app(or standalone command) parse & run state. Each App owns its
+// own instance, so concurrent App instances in one process don't share these.
+type AppOptions struct {
+	// ShowHelp show help information, then exit.
+	ShowHelp bool
+	// ShowVersion show version information, then exit.
+	ShowVersion bool
+	// inCompletion dynamic command auto completion mode.
+	// eg "./cli --in-completion [COMMAND --OPT ARG]"
+	inCompletion bool
+	// genCompletion direct generate shell auto completion scripts, then exit.
+	// eg "./cli --gen-completion bash|zsh|pwsh"
+	genCompletion string
+}
+
+// newAppOptions create a new per-app options instance.
+func newAppOptions() *AppOptions { return &AppOptions{} }
 
 // bindingOpts binds the per-app --help/-h (and --version/-V unless globally
 // disabled) onto the given parser. g provides the process-level Disable toggle.
@@ -244,20 +258,6 @@ func (o *AppOptions) bindingOpts(fs *gflag.Parser, g *GlobalOpts) {
 	fs.BoolOpt(&o.ShowVersion, "version", "V", false, "Display app version information")
 	// fs.BoolOpt(&g.NoInteractive, "no-interactive", "ni", g.NoInteractive, "Disable interactive confirmation operation")
 	// fs.BoolOpt(&g.inShell, "ishell", "", false, "Run in an interactive shell environment(`TODO`)")
-}
-
-func newGlobalOpts() *GlobalOpts {
-	opts := &GlobalOpts{
-		strictMode: false,
-		// init error level.
-		Verbose: defaultVerb,
-		NoColor: envutil.GetBool("NO_COLOR", false),
-		// more settings by ENV
-		NoProgress:    envutil.GetBool("NO_PROGRESS", false),
-		NoInteractive: envutil.GetBool("NO_INTERACTIVE", false),
-	}
-
-	return opts
 }
 
 // GOpts get the global options
