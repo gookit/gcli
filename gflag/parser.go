@@ -465,6 +465,10 @@ func (p *Parser) fromStructValue(v reflect.Value, tagName string) error {
 			if !p.bindSliceField(fv, opt) {
 				return fmt.Errorf("field: %s - unsupport slice type(%s) for binding flag", name, ft.String())
 			}
+		case reflect.Map:
+			if !p.bindMapField(fv, opt) {
+				return fmt.Errorf("field: %s - unsupport map type(%s) for binding flag", name, ft.String())
+			}
 		default:
 			return fmt.Errorf("field: %s - unsupport type(%s) for binding flag", name, ft.String())
 		}
@@ -493,6 +497,53 @@ func (p *Parser) bindSliceField(fv reflect.Value, opt *CliOpt) bool {
 	// *[]T -> *cflag.XXX (identical underlying type, so convertible)
 	pv := fv.Addr().Convert(reflect.PointerTo(target)).Interface().(flag.Value)
 	p.Var(pv, opt)
+	return true
+}
+
+// mapStrValue binds a flag.Value to a user's map[string]string field.
+// repeatable: `--opt k1=v1 --opt k2=v2`.
+type mapStrValue struct {
+	ref *map[string]string
+	sep string // key-value separator, default "="
+}
+
+func (m *mapStrValue) String() string {
+	if m.ref == nil || *m.ref == nil {
+		return ""
+	}
+	return fmt.Sprintf("%v", *m.ref) // fmt sorts map keys, output is stable
+}
+
+func (m *mapStrValue) Get() any { return *m.ref }
+
+func (m *mapStrValue) Set(s string) error {
+	if *m.ref == nil {
+		*m.ref = make(map[string]string)
+	}
+	if s != "" {
+		k, v := strutil.SplitKV(s, m.sep)
+		if k != "" {
+			(*m.ref)[k] = v
+		}
+	}
+	return nil
+}
+
+// IsRepeatable allow multi `--opt k=v` inputs.
+func (m *mapStrValue) IsRepeatable() bool { return true }
+
+// bindMapField binds a map[string]string field as a repeatable `--opt k=v` option.
+// Returns false for unsupported map key/elem types.
+func (p *Parser) bindMapField(fv reflect.Value, opt *CliOpt) bool {
+	mt := fv.Type()
+	if mt.Key().Kind() != reflect.String || mt.Elem().Kind() != reflect.String {
+		return false
+	}
+
+	// support named map types too: *T -> *map[string]string (convertible)
+	mapPtrType := reflect.PointerTo(reflect.TypeOf(map[string]string(nil)))
+	ref := fv.Addr().Convert(mapPtrType).Interface().(*map[string]string)
+	p.Var(&mapStrValue{ref: ref, sep: "="}, opt)
 	return true
 }
 

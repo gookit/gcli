@@ -36,6 +36,24 @@ func TestFlags_FromStruct_nativeSliceAndDuration(t *testing.T) {
 	assert.Eq(t, 90*time.Minute, o.TTL)
 }
 
+// native map[string]string field can be bound from struct tags (D1.3)
+func TestFlags_FromStruct_nativeMap(t *testing.T) {
+	type opts struct {
+		Meta map[string]string `flag:"name=meta;shorts=m;desc=key-value metadata"`
+	}
+
+	o := &opts{}
+	fs := gflag.New("test")
+	assert.NoErr(t, fs.FromStruct(o))
+	assert.True(t, fs.HasOption("meta"))
+
+	err := fs.Parse([]string{"--meta", "k1=v1", "-m", "k2=v2"})
+	assert.NoErr(t, err)
+	assert.Len(t, o.Meta, 2)
+	assert.Eq(t, "v1", o.Meta["k1"])
+	assert.Eq(t, "v2", o.Meta["k2"])
+}
+
 // unsupported slice elem type reports a clear error, not a panic
 func TestFlags_FromStruct_unsupportedSlice(t *testing.T) {
 	type opts struct {
