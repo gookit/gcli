@@ -21,46 +21,57 @@ Including running commands, color styles, data display, progress display, intera
 
 ## Features
 
-- Rich in functions and easy to use
-- Support for adding multiple commands and supporting command **aliases**
-- Support binding command options from structure
-    - example `flag:"name=int0;shorts=i;required=true;desc=int option message"`
-    - three tag rules: `named`(default) / `simple` / `field`(use field name + auto expand anonymous structs)
+Rich in functions and easy to use. Highlights grouped by area:
+
+**Commands**
+
+- Multi-level (nested) commands, each level binds its own options
+- Command **aliases** and similar-command tips on typo (alias-aware)
+- Command/App middleware via `Use(handlers ...RunnerFunc)`
+- A single command can run as a stand-alone application
+
+**Option binding**
+
+- Code-style binders: `BoolOpt / IntOpt / StrOpt / Float64Opt / VarOpt ...`
+- Generic, type-safe binders: `gflag.Opt[T]` / `gflag.BindVar[T]` — one call covers
+  `bool/int/uint/float/string`, `time.Duration`, `[]string/[]int/[]bool`, `map[string]string`
+- Struct-tag binding via `FromStruct`:
+    - three tag rules: `named`(default) / `simple` / `field`(field name + auto-expand anonymous structs)
     - field types: `bool/int/uint/float/string`, native `[]string/[]int/[]bool` (repeatable), `time.Duration`, `map[string]string` (repeatable `--meta k=v`)
     - `enum:"a,b,c"` tag for value candidates(completion) + membership validation
-    - support interactive value collect by `Question` when the option value is empty
-- Support for adding multi-level commands, each level of command supports binding its own options
-  - Shared (inherited) options via `Command.SharedOpts()` (≈ cobra `PersistentFlags`): options bound here are inherited by the command and all its sub-commands (sharing the same variable), e.g. a parent `--git-dir` usable in any sub-command segment
-- `option/flag` - support option binding `--long`, support for adding short options(`-s`)
-  - POSIX-style short flag combining (`-ab` = `-a -b`): requires enabling `EnhanceShort` (gflag `Config`) or the command strict mode `SetStrictMode(true)`. Only combinations where **all** members are bool short options are split; `EnhanceShort=2` additionally supports attached-value form `-Ostdout` = `-O stdout`. Disabled by default for compatibility.
-  - Support setting `Required`, indicating a required option parameter
-  - Support setting `Validator`, which can customize the validation input parameters
-- `argument` - support binding argument to specify name
-  - Support `required`, optional, `array` settings
-  - It will be automatically detected and collected when the command is run.
-  - Mixed order is accepted: options written **after** arguments are auto-reordered, so `cmd arg --name tom` works like `cmd --name tom arg` (enabled by default; disable via `gflag.WithReorderArgs(false)`)
-- `colorable` - supports rich color output. provide by [gookit/color](https://github.com/gookit/color)
-  - Supports html tab-style color rendering, compatible with Windows
-  - Built-in `info, error, success, danger` and other styles, can be used directly
-- `show`, `interact` and `progress` provide by [gookit/cliui](https://github.com/gookit/cliui)
-- Automatically generate command help information and support color display
-- When the command entered is incorrect, a similar command will be prompted(including an alias prompt)
-- Supports generation of `zsh` and `bash` command completion script files
-- Supports generation of `markdown` / `man page` command documentation (via `docgen` package + builtin `GenDoc` command)
-- Supports a single command as a stand-alone application
+- `Required` / `Validator` / `Choices` per option; option `Category` for grouped help display
 
-**Flag Options**:
+**Three-level option model**
 
-- Options start with `-` or `--`, and the first character must be a letter
-- Support long option. eg: `--long` `--long value`
-- Support short option. eg: `-s -a value`
-- Support define array option
-    - eg: `--tag php --tag go` will get `tag: [php, go]`
+- Global (App-level) options
+- Shared (inherited) options via `Command.SharedOpts()` (≈ cobra `PersistentFlags`): inherited by the
+  command and all its sub-commands (sharing the same variable), grouped under `Inherited Options` in help
+- Local (per-command) options
 
-**Flag Arguments**:
+**Parse enhancements**
 
-- Support binding named argument
-- Support define array argument
+- Options written **after** arguments are auto-reordered: `cmd arg --name tom` == `cmd --name tom arg`
+  (on by default; disable via `gflag.WithReorderArgs(false)`)
+- POSIX short-flag combining (`-ab` = `-a -b`) via opt-in `EnhanceShort`; `EnhanceShort=2` also supports
+  attached-value form `-Ostdout` = `-O stdout`. Only all-bool groups are split, off by default for compatibility
+- Declarative interactive collect by `Question` when the option value is empty
+
+**Arguments**
+
+- Bind named argument, with `required` / optional / `array` settings
+- Auto-detected and collected when the command is run
+
+**Tooling**
+
+- Generate `zsh` / `bash` / `pwsh` command completion scripts (incl. dynamic completion)
+- Generate `markdown` / `man page` command documentation (`docgen` package + builtin `GenDoc` command)
+- Auto-generated, color-rendered command help information
+- Event hook system (`gevent`, with `gcli.Evt*` aliases)
+
+**Extras**
+
+- Color output, interactive input and progress/data display, provided by
+  [gookit/color](https://github.com/gookit/color) and [gookit/cliui](https://github.com/gookit/cliui)
 
 ## GoDoc
 
@@ -170,6 +181,20 @@ cmd.StrOpt(&dir, "dir", "d", "", "the `DIRECTORY` option")
 cmd.StrOpt(&opt, "opt", "o", "", "the option message")
 // setting a special option var, it must implement the flag.Value interface
 cmd.VarOpt(&names, "names", "n", "the option message")
+```
+
+#### Use generic binders
+
+`gflag.Opt[T]` / `gflag.BindVar[T]` bind a typed pointer in one type-safe call,
+covering scalars, `time.Duration`, slices and `map[string]string`:
+
+```go
+var name string
+var tags []string
+
+gflag.Opt(cmd.Flags(), &name, "name", "n", "tom", "the user name")
+// slice option, repeatable: --tag php --tag go
+gflag.Opt(cmd.Flags(), &tags, "tag", "t", nil, "the tags, repeatable")
 ```
 
 #### Use struct tags
@@ -491,6 +516,52 @@ Preview:
 
 ![auto-complete-tips](_examples/images/auto-complete-tips.jpg)
 
+## Shared (inherited) options
+
+`Command.SharedOpts()` (≈ cobra `PersistentFlags`) binds options that are inherited by the
+command **and all of its sub-commands**, sharing the same variable. They can be written at any
+position in the sub-command segment and are grouped under `Inherited Options` in the help output.
+
+```go
+var gitDir string
+
+top := &gcli.Command{Name: "git", Desc: "git tools"}
+// bind on SharedOpts: inherited by every sub-command
+top.SharedOpts().StrOpt(&gitDir, "git-dir", "", ".git", "the git dir path")
+
+top.Add(&gcli.Command{
+    Name: "status",
+    Func: func(c *gcli.Command, _ []string) error {
+        // --git-dir is usable here even though it is declared on the parent
+        gcli.Printf("git dir: %s\n", gitDir)
+        return nil
+    },
+})
+
+// usage: ./app git status --git-dir /path/to/.git
+```
+
+## Generate command docs
+
+Add the builtin `GenDoc` command, then export `markdown` / `man` documentation for all commands:
+
+```go
+import "github.com/gookit/gcli/v3/builtin"
+
+app.Add(builtin.GenDoc())
+// ./cliapp gendoc -f md  -o ./docs   # export markdown (default)
+// ./cliapp gendoc -f man -o ./docs   # export man pages
+```
+
+You can also call it programmatically:
+
+```go
+import "github.com/gookit/gcli/v3/docgen"
+
+docgen.MarkdownTree(app, "./docs") // one .md per command + index.md
+docgen.ManTree(app, "./docs")      // man pages
+```
+
 ## Write a command
 
 command allow setting fields:
@@ -612,180 +683,26 @@ go build ./_examples/cliapp.go && ./cliapp example -h
 
 ![cmd-help](_examples/images/cmd-help.png)
 
-## Progress display
+## Extras: color, interactive & progress
 
-Package progress provide terminal progress bar display. Such as: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` ...
-
-> Provide by [gookit/cliui](https://github.com/gookit/cliui)
-
-- `progress.Bar` progress bar
-
-Demo: `./cliapp prog bar`
-
-![prog-bar](_examples/images/progress/prog-bar.svg)
-
-- `progress.Txt` text progress bar
-
-Demo: `./cliapp prog txt`
-
-![prog-bar](_examples/images/progress/prog-txt.svg)
-
-- `progress.LoadBar` pending/loading progress bar
-
-![prog-demo](_examples/images/progress/prog-spinner.jpg)
-
-- `progress.Counter` counter 
-- `progress.RoundTrip` round trip progress bar
-
-```text
-[===     ] -> [    === ] -> [ ===    ]
-```
-
-![prog-demo](_examples/images/progress/prog-rt.jpg)
-
-- `progress.DynamicText` dynamic text message
-
-Examples:
+gcli ships with color output, interactive input (`Confirm` / `Select` / `ReadLine` ...),
+progress display (`Bar` / `Spinner` / `Loading` ...) and data display (table / list / tree),
+provided by [gookit/color](https://github.com/gookit/color) and
+[gookit/cliui](https://github.com/gookit/cliui).
 
 ```go
-package main
+color.Info.Tips("processing...")              // colored output
 
-import (
-	"time"
-
-	"github.com/gookit/cliui/progress"
-)
-
-func main()  {
-	speed := 100
-	maxSteps := 110
-	p := progress.Bar(maxSteps)
-	p.Start()
-
-	for i := 0; i < maxSteps; i++ {
-		time.Sleep(time.Duration(speed) * time.Millisecond)
-		p.Advance()
-	}
-
-	p.Finish()
+ok := interact.Confirm("ensure continue?")    // interactive confirm
+if !ok {
+    return nil
 }
+
+p := progress.Bar(100)                        // progress bar
+p.Start(); /* p.Advance() in loop */ p.Finish()
 ```
 
-> more demos please see [progress_demo.go](_examples/cmd/progress_demo.go)
-
-run demos:
-
-```bash
-go run ./_examples/cliapp.go prog txt
-go run ./_examples/cliapp.go prog bar
-go run ./_examples/cliapp.go prog roundTrip
-```
-
-![prog-other](_examples/images/progress/prog-other.jpg)
-
-## Interactive methods
-   
-console interactive methods, eg: `ReadInput`,`ReadLine`,`ReadFirst`,`Confirm`,`Select/Choice`,`MultiSelect/Checkbox`,`Question/Ask`,`ReadPassword`
-
-> Provide by [gookit/cliui](https://github.com/gookit/cliui)
-
-Examples:
-
-```go
-package main
-
-import (
-	"fmt"
-
-	"github.com/gookit/cliui/interact"
-)
-
-func main() {
-	username, _ := interact.ReadLine("Your name?")
-	password := interact.ReadPassword("Your password?")
-	
-	ok := interact.Confirm("ensure continue?")
-	if !ok {
-		// do something...
-	}
-    
-	fmt.Printf("username: %s, password: %s\n", username, password)
-}
-```
-
-- `ReadInput` read user input message
-
-![interact-read](_examples/images/interact/read.jpg)
-
-- `Select/Choice` 
-
-![interact-select](_examples/images/interact/select.jpg)
-
-- Multi Select/Checkbox
-
-![interact-select](_examples/images/interact/m-select.jpg)
-
-- Confirm Message
-
-![interact-confirm](_examples/images/interact/confirm.jpg)
-
-- Read Password
-
-![interact-passwd](_examples/images/interact/passwd.jpg)
-
-## CLI Color
-
-> **Terminal color use [gookit/color](https://github.com/gookit/color)** Support windows `cmd.exe` `powerShell`
-
-- Color output display
-
-![colored-demo](_examples/images/color/color-demo.jpg)
-
-### Color usage
-
-```go
-package main
-
-import (
-    "github.com/gookit/color"
-)
-
-func main() {
-	// simple usage
-	color.Cyan.Printf("Simple to use %s\n", "color")
-
-	// internal theme/style:
-	color.Info.Tips("message")
-	color.Info.Prompt("message")
-	color.Warn.Println("message")
-	color.Error.Println("message")
-	
-	// custom color
-	color.New(color.FgWhite, color.BgBlack).Println("custom color style")
-
-	// can also:
-	color.Style{color.FgCyan, color.OpBold}.Println("custom color style")
-	
-	// use defined color tag
-	color.Print("use color tag: <suc>he</><comment>llo</>, <cyan>wel</><red>come</>\n")
-
-	// use custom color tag
-	color.Print("custom color tag: <fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
-
-	// set a style tag
-	color.Tag("info").Println("info style text")
-
-	// prompt message
-	color.Info.Prompt("prompt style message")
-	color.Warn.Prompt("prompt style message")
-
-	// tips message
-	color.Info.Tips("tips style message")
-	color.Warn.Tips("tips style message")
-}
-```
-
-> **For more information on the use of color libraries, please visit [gookit/color](https://github.com/gookit/color)**
+> For more usage see [gookit/color](https://github.com/gookit/color) and [gookit/cliui](https://github.com/gookit/cliui).
 
 ## Gookit packages
 

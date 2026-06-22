@@ -20,33 +20,57 @@ The english introduction please ses **[README](README.md)**
 
 ## 功能特色
 
-- 使用简单方便，功能丰富
-- 支持添加多个命令，并且支持给命令添加别名
-- 支持从结构体绑定命令选项
-  - 示例 `flag:"name=int0;shorts=i;required=true;desc=int option message"`
-  - 三种标签规则：`named`(默认) / `simple` / `field`(用字段名做选项名 + 自动展开匿名嵌套结构体)
-  - 字段类型：`bool/int/uint/float/string`、原生 `[]string/[]int/[]bool`(可重复)、`time.Duration`、`map[string]string`(可重复 `--meta k=v`)
-  - `enum:"a,b,c"` 标签：设置取值候选(补全)并做成员校验
-  - 选项值为空时支持通过 `Question` 声明式交互收集输入
-- 支持添加多级命令，每级命令均支持绑定自己的选项
-  - 共享(继承)选项 `Command.SharedOpts()`（对标 cobra `PersistentFlags`）：在其上绑定的选项会被该命令及其所有子孙命令继承（共享同一变量），例如父命令的 `--git-dir` 可在任意子命令段使用
-- `option/flag` 快速方便的添加选项绑定(`--long`)，支持添加多个短选项（eg: `-s`）
-  - 选项支持设置 `Required`，表明为必须的选项参数
-  - 选项支持设置 `Validator`，可以自定义验证输入参数
-- `argument` 支持绑定 `参数` 到指定名称(参数 _是指flag绑定后剩余的参数信息_)
-  - 支持参数设置 可选/必须 `Required`，数组 `isArray`
-  - 运行命令时将会自动检测，并按对应关系收集参数
-  - 选项/参数顺序可混写：写在参数 **之后** 的选项会被自动调整解析，`cmd arg --name tom` 等同于 `cmd --name tom arg`（默认开启，可用 `gflag.WithReorderArgs(false)` 关闭）
-- `colorable` 支持丰富的颜色渲染输出, 由 [gookit/color](https://github.com/gookit/color) 提供
-  - 同时支持html标签式的颜色渲染，兼容Windows
-  - 内置`info,error,success,danger`等多种风格，可直接使用
-- `show`, `progress`, `interact` 内置提供显示，进度显示，交互方法等，由 [gookit/cliui](https://github.com/gookit/cliui) 提供
-- 输入的命令错误时，将会提示相似命令（包含别名提示）
-- 自动处理返回错误，`error` 会自动渲染为错误提示信息
-- 自动根据命令生成帮助信息，并且支持颜色显示
-- 支持为当前CLI应用生成 `zsh`,`bash` 下的命令补全脚本文件
-- 支持生成 `markdown` / `man page` 命令文档（通过 `docgen` 包 + builtin `GenDoc` 命令）
+使用简单方便，功能丰富。按能力分组的特性亮点：
+
+**命令**
+
+- 多级（嵌套）命令，每级命令均可绑定自己的选项
+- 命令 **别名**；输入错误时提示相似命令（包含别名提示）
+- 命令/应用中间件 `Use(handlers ...RunnerFunc)`
 - 支持将单个命令当做独立应用运行
+
+**选项绑定**
+
+- 代码式绑定：`BoolOpt / IntOpt / StrOpt / Float64Opt / VarOpt ...`
+- 泛型、类型安全绑定：`gflag.Opt[T]` / `gflag.BindVar[T]`——一次调用即覆盖
+  `bool/int/uint/float/string`、`time.Duration`、`[]string/[]int/[]bool`、`map[string]string`
+- 结构体标签绑定 `FromStruct`：
+    - 三种标签规则：`named`(默认) / `simple` / `field`(用字段名做选项名 + 自动展开匿名嵌套结构体)
+    - 字段类型：`bool/int/uint/float/string`、原生 `[]string/[]int/[]bool`(可重复)、`time.Duration`、`map[string]string`(可重复 `--meta k=v`)
+    - `enum:"a,b,c"` 标签：设置取值候选(补全)并做成员校验
+- 每个选项支持 `Required` / `Validator` / `Choices`；选项可设 `Category` 在帮助中分组显示
+
+**三层选项模型**
+
+- 全局（App 级）选项
+- 共享(继承)选项 `Command.SharedOpts()`（对标 cobra `PersistentFlags`）：被该命令及其所有子孙命令继承
+  （共享同一变量），在帮助信息中归入 `Inherited Options` 分组
+- 局部（命令级）选项
+
+**解析增强**
+
+- 写在参数 **之后** 的选项会被自动重排：`cmd arg --name tom` 等同于 `cmd --name tom arg`
+  （默认开启，可用 `gflag.WithReorderArgs(false)` 关闭）
+- POSIX 短选项合并（`-ab` = `-a -b`），通过 opt-in 的 `EnhanceShort` 开启；`EnhanceShort=2` 额外支持
+  取值紧贴写法 `-Ostdout` = `-O stdout`。仅全为 bool 的组合才拆分，默认关闭以保持兼容
+- 选项值为空时支持通过 `Question` 声明式交互收集输入
+
+**参数**
+
+- 绑定命名参数，支持 `必须` / 可选 / `数组` 设置
+- 运行命令时自动检测并按对应关系收集参数
+
+**工具**
+
+- 生成 `zsh` / `bash` / `pwsh` 命令补全脚本（含动态补全）
+- 生成 `markdown` / `man page` 命令文档（`docgen` 包 + builtin `GenDoc` 命令）
+- 自动生成、带颜色渲染的命令帮助信息
+- 事件钩子系统（`gevent`，提供 `gcli.Evt*` 别名）
+
+**周边**
+
+- 颜色输出、交互输入、进度与数据展示，分别由
+  [gookit/color](https://github.com/gookit/color) 与 [gookit/cliui](https://github.com/gookit/cliui) 提供
 
 ## GoDoc
 
@@ -212,6 +236,51 @@ OK, auto-complete file generate successful
 
 ![auto-complete-tips](_examples/images/auto-complete-tips.jpg)
 
+## 共享(继承)选项
+
+`Command.SharedOpts()`（对标 cobra `PersistentFlags`）绑定的选项会被该命令 **及其所有子孙命令** 继承，
+共享同一变量。可写在子命令段的任意位置，并在帮助信息中归入 `Inherited Options` 分组。
+
+```go
+var gitDir string
+
+top := &gcli.Command{Name: "git", Desc: "git tools"}
+// 在 SharedOpts 上绑定: 被每个子命令继承
+top.SharedOpts().StrOpt(&gitDir, "git-dir", "", ".git", "the git dir path")
+
+top.Add(&gcli.Command{
+    Name: "status",
+    Func: func(c *gcli.Command, _ []string) error {
+        // --git-dir 虽在父命令上声明, 这里也可使用
+        gcli.Printf("git dir: %s\n", gitDir)
+        return nil
+    },
+})
+
+// 使用: ./app git status --git-dir /path/to/.git
+```
+
+## 生成命令文档
+
+添加内置的 `GenDoc` 命令后，即可为所有命令导出 `markdown` / `man` 文档：
+
+```go
+import "github.com/gookit/gcli/v3/builtin"
+
+app.Add(builtin.GenDoc())
+// ./cliapp gendoc -f md  -o ./docs   # 导出 markdown(默认)
+// ./cliapp gendoc -f man -o ./docs   # 导出 man 文档
+```
+
+也可以编程方式调用：
+
+```go
+import "github.com/gookit/gcli/v3/docgen"
+
+docgen.MarkdownTree(app, "./docs") // 每个命令一个 .md + index.md
+docgen.ManTree(app, "./docs")      // man 文档
+```
+
 ## 编写命令
 
 ### 简单使用
@@ -357,6 +426,20 @@ cmd.StrOpt(&dir, "dir", "d", "", "the `DIRECTORY` option")
 cmd.StrOpt(&opt, "opt", "o", "", "the option message")
 // setting a special option var, it must implement the flag.Value interface
 cmd.VarOpt(&names, "names", "n", "the option message")
+```
+
+#### 使用泛型绑定
+
+`gflag.Opt[T]` / `gflag.BindVar[T]` 用一次类型安全的调用绑定一个带类型的指针，
+覆盖标量、`time.Duration`、切片以及 `map[string]string`：
+
+```go
+var name string
+var tags []string
+
+gflag.Opt(cmd.Flags(), &name, "name", "n", "tom", "the user name")
+// 切片选项，可重复: --tag php --tag go
+gflag.Opt(cmd.Flags(), &tags, "tag", "t", nil, "the tags, repeatable")
 ```
 
 #### 使用 struct 定义选项
@@ -562,231 +645,26 @@ var MyCommand = &gcli.Command{
 }
 ```
 
-## 进度显示
+## 周边能力：颜色 / 交互 / 进度 / 展示
 
-progress provide terminal progress bar display. Such as: `Txt`, `Bar`, `Loading`, `RoundTrip`, `DynamicText` ...
-
-> Provide by [gookit/cliui](https://github.com/gookit/cliui)
-
-- `progress.Bar` 通用的进度条
-
-Demo: `./cliapp prog bar`
-
-![prog-bar](_examples/images/progress/prog-bar.svg)
-
-- `progress.Txt` 文本进度条
-
-Demo: `./cliapp prog txt`
-
-![prog-bar](_examples/images/progress/prog-txt.svg)
-
-- `progress.LoadBar` 加载中
-
-![prog-demo](_examples/images/progress/prog-spinner.jpg)
-
-- `progress.Counter` 计数
-- `progress.RoundTrip` 来回滚动的进度条
-
-```text
-[===     ] -> [    === ] -> [ ===    ]
-```
-
-![prog-demo](_examples/images/progress/prog-rt.jpg)
-
-- `progress.DynamicText` 动态消息，执行进度到不同的百分比显示不同的消息
-
-示例:
+gcli 内置了颜色输出、交互输入（`Confirm` / `Select` / `ReadLine` 等）、
+进度显示（`Bar` / `Spinner` / `Loading` 等）以及数据展示（表格 / 列表 / 树），
+分别由 [gookit/color](https://github.com/gookit/color) 与
+[gookit/cliui](https://github.com/gookit/cliui) 提供。
 
 ```go
-package main
+color.Info.Tips("processing...")              // 颜色输出
 
-import (
-	"time"
-
-	"github.com/gookit/cliui/progress"
-)
-
-func main()  {
-	speed := 100
-	maxSteps := 110
-	p := progress.Bar(maxSteps)
-	p.Start()
-
-	for i := 0; i < maxSteps; i++ {
-		time.Sleep(time.Duration(speed) * time.Millisecond)
-		p.Advance()
-	}
-
-	p.Finish()
+ok := interact.Confirm("ensure continue?")    // 交互确认
+if !ok {
+    return nil
 }
+
+p := progress.Bar(100)                        // 进度条
+p.Start(); /* 循环中 p.Advance() */ p.Finish()
 ```
 
-> 更多示例和使用请看 [progress_demo.go](_examples/cmd/progress_demo.go)
-
-运行示例:
-
-```bash
-go run ./_examples/cliapp.go prog txt
-go run ./_examples/cliapp.go prog bar
-go run ./_examples/cliapp.go prog roundTrip
-```
-
-![prog-other](_examples/images/progress/prog-other.jpg)
-
-## 交互方法
-
-控制台交互方法，包含读取输入，进行确认，单选，多选，询问问题等等。
-eg: `ReadInput`,`ReadLine`,`ReadFirst`,`Confirm`,`Select/Choice`,`MultiSelect/Checkbox`,`Question/Ask`,`ReadPassword`
-
-> Provide by [gookit/cliui](https://github.com/gookit/cliui)
-
-示例:
-
-```go
-package main
-
-import (
-	"fmt"
-
-	"github.com/gookit/cliui/interact"
-)
-
-func main() {
-	username, _ := interact.ReadLine("Your name?")
-	password := interact.ReadPassword("Your password?")
-
-	ok := interact.Confirm("ensure continue?")
-	if !ok {
-		// do something...
-	}
-
-	fmt.Printf("username: %s, password: %s\n", username, password)
-}
-```
-
-- `ReadLine` 读取输入
-
-![interact-read](_examples/images/interact/read.jpg)
-
-- `SelectOne` 单选
-
-![interact-select](_examples/images/interact/select.jpg)
-
-- `MultiSelect` 多选
-
-![interact-select](_examples/images/interact/m-select.jpg)
-
-- `Confirm` 确认消息
-
-![interact-confirm](_examples/images/interact/confirm.jpg)
-
-- `ReadPassword` 读取密码输入
-
-![interact-passwd](_examples/images/interact/passwd.jpg)
-
-> 更多示例和使用请看 [interact_demo.go](_examples/cmd/interact_demo.go)
-
-## 使用颜色输出
-
-> **颜色输出使用 [gookit/color](https://github.com/gookit/color)** 支持在windows `cmd.exe` `powerShell` 环境
-
-- 颜色输出展示
-
-![colored-demo](_examples/images/color/color-demo.jpg)
-
-### 如何使用
-
-```go
-package main
-
-import (
-    "github.com/gookit/color"
-)
-
-func main() {
-	// simple usage
-	color.Cyan.Printf("Simple to use %s\n", "color")
-
-	// internal theme/style:
-	color.Info.Tips("message")
-	color.Info.Prompt("message")
-	color.Info.Println("message")
-	color.Warn.Println("message")
-	color.Error.Println("message")
-
-	// custom color
-	color.New(color.FgWhite, color.BgBlack).Println("custom color style")
-
-	// can also:
-	color.Style{color.FgCyan, color.OpBold}.Println("custom color style")
-
-	// use defined color tag
-	color.Print("use color tag: <suc>he</><comment>llo</>, <cyan>wel</><red>come</>\n")
-
-	// use custom color tag
-	color.Print("custom color tag: <fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
-
-	// set a style tag
-	color.Tag("info").Println("info style text")
-
-	// prompt message
-	color.Info.Prompt("prompt style message")
-	color.Warn.Prompt("prompt style message")
-
-	// tips message
-	color.Info.Tips("tips style message")
-	color.Warn.Tips("tips style message")
-}
-```
-
-- 构建风格
-
-```go
-// 仅设置前景色
-color.FgCyan.Printf("Simple to use %s\n", "color")
-// 仅设置背景色
-color.BgRed.Printf("Simple to use %s\n", "color")
-
-// 完全自定义 前景色 背景色 选项
-style := color.New(color.FgWhite, color.BgBlack, color.OpBold)
-style.Println("custom color style")
-
-// can also:
-color.Style{color.FgCyan, color.OpBold}.Println("custom color style")
-```
-
-- 使用内置风格
-
-```go
-color.Bold.Println("bold message")
-color.Yellow.Println("yellow message")
-```
-
-扩展风格主题:
-
-```go
-color.Info.Println("Info message")
-color.Success.Println("Success message")
-```
-
-- 使用颜色html标签
-
-> 同样 **支持** 在windows `cmd.exe` `powerShell` 使用颜色标签
-
-使用颜色标签可以非常方便简单的构建自己需要的任何格式
-
-```go
-// 使用内置的 color tag
-color.Print("<suc>he</><comment>llo</>, <cyan>wel</><red>come</>")
-color.Println("<suc>hello</>")
-color.Println("<error>hello</>")
-color.Println("<warning>hello</>")
-
-// 自定义颜色属性
-color.Print("<fg=yellow;bg=black;op=underscore;>hello, welcome</>\n")
-```
-
-> **更多关于颜色库的使用请访问 [gookit/color](https://github.com/gookit/color)**
+> 更多用法详见 [gookit/color](https://github.com/gookit/color) 与 [gookit/cliui](https://github.com/gookit/cliui)。
 
 ## Gookit 工具包
 
