@@ -1,7 +1,7 @@
-# 功能实现计划：D2 持久化选项继承模型
+# 功能实现计划：D2 共享选项继承模型（SharedOpts，≈ cobra PersistentFlags）
 
 > 状态：**待实施**（建议独立里程碑，分阶段推进）
-> 范围：`cmd.go`（持久选项存储/合并/分发）+ 新增 gflag 合并基元 + 可选的 `gcli.go`（gOpts per-App）。
+> 范围：`cmd.go`（共享选项存储/合并/分发）+ 新增 gflag 合并基元 + 可选的 `gcli.go`（gOpts per-App）。
 > 依据：[../compare-with-others.zh-CN.md](../compare-with-others.zh-CN.md) 差距 5；[../TODO.md](../TODO.md) D2。
 > 对标：cobra 的 `PersistentFlags` / `LocalFlags` / `InheritedFlags` 三层模型。
 
@@ -14,7 +14,7 @@
      `bindingOpts(fs)`（`gcli.go:211`）绑定 `--help/-h`、`--version/-V`。App 复用它
      （`app.go:128` `app.opts = gOpts`，`app.go:203` 绑到 `app.fs`）。
   2. **命令局部选项**：每个命令在 `Config` 里用 `c.BoolOpt/StrOpt/FromStruct/...` 绑到 `c.Flags`。
-- **缺中间层**：父命令定义、其所有子命令自动继承的「持久选项」不存在。多级命令里要让
+- **缺中间层**：父命令定义、其所有子命令自动继承的「共享选项」不存在。多级命令里要让
   `git --git-dir <path> <subcmd> ...` 这种「父级选项对所有子命令生效」，只能在每个子命令重复声明。
 - **分发链路**（`cmd.go:409` `innerDispatch`）：`parseOptions` → 找子命令 →
   `sub.innerDispatch(args[1:])` 递归。解析在子命令名处停止（首个位置参数）。
@@ -31,14 +31,17 @@
 | 层 | 定义者 | 作用范围 |
 |---|---|---|
 | 全局(global) | App（现 `gOpts`） | 所有命令 |
-| 持久(persistent) | 某命令 | 该命令**及其所有子孙命令** |
+| 共享(shared) | 某命令 | 该命令**及其所有子孙命令** |
 | 局部(local) | 某命令 | 仅该命令 |
 
-#### 动机：现状 vs 持久选项（直观对照）
+> API 命名采用 **`SharedOpts()`**（比 `PersistentFlags` 短、贴 gcli 的 `Opts` 词汇）；
+> 下文「共享选项」≈ cobra 的 persistent flags。
+
+#### 动机：现状 vs 共享选项（直观对照）
 
 命令树 `app remote(父) → add(子)`，`--verbose` 定义在 `remote` 上。
 
-| 输入 | 现状(remote 局部选项) | 持久选项后 |
+| 输入 | 现状(remote 局部选项) | 共享选项后 |
 |---|---|---|
 | `app remote --verbose add` | ✅ 写在子命令名**之前**，由 remote 解析 | ✅ |
 | `app remote add --verbose` | ❌ remote 解析到 `add` 即停，`--verbose` 交给 add；**add 不认识** → 报错 | ✅ add **继承**了 `--verbose`，能解析 |
@@ -50,7 +53,7 @@
 
 > 它**只解决父 → 子方向**：不会让子命令自己的局部选项能写在子命令名之前。
 
-1. **D2.1**（核心）：新增持久选项中间层，父命令的持久选项被子孙命令继承，且与 args 重排契合
+1. **D2.1**（核心）：新增共享选项中间层，父命令的共享选项被子孙命令继承，且与 args 重排契合
    （可写在叶子段任意位置）。
 2. **D2.2**（可选、有风险）：`gOpts` 由进程单例改为 per-App 实例，修多 App/并发共享。
 3. **D2.3**：三层语义文档 + help 渲染（继承选项分组显示）+ 专项测试。
@@ -59,27 +62,27 @@
 
 ## 方案
 
-### D2.1 持久选项 tier（核心）
+### D2.1 共享选项 tier（核心）
 
 #### API（复用现有全部绑定方法）
 
-`Command.PersistentFlags() *gflag.Flags`：惰性创建并返回命令专属的持久选项持有器 `c.pFlags`。
+`Command.SharedOpts() *gflag.Flags`：惰性创建并返回命令专属的共享选项持有器 `c.sharedFs`。
 用户在它上面像平时一样绑定 —— 自动获得 `BoolOpt/StrOpt/IntOpt/DurationOpt/Opt[T]/FromStruct/...`
 全部能力：
 
 ```go
 var gitDir string
-top.PersistentFlags().StrOpt(&gitDir, "git-dir", "", "", "the git work dir")
-// 或结构体：top.PersistentFlags().FromStruct(&persistentOpts)
+top.SharedOpts().StrOpt(&gitDir, "git-dir", "", "", "the git work dir")
+// 或结构体：top.SharedOpts().FromStruct(&sharedOpts)
 ```
 
-> 选 `PersistentFlags() *Flags`（对标 cobra `cmd.PersistentFlags()`）而非 `CliOpt.Persistent` 标记，
-> 因为前者零成本复用所有绑定方法，且 local/persistent 清晰分离。`c.pFlags` 仅作**定义来源**，
+> 选 `SharedOpts() *Flags`（对标 cobra `cmd.PersistentFlags()`）而非 `CliOpt.Shared` 标记，
+> 因为前者零成本复用所有绑定方法，且 local/shared 清晰分离。`c.sharedFs` 仅作**定义来源**，
 > 自身永不单独 Parse。
 
 #### 存储
 
-`Command` 增加字段 `pFlags *gflag.Flags`（lazy，`PersistentFlags()` 内首次创建）。
+`Command` 增加字段 `sharedFs *gflag.Flags`（lazy，`SharedOpts()` 内首次创建）。
 
 #### 合并基元（gflag 新增）
 
@@ -111,30 +114,30 @@ func (p *Parser) InheritOptsFrom(src *Parser) {
 在 `cmd.go` `parseOptions`（`:493`）中、`c.Parse(args)` 之前合并：
 
 ```go
-if !c.persistentMerged {
-    // 沿祖先链(含自身)收集持久选项, 从根到叶顺序合并进 c.Flags
+if !c.sharedMerged {
+    // 沿祖先链(含自身)收集共享选项, 从根到叶顺序合并进 c.Flags
     for _, anc := range c.ancestorsWithSelf() { // [root,...,parent,self]
-        if anc.pFlags != nil {
-            c.Flags.InheritOptsFrom(&anc.pFlags.Flags)
+        if anc.sharedFs != nil {
+            c.Flags.InheritOptsFrom(&anc.sharedFs.Flags)
         }
     }
-    c.persistentMerged = true
+    c.sharedMerged = true
 }
 ```
 
-- 自身的 `pFlags` 也并入 `c.Flags` → 命令**自己**也能识别它定义的持久选项
+- 自身的 `sharedFs` 也并入 `c.Flags` → 命令**自己**也能识别它定义的共享选项
   （写在子命令名之前的场景）。
-- 幂等 `persistentMerged bool`，避免重复注册。
-- **与 reorder 契合**：合并后持久选项已进入叶子的 flag set，`optMeta` 能识别其取值性，
+- 幂等 `sharedMerged bool`，避免重复注册。
+- **与 reorder 契合**：合并后共享选项已进入叶子的 flag set，`optMeta` 能识别其取值性，
   写在叶子 arguments 之后也会被正确重排+解析。
 
 #### 多级解析走查
 
-`app top sub --git-dir /x arg`（`--git-dir` 是 top 的持久选项）：
+`app top sub --git-dir /x arg`（`--git-dir` 是 top 的共享选项）：
 - app.fs 解析全局(重排关闭) → 停在 `top` → dispatch top `[sub,--git-dir,/x,arg]`
-- top.parseOptions：合并 top.pFlags 进 top.Flags；top.Parse 停在 `sub` → dispatch sub `[--git-dir,/x,arg]`
-- sub.parseOptions：合并祖先(top)的 pFlags 进 sub.Flags → sub.Parse 识别 `--git-dir`=/x，写回共享 ptr，
-  `arg` 余下 → doExecute。✅ 持久选项在叶子段任意位置可用。
+- top.parseOptions：合并 top.sharedFs 进 top.Flags；top.Parse 停在 `sub` → dispatch sub `[--git-dir,/x,arg]`
+- sub.parseOptions：合并祖先(top)的 sharedFs 进 sub.Flags → sub.Parse 识别 `--git-dir`=/x，写回共享 ptr，
+  `arg` 余下 → doExecute。✅ 共享选项在叶子段任意位置可用。
 
 #### help 渲染
 
@@ -162,29 +165,29 @@ if !c.persistentMerged {
 
 ## 风险 / 兼容
 
-- **D2.1 增量、无破坏**：不碰现有 local/global 绑定路径；命令未用 `PersistentFlags()` 时
-  `pFlags==nil`，合并是 no-op，行为完全不变。
+- **D2.1 增量、无破坏**：不碰现有 local/global 绑定路径；命令未用 `SharedOpts()` 时
+  `sharedFs==nil`，合并是 no-op，行为完全不变。
 - **同名冲突**：局部同名选项优先（合并时 `HasOption` 跳过），语义明确且安全。
-- **Required 持久选项**：在「实际执行命令」处校验（合并后随 `validateAll` 生效），需在测试中固化。
+- **Required 共享选项**：在「实际执行命令」处校验（合并后随 `validateAll` 生效），需在测试中固化。
 - **D2.2 有破坏风险**：改单例为 per-App 可能影响依赖 `gcli.GOpts()` 全局读取的代码；
   单独评估、独立提交、可暂缓。
 
 ## 测试（`github.com/gookit/goutil/x/assert`）
 
-- **继承**：top 定义持久 `--git-dir`，`app top sub --git-dir /x` → sub 内读到 `/x`。
+- **继承**：top 定义共享 `--git-dir`，`app top sub --git-dir /x` → sub 内读到 `/x`。
 - **任意位置**：`app top sub arg --git-dir /x`（重排）→ 同样生效，arg 仍为参数。
-- **多级继承**：三层 `app a b c`，a 的持久选项在 c 可用。
+- **多级继承**：三层 `app a b c`，a 的共享选项在 c 可用（沿祖先链合并）。
 - **局部优先**：子命令定义同名局部选项时，覆盖继承（互不写串）。
-- **自身可用**：`app top --git-dir /x sub` → top 段即识别持久选项。
-- **Required 持久**：缺失时在执行命令处报错。
-- **未用持久**：现有用例全绿（pFlags==nil，零行为变化）。
+- **自身可用**：`app top --git-dir /x sub` → top 段即识别共享选项。
+- **Required 共享**：缺失时在执行命令处报错。
+- **未用共享**：现有用例全绿（sharedFs==nil，零行为变化）。
 - **(D2.2)** 两个 App 实例的 verbose/strict 互不影响；并发 `-shuffle` 稳定。
 
 ## 提交拆分（按 R002）
 
 1. `feat(gflag): 增加 Parser.InheritOptsFrom 选项合并基元`
-2. `feat(gcli): Command.PersistentFlags 持久选项定义 + 分发时合并(含幂等)`
-3. `test(gcli): 持久选项继承/任意位置/局部优先/Required 用例`
+2. `feat(gcli): Command.SharedOpts 共享选项定义 + 分发时合并(含幂等)`
+3. `test(gcli): 共享选项继承/任意位置/局部优先/Required 用例`
 4. `docs: 三层选项模型说明(README/CHANGELOG) + struct/示例`
 5. （可选）`feat(gcli): help 渲染继承选项分组(Inherited Options)`
 6. （可选/独立评估）`refactor(gcli): gOpts 改 per-App 实例 + 多 App 测试`
