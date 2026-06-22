@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to semantic-ish versioning.
 
-## [v3.8.0] - Unreleased
+## [v3.8.0] - 2026-06-22
 
 ### ⚠️ Breaking Changes
 
@@ -41,7 +41,7 @@ and this project adheres to semantic-ish versioning.
   `./cliapp gendoc -f md|man -o ./docs` to export docs. Adds a `gflag.CliOpt.TypeName()`
   accessor for the option type name.
 
-[v3.8.0]: https://github.com/gookit/gcli/compare/v3.7.0...HEAD
+[v3.8.0]: https://github.com/gookit/gcli/compare/v3.7.0...v3.8.0
 
 ## [v3.7.0] - 2026-06-22
 
