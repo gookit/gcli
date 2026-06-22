@@ -44,3 +44,23 @@
 - [x] **测试隔离债**：已改为每用例独立工厂函数 + 补 gOpts 重置，`-shuffle` 40 次 0 失败（commit 2a6af97）
 - B3 交互式 shell `inShell`；C 类边角：`parser.go:223` ParseArgs 未接、`help.go:153` 多级子命令帮助、
   `cmd.go:510` `prepare()` 空桩、`ext.go:165` `HookCtx.err` 未用、`builtin/gen_emoji_codeMap.go:59` 打印 "TODO"。
+
+## 对标改进（对比主流 Go CLI 库后立项）
+
+> 背景与依据见 [compare-with-others.zh-CN.md](compare-with-others.zh-CN.md) 的「gcli 的差距」。
+
+- [ ] **D1 结构体绑定：去 unsafe + 类型丰富度**（增量、低风险，优先）
+  - [ ] `gflag/parser.go` `fromStructValue` 基础类型分支去掉 `unsafe.Pointer`/`UnsafeAddr()`，
+    改用安全的 `fv.Addr().Interface().(*T)`（其上方 `flag.Value` 分支已是此写法，行为不变）
+  - [ ] 扩充标签自动绑定的类型：`[]string/[]int` → 复用 `gflag.Strings/Ints`，
+    `time.Duration` → `FlagTypeDur`，`map[string]string` → `KVString`；做「kind→绑定器」注册表并支持自定义类型
+  - [ ] 标签打通 `enum`：复用已有 `CliOpt.Choices` 做声明式校验
+  - [ ] （下一步）泛型 API：`gflag.Opt[T]/BindVar[T]`，类型安全、可扩展，老 API 保留
+  - 对标：kong / go-arg / go-flags 原生支持 slice/map/enum/Duration（go-arg 连 Duration 都内置）
+
+- [ ] **D2 持久化选项继承模型**（伤筋动骨、建议独立里程碑）
+  - [ ] 新增「持久化选项」中间层：`Command.PersistentFlags()` 或 `CliOpt.Persistent` 标记；
+    dispatch 到子命令时把祖先链持久选项 merge 进叶子 flag set（与 args 重排契合：可写在叶子段任意位置）
+  - [ ] 进程级单例 `gOpts` 改为 per-App 实例，解决多 App/并发共享（CHANGELOG v3.4.0 已记此坑）
+  - [ ] 明确「全局(App) / 持久(命令子树) / 局部(命令)」三层语义 + 文档 + 专项测试（持久选项 × 多级）
+  - 对标：cobra 的 `PersistentFlags` / `LocalFlags` / `InheritedFlags` 三层模型
