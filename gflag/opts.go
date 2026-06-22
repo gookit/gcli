@@ -684,6 +684,10 @@ type CliOpt struct {
 // useful for shell completion to decide value-completion vs command-completion.
 func (m *CliOpt) TakesValue() bool { return m.flagType != FlagTypeBool }
 
+// TypeName get the flag type name. eg: bool, string, int, float, var, func
+// 公开已有的私有 flagType 字段, 供文档生成等场景读取选项类型。
+func (m *CliOpt) TypeName() string { return m.flagType }
+
 // NewOpt quick create an CliOpt instance
 func NewOpt(nameAndShorts, desc string, defVal any, setFns ...CliOptFn) *CliOpt {
 	return newOpt(nameAndShorts, desc, defVal, "", setFns...)
