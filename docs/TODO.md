@@ -47,13 +47,13 @@
 > 背景与依据见 [compare-with-others.zh-CN.md](compare-with-others.zh-CN.md) 的「gcli 的差距」。
 
 - [ ] 支持 man page / markdown 命令文档生成
-- [ ] **D1 结构体绑定：去 unsafe + 类型丰富度**（增量、低风险，优先）— [plans/feat-D1-struct-binding.md](plans/feat-D1-struct-binding.md)
+- [x] **D1 结构体绑定：去 unsafe + 类型丰富度**（增量、低风险）— [plans/feat-D1-struct-binding.md](plans/feat-D1-struct-binding.md)
   - [x] `gflag/parser.go` `fromStructValue` 基础类型分支去掉 `unsafe.Pointer`/`UnsafeAddr()`，
     改用安全的 `fv.Addr().Interface().(*T)`（commit 7830e0e）
   - [x] 扩充标签自动绑定的类型：原生 `[]string/[]int/[]bool` → `cflag.Strings/Ints/Booleans`，
     `time.Duration` → `DurationVar`，`map[string]string` → `mapStrValue` 适配器（commit a38d5d5/633e0ff）
   - [x] 标签打通 `enum`：`enum:"a,b,c"` → `CliOpt.Choices` + 成员校验（commit cd33f51）
-  - [ ] （下一步）泛型 API：`gflag.Opt[T]/BindVar[T]`，类型安全、可扩展，老 API 保留
+  - [x] 泛型 API：`gflag.Opt[T]/BindVar[T]`，类型安全、可扩展，老 API 保留（commit 99ffdfa）
   - 对标：kong / go-arg / go-flags 原生支持 slice/map/enum/Duration（go-arg 连 Duration 都内置）
 
 - [ ] **D2 持久化选项继承模型**（伤筋动骨、建议独立里程碑）

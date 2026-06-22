@@ -41,6 +41,11 @@ and this project adheres to semantic-ish versioning.
   types. A new `enum:"a,b,c"` tag key sets the option's value candidates (for
   completion) and adds membership validation. Internally the struct binder no
   longer uses `unsafe`.
+- **Generic option binding: `gflag.Opt[T]` / `gflag.BindVar[T]`.** A type-safe
+  generic API that dispatches on the pointer type to the matching binder, so one
+  call replaces the per-type `BoolVar/IntVar/StrVar/...`. Supports the same set
+  of types as struct binding (scalars, `time.Duration`, slices, `map[string]string`,
+  and any `flag.Value`). Example: `gflag.Opt(fs, &name, "name", "n", "tom", "user name")`.
 
 ### Changed
 

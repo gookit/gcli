@@ -1,6 +1,6 @@
 # 功能实现计划：D1 结构体绑定 — 去 unsafe + 类型丰富度
 
-> 状态：**D1.1-D1.4 + 文档已完成**；D1.5 泛型 API 待评估
+> 状态：**全部完成**（D1.1-D1.5 + 文档）
 > 范围：集中在 `gflag/parser.go`（`fromStructValue`）+ `gflag/util.go`（tag 键）+ 新增小适配器/helper。
 > 依据：[../compare-with-others.zh-CN.md](../compare-with-others.zh-CN.md) 差距 4；[../TODO.md](../TODO.md) D1。
 > 原则：**全部增量、向后兼容**，老 API 与既有标签行为不变。
@@ -181,7 +181,7 @@ func Opt[T any](co *CliOpts, p *T, name, shorts string, def T, desc string, fns 
 2. ✅ `feat(gflag): struct tag 支持 slice([]string/[]int/[]bool) 与 time.Duration`（commit a38d5d5）
 3. ✅ `feat(gflag): struct tag 支持 map[string]string(mapStrValue 适配器)`（commit 633e0ff）
 4. ✅ `feat(gflag): struct tag 支持 enum 键(Choices + 成员校验)`（commit cd33f51）
-5. ⏳ （可选/下一步）`feat(gflag): 泛型选项绑定 API Opt[T]/BindVar[T]` — 待评估
+5. ✅ `feat(gflag): 泛型选项绑定 API Opt[T]/BindVar[T]`（commit 99ffdfa）
 6. ✅ `docs: 更新 README/CHANGELOG 结构体标签新支持类型与 enum`
 
 > 预计每子阶段 < 60 行业务代码、1-2 个文件，满足「先确认再实施」阈值后可逐个推进。
