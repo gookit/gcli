@@ -232,3 +232,29 @@ and this project adheres to semantic-ish versioning.
 | CLI flag `--verbose 4` | env `GCLI_VERBOSE=debug` or `gcli.SetVerbose(gcli.VerbDebug)` |
 
 [v3.4.0]: https://github.com/gookit/gcli/compare/v3.3.1...v3.4.0
+
+---
+
+## v3.0.1 - 2021-04-23
+
+**new**
+
+- [x] add some special flag type vars
+- [x] support hidden command on render help by `c.Hidden=true`
+
+**fixed**
+
+- [x] alias not works on command ID
+- [x] render color on command/option/argument description
+
+## v3.0.0 - 2021-04-23
+
+**new**
+
+- [x] support multi level sub commands
+- [x] support parse flags from struct tags
+- [x] support flag/argument validate
+- [ ] support controller on application `app.controllers []Controller`
+  - 独立于commands之外的。Independent of commands.
+  - 支持组选项，全部子命令都拥有这些选项 `Config/GroupOptions()` 里绑定组选项。
+- [x] 支持单个command、controller独立运行

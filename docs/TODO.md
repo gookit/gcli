@@ -1,5 +1,9 @@
 # TODO
 
+- [ ] support controller on application `app.controllers []Controller`
+  - 独立于commands之外的。Independent of commands.
+  - 支持组选项，全部子命令都拥有这些选项 `Config/GroupOptions()` 里绑定组选项。
+
 ## 待修复（重构期间发现的既有问题）
 
 - [x] **`help COMMAND` 失效**：`help` 未注册为命令，`findCommandName` 返回 `NotFound`，
