@@ -24,17 +24,11 @@ func GenDoc(fns ...func(c *gcli.Command)) *gcli.Command {
 	}
 
 	c.StrOpt(
-		&docOpts.format,
-		"format",
-		"f",
-		"md",
+		&docOpts.format, "format", "f", "md",
 		"the documentation format for generated, allow: md, man",
 	)
 	c.StrOpt(
-		&docOpts.output,
-		"output",
-		"o",
-		"./docs",
+		&docOpts.output, "output", "o", "./docs",
 		"the output directory for generated documentation files.",
 	)
 
@@ -50,7 +44,7 @@ func doGenDoc(c *gcli.Command, _ []string) error {
 
 	// 按 format 选择渲染器; 非法格式直接返回 error。
 	switch docOpts.format {
-	case "md", "markdown":
+	case "md", "mkdown", "markdown":
 		if err := docgen.MarkdownTree(app, dir); err != nil {
 			return c.NewErrf("generate markdown docs error: %s", err.Error())
 		}

@@ -11,12 +11,6 @@ import (
 	"github.com/gookit/goutil/cliutil"
 )
 
-// current supported shell
-const (
-	ZshShell  = gcli.ZshShell
-	BashShell = gcli.BashShell
-)
-
 // generate options
 var genOpts = &struct {
 	shell   string
@@ -40,31 +34,19 @@ func GenAutoComplete(fns ...func(c *gcli.Command)) *gcli.Command {
 	}
 
 	c.StrOpt(
-		&genOpts.shell,
-		"shell",
-		"s",
-		shell,
+		&genOpts.shell, "shell", "s", shell,
 		"the shell env name for want generated, allow: zsh,bash,pwsh(pwsh only for dynamic)",
 	)
 	c.StrOpt(
-		&genOpts.binName,
-		"bin-name",
-		"b",
-		"",
+		&genOpts.binName, "bin-name", "b", "",
 		"your packaged application bin file name.",
 	)
 	c.StrOpt(
-		&genOpts.output,
-		"output",
-		"o",
-		"auto-completion."+shell,
+		&genOpts.output, "output", "o", "auto-completion."+shell,
 		"output shell auto completion script file name.",
 	)
 	c.BoolOpt(
-		&genOpts.static,
-		"static",
-		"S",
-		false,
+		&genOpts.static, "static", "S", false,
 		"generate static(embedded) completion script instead of the default dynamic(thin) one.",
 	)
 
