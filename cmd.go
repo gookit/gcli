@@ -129,6 +129,16 @@ type Command struct {
 	standalone bool
 	// global option binding on standalone. deny error on repeat run.
 	gOptBounded bool
+
+	// sharedFs holds the command's shared options (≈ cobra PersistentFlags).
+	// 共享选项的定义来源: 本命令及其所有子孙命令都会继承这些选项。lazy 创建于 SharedOpts()。
+	sharedFs *gflag.Flags
+	// sharedMerged marks shared options(self + ancestors) have been merged into c.Flags.
+	// 幂等标记, 保证分发时只合并一次共享选项。
+	sharedMerged bool
+	// localOptNames snapshots the command's own local option names before shared merge.
+	// 合并共享选项前的本地选项名快照, 用于区分局部定义与继承副本(保留局部 Required、跳过被局部覆盖的共享必填校验)。
+	localOptNames map[string]bool
 }
 
 // NewCommand create a new command instance.
@@ -181,6 +191,19 @@ func (c *Command) Use(handlers ...RunnerFunc) *Command {
 
 // AttachTo attach the command to CLI application
 func (c *Command) AttachTo(app *App) { app.AddCommand(c) }
+
+// SharedOpts 返回命令专属的共享选项持有器(惰性创建), 对标 cobra 的 PersistentFlags()。
+//
+// 在它上面像普通选项一样绑定(BoolOpt/StrOpt/Opt[T]/FromStruct/...), 这些选项会被本命令
+// 及其所有子孙命令继承: 父命令定义、子命令也能解析, 且父子读写同一个变量(共享 flag.Value)。
+//
+// 注意: sharedFs 仅作为「定义来源」, 自身永不单独 Parse; 分发时由 parseOptions 合并进 c.Flags。
+func (c *Command) SharedOpts() *gflag.Flags {
+	if c.sharedFs == nil {
+		c.sharedFs = gflag.New(c.Name)
+	}
+	return c.sharedFs
+}
 
 // Disable set cmd is disabled
 func (c *Command) Disable() { c.disabled = true }
@@ -508,6 +531,10 @@ func (c *Command) parseOptions(args []string) (ss []string, err error) {
 	// args reorder(默认开启)在子命令名处停止, 确保多级命令时只重排最终执行命令的 args。
 	c.Flags.SetReorderStop(c.isReorderStopName)
 
+	// 合并共享选项: 沿祖先链(含自身)从根到叶把共享选项并入 c.Flags, 使其在本命令段可解析。
+	// 幂等: sharedMerged 保证只合并一次; 合并后写在叶子段任意位置(配合 reorder)也能被识别。
+	c.mergeSharedOpts()
+
 	Debugf("cmd: %s - will parse options from args: %v", c.Name, args)
 
 	// parse options, don't contains command name.
@@ -518,6 +545,81 @@ func (c *Command) parseOptions(args []string) (ss []string, err error) {
 
 	// remaining args, next use for parse arguments
 	return c.RawArgs(), nil
+}
+
+// mergeSharedOpts 沿祖先链(含自身)从根到叶把各级的共享选项合并进 c.Flags。
+//
+// 顺序为 [root,...,parent,self], 这样祖先(更靠近根)的共享选项先注册; 同名时 InheritOptsFrom
+// 内部以「已存在则跳过」保证局部/更近的定义优先。幂等: sharedMerged 仅合并一次。
+//
+// 关于 Required: 共享选项可能写在叶子命令段, 而本命令(若是中间祖先)解析时尚未见到该值,
+// 因此合并进 c.Flags 的副本会清除 Required, 避免在「会继续向子命令分发的命令」上误报必填。
+// 真正的 Required 校验延后到实际执行命令时由 validateSharedRequired 统一处理。
+func (c *Command) mergeSharedOpts() {
+	if c.sharedMerged {
+		return
+	}
+	c.sharedMerged = true
+
+	// 沿 parent 链收集 [self, parent, ..., root]
+	var chain []*Command
+	for cur := c; cur != nil; cur = cur.parent {
+		chain = append(chain, cur)
+	}
+
+	// 合并前快照: c.Flags 此刻已有的选项均为命令自身的局部定义, 它们的 Required 应保留。
+	c.localOptNames = make(map[string]bool, len(c.Flags.Opts()))
+	for name := range c.Flags.Opts() {
+		c.localOptNames[name] = true
+	}
+
+	// 反向遍历(从根到叶)合并, 使祖先共享选项先注册、局部/更近定义优先
+	for i := len(chain) - 1; i >= 0; i-- {
+		anc := chain[i]
+		if anc.sharedFs != nil {
+			c.Flags.InheritOptsFrom(anc.sharedFs)
+		}
+	}
+
+	// 清除「新继承进来」的共享选项副本的 Required: 共享值可能写在叶子命令段, 中间命令解析时
+	// 还看不到取值, 不能在那时误报必填。共享选项的 Required 延后到执行命令时由
+	// validateSharedRequired 统一校验。局部已定义的同名选项(快照中)保持其 Required 不变。
+	for name, opt := range c.Flags.Opts() {
+		if !c.localOptNames[name] {
+			opt.Required = false
+		}
+	}
+}
+
+// validateSharedRequired 在实际执行命令前, 沿祖先链(含自身)校验所有 Required 共享选项是否已赋值。
+//
+// 共享选项的 Required 校验延后到此处统一处理: 因为共享选项可写在叶子命令段, 中间命令解析时
+// 还看不到取值, 不能在那时报必填。到达执行命令时, 共享值已写回同一 ptr, 此处即可正确判定。
+// 若执行命令定义了同名局部选项(共享被跳过继承), 则由局部自身的校验负责, 这里跳过。
+func (c *Command) validateSharedRequired() error {
+	for cur := c; cur != nil; cur = cur.parent {
+		if cur.sharedFs == nil {
+			continue
+		}
+		for name, opt := range cur.sharedFs.Opts() {
+			if !opt.Required {
+				continue
+			}
+			// 执行命令有同名局部选项 → 共享被局部覆盖, 由局部 validateAll 负责, 此处跳过
+			if c.localOptNames[name] {
+				continue
+			}
+
+			val := ""
+			if fItem := opt.Flag(); fItem != nil {
+				val = fItem.Value.String()
+			}
+			if val == "" {
+				return fmt.Errorf("option '%s' is required", name)
+			}
+		}
+	}
+	return nil
 }
 
 // prepare: before execute the command
@@ -534,6 +636,13 @@ func (p panicErr) Error() string { return fmt.Sprint(p.val) }
 
 // do execute the command
 func (c *Command) doExecute(args []string) (err error) {
+	// 共享 Required 选项的延后校验: 到达实际执行命令时统一检查祖先链(含自身)的必填共享选项
+	if err = c.validateSharedRequired(); err != nil {
+		c.Fire(gevent.OnCmdRunError, map[string]any{"cmd": c.Name, "err": err})
+		Logf(VerbError, "command '%s' shared required option err: <red>%s</>", c.Name, err.Error())
+		return err
+	}
+
 	// collect and binding named argument
 	Debugf("cmd: %s - collect and binding named arguments", c.Name)
 	if err := c.ParseArgs(args); err != nil {
