@@ -34,6 +34,22 @@
 | 持久(persistent) | 某命令 | 该命令**及其所有子孙命令** |
 | 局部(local) | 某命令 | 仅该命令 |
 
+#### 动机：现状 vs 持久选项（直观对照）
+
+命令树 `app remote(父) → add(子)`，`--verbose` 定义在 `remote` 上。
+
+| 输入 | 现状(remote 局部选项) | 持久选项后 |
+|---|---|---|
+| `app remote --verbose add` | ✅ 写在子命令名**之前**，由 remote 解析 | ✅ |
+| `app remote add --verbose` | ❌ remote 解析到 `add` 即停，`--verbose` 交给 add；**add 不认识** → 报错 | ✅ add **继承**了 `--verbose`，能解析 |
+| `app remote add arg --verbose`（配合重排） | ❌ 同上 | ✅ 写在 arguments 后也能解析 |
+
+本质：**把父命令的某个选项「下放」到整棵子命令树**，使其在子命令(叶子)那一段里也能写、能解析；
+父子写的是**同一个变量**（共享同一 `flag.Value`/`*ptr`）。对标 cobra 的 `PersistentFlags`，
+如 `git --git-dir=X status` 里 `--git-dir` 能在子命令处使用。
+
+> 它**只解决父 → 子方向**：不会让子命令自己的局部选项能写在子命令名之前。
+
 1. **D2.1**（核心）：新增持久选项中间层，父命令的持久选项被子孙命令继承，且与 args 重排契合
    （可写在叶子段任意位置）。
 2. **D2.2**（可选、有风险）：`gOpts` 由进程单例改为 per-App 实例，修多 App/并发共享。
