@@ -56,8 +56,10 @@ and this project adheres to semantic-ish versioning.
   both work. Use `c.SharedOpts()` with any binder (`BoolOpt/StrOpt/Opt[T]/FromStruct/...`).
   A local option of the same name on a sub-command takes priority; `Required` on a
   shared option is validated at the executing (leaf) command. New gflag primitive
-  `Parser.InheritOptsFrom(src)` re-registers another parser's options by their
-  underlying `flag.Value`.
+  `Parser.InheritOptsFrom(src, category...)` re-registers another parser's options by
+  their underlying `flag.Value`. In a sub-command's help, options inherited from
+  ancestors are grouped under an **`Inherited Options`** section (a command's own
+  shared options render with its local options).
 
 ### Changed
 

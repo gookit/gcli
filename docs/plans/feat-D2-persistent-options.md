@@ -1,6 +1,6 @@
 # 功能实现计划：D2 共享选项继承模型（SharedOpts，≈ cobra PersistentFlags）
 
-> 状态：**D2.1 核心已完成**（提交拆分 1-4 + 复核修复）；D2.5(help 分组)/D2.6(gOpts per-App) 待评估
+> 状态：**D2.1 + D2.5 已完成**（提交拆分 1-5 + 复核修复）；D2.6(gOpts per-App) 待评估
 > 范围：`cmd.go`（共享选项存储/合并/分发）+ 新增 gflag 合并基元 + 可选的 `gcli.go`（gOpts per-App）。
 > 依据：[../compare-with-others.zh-CN.md](../compare-with-others.zh-CN.md) 差距 5；[../TODO.md](../TODO.md) D2。
 > 对标：cobra 的 `PersistentFlags` / `LocalFlags` / `InheritedFlags` 三层模型。
@@ -198,10 +198,12 @@ if !c.sharedMerged {
 3. ✅ `test(gcli): 共享选项继承/任意位置/局部优先/Required 用例`（commit bf4ef0c）
 4. ✅ `docs: 三层选项模型说明(README/CHANGELOG)`（commit a42019e）
    - ✅ 复核修复：共享 Required 改用类型感知 `CliOpt.IsEmpty()`（commit 87951f0）
-5. ⏳（可选）`feat(gcli): help 渲染继承选项分组(Inherited Options)` — 待评估
+5. ✅ `feat(gcli): help 渲染继承选项分组(Inherited Options)`（commit b704f29）
 6. ⏳（可选/独立评估）`refactor(gcli): gOpts 改 per-App 实例 + 多 App 测试` — 风险最高，需先确认
 
-> 1-4（核心 + 文档）已落地并验证；5/6 视情况单独推进，其中 6 风险最高需先确认。
+> 1-5（核心 + 文档 + help 分组）已落地并验证；6 风险最高，需先确认再做。
+> 说明：内置 `help` 命令仅支持单级（help.go 既有 TODO），故 `help top sub` 暂不可用；
+> `top sub -h` 正常。help 分组对两条 ShowHelp 路径均生效（ShowHelp 开头补了幂等合并）。
 
 ### 实施备注（复核发现）
 

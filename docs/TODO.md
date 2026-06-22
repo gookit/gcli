@@ -62,4 +62,5 @@
     （commit 323219f/77f2391/bf4ef0c/87951f0）
   - [ ] 进程级单例 `gOpts` 改为 per-App 实例，解决多 App/并发共享（CHANGELOG v3.4.0 已记此坑）— 风险高，待评估
   - [x] 明确「全局(App) / 共享(命令子树) / 局部(命令)」三层语义 + 文档（README/CHANGELOG）+ 专项测试（commit a42019e）
+  - [x] help 渲染：祖先继承选项归入 "Inherited Options" 分组；ShowHelp 补幂等合并（commit b704f29）
   - 对标：cobra 的 `PersistentFlags` / `LocalFlags` / `InheritedFlags` 三层模型
