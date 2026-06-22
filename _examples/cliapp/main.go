@@ -76,6 +76,7 @@ func main() {
 		cmd.StructFlagDemo,
 		cmd.ShortMergeDemo,
 		cmd.QuestionDemo,
+		cmd.ReorderDemo,
 	)
 
 	app.Add(builtin.GenEmojiMap)
