@@ -302,8 +302,10 @@ func (c *Command) initialize() {
 	c.initCommandBase(cName)
 	c.Fire(gevent.OnCmdInitBefore, nil)
 
-	// init for cmd flags parser
-	c.Flags.Init(cName)
+	// init for cmd flags parser.
+	// 用命令全路径(如 "git branch")作为 flags 名: flags 名仅用于报错信息(选项/参数
+	// 重复绑定 panic 等), 带上全路径便于定位是哪个命令。此刻 pathNames 已包含本命令段。
+	c.Flags.Init(c.Path())
 
 	// load common sub commands
 	if len(c.Subs) > 0 {

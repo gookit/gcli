@@ -226,12 +226,21 @@ func TestFlags_VarOpt(t *testing.T) {
 }
 
 func TestFlags_CheckName(t *testing.T) {
+	// 重复绑定 panic 带上 flags/命令名(默认名 gflag), 便于定位
 	assert.PanicsMsg(t, func() {
 		var i int64
 		fs := gcli.NewFlags()
 		fs.Int64Opt(&i, "opt1", "", 0, "desc")
 		fs.Int64Opt(&i, "opt1", "", 0, "desc")
-	}, "gflag: redefined option flag 'opt1'")
+	}, "gflag: redefined option flag 'opt1' in command 'gflag'")
+
+	// 命名 flags 时, 重复绑定 panic 会带上该名称
+	assert.PanicsMsg(t, func() {
+		var i int64
+		fs := gcli.NewFlags("mycmd")
+		fs.Int64Opt(&i, "opt1", "", 0, "desc")
+		fs.Int64Opt(&i, "opt1", "", 0, "desc")
+	}, "gflag: redefined option flag 'opt1' in command 'mycmd'")
 
 	assert.PanicsMsg(t, func() {
 		var b bool

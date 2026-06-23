@@ -416,6 +416,10 @@ func (co *CliOpts) checkFlagInfo(opt *CliOpt) string {
 	// check flag name
 	name := opt.initCheck()
 	if _, ok := co.opts[name]; ok {
+		// co.name 由 gcli.Command 注入(命令全路径), 带上它便于定位是哪个命令重复绑定
+		if co.name != "" {
+			panicf("redefined option flag '%s' in command '%s'", name, co.name)
+		}
 		panicf("redefined option flag '%s'", name)
 	}
 

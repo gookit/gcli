@@ -5,6 +5,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/),
 and this project adheres to semantic-ish versioning.
 
+## [Unreleased]
+
+### Changed
+
+- **Duplicate-bind panics now include the command path.** When an option (or
+  argument) is bound twice on the same command, the panic message now appends
+  `in command '<path>'` (e.g. `redefined option flag 'dry-run' in command 'git
+  branch'`), making the offending command easy to locate. The command's flag set
+  is now named by its full path (`Command.Path()`); the flag-set name is only used
+  for such diagnostics, so help output is unaffected.
+
 ## [v3.8.0] - 2026-06-22
 
 ### ⚠️ Breaking Changes
