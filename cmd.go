@@ -497,6 +497,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 				}
 
 				color.Error.Tips("%s - subcommand '%s' is not found", c.Name, name)
+				return newRunErr(ERR.ToInt(), c.NewErrf("%s - subcommand %q is not found", c.Name, name))
 			}
 		}
 	}

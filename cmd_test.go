@@ -380,6 +380,21 @@ func TestCommand_Run_moreLevelSub(t *testing.T) {
 	assert.Eq(t, "command path: git remote add", bf.String())
 }
 
+func TestCommand_Run_unknownSubcommandDoesNotRunParent(t *testing.T) {
+	ran := false
+	c := gcli.NewCommand("worker", "desc")
+	c.Add(gcli.NewCommand("start", "desc"))
+	c.SetFunc(func(c *gcli.Command, args []string) error {
+		ran = true
+		return nil
+	})
+
+	err := c.Run([]string{"stop"})
+
+	assert.Err(t, err)
+	assert.False(t, ran)
+}
+
 // c0Opts 保存 newC0Cmd 绑定的选项值, 每个用例独立持有, 避免共享可变状态。
 type c0Opts struct {
 	int0 int
