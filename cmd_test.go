@@ -348,6 +348,38 @@ func TestCommand_Sub(t *testing.T) {
 	assert.Eq(t, "add", c.Name)
 }
 
+func TestCommand_HelperMethods(t *testing.T) {
+	r, _ := newGitCmd()
+	r.MatchByPath("") // use for init
+
+	remote := r.SubCommand("remote")
+	assert.NotNil(t, remote)
+	assert.True(t, r.IsSubCommand("remote"))
+	assert.False(t, r.IsSubCommand("not-exist"))
+	assert.Eq(t, r, remote.Parent())
+	assert.Eq(t, "git", remote.ParentName())
+	assert.Eq(t, r, remote.Root())
+
+	add := remote.SubCommand("add")
+	assert.NotNil(t, add)
+	assert.Eq(t, "git:remote:add", add.ID())
+	assert.Eq(t, "git remote add", add.Path())
+	assert.Eq(t, []string{"git", "remote", "add"}, add.PathNames())
+
+	err := add.NewErr("plain error")
+	assert.Err(t, err)
+	assert.Eq(t, "plain error", err.Error())
+
+	manual := gcli.NewCommand("manual", "desc")
+	manual.SetParent(remote)
+	assert.Eq(t, remote, manual.Parent())
+	assert.Eq(t, "remote", manual.ParentName())
+	assert.Eq(t, r, manual.Root())
+
+	hidden := gcli.NewCommand("hidden", "desc").WithHidden()
+	assert.True(t, hidden.Hidden)
+}
+
 func TestCommand_Run_top(t *testing.T) {
 	r, bf := newGitCmd()
 

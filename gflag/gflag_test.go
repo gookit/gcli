@@ -691,3 +691,96 @@ func TestParser_Parse_recoverPanic(t *testing.T) {
 	is.Err(err)
 	is.StrContains(err.Error(), "panic")
 }
+
+func TestParser_HelperMethods(t *testing.T) {
+	t.Run("config required output and raw args", func(t *testing.T) {
+		var name string
+		buf := new(bytes.Buffer)
+		fs := gflag.New("helpers")
+		fs.SetConfig(&gflag.Config{TagName: "flagx", IndentLongOpt: true})
+		fs.StrOpt(&name, "name", "n", "", "name option")
+		fs.Required("name")
+		fs.SetOutput(buf)
+
+		assert.Eq(t, "flagx", fs.ParserCfg().TagName)
+		assert.PanicsMsg(t, func() {
+			fs.Required("missing")
+		}, "gflag: config undefined option '--missing'")
+
+		assert.NoErr(t, fs.Parse([]string{"--name", "inhere", "raw"}))
+		assert.Eq(t, "inhere", name)
+		assert.Eq(t, "raw", fs.RawArg(0))
+		assert.Eq(t, []string{"raw"}, fs.FSetArgs())
+
+		fs.PrintHelpPanel()
+		assert.StrContains(t, buf.String(), "--name")
+	})
+
+	t.Run("handle and init", func(t *testing.T) {
+		called := false
+		fs := &gflag.Flags{}
+		fs.Init("manual")
+		fs.SetHandle(func(p *gflag.Flags) error {
+			called = true
+			assert.Eq(t, "manual", p.Name())
+			return nil
+		}).Run([]string{"bin"})
+
+		assert.True(t, called)
+	})
+
+	t.Run("reorder stop keeps child args verbatim", func(t *testing.T) {
+		var verbose bool
+		fs := gflag.New("reorder")
+		fs.BoolOpt(&verbose, "verbose", "v", false, "verbose mode")
+		fs.SetReorderStop(func(name string) bool {
+			return name == "child"
+		})
+
+		assert.NoErr(t, fs.Parse([]string{"child", "-v"}))
+		assert.False(t, verbose)
+		assert.Eq(t, []string{"child", "-v"}, fs.FSetArgs())
+	})
+}
+
+func TestParser_InheritOptsFrom(t *testing.T) {
+	t.Run("inherits option and shares bound value", func(t *testing.T) {
+		var token string
+		parent := gflag.New("parent")
+		parent.StrOpt(&token, "token", "t", "", "api token")
+
+		child := gflag.New("child")
+		child.InheritOptsFrom(parent, "Global Options")
+
+		assert.True(t, child.HasOption("token"))
+		assert.True(t, child.IsShortName("t"))
+		assert.NoErr(t, child.Parse([]string{"--token", "abc"}))
+		assert.Eq(t, "abc", token)
+		assert.Eq(t, "Global Options", child.Opt("token").Category)
+	})
+
+	t.Run("skips local name and short conflicts", func(t *testing.T) {
+		var parentToken, childToken string
+		parent := gflag.New("parent")
+		parent.StrOpt(&parentToken, "token", "t", "", "parent token")
+
+		child := gflag.New("child")
+		child.StrOpt(&childToken, "token", "", "", "child token")
+		child.InheritOptsFrom(parent)
+
+		assert.Len(t, child.ShortNames("token"), 0)
+		assert.NoErr(t, child.Parse([]string{"--token", "local"}))
+		assert.Eq(t, "", parentToken)
+		assert.Eq(t, "local", childToken)
+
+		var mode string
+		conflictParent := gflag.New("conflict-parent")
+		conflictParent.StrOpt(&mode, "mode", "m", "", "mode")
+
+		var mine bool
+		conflictChild := gflag.New("conflict-child")
+		conflictChild.BoolOpt(&mine, "mine", "m", false, "mine")
+		conflictChild.InheritOptsFrom(conflictParent)
+		assert.False(t, conflictChild.HasOption("mode"))
+	})
+}

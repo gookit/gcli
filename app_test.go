@@ -3,6 +3,7 @@ package gcli_test
 import (
 	"bytes"
 	"fmt"
+	"os"
 	"strings"
 	"testing"
 
@@ -328,6 +329,52 @@ func TestApp_Errors_clearAfterFetch(t *testing.T) {
 	assert.Eq(t, "run failed", err.Error())
 	assert.NoErr(t, app.LastError())
 	assert.NoErr(t, app.Errors())
+}
+
+func TestApp_RunHelpers(t *testing.T) {
+	newEchoApp := func() (*gcli.App, *string) {
+		var got string
+		app := gcli.NewApp(gcli.NotExitOnEnd())
+		app.Add(gcli.NewCommand("echo", "desc", func(c *gcli.Command) {
+			c.AddArg("word", "word to echo")
+		}).WithFunc(func(c *gcli.Command, args []string) error {
+			got = c.Arg("word").String()
+			return nil
+		}))
+		return app, &got
+	}
+
+	t.Run("RunArgs", func(t *testing.T) {
+		app, got := newEchoApp()
+		assert.Eq(t, 0, app.RunArgs("echo", "one"))
+		assert.Eq(t, "one", *got)
+	})
+
+	t.Run("RunLine", func(t *testing.T) {
+		app, got := newEchoApp()
+		assert.Eq(t, 0, app.RunLine(`echo "two words"`))
+		assert.Eq(t, "two words", *got)
+	})
+
+	t.Run("RunCmd", func(t *testing.T) {
+		app, got := newEchoApp()
+		assert.NoErr(t, app.RunCmd("echo", []string{"three"}))
+		assert.Eq(t, "three", *got)
+
+		err := app.RunCmd("missing", nil)
+		assert.Err(t, err)
+		assert.ErrMsg(t, err, `command "missing" not exists`)
+	})
+
+	t.Run("QuickRun", func(t *testing.T) {
+		app, got := newEchoApp()
+		oldArgs := os.Args
+		os.Args = []string{"gcli.test", "echo", "quick"}
+		defer func() { os.Args = oldArgs }()
+
+		assert.Eq(t, 0, app.QuickRun())
+		assert.Eq(t, "quick", *got)
+	})
 }
 
 func TestApp_Run_command_withOptions(t *testing.T) {
