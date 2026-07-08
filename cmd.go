@@ -544,8 +544,13 @@ func (c *Command) parseOptions(args []string) (ss []string, err error) {
 		}
 	}
 
-	// args reorder(默认开启)在子命令名处停止, 确保多级命令时只重排最终执行命令的 args。
-	c.Flags.SetReorderStop(c.isReorderStopName)
+	// args reorder(默认开启)在子命令边界处停止, 确保多级命令时只重排最终执行命令的 args。
+	c.Flags.SetReorderStop(func(name string) bool {
+		if c.isReorderStopName(name) {
+			return true
+		}
+		return len(c.commands) > 0 && !c.HasArguments()
+	})
 
 	// 合并共享选项: 沿祖先链(含自身)从根到叶把共享选项并入 c.Flags, 使其在本命令段可解析。
 	// 幂等: sharedMerged 保证只合并一次; 合并后写在叶子段任意位置(配合 reorder)也能被识别。

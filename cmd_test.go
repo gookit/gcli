@@ -395,6 +395,25 @@ func TestCommand_Run_unknownSubcommandDoesNotRunParent(t *testing.T) {
 	assert.False(t, ran)
 }
 
+func TestCommand_Run_unknownSubcommandWithHelpFlagFiresEvent(t *testing.T) {
+	var eventName string
+	var eventArgs []string
+
+	c := gcli.NewCommand("worker", "desc")
+	c.Add(gcli.NewCommand("start", "desc"))
+	c.On(gcli.EvtCmdSubNotFound, func(ctx *gcli.HookCtx) bool {
+		eventName = ctx.Str("name")
+		eventArgs = ctx.Strings("args")
+		return true
+	})
+
+	err := c.Run([]string{"stop", "-h"})
+
+	assert.NoErr(t, err)
+	assert.Eq(t, "stop", eventName)
+	assert.Eq(t, []string{"-h"}, eventArgs)
+}
+
 // c0Opts 保存 newC0Cmd 绑定的选项值, 每个用例独立持有, 避免共享可变状态。
 type c0Opts struct {
 	int0 int
