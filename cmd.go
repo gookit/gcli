@@ -259,11 +259,11 @@ func (c *Command) AddCommand(sub *Command) {
 
 	// extend path names from parent
 	sub.pathNames = c.pathNames[0:]
+	// update some parser config before initializing sub command
+	sub.Flags.WithConfigFn(gflag.WithIndentLongOpt(c.ParserCfg().IndentLongOpt))
 
 	// do add and init sub command
 	c.base.addCommand(c.Name, sub)
-	// update some parser config
-	sub.Flags.WithConfigFn(gflag.WithIndentLongOpt(c.ParserCfg().IndentLongOpt))
 }
 
 // Match sub command by input names

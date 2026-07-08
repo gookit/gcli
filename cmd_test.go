@@ -496,6 +496,45 @@ func TestCommand_Run_showHelp2(t *testing.T) {
 	is.StrContains(str, "Arg1 desc")
 }
 
+func TestCommand_ShowHelp_indentLongOptOnThirdLevel(t *testing.T) {
+	var force bool
+	var port int
+
+	app := gcli.NewApp(gcli.NotExitOnEnd())
+	app.Add(&gcli.Command{
+		Name: "top",
+		Desc: "top command",
+		Subs: []*gcli.Command{
+			{
+				Name: "middle",
+				Desc: "middle command",
+				Subs: []*gcli.Command{
+					{
+						Name: "leaf",
+						Desc: "leaf command",
+						Config: func(c *gcli.Command) {
+							c.BoolOpt(&force, "force", "f", false, "force opt")
+							c.IntOpt(&port, "port", "", 0, "port opt")
+						},
+					},
+				},
+			},
+		},
+	})
+
+	bf := new(bytes.Buffer)
+	color.Disable()
+	color.SetOutput(bf)
+	defer color.ResetOptions()
+
+	code := app.Run([]string{"top", "middle", "leaf", "-h"})
+
+	assert.Eq(t, 0, code)
+	str := bf.String()
+	assert.StrContains(t, str, "-f, --force")
+	assert.StrContains(t, str, "      --port int")
+}
+
 func TestCommand_Run_parseOptions(t *testing.T) {
 	is := assert.New(t)
 	c0, _, opts := newC0Cmd()

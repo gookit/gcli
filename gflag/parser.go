@@ -123,6 +123,9 @@ func (p *Parser) SetRuleType(rt uint8) *Parser {
 
 // WithConfigFn for the object.
 func (p *Parser) WithConfigFn(fns ...ConfigFunc) *Parser {
+	if p.cfg == nil {
+		p.cfg = newDefaultFlagConfig()
+	}
 	for _, fn := range fns {
 		fn(p.cfg)
 	}
