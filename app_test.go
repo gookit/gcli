@@ -306,6 +306,30 @@ func TestApp_Run_command_withArguments(t *testing.T) {
 	// app.AddError(fmt.Errorf("test error"))
 }
 
+func TestApp_Errors_clearAfterFetch(t *testing.T) {
+	app := gcli.NewApp(gcli.NotExitOnEnd())
+	app.Add(gcli.NewCommand("fail", "desc").WithFunc(func(c *gcli.Command, args []string) error {
+		return fmt.Errorf("run failed")
+	}))
+
+	code := app.Run([]string{"fail"})
+	assert.Eq(t, gcli.ERR.ToInt(), code)
+
+	err := app.Errors()
+	assert.Err(t, err)
+	assert.StrContains(t, err.Error(), "run failed")
+	assert.NoErr(t, app.Errors())
+
+	code = app.Run([]string{"fail"})
+	assert.Eq(t, gcli.ERR.ToInt(), code)
+
+	err = app.LastError()
+	assert.Err(t, err)
+	assert.Eq(t, "run failed", err.Error())
+	assert.NoErr(t, app.LastError())
+	assert.NoErr(t, app.Errors())
+}
+
 func TestApp_Run_command_withOptions(t *testing.T) {
 	is := assert.New(t)
 	app := gcli.NewApp(gcli.NotExitOnEnd())

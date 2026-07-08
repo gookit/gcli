@@ -574,6 +574,7 @@ func (app *App) Run(args []string) (code int) {
 		} else {
 			exCode = ERR.ToInt()
 		}
+		app.AddError(err)
 	}
 
 	Debugf("command '%s' run complete, exit code: %d, error: %v", name, exCode, err)

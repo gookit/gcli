@@ -11,6 +11,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/goutil/arrutil"
+	"github.com/gookit/goutil/errorx"
 	"github.com/gookit/goutil/maputil"
 	"github.com/gookit/goutil/structs"
 	"github.com/gookit/goutil/sysutil"
@@ -197,7 +198,7 @@ type base struct {
 	// Whether it has been initialized
 	initialized bool
 	// store some runtime errors
-	errors []error
+	errors errorx.Errors
 }
 
 func newBase() base {
@@ -399,7 +400,26 @@ func (b *base) SetLogo(logo string, style ...string) {
 
 // AddError to the application
 func (b *base) AddError(err error) {
-	b.errors = append(b.errors, err)
+	if err != nil {
+		b.errors = append(b.errors, err)
+	}
+}
+
+// Errors fetch, will clear after fetch.
+func (b *base) Errors() error {
+	errs := b.errors
+	b.errors = nil
+	return errs.ErrorOrNil()
+}
+
+// LastError fetch, will clear after fetch.
+func (b *base) LastError() error {
+	if n := len(b.errors); n > 0 {
+		err := b.errors[n-1]
+		b.errors = nil
+		return err
+	}
+	return nil
 }
 
 // Commands get all commands
