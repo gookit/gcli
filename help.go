@@ -73,11 +73,12 @@ func (b *base) CommandsByGroup(defaultTitle string) []*CmdGroup {
 func (app *App) showVersionInfo() bool {
 	Debugf("print application version info")
 
-	color.Printf(
-		"%s\n\nVersion: <cyan>%s</>\n",
-		strutil.UpperFirst(app.Desc),
-		app.Version,
-	)
+	// custom color tag, direct print by color
+	if strings.Contains(app.Version, "</>") {
+		color.Printf("Version: %s\n", app.Version)
+	} else {
+		color.Printf("Version: <cyan>%s</>\n", app.Version)
+	}
 
 	if app.Logo.Text != "" {
 		color.Printf("%s\n", color.WrapTag(app.Logo.Text, app.Logo.Style))

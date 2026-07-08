@@ -121,7 +121,7 @@ func NewApp(fns ...func(app *App)) *App {
 	app.opts = newAppOptions()
 
 	// set a default value
-	app.Version = "1.0.0"
+	app.Version = "0.1.0-dev"
 	app.base.Ctx = gCtx
 
 	for _, fn := range fns {
