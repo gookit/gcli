@@ -1,5 +1,6 @@
 # TODO
 
+- [ ] App 级 Persistent Optons(SharedOpts) 实现，支持到每个子命令
 - [ ] support controller on application `app.controllers []Controller`
   - 独立于commands之外的。Independent of commands.
   - 支持组选项，全部子命令都拥有这些选项 `Config/GroupOptions()` 里绑定组选项。

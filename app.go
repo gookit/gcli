@@ -568,11 +568,15 @@ func (app *App) Run(args []string) (code int) {
 	var exCode int
 	var ec errorx.ErrorCoder
 	err := app.doRunCmd(name, app.args)
-	if err != nil && errors.As(err, &ec) {
-		exCode = ec.Code()
+	if err != nil {
+		if errors.As(err, &ec) {
+			exCode = ec.Code()
+		} else {
+			exCode = ERR.ToInt()
+		}
 	}
 
-	Debugf("command '%s' run complete, exit with code: %d", name, exCode)
+	Debugf("command '%s' run complete, exit code: %d, error: %v", name, exCode, err)
 	return app.exitOnEnd(exCode)
 }
 
