@@ -113,7 +113,7 @@ func CmdMarkdown(c *gcli.Command) string {
 			buf.WriteString(fmt.Sprintf("`%s` | %s | %s | %s | %s\n",
 				escapeTableCell(optHelpName(opt)),
 				escapeTableCell(opt.TypeName()),
-				escapeTableCell(opt.DValue().String()),
+				escapeTableCell(opt.DefaultText()),
 				required,
 				escapeTableCell(renderText(c, opt.Desc)),
 			))

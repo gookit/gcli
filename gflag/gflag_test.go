@@ -655,6 +655,21 @@ func TestFlags_PrintHelpPanel(t *testing.T) {
 	fs.PrintHelpPanel()
 }
 
+func TestFlags_PrintHelpPanel_EnvDefaultDoesNotExposeValue(t *testing.T) {
+	tmpKey := testutil.SetOsEnvs(map[string]string{
+		"SERVER_TOKEN": "real-secret-token",
+	})
+	defer testutil.RemoveTmpEnvs(tmpKey)
+
+	var token string
+	fs := gflag.New("test")
+	fs.StrOpt(&token, "token", "", "${SERVER_TOKEN}", "server token")
+
+	help := fs.String()
+	assert.StrContains(t, help, "${SERVER_TOKEN}")
+	assert.NotContains(t, help, "real-secret-token")
+}
+
 func TestFlags_PrintHelpPanel_IndentLongOpt(t *testing.T) {
 	fs := gflag.New("test").WithConfigFn(func(c *gflag.Config) {
 		c.IndentLongOpt = true

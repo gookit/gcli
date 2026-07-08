@@ -882,6 +882,17 @@ func (m *CliOpt) DValue() *structs.Value {
 	return m.defVal
 }
 
+// DefaultText returns the safe default value text for help or docs.
+func (m *CliOpt) DefaultText() string {
+	if m.defEnvVar != "" {
+		return m.defEnvVar
+	}
+	if m.flag != nil {
+		return m.flag.DefValue
+	}
+	return m.DValue().String()
+}
+
 func (m *CliOpt) defaultPlaceholder(realDefVal any) string {
 	// env value, show env name
 	if m.defEnvVar != "" {
