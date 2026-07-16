@@ -331,6 +331,39 @@ func TestApp_Errors_clearAfterFetch(t *testing.T) {
 	assert.NoErr(t, app.Errors())
 }
 
+func TestApp_Run_errorExitCodes(t *testing.T) {
+	t.Run("option error", func(t *testing.T) {
+		var count int
+		buf := byteutil.NewBuffer()
+		color.SetOutput(buf)
+		defer color.ResetOptions()
+
+		app := newNotExitApp()
+		app.Add(gcli.NewCommand("worker", "desc", func(c *gcli.Command) {
+			c.IntOpt(&count, "count", "", 0, "desc")
+		}))
+
+		assert.Eq(t, gcli.ERR.ToInt(), app.Run([]string{"worker", "--count", "invalid"}))
+		assert.Eq(t, 1, strings.Count(buf.String(), "parse error"))
+	})
+
+	t.Run("unknown command", func(t *testing.T) {
+		app := newNotExitApp()
+		app.Add(newEmptyCmd())
+
+		assert.Eq(t, gcli.ERR.ToInt(), app.Run([]string{"missing"}))
+	})
+
+	t.Run("unknown subcommand", func(t *testing.T) {
+		app := newNotExitApp()
+		parent := gcli.NewCommand("worker", "desc")
+		parent.Add(gcli.NewCommand("start", "desc"))
+		app.Add(parent)
+
+		assert.Eq(t, gcli.ERR.ToInt(), app.Run([]string{"worker", "missing"}))
+	})
+}
+
 func TestApp_RunHelpers(t *testing.T) {
 	newEchoApp := func() (*gcli.App, *string) {
 		var got string

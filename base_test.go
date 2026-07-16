@@ -137,7 +137,7 @@ func TestApp_On_CmdNotFound_redirect(t *testing.T) {
 		return true
 	})
 
-	cli.Run([]string{"top"})
+	assert.Eq(t, gcli.OK.ToInt(), cli.Run([]string{"top"}))
 	want := "trigger:cmd.not.found - command:top; redirect:simple - value:simple command"
 	assert.Eq(t, want, b.String())
 }

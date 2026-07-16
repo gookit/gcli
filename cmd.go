@@ -454,8 +454,7 @@ func (c *Command) innerDispatch(args []string) (err error) {
 		}
 
 		Debugf("cmd: %s - command options parse error", c.Name)
-		color.Error.Tips("option error - %s", err.Error())
-		return nil
+		return err
 	}
 
 	// remaining args

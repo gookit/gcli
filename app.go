@@ -438,7 +438,7 @@ func (app *App) prepareRun() (code PrepareState, name string) {
 	}
 
 	app.showCommandTips(name)
-	return
+	return ERR, name
 }
 
 // foundCmd carries the result of resolving the input args into a command name.
