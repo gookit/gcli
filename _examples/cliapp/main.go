@@ -87,10 +87,14 @@ func main() {
 	// app.Add(filewatcher.FileWatcher(nil))
 	// app.Add(reverseproxy.ReverseProxyCommand())
 
+	var serverToken string
 	app.Add(&gcli.Command{
 		Name:    "test",
 		Aliases: []string{"ts"},
 		Desc:    "this is a description <info>message</> for command {$cmd}",
+		Config: func(cmd *gcli.Command) {
+			cmd.StrOpt(&serverToken, "token", "", "${SERVER_TOKEN}", "server token")
+		},
 		Func: func(cmd *gcli.Command, args []string) error {
 			gcli.Print("hello, in the test command\n")
 			return nil
