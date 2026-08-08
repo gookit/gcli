@@ -5,7 +5,7 @@ import (
 	"testing"
 
 	"github.com/gookit/gcli/v3/show"
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 )
 
 func TestList(t *testing.T) {

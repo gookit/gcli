@@ -5,7 +5,7 @@ import (
 
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/goutil/byteutil"
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 )
 
 func TestHelpReplacer(t *testing.T) {

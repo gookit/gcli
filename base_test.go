@@ -8,7 +8,7 @@ import (
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/events"
 	"github.com/gookit/goutil/dump"
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 )
 
 var (

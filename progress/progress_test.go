@@ -5,7 +5,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 )
 
 func TestProgress_Display(t *testing.T) {

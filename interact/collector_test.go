@@ -5,7 +5,7 @@ import (
 
 	"github.com/gookit/gcli/v3/interact"
 	"github.com/gookit/gcli/v3/interact/cparam"
-	"github.com/gookit/goutil/testutil/assert"
+	"github.com/gookit/goutil/x/assert"
 )
 
 func TestCollector_Run(t *testing.T) {
