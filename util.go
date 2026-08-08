@@ -7,7 +7,7 @@ import (
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3/helper"
-	"github.com/gookit/goutil/goinfo"
+	"github.com/gookit/goutil/x/goinfo"
 )
 
 /*************************************************************
