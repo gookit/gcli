@@ -72,11 +72,13 @@ func main() {
 	)
 
 	// demos for recent features: B6(struct tag) / B4+B5(short merge) / B7(question)
+	// SharedAskDemo: 共享选项 + Question(收集延后到执行命令, PTY 冒烟: scripts/ptysmoke)
 	app.Add(
 		cmd.StructFlagDemo,
 		cmd.StructTypesDemo,
 		cmd.ShortMergeDemo,
 		cmd.QuestionDemo,
+		cmd.SharedAskDemo,
 		cmd.ReorderDemo,
 	)
 

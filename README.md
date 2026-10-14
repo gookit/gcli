@@ -717,6 +717,12 @@ p.Finish()
 - [gookit/goutil](https://github.com/gookit/goutil) Some utils for the Go: string, array/slice, map, format, cli, env, filesystem, test and more
 - More please see https://github.com/gookit
 
+## Development
+
+- Unit tests: `go test ./...`
+- Terminal-level smoke tests — interactive prompts driven in a real pseudo terminal
+  (Linux/macOS, or Docker on Windows): see [scripts/ptysmoke](scripts/ptysmoke/README.md)
+
 ## See also
 
 - `inhere/console` https://github/inhere/php-console

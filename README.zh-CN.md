@@ -677,6 +677,12 @@ p.Finish()
 - [gookit/goutil](https://github.com/gookit/goutil) Go 的一些工具函数，格式化，特殊处理，常用信息获取等
 - 更多请查看 https://github.com/gookit
 
+## 开发与测试
+
+- 单元测试：`go test ./...`
+- 终端级冒烟 —— 在真实伪终端里驱动交互提示（Linux/macOS，Windows 用 Docker）：
+  见 [scripts/ptysmoke](scripts/ptysmoke/README.md)
+
 ## 参考项目
 
 - `issue9/term` https://github.com/issue9/term
