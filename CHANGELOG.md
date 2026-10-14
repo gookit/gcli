@@ -15,6 +15,26 @@ and this project adheres to semantic-ish versioning.
   branch'`), making the offending command easy to locate. The command's flag set
   is now named by its full path (`Command.Path()`); the flag-set name is only used
   for such diagnostics, so help output is unaffected.
+- Bump `github.com/gookit/cliui` to **v0.5.3**. v0.5.1 changed
+  `interact.Confirm/Unconfirmed/AnswerIsYes` to return `(bool, error)`, which broke
+  the `builtin` package build; v0.5.2/v0.5.3 restore the legacy signatures (and add
+  `*E` variants), so no code change is needed.
+
+### Fixed
+
+- **Shared (inherited) options keep their metadata and are handled once, at the
+  executing command.** `gflag.Parser.InheritOptsFrom` used to copy a subset of the
+  option metadata, so an inherited option lost its default value — a `${ENV_VAR}`
+  default was rendered as the *resolved* value in help, leaking it (e.g. a token) —
+  lost `Hidden` (hidden options showed up in sub-command help) and lost its type
+  (reported as `var`, so `TakesValue()` was wrong for bool flags, breaking value
+  completion). It now copies the full metadata.
+  `Required` / `Validator` / `Collector` / `Question` / `Handler` are stripped from
+  the per-command merged copies and handled once by `Command.prepareSharedOpts()`
+  when the executing command runs, with the final value (order: collect → required →
+  validate → handler). Previously `Collector` / `Question` / `Handler` never ran for
+  shared options, while `Validator` ran again per segment — an option given in a
+  sub-command segment could be prompted/validated before that segment was parsed.
 
 ## [v3.8.0] - 2026-06-22
 

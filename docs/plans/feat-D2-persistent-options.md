@@ -109,7 +109,9 @@ func (p *Parser) InheritOptsFrom(src *Parser) {
         // 复制元数据, 复用同一 flag.Value 重注册到 p.fSet
         p.Var(opt.flag.Value, &CliOpt{
             Name: opt.Name, Shorts: opt.Shorts, Desc: opt.Desc,
-            Required: opt.Required, Validator: opt.Validator, Choices: opt.Choices,
+            Required: opt.Required, Hidden: opt.Hidden, Validator: opt.Validator,
+            Collector: opt.Collector, Question: opt.Question, Handler: opt.Handler,
+            DefVal: opt.DefVal, Choices: opt.Choices,
         })
     }
 }
@@ -176,7 +178,8 @@ if !c.sharedMerged {
 - **D2.1 增量、无破坏**：不碰现有 local/global 绑定路径；命令未用 `SharedOpts()` 时
   `sharedFs==nil`，合并是 no-op，行为完全不变。
 - **同名冲突**：局部同名选项优先（合并时 `HasOption` 跳过），语义明确且安全。
-- **Required 共享选项**：在「实际执行命令」处校验（合并后随 `validateAll` 生效），需在测试中固化。
+- **触发类字段(Required/Validator/Collector/Question/Handler)的共享选项**：在「实际执行命令」处
+  统一处理（合并进命令段的副本会清除这些字段，见「实施备注」），需在测试中固化。
 - **D2.2 有破坏风险**：改单例为 per-App 可能影响依赖 `gcli.GOpts()` 全局读取的代码；
   单独评估、独立提交、可暂缓。
 
@@ -188,6 +191,7 @@ if !c.sharedMerged {
 - **局部优先**：子命令定义同名局部选项时，覆盖继承（互不写串）。
 - **自身可用**：`app top --git-dir /x sub` → top 段即识别共享选项。
 - **Required 共享**：缺失时在执行命令处报错。
+- **触发类字段共享**：Collector/Validator/Handler 各只触发一次、用最终取值；已传值时不应弹交互。
 - **未用共享**：现有用例全绿（sharedFs==nil，零行为变化）。
 - **(D2.2)** 两个 App 实例的 verbose/strict 互不影响；并发 `-shuffle` 稳定。
 
@@ -200,8 +204,10 @@ if !c.sharedMerged {
    - ✅ 复核修复：共享 Required 改用类型感知 `CliOpt.IsEmpty()`（commit 87951f0）
 5. ✅ `feat(gcli): help 渲染继承选项分组(Inherited Options)`（commit b704f29）
 6. ✅ `refactor(gcli): 抽出 AppOptions, 每-App 解析状态不再共享单例`（commit 7e52e9a）
+7. ✅ `fix(gcli): 共享选项的校验/收集/回调延后到执行命令统一处理`（commit 86be999）
+   - 同批：`gflag.InheritOptsFrom` 完整复制元数据（ENV 默认值/hidden/类型不再丢失，commit 1b58911/ebc5928）
 
-> 1-6 全部落地并验证。
+> 1-7 全部落地并验证。
 > 说明：内置 `help` 命令仅支持单级（help.go 既有 TODO），故 `help top sub` 暂不可用；
 > `top sub -h` 正常。help 分组对两条 ShowHelp 路径均生效（ShowHelp 开头补了幂等合并）。
 
@@ -221,8 +227,11 @@ if !c.sharedMerged {
 
 ### 实施备注（复核发现）
 
-- **Required 共享选项校验时机**：因「自身也并入」会让必填共享选项进入中间祖先命令的 flag set，
-  而共享值常写在叶子段——祖先解析时尚未见到取值会误报必填、中止分发。修正：合并进 `c.Flags` 的
-  **继承副本清除 Required**，必填校验延后到 `doExecute`（执行命令）由 `validateSharedRequired` 沿
-  祖先链统一判定（用类型感知 `CliOpt.IsEmpty()`）。与 cobra persistent-flag 语义一致。
+- **触发类字段的共享选项处理时机**：共享选项可写在任意命令段，而中间祖先命令解析时看不到叶子段的取值。
+  因此合并进 `c.Flags` 的**继承副本清除 Required/Validator/Collector/Question/Handler**，统一由
+  `prepareSharedOpts` 在实际执行命令时处理一次（顺序与 `CliOpt.Validate` 一致：交互收集 → 必填校验
+  → 校验器 → Handler，用最终取值）。反向验证：把 Collector/Question/Handler 也复制进继承副本时，
+  实测 `top sub --token=abc` 中间命令看不到该取值，会先弹一次交互收集，Validator 跑到 3 次、
+  Handler 被调 2 次（`TestSharedOpts_deferredCallbacks` 会失败）。
+  `gflag.InheritOptsFrom` 本身仍完整复制元数据，直接使用该基元（不经命令分发）的调用方行为与源选项一致。
 - **短名冲突**：`InheritOptsFrom` 在短名与目标已有名/短名冲突时**整体跳过**该选项继承，避免 panic。

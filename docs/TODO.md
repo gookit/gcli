@@ -66,8 +66,9 @@
 
 - [x] **D2 共享选项(SharedOpts)继承模型**（独立里程碑，已完成）— [plans/feat-D2-persistent-options.md](plans/feat-D2-persistent-options.md)
   - [x] 新增「共享选项」中间层：`Command.SharedOpts() *gflag.Flags` + `Parser.InheritOptsFrom`；
-    dispatch 时沿祖先链 merge 进叶子 flag set（与 args 重排契合）；Required 延后到执行命令校验
-    （commit 323219f/77f2391/bf4ef0c/87951f0）
+    dispatch 时沿祖先链 merge 进叶子 flag set（与 args 重排契合）；Required/Validator/Collector/
+    Question/Handler 延后到执行命令统一处理
+    （commit 323219f/77f2391/bf4ef0c/87951f0/86be999）
   - [x] 抽出 `AppOptions`：每-App 解析状态(help/version/completion)不再共享单例；全局配置仍走 gOpts（不复现 v3.4.0 verbose 坑）（commit 7e52e9a）
   - [x] 明确「全局(App) / 共享(命令子树) / 局部(命令)」三层语义 + 文档（README/CHANGELOG）+ 专项测试（commit a42019e）
   - [x] help 渲染：祖先继承选项归入 "Inherited Options" 分组；ShowHelp 补幂等合并（commit b704f29）
