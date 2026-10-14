@@ -1,9 +1,10 @@
 # wincons
 
 在 **真实 Windows 控制台**上驱动示例程序（`_examples/cliapp`），是 `scripts/ptysmoke`（PTY，仅
-Linux/macOS）的 Windows 对应物。Python 的 `pty` 模块在 Windows 上不存在，ConPTY 子进程在 gofer job
-里也起不来（`CreateProcess` 带 `PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE` 会以 `0xC0000142` 退出，
-见 suga 的 `scripts/wincons` README 实测），所以这里用 Windows 自己的控制台：
+Linux/macOS）的 Windows 对应物。Python 的 `pty` 模块在 Windows 上不存在；ConPTY 是一条可走的路
+（`inhere-tools/pty` 在本机 gofer job 里实测能起 `cmd.exe`，而 suga 的 wincons 在同类 job 里报过
+`0xC0000142`——取决于 job 设置），但**控制台**才给出忠实的 cooked 行输入与 Ctrl-C 语义，
+所以这里用 Windows 自己的控制台：
 
 1. `FreeConsole` 脱离启动它的控制台（gofer job 里没有可保留的），`AllocConsole` 另建一个私有控制台；
 2. 应用以该控制台的 `CONIN$` 作为 stdin 启动（**cooked 行输入是真的**，提示符也是真的），

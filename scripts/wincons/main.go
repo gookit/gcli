@@ -3,11 +3,12 @@
 // Command wincons drives the example app (./_examples/cliapp) on a real Windows
 // console: the Windows twin of scripts/ptysmoke (PTY, Linux/macOS only).
 //
-// Python's pty module does not exist on Windows, and a ConPTY child cannot be
-// started from a gofer job (CreateProcess with PROC_THREAD_ATTRIBUTE_PSEUDOCONSOLE
-// fails with 0xC0000142 there), so this harness drives the console Windows has:
-// it detaches from the console it was started with, creates a private one
-// (AllocConsole), starts the app with that console's CONIN$ as stdin and its
+// Python's pty module does not exist on Windows. ConPTY is an option — a Go pty child
+// does start inside this job (see inhere-tools/pty, measured with cmd.exe) while suga's
+// harness reported 0xC0000142 in a job of the same kind, so it depends on the job — but a
+// *console* is what gives faithful cooked line input and Ctrl-C, so this harness drives
+// the console Windows has: it detaches from the console it was started with, creates a
+// private one (AllocConsole), starts the app with that console's CONIN$ as stdin and its
 // stdout/stderr on a pipe, then types the answer as KEY_EVENT records with
 // WriteConsoleInput - exactly what a keyboard writes into the console input
 // buffer. The app therefore sees a genuine console on stdin (cooked line input,
