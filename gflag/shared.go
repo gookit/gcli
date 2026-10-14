@@ -37,11 +37,17 @@ func (p *Parser) InheritOptsFrom(src *Parser, category ...string) {
 		}
 
 		// 复制元数据, 复用同一 flag.Value 重注册到 p.fSet, 实现父子共享同一 ptr
-		p.Var(opt.flag.Value, &CliOpt{
+		//
+		// NOTE: Collector/Question/Handler 故意不复制 —— 它们在 Validate 中触发, 而分发链上每个
+		// 命令的 validateAll 都会跑到继承副本: 实测 `top sub --token=abc` 时中间命令看不到叶子段
+		// 的取值, 复制后会先弹一次 Collector/Question(即使用户已传值), Handler 也会被调 2 次。
+		// 它们应像 Required 那样延后到实际执行命令时统一处理(见 Command.validateSharedRequired)。
+		copt := &CliOpt{
 			Name:      opt.Name,
 			Shorts:    opt.Shorts,
 			Desc:      opt.Desc,
 			Required:  opt.Required,
+			Hidden:    opt.Hidden,
 			Validator: opt.Validator,
 			Choices:   opt.Choices,
 			Category:  cat, // 继承选项归入指定 help 分组
@@ -50,7 +56,11 @@ func (p *Parser) InheritOptsFrom(src *Parser, category ...string) {
 			// DefVal 已是解析结果, 不会在 initCheck 中二次解析; defEnvVar 供 help/docs 展示原变量名。
 			DefVal:    opt.DefVal,
 			defEnvVar: opt.defEnvVar,
-		})
+		}
+		p.Var(opt.flag.Value, copt)
+
+		// p.Var 按自定义 var 注册, 会把类型写成 var, 这里恢复源选项的类型(影响 help/completion)
+		copt.flagType = opt.flagType
 	}
 }
 

@@ -691,6 +691,36 @@ func TestParser_InheritOptsFrom_EnvDefaultDoesNotExposeValue(t *testing.T) {
 	assert.NotContains(t, help, "real-secret-token")
 }
 
+// 继承选项的元数据应尽量保留(Collector/Question/Handler 例外, 见 gflag/shared.go 的 NOTE),
+// 否则子命令的 help / shell 补全会失真。
+func TestParser_InheritOptsFrom_CopyOptMeta(t *testing.T) {
+	is := assert.New(t)
+
+	var hidden, plain string
+	var debug bool
+	parent := gflag.New("parent")
+	parent.StrVar(&hidden, &gcli.CliOpt{Name: "git-dir", Desc: "hidden one", Hidden: true})
+	parent.BoolOpt(&debug, "debug", "d", false, "debug mode")
+	parent.StrOpt(&plain, "verbose", "", "normal", "verbose desc")
+
+	child := gflag.New("child")
+	child.InheritOptsFrom(parent)
+
+	t.Run("hidden option stays hidden", func(t *testing.T) {
+		is.True(child.Opt("git-dir").Hidden)
+		is.NotContains(child.String(), "git-dir")
+	})
+
+	t.Run("flag type is preserved", func(t *testing.T) {
+		is.Eq("bool", child.Opt("debug").TypeName())
+		is.False(child.Opt("debug").TakesValue())
+	})
+
+	t.Run("plain def value is preserved", func(t *testing.T) {
+		is.Eq("normal", child.Opt("verbose").DefaultText())
+	})
+}
+
 func TestFlags_PrintHelpPanel_IndentLongOpt(t *testing.T) {
 	fs := gflag.New("test").WithConfigFn(func(c *gflag.Config) {
 		c.IndentLongOpt = true
