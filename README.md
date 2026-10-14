@@ -720,8 +720,9 @@ p.Finish()
 ## Development
 
 - Unit tests: `go test ./...`
-- Terminal-level smoke tests — interactive prompts driven in a real pseudo terminal
-  (Linux/macOS, or Docker on Windows): see [scripts/ptysmoke](scripts/ptysmoke/README.md)
+- Terminal-level smoke tests — interactive prompts driven in a real terminal:
+  - Linux/macOS (pseudo terminal): [scripts/ptysmoke](scripts/ptysmoke/README.md)
+  - Windows (private console, or the same cases in Docker): [scripts/wincons](scripts/wincons/README.md)
 
 ## See also
 

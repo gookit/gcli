@@ -4,7 +4,7 @@
 测不到的终端行为：交互提问真的打印出来、用户输入被读成选项值、已给值时不再提问。
 
 思路与驱动库来自 suga 的 `scripts/ptysmoke`（那份 README 记录了踩坑经验）。**仅 Linux/macOS**
-（依赖 Python `pty`）；Windows 控制台无法从 Python 驱动，用 Docker 跑（见下）。
+（依赖 Python `pty`）；Windows 用 `scripts/wincons`（真实 Windows 控制台，本机实测可用）。
 
 | 文件 | 作用 |
 |---|---|

@@ -680,8 +680,9 @@ p.Finish()
 ## 开发与测试
 
 - 单元测试：`go test ./...`
-- 终端级冒烟 —— 在真实伪终端里驱动交互提示（Linux/macOS，Windows 用 Docker）：
-  见 [scripts/ptysmoke](scripts/ptysmoke/README.md)
+- 终端级冒烟 —— 在真终端里驱动交互提示：
+  - Linux/macOS（伪终端）：[scripts/ptysmoke](scripts/ptysmoke/README.md)
+  - Windows（私有控制台；同一批场景也可在 Docker 里跑）：[scripts/wincons](scripts/wincons/README.md)
 
 ## 参考项目
 
