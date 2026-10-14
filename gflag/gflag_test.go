@@ -670,6 +670,27 @@ func TestFlags_PrintHelpPanel_EnvDefaultDoesNotExposeValue(t *testing.T) {
 	assert.NotContains(t, help, "real-secret-token")
 }
 
+func TestParser_InheritOptsFrom_EnvDefaultDoesNotExposeValue(t *testing.T) {
+	tmpKey := testutil.SetOsEnvs(map[string]string{
+		"SERVER_TOKEN": "real-secret-token",
+	})
+	defer testutil.RemoveTmpEnvs(tmpKey)
+
+	var token string
+	parent := gflag.New("parent")
+	parent.StrOpt(&token, "token", "t", "${SERVER_TOKEN}", "server token")
+
+	// 共享/继承选项: 复用父级的 flag.Value, 不能把解析后的 ENV 值当默认值渲染
+	child := gflag.New("child")
+	child.InheritOptsFrom(parent, "Inherited Options")
+
+	assert.True(t, child.HasOption("token"))
+
+	help := child.String()
+	assert.StrContains(t, help, "${SERVER_TOKEN}")
+	assert.NotContains(t, help, "real-secret-token")
+}
+
 func TestFlags_PrintHelpPanel_IndentLongOpt(t *testing.T) {
 	fs := gflag.New("test").WithConfigFn(func(c *gflag.Config) {
 		c.IndentLongOpt = true

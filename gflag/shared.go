@@ -45,6 +45,11 @@ func (p *Parser) InheritOptsFrom(src *Parser, category ...string) {
 			Validator: opt.Validator,
 			Choices:   opt.Choices,
 			Category:  cat, // 继承选项归入指定 help 分组
+			// 默认值元数据必须一起复制: 复用的 flag.Value 已带解析后的 ENV 值(即 Flag.DefValue),
+			// 元数据丢失后 help 会把它当默认值渲染, 泄露 `${XXX}` 的真实取值。
+			// DefVal 已是解析结果, 不会在 initCheck 中二次解析; defEnvVar 供 help/docs 展示原变量名。
+			DefVal:    opt.DefVal,
+			defEnvVar: opt.defEnvVar,
 		})
 	}
 }
