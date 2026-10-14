@@ -264,6 +264,61 @@ func TestSharedOpts_requiredInt(t *testing.T) {
 	})
 }
 
+// 共享选项的 Collector/Validator/Handler 延后到执行命令时统一处理: 各只触发一次, 且用最终取值。
+// 依据: 共享值可写在叶子命令段, 中间命令解析时看不到它(见 mergeSharedOpts/prepareSharedOpts)。
+func TestSharedOpts_deferredCallbacks(t *testing.T) {
+	is := assert.New(t)
+
+	var collectCalls, validateCalls, handleCalls int
+	var token, handled string
+
+	newApp := func() *gcli.App {
+		collectCalls, validateCalls, handleCalls = 0, 0, 0
+		token, handled = "", ""
+
+		app := gcli.NewApp(gcli.NotExitOnEnd())
+		app.Add(&gcli.Command{
+			Name: "top",
+			Desc: "top command",
+			Config: func(c *gcli.Command) {
+				c.SharedOpts().StrOpt2(&token, "token", "the token",
+					gflag.WithCollector(func() (string, error) { collectCalls++; return "collected", nil }),
+					gflag.WithValidator(func(string) error { validateCalls++; return nil }),
+					gflag.WithHandler(func(val string) error { handleCalls++; handled = val; return nil }),
+				)
+			},
+			Subs: []*gcli.Command{
+				{
+					Name: "sub",
+					Desc: "sub command",
+					Func: func(c *gcli.Command, _ []string) error { return nil },
+				},
+			},
+		})
+		return app
+	}
+
+	t.Run("value from leaf segment: no prompt, each once", func(t *testing.T) {
+		code := newApp().Run([]string{"top", "sub", "--token=abc"})
+		is.Eq(0, code)
+		is.Eq("abc", token)
+		is.Eq(0, collectCalls)  // 已传值: 不应弹交互收集
+		is.Eq(1, validateCalls) // 校验只跑一次(不再是父/子各一次)
+		is.Eq(1, handleCalls)
+		is.Eq("abc", handled)
+	})
+
+	t.Run("no value: collected once before running", func(t *testing.T) {
+		code := newApp().Run([]string{"top", "sub"})
+		is.Eq(0, code)
+		is.Eq("collected", token)
+		is.Eq(1, collectCalls)
+		is.Eq(1, validateCalls)
+		is.Eq(1, handleCalls)
+		is.Eq("collected", handled)
+	})
+}
+
 // help 分组(D2.5): 继承选项在命令 help 里归到 "Inherited Options" 分组, 与本地选项分开。
 func TestSharedOpts_helpGrouping(t *testing.T) {
 	is := assert.New(t)

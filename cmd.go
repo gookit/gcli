@@ -139,7 +139,7 @@ type Command struct {
 	// 幂等标记, 保证分发时只合并一次共享选项。
 	sharedMerged bool
 	// localOptNames snapshots the command's own local option names before shared merge.
-	// 合并共享选项前的本地选项名快照, 用于区分局部定义与继承副本(保留局部 Required、跳过被局部覆盖的共享必填校验)。
+	// 合并共享选项前的本地选项名快照, 用于区分局部定义与继承副本(保留局部触发类字段、跳过被局部覆盖的共享处理)。
 	localOptNames map[string]bool
 }
 
@@ -572,9 +572,10 @@ func (c *Command) parseOptions(args []string) (ss []string, err error) {
 // 顺序为 [root,...,parent,self], 这样祖先(更靠近根)的共享选项先注册; 同名时 InheritOptsFrom
 // 内部以「已存在则跳过」保证局部/更近的定义优先。幂等: sharedMerged 仅合并一次。
 //
-// 关于 Required: 共享选项可能写在叶子命令段, 而本命令(若是中间祖先)解析时尚未见到该值,
-// 因此合并进 c.Flags 的副本会清除 Required, 避免在「会继续向子命令分发的命令」上误报必填。
-// 真正的 Required 校验延后到实际执行命令时由 validateSharedRequired 统一处理。
+// 关于触发类字段(Required/Validator/Collector/Question/Handler): 共享选项可能写在叶子命令段,
+// 而本命令(若是中间祖先)解析时尚未见到该值, 因此合并进 c.Flags 的副本会清除这些字段,
+// 避免在「会继续向子命令分发的命令」上误报必填、误弹交互、用未最终确定的值跑校验/回调。
+// 真正的处理延后到实际执行命令时由 prepareSharedOpts 统一进行。
 func (c *Command) mergeSharedOpts() {
 	if c.sharedMerged {
 		return
@@ -608,38 +609,54 @@ func (c *Command) mergeSharedOpts() {
 		}
 	}
 
-	// 清除「新继承进来」的共享选项副本的 Required: 共享值可能写在叶子命令段, 中间命令解析时
-	// 还看不到取值, 不能在那时误报必填。共享选项的 Required 延后到执行命令时由
-	// validateSharedRequired 统一校验。局部已定义的同名选项(快照中)保持其 Required 不变。
+	// 清除「新继承进来」的共享选项副本的触发类字段: 共享选项的值可能写在叶子命令段, 中间命令
+	// 解析时还看不到最终取值, 此时不能校验/回调(会漏值、误报必填、误弹交互、重复回调)。
+	// 这些字段延后到执行命令时由 prepareSharedOpts 统一处理。
+	// 局部已定义的同名选项(快照中)保持原样。
 	for name, opt := range c.Flags.Opts() {
-		if !c.localOptNames[name] {
-			opt.Required = false
+		if c.localOptNames[name] {
+			continue
 		}
+		opt.Required = false
+		opt.Validator = nil
+		opt.Collector = nil
+		opt.Question = ""
+		opt.Handler = nil
 	}
 }
 
-// validateSharedRequired 在实际执行命令前, 沿祖先链(含自身)校验所有 Required 共享选项是否已赋值。
+// prepareSharedOpts 在实际执行命令前, 沿祖先链(含自身)对共享选项统一做一遍「值已确定」的处理:
+// 交互收集(Collector/Question) → 必填校验 → 校验器 → Handler, 顺序与 CliOpt.Validate 一致。
 //
-// 共享选项的 Required 校验延后到此处统一处理: 因为共享选项可写在叶子命令段, 中间命令解析时
-// 还看不到取值, 不能在那时报必填。到达执行命令时, 共享值已写回同一 ptr, 此处即可正确判定。
-// 若执行命令定义了同名局部选项(共享被跳过继承), 则由局部自身的校验负责, 这里跳过。
-func (c *Command) validateSharedRequired() error {
+// 为什么延后: 共享选项可写在任意命令段, 中间命令解析时看不到叶子段的取值(见 mergeSharedOpts),
+// 提前处理会漏值、在用户已传值时误弹交互、或把 Handler/Validator 触发多次。
+//
+// 同名共享选项以最先注册者(最靠近根的祖先)为准, 与 InheritOptsFrom 的注册顺序一致。
+// 若执行命令定义了同名局部选项(共享被跳过继承), 则由局部自身的 validateAll 负责, 这里跳过。
+func (c *Command) prepareSharedOpts() error {
+	// 沿 parent 链收集 [self, parent, ..., root]
+	var chain []*Command
 	for cur := c; cur != nil; cur = cur.parent {
-		if cur.sharedFs == nil {
+		chain = append(chain, cur)
+	}
+
+	handled := make(map[string]bool, 4)
+	// 从根到叶: 与 mergeSharedOpts 的注册顺序一致, 同名只处理最先注册的那个
+	for i := len(chain) - 1; i >= 0; i-- {
+		sharedFs := chain[i].sharedFs
+		if sharedFs == nil {
 			continue
 		}
-		for name, opt := range cur.sharedFs.Opts() {
-			if !opt.Required {
-				continue
-			}
-			// 执行命令有同名局部选项 → 共享被局部覆盖, 由局部 validateAll 负责, 此处跳过
-			if c.localOptNames[name] {
-				continue
-			}
 
-			// 类型感知判空(int 的空是 "0"、float 是 "0.0"、string 是 "")
-			if opt.IsEmpty() {
-				return fmt.Errorf("option '%s' is required", name)
+		for name, opt := range sharedFs.Opts() {
+			if handled[name] || c.localOptNames[name] || opt.Flag() == nil {
+				continue
+			}
+			handled[name] = true
+
+			// 此刻共享值已写回同一 ptr, 即最终取值
+			if err := opt.Validate(opt.Value().String()); err != nil {
+				return err
 			}
 		}
 	}
@@ -660,10 +677,10 @@ func (p panicErr) Error() string { return fmt.Sprint(p.val) }
 
 // do execute the command
 func (c *Command) doExecute(args []string) (err error) {
-	// 共享 Required 选项的延后校验: 到达实际执行命令时统一检查祖先链(含自身)的必填共享选项
-	if err = c.validateSharedRequired(); err != nil {
+	// 共享选项的延后处理: 到达实际执行命令时值已最终确定, 统一做交互收集/必填/校验/回调
+	if err = c.prepareSharedOpts(); err != nil {
 		c.Fire(gevent.OnCmdRunError, map[string]any{"cmd": c.Name, "err": err})
-		Logf(VerbError, "command '%s' shared required option err: <red>%s</>", c.Name, err.Error())
+		Logf(VerbError, "command '%s' shared option err: <red>%s</>", c.Name, err.Error())
 		return err
 	}
 

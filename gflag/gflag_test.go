@@ -719,6 +719,24 @@ func TestParser_InheritOptsFrom_CopyOptMeta(t *testing.T) {
 	t.Run("plain def value is preserved", func(t *testing.T) {
 		is.Eq("normal", child.Opt("verbose").DefaultText())
 	})
+
+	// 直接使用 InheritOptsFrom 的调用方(不经过 gcli 命令分发): 触发类字段同样保留并生效
+	t.Run("collector and handler are kept", func(t *testing.T) {
+		var val string
+		var handled []string
+		src := gflag.New("src")
+		src.StrOpt2(&val, "token", "token desc",
+			gflag.WithCollector(func() (string, error) { return "from-collector", nil }),
+			gflag.WithHandler(func(v string) error { handled = append(handled, v); return nil }),
+		)
+
+		dst := gflag.New("dst")
+		dst.InheritOptsFrom(src)
+
+		is.NoErr(dst.Parse(nil))
+		is.Eq("from-collector", val)
+		is.Eq([]string{"from-collector"}, handled)
+	})
 }
 
 func TestFlags_PrintHelpPanel_IndentLongOpt(t *testing.T) {

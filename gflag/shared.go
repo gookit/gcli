@@ -11,6 +11,11 @@ package gflag
 //   - 选项尚未绑定（opt.flag == nil）→ 跳过（理论上绑定后不会出现）；
 //   - 短名与 p 已有的选项名/短名冲突时，安全起见整体跳过该选项的继承，避免 Var 内部 panic。
 //
+// 元数据完整复制（包括 DefVal/defEnvVar/Hidden/flagType 与 Collector/Question/Handler）：
+// 直接调用本方法的解析器改完就能用，行为与源选项一致。gcli 的命令分发另有处理：
+// 值与表单一时机相关的触发类字段（Required/Validator/Collector/Question/Handler）
+// 在合并进命令段时会被清除，延后到实际执行命令时统一处理，见 Command.prepareSharedOpts。
+//
 // 可选 category：传入时，继承进来的选项会被归入该 help 分组（仅影响帮助展示，不影响解析）。
 func (p *Parser) InheritOptsFrom(src *Parser, category ...string) {
 	if src == nil {
@@ -37,18 +42,16 @@ func (p *Parser) InheritOptsFrom(src *Parser, category ...string) {
 		}
 
 		// 复制元数据, 复用同一 flag.Value 重注册到 p.fSet, 实现父子共享同一 ptr
-		//
-		// NOTE: Collector/Question/Handler 故意不复制 —— 它们在 Validate 中触发, 而分发链上每个
-		// 命令的 validateAll 都会跑到继承副本: 实测 `top sub --token=abc` 时中间命令看不到叶子段
-		// 的取值, 复制后会先弹一次 Collector/Question(即使用户已传值), Handler 也会被调 2 次。
-		// 它们应像 Required 那样延后到实际执行命令时统一处理(见 Command.validateSharedRequired)。
 		copt := &CliOpt{
 			Name:      opt.Name,
 			Shorts:    opt.Shorts,
 			Desc:      opt.Desc,
 			Required:  opt.Required,
 			Hidden:    opt.Hidden,
+			Collector: opt.Collector,
 			Validator: opt.Validator,
+			Handler:   opt.Handler,
+			Question:  opt.Question,
 			Choices:   opt.Choices,
 			Category:  cat, // 继承选项归入指定 help 分组
 			// 默认值元数据必须一起复制: 复用的 flag.Value 已带解析后的 ENV 值(即 Flag.DefValue),
