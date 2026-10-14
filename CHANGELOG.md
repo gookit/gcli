@@ -7,6 +7,8 @@ and this project adheres to semantic-ish versioning.
 
 ## [Unreleased]
 
+## [v3.8.4] - 2026-10-15
+
 ### Changed
 
 - **Duplicate-bind panics now include the command path.** When an option (or
@@ -35,6 +37,8 @@ and this project adheres to semantic-ish versioning.
   validate → handler). Previously `Collector` / `Question` / `Handler` never ran for
   shared options, while `Validator` ran again per segment — an option given in a
   sub-command segment could be prompted/validated before that segment was parsed.
+
+[v3.8.4]: https://github.com/gookit/gcli/compare/v3.8.3...v3.8.4
 
 ## [v3.8.0] - 2026-06-22
 
