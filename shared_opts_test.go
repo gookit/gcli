@@ -1,12 +1,15 @@
 package gcli_test
 
 import (
+	"io"
+	"strings"
 	"testing"
 
 	"github.com/gookit/color"
 	"github.com/gookit/gcli/v3"
 	"github.com/gookit/gcli/v3/gflag"
 	"github.com/gookit/goutil/byteutil"
+	"github.com/gookit/goutil/cliutil"
 	"github.com/gookit/goutil/x/assert"
 )
 
@@ -316,6 +319,83 @@ func TestSharedOpts_deferredCallbacks(t *testing.T) {
 		is.Eq(1, validateCalls)
 		is.Eq(1, handleCalls)
 		is.Eq("collected", handled)
+	})
+}
+
+// askText is the question used by the injected-input case; it is counted in the
+// captured prompt output.
+const askText = "Please input the api token: "
+
+// readCounter counts how often the injected stdin was consumed; a case that must
+// not ask has to leave it at zero.
+type readCounter struct {
+	r     io.Reader
+	reads int
+}
+
+func (c *readCounter) Read(p []byte) (int, error) {
+	n, err := c.r.Read(p)
+	c.reads++
+	return n, err
+}
+
+// 交互提问的取值路径用注入式输入测: CliOpt.Question 走 goutil/cliutil.ReadLine,
+// 而 cliutil.Input/Output 可替换(gflag 层的 opts_test 已这么测单选项)。
+// 真终端的语义(raw/cooked、回显、按键)由 scripts/ptysmoke 与 scripts/wincons 覆盖,
+// 这里只锁“值从哪来、问几次、什么时候问”, 跨平台且无 PTY 依赖。
+func TestSharedOpts_questionFromInjectedInput(t *testing.T) {
+	is := assert.New(t)
+
+	// 应用的 help/普通输出不需要进测试日志, 提示符输出单独用 cliutil.Output 捕获
+	color.Disable()
+	color.SetOutput(io.Discard)
+	defer color.ResetOptions()
+
+	type result struct {
+		token  string
+		prompt string
+		reads  int
+	}
+	run := func(stdin string, args ...string) result {
+		var token string
+		in := &readCounter{r: strings.NewReader(stdin)}
+		out := byteutil.NewBuffer()
+		oldIn, oldOut := cliutil.Input, cliutil.Output
+		cliutil.Input, cliutil.Output = in, out
+		defer func() { cliutil.Input, cliutil.Output = oldIn, oldOut }()
+
+		app := gcli.NewApp(gcli.NotExitOnEnd())
+		app.Add(&gcli.Command{
+			Name: "top",
+			Config: func(c *gcli.Command) {
+				c.SharedOpts().StrOpt2(&token, "token", "the token", gflag.WithQuestion(askText))
+			},
+			Subs: []*gcli.Command{
+				{Name: "run", Func: func(*gcli.Command, []string) error { return nil }},
+			},
+		})
+		is.Eq(0, app.Run(args))
+		return result{token: token, prompt: out.String(), reads: in.reads}
+	}
+
+	t.Run("empty value: asked once at the executed command", func(t *testing.T) {
+		res := run("injected-token\n", "top", "run")
+		is.Eq("injected-token", res.token)
+		is.Eq(1, strings.Count(res.prompt, askText)) // 不是父/子各问一次
+		is.True(res.reads > 0)
+	})
+
+	t.Run("value in the leaf segment: stdin is never read", func(t *testing.T) {
+		res := run("not-used\n", "top", "run", "--token=cli-token")
+		is.Eq("cli-token", res.token)
+		is.NotContains(res.prompt, askText)
+		is.Eq(0, res.reads)
+	})
+
+	t.Run("help: stdin is never read", func(t *testing.T) {
+		res := run("not-used\n", "top", "run", "-h")
+		is.NotContains(res.prompt, askText)
+		is.Eq(0, res.reads)
 	})
 }
 
