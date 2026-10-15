@@ -7,6 +7,29 @@ and this project adheres to semantic-ish versioning.
 
 ## [Unreleased]
 
+## [v3.8.5] - 2026-10-15
+
+### Changed
+
+- **Terminal-level end-to-end tests now run inside `go test`**, driven by
+  [`gookit/gopty`](https://github.com/gookit/gopty)'s `ptytest` fixture.
+  `e2e_pty_test.go` runs the built example app (`./_examples/cliapp`) on a real pty —
+  unix uses `creack/pty`, Windows uses ConPTY — and covers the cases the old scripts
+  covered: an empty answer is asked exactly once and the typed value is used, an
+  option given (`--token x`) is not asked, `-h` never asks, a shared (inherited)
+  option is asked once at the executing command and the leaf reads the collected
+  value, and the cliui `interact` confirm/read prompts. The Python PTY smoke scripts
+  (`scripts/ptysmoke`) and the Windows console driver (`scripts/wincons`) they
+  replace are gone (~926 lines), so CI needs neither Python nor a console driver;
+  `go test ./... -short` skips the terminal cases.
+- **Requires Go 1.23 or newer** (the module `go` directive, was 1.22). The test
+  dependency `github.com/gookit/gopty` v0.1.1 declares the same floor and keeps
+  `golang.org/x/sys` at v0.30.0, so no module in the build list asks for Go 1.24+.
+- Bump `github.com/gookit/gopty` to **v0.1.1** (test dependency; it fixes the
+  `wincons` references in its docs and adds its own CI).
+
+[v3.8.5]: https://github.com/gookit/gcli/compare/v3.8.4...v3.8.5
+
 ## [v3.8.4] - 2026-10-15
 
 ### Changed
