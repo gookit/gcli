@@ -679,6 +679,7 @@ p.Finish()
 
 ## 开发与测试
 
+- 需要 Go 1.23 及以上（模块 `go` 指令）。
 - 单元测试：`go test ./...`（`-short` 跳过终端用例）
 - 终端级 e2e：`e2e_pty_test.go` 用 [gookit/gopty](https://github.com/gookit/gopty) 在伪终端里驱动
   构建出的示例程序（`./_examples/cliapp`）——真实的提示符、键入与 `-h`；unix 走 creack/pty，

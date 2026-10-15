@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        go_version: [1.22, 1.23, 1.24, 1.25, stable]
+        go_version: [1.23, 1.24, 1.25, stable]
 
     steps:
       - name: Check out codes

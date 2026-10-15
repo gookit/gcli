@@ -719,6 +719,7 @@ p.Finish()
 
 ## Development
 
+- Requires Go 1.23 or newer (the module `go` directive).
 - Unit tests: `go test ./...` (`-short` skips the terminal cases)
 - Terminal-level e2e: `e2e_pty_test.go` drives the built example app (`./_examples/cliapp`)
   through a pseudo terminal via [gookit/gopty](https://github.com/gookit/gopty) — the real
