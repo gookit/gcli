@@ -4,7 +4,7 @@
 // console: the Windows twin of scripts/ptysmoke (PTY, Linux/macOS only).
 //
 // Python's pty module does not exist on Windows. ConPTY is an option — a Go pty child
-// does start inside this job (see inhere-tools/pty, measured with cmd.exe) while suga's
+// does start inside this job (see gookit/gopty, measured with cmd.exe) while suga's
 // harness reported 0xC0000142 in a job of the same kind, so it depends on the job — but a
 // *console* is what gives faithful cooked line input and Ctrl-C, so this harness drives
 // the console Windows has: it detaches from the console it was started with, creates a
