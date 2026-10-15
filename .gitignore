@@ -33,7 +33,3 @@ go.wor*
 
 # project working dir (R003 artifacts)
 /tmp/
-
-# python smoke tests (scripts/ptysmoke)
-__pycache__/
-*.pyc

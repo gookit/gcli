@@ -679,10 +679,10 @@ p.Finish()
 
 ## 开发与测试
 
-- 单元测试：`go test ./...`
-- 终端级冒烟 —— 在真终端里驱动交互提示：
-  - Linux/macOS（伪终端）：[scripts/ptysmoke](scripts/ptysmoke/README.md)
-  - Windows（私有控制台；同一批场景也可在 Docker 里跑）：[scripts/wincons](scripts/wincons/README.md)
+- 单元测试：`go test ./...`（`-short` 跳过终端用例）
+- 终端级 e2e：`e2e_pty_test.go` 用 [gookit/gopty](https://github.com/gookit/gopty) 在伪终端里驱动
+  构建出的示例程序（`./_examples/cliapp`）——真实的提示符、键入与 `-h`；unix 走 creack/pty，
+  Windows 走 ConPTY。`go test ./...` 每次会把示例构建到 `tmp/e2e/`。
 
 ## 参考项目
 

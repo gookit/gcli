@@ -70,9 +70,9 @@ const (
 var (
 	// DefaultVerb the default Verbose level
 	defaultVerb = VerbError
-	// Version the gcli version
+	// Version the gcli version, exposed by Version()
 	version = "3.8.4"
-	// CommitID the gcli last commit ID
+	// CommitID the gcli last commit ID, exposed by CommitID()
 	commitID = "z20210214"
 
 	// global vars

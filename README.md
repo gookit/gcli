@@ -719,10 +719,11 @@ p.Finish()
 
 ## Development
 
-- Unit tests: `go test ./...`
-- Terminal-level smoke tests — interactive prompts driven in a real terminal:
-  - Linux/macOS (pseudo terminal): [scripts/ptysmoke](scripts/ptysmoke/README.md)
-  - Windows (private console, or the same cases in Docker): [scripts/wincons](scripts/wincons/README.md)
+- Unit tests: `go test ./...` (`-short` skips the terminal cases)
+- Terminal-level e2e: `e2e_pty_test.go` drives the built example app (`./_examples/cliapp`)
+  through a pseudo terminal via [gookit/gopty](https://github.com/gookit/gopty) — the real
+  prompts, typed answers and `-h`; unix uses creack/pty, Windows uses ConPTY. `go test ./...`
+  builds the example into `tmp/e2e/` once per run.
 
 ## See also
 
