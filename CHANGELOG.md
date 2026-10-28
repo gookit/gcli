@@ -7,6 +7,16 @@ and this project adheres to semantic-ish versioning.
 
 ## [Unreleased]
 
+### Fixed
+
+- **`gflag` short-option expansion**: with `EnhanceShort` enabled, the preprocessing split the
+  token after a value-taking option before it could be used as that value — `--name -ab` became
+  `--name -a` and switched `-b` on — and it also rewrote literal arguments after `--` and the
+  options of a later subcommand. The expansion keeps the next token of a known value-taking
+  option verbatim now, and stops at `--`, at the subcommand / reorder boundary and at the first
+  positional argument when reordering is off. Registered numeric short aliases and bool groups
+  keep working, and `EnhanceShort=0` (the default) is unchanged.
+
 ## [v3.8.5] - 2026-10-15
 
 ### Changed
