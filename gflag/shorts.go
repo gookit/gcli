@@ -24,50 +24,71 @@ func (f *FlagSet) isBoolShort(short string) bool {
 //
 // 不满足条件的 token 原样保留(不做猜测，避免误伤混合写法如 -aO)。
 //
-//   - shorts: short=>fullName 映射，判断字符是否为已注册短选项
-//   - isBool: 判断给定单字符短选项是否为 bool 类型
+// Tokens consumed as option values and tokens after -- or stopAt stay verbatim.
+//
+//   - fs: 注册的选项及 short=>fullName 映射
 //   - level:  EnhanceShort 等级(0 直接返回原 args)
-func expandShortArgs(args []string, shorts map[string]string, isBool func(short string) bool, level uint8) []string {
+func expandShortArgs(args []string, fs *FlagSet, level uint8, stopAt func(string) bool) []string {
 	if level == 0 || len(args) == 0 {
 		return args
 	}
 
 	out := make([]string, 0, len(args))
-	for _, arg := range args {
+	for i := 0; i < len(args); i++ {
+		arg := args[i]
+		if arg == "--" {
+			out = append(out, args[i:]...)
+			break
+		}
+
 		// 仅处理单 '-' 开头、长度>2、不含 '='
-		if len(arg) <= 2 || arg[0] != '-' || arg[1] == '-' || strings.IndexByte(arg, '=') >= 0 {
-			out = append(out, arg)
-			continue
-		}
+		if len(arg) > 2 && arg[0] == '-' && arg[1] != '-' && strings.IndexByte(arg, '=') < 0 {
+			body := arg[1:] // 去掉前导 '-'。eg: "aux"
 
-		body := arg[1:] // 去掉前导 '-'。eg: "aux"
-
-		// level≥1: 全为 bool 短选项 => 逐个拆成 -x
-		allBool := true
-		for i := 0; i < len(body); i++ {
-			if !isBool(string(body[i])) {
-				allBool = false
-				break
+			// level≥1: 全为 bool 短选项 => 逐个拆成 -x
+			allBool := true
+			for j := 0; j < len(body); j++ {
+				if !fs.isBoolShort(string(body[j])) {
+					allBool = false
+					break
+				}
 			}
-		}
-		if allBool {
-			for i := 0; i < len(body); i++ {
-				out = append(out, "-"+string(body[i]))
-			}
-			continue
-		}
-
-		// level≥2: 首字符是取值型已注册短选项 => -X + 余下作为值
-		if level >= 2 {
-			first := string(body[0])
-			if _, ok := shorts[first]; ok && !isBool(first) {
-				out = append(out, "-"+first, body[1:])
+			if allBool {
+				for j := 0; j < len(body); j++ {
+					out = append(out, "-"+string(body[j]))
+				}
 				continue
 			}
+
+			// level≥2: 首字符是取值型已注册短选项 => -X + 余下作为值
+			if level >= 2 {
+				first := string(body[0])
+				if _, ok := fs.shorts[first]; ok && !fs.isBoolShort(first) {
+					out = append(out, "-"+first, body[1:])
+					continue
+				}
+			}
+		}
+
+		// Recognize registered short groups before classifying numeric-looking
+		// tokens as positional arguments (for example, the bool aliases -1 -2).
+		if stopAt != nil && !looksLikeOption(arg) && stopAt(arg) {
+			out = append(out, args[i:]...)
+			break
 		}
 
 		// 不满足 => 原样保留(不猜测)
 		out = append(out, arg)
+
+		// A known value-taking option consumes its next token, even if that
+		// token resembles a short group or the -- terminator.
+		if len(arg) > 1 && arg[0] == '-' && strings.IndexByte(arg, '=') < 0 {
+			name := strings.TrimPrefix(arg[1:], "-")
+			if known, isBool := fs.optMeta(name); known && !isBool && i+1 < len(args) {
+				i++
+				out = append(out, args[i])
+			}
+		}
 	}
 	return out
 }

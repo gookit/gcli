@@ -222,7 +222,11 @@ func (p *Parser) Parse(args []string) (err error) {
 
 	// POSIX 短选项规范化预处理(EnhanceShort>0 时生效，默认 0 不改变行为)
 	if p.cfg.EnhanceShort > 0 {
-		args = expandShortArgs(args, p.fSet.shorts, p.fSet.isBoolShort, p.cfg.EnhanceShort)
+		stopAt := p.reorderStop
+		if p.cfg.DisableReorderArgs {
+			stopAt = func(string) bool { return true }
+		}
+		args = expandShortArgs(args, p.fSet, p.cfg.EnhanceShort, stopAt)
 	}
 
 	// 自动重排 args 为标准 "options... arguments" 形态(默认开启)。

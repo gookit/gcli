@@ -7,10 +7,14 @@ import (
 )
 
 func TestExpandShortArgs(t *testing.T) {
-	shorts := map[string]string{"a": "aaa", "u": "uuu", "x": "xxx", "O": "out", "b": "bbb"}
-	isBool := func(s string) bool {
-		return map[string]bool{"a": true, "u": true, "x": true}[s]
-	}
+	p := New("test")
+	var a, u, x bool
+	var out, b string
+	p.BoolOpt(&a, "aaa", "a", false, "bool a")
+	p.BoolOpt(&u, "uuu", "u", false, "bool u")
+	p.BoolOpt(&x, "xxx", "x", false, "bool x")
+	p.StrOpt(&out, "out", "O", "", "string out")
+	p.StrOpt(&b, "bbb", "b", "", "string b")
 
 	tests := []struct {
 		name  string
@@ -38,7 +42,7 @@ func TestExpandShortArgs(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			got := expandShortArgs(tt.in, shorts, isBool, tt.level)
+			got := expandShortArgs(tt.in, p.fSet, tt.level, nil)
 			assert.Eq(t, tt.want, got)
 		})
 	}
