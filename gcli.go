@@ -71,7 +71,7 @@ var (
 	// DefaultVerb the default Verbose level
 	defaultVerb = VerbError
 	// Version the gcli version, exposed by Version()
-	version = "3.8.5"
+	version = "3.8.6"
 	// CommitID the gcli last commit ID, exposed by CommitID()
 	commitID = "z20210214"
 
