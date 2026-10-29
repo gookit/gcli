@@ -16,11 +16,13 @@ and this project adheres to semantic-ish versioning.
   option verbatim now, and stops at `--`, at the subcommand / reorder boundary and at the first
   positional argument when reordering is off. Registered numeric short aliases and bool groups
   keep working, and `EnhanceShort=0` (the default) is unchanged.
-- **`gcli` strict mode**: `strictFormatArgs` still normalized the positional arguments after `--`
-  while the gflag preprocessors stop there — `-- --a ---b` reached the command as `-a -b`. It stops
-  at the first `--` and keeps the rest verbatim now. Known gap left for a follow-up: the value of a
-  value-taking option is still normalized (`--name --a` gives `-a`), which needs the option
-  metadata.
+- **`gcli` strict mode**: the long option normalization moved into `gflag.StrictFormatArgs`, next to
+the other arg preprocessors, and both gaps in it are closed. The positional arguments after `--`
+stay verbatim (`-- --a ---b` no longer becomes `-a -b`), and so does the value of a value-taking
+option, even when it looks like an option: `--name --a` keeps `--a` and `-n ---deep` keeps
+`---deep` (the short alias is resolved). A bool option takes no value, so the token after it is
+still normalized as an option; the `EnhanceShort` splitting (`-ab` => `-a -b`, `-Oab` => `-O` +
+`ab`) and the `--` terminator handling are unchanged.
 
 ## [v3.8.5] - 2026-10-15
 

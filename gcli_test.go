@@ -204,7 +204,6 @@ func TestStrictMode_keepArgsAfterDoubleDash(t *testing.T) {
 	stm := gcli.StrictMode()
 	defer gcli.SetStrictMode(stm)
 	gcli.SetStrictMode(true)
-
 	run := func(in ...string) (name string, args []string) {
 		app := gcli.NewApp(gcli.NotExitOnEnd())
 		app.Add(&gcli.Command{
@@ -230,6 +229,49 @@ func TestStrictMode_keepArgsAfterDoubleDash(t *testing.T) {
 	name, args = run("file", "---name", "tom")
 	assert.Eq(t, "tom", name)
 	assert.Eq(t, []string{"file"}, args)
+}
+
+// strict mode must not normalize the value of a value-taking option, even when the
+// value looks like an option: "--name --a" keeps "--a", "-n ---deep" keeps "---deep".
+func TestStrictMode_optionValueVerbatim(t *testing.T) {
+	stm := gcli.StrictMode()
+	defer gcli.SetStrictMode(stm)
+	gcli.SetStrictMode(true)
+
+	run := func(in ...string) (name string, verbose bool, args []string) {
+		app := gcli.NewApp(gcli.NotExitOnEnd())
+		app.Add(&gcli.Command{
+			Name: "test",
+			Config: func(c *gcli.Command) {
+				c.StrOpt(&name, "name", "n", "", "name")
+				c.BoolOpt(&verbose, "verbose", "v", false, "verbose")
+				c.AddArg("files", "files", false, true)
+			},
+			Func: func(c *gcli.Command, _ []string) error {
+				args = c.Arg("files").Array()
+				return nil
+			},
+		})
+		app.Run(append([]string{"test"}, in...))
+		return
+	}
+
+	// a long value that looks like a one-char long option
+	name, _, _ := run("--name", "--a")
+	assert.Eq(t, "--a", name)
+
+	// a long value with three dashes
+	name, _, _ = run("--name", "---deep")
+	assert.Eq(t, "---deep", name)
+
+	// the short alias is resolved, so "-n" protects the value too
+	name, _, _ = run("-n", "---deep")
+	assert.Eq(t, "---deep", name)
+
+	// a bool option takes no value, the next token is still normalized as an option
+	name, verbose, _ := run("-v", "---deep")
+	assert.True(t, verbose)
+	assert.Eq(t, "", name)
 }
 
 // TestSetEnhanceShort 验证全局 EnhanceShort 设置：一次设置作用于所有命令，
