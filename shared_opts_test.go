@@ -447,8 +447,8 @@ func TestSharedOpts_helpGrouping(t *testing.T) {
 		b.Reset()
 		newApp().Run([]string{"help", "top"})
 		s := b.String()
-		is.StrContains(s, "--git-dir")            // ShowHelp 合并后自身共享选项可见
-		is.NotContains(s, "Inherited Options")    // 自身定义的不标"Inherited"
+		is.StrContains(s, "--git-dir")         // ShowHelp 合并后自身共享选项可见
+		is.NotContains(s, "Inherited Options") // 自身定义的不标"Inherited"
 	})
 }
 
