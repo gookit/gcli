@@ -115,7 +115,12 @@ func strictFormatArgs(args []string) (fmtArgs []string) {
 		return args
 	}
 
-	for _, arg := range args {
+	for i, arg := range args {
+		// args after "--" are positional, keep them verbatim
+		if arg == "--" {
+			return append(fmtArgs, args[i:]...)
+		}
+
 		// if contains '=' append self
 		// TODO mode:
 		//  '--test=x', '-t=x' , '-test=x', '-test'
