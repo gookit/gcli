@@ -16,6 +16,11 @@ and this project adheres to semantic-ish versioning.
   option verbatim now, and stops at `--`, at the subcommand / reorder boundary and at the first
   positional argument when reordering is off. Registered numeric short aliases and bool groups
   keep working, and `EnhanceShort=0` (the default) is unchanged.
+- **`gcli` strict mode**: `strictFormatArgs` still normalized the positional arguments after `--`
+  while the gflag preprocessors stop there — `-- --a ---b` reached the command as `-a -b`. It stops
+  at the first `--` and keeps the rest verbatim now. Known gap left for a follow-up: the value of a
+  value-taking option is still normalized (`--name --a` gives `-a`), which needs the option
+  metadata.
 
 ## [v3.8.5] - 2026-10-15
 
