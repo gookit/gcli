@@ -199,6 +199,39 @@ func TestStrictMode_safeShortSplit(t *testing.T) {
 	})
 }
 
+// strict mode normalizes long options, but must not rewrite the literal args after "--".
+func TestStrictMode_keepArgsAfterDoubleDash(t *testing.T) {
+	stm := gcli.StrictMode()
+	defer gcli.SetStrictMode(stm)
+	gcli.SetStrictMode(true)
+
+	run := func(in ...string) (name string, args []string) {
+		app := gcli.NewApp(gcli.NotExitOnEnd())
+		app.Add(&gcli.Command{
+			Name: "test",
+			Config: func(c *gcli.Command) {
+				c.StrOpt(&name, "name", "n", "", "name")
+				c.AddArg("files", "files", false, true)
+			},
+			Func: func(c *gcli.Command, _ []string) error {
+				args = c.Arg("files").Array()
+				return nil
+			},
+		})
+		app.Run(append([]string{"test"}, in...))
+		return
+	}
+
+	name, args := run("---name", "tom", "--", "--a", "---b", "--c=1")
+	assert.Eq(t, "tom", name)
+	assert.Eq(t, []string{"--a", "---b", "--c=1"}, args)
+
+	// an option after a positional argument is still normalized
+	name, args = run("file", "---name", "tom")
+	assert.Eq(t, "tom", name)
+	assert.Eq(t, []string{"file"}, args)
+}
+
 // TestSetEnhanceShort 验证全局 EnhanceShort 设置：一次设置作用于所有命令，
 // 且命令自身的 Config.EnhanceShort 优先于全局设置。
 func TestSetEnhanceShort(t *testing.T) {
