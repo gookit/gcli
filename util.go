@@ -145,31 +145,6 @@ func strictFormatArgs(args []string) (fmtArgs []string) {
 	return fmtArgs
 }
 
-// flags parser is flag#FlagSet.Parse(), so:
-// - if args like: "arg0 arg1 --opt", will parse fail
-// - if args convert to: "--opt arg0 arg1", can correctly parse
-func moveArgumentsToEnd(args []string) []string {
-	if len(args) < 2 {
-		return args
-	}
-
-	var argEnd int
-	for i, arg := range args {
-		// strop on the first option
-		if strings.IndexByte(arg, '-') == 0 {
-			argEnd = i
-			break
-		}
-	}
-
-	// the first is an option
-	if argEnd == -1 {
-		return args
-	}
-
-	return append(args[argEnd:], args[0:argEnd]...)
-}
-
 // split path/ID to names
 func splitPath2names(path string) []string {
 	var names []string
