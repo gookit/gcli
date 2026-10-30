@@ -64,6 +64,8 @@ func (ags *CliArgs) SetValidateNum(validateNum bool) {
 
 // ParseArgs parse and binding named arguments from input args
 func (ags *CliArgs) ParseArgs(args []string) (err error) {
+	ags.remainArgs = nil
+
 	var num int // parsed num
 	inNum := len(args)
 
