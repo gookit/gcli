@@ -187,9 +187,9 @@ covering scalars, `time.Duration`, slices and `map[string]string`:
 var name string
 var tags []string
 
-gflag.Opt(cmd.Flags(), &name, "name", "n", "tom", "the user name")
+gflag.Opt(&cmd.Flags, &name, "name", "n", "tom", "the user name")
 // slice option, repeatable: --tag php --tag go
-gflag.Opt(cmd.Flags(), &tags, "tag", "t", nil, "the tags, repeatable")
+gflag.Opt(&cmd.Flags, &tags, "tag", "t", nil, "the tags, repeatable")
 ```
 
 #### Use struct tags
@@ -328,11 +328,10 @@ Groups keep the order of first appearance; commands inside a group are sorted by
 Available methods:
 
 ```go
-Add(arg Argument) *Argument
 AddArg(name, desc string, requiredAndArrayed ...bool) *Argument
 AddArgByRule(name, rule string) *Argument
 AddArgument(arg *Argument) *Argument
-BindArg(arg Argument) *Argument
+BindArg(arg *Argument) *Argument
 ```
 
 Usage examples:
@@ -344,19 +343,19 @@ cmd.AddArg("arg2", "the optional argument, is optional")
 cmd.AddArg("arrArg", "the array argument, is array", false, true)
 ```
 
-can also use `Arg()/BindArg()` add a gcli.Argument object:
+can also use `BindArg()` to add a `*gcli.Argument` object:
 
 ```go
-cmd.Arg("arg0", gcli.Argument{
-	Name: "ag0",
+cmd.BindArg(&gcli.Argument{
+	Name: "arg0",
 	Desc: "the first argument, is required",
-	Require: true,
+	Required: true,
 })
-cmd.BindArg("arg2", gcli.Argument{
-	Name: "ag0",
+cmd.BindArg(&gcli.Argument{
+	Name: "arg2",
 	Desc: "the third argument, is is optional",
 })
-cmd.BindArg("arrArg", gcli.Argument{
+cmd.BindArg(&gcli.Argument{
 	Name: "arrArg",
 	Desc: "the third argument, is is array",
 	Arrayed: true,
@@ -689,6 +688,12 @@ progress display (`Bar` / `Spinner` / `Loading` ...) and data display (table / l
 provided by [gookit/color](https://github.com/gookit/color) and [gookit/cliui](https://github.com/gookit/cliui).
 
 ```go
+import (
+    "github.com/gookit/color"
+    "github.com/gookit/cliui/interact"
+    "github.com/gookit/cliui/progress"
+)
+
 color.Info.Tips("processing...")              // colored output
 
 ok := interact.Confirm("ensure continue?")    // interactive confirm

@@ -432,9 +432,9 @@ cmd.VarOpt(&names, "names", "n", "the option message")
 var name string
 var tags []string
 
-gflag.Opt(cmd.Flags(), &name, "name", "n", "tom", "the user name")
+gflag.Opt(&cmd.Flags, &name, "name", "n", "tom", "the user name")
 // 切片选项，可重复: --tag php --tag go
-gflag.Opt(cmd.Flags(), &tags, "tag", "t", nil, "the tags, repeatable")
+gflag.Opt(&cmd.Flags, &tags, "tag", "t", nil, "the tags, repeatable")
 ```
 
 #### 使用 struct 定义选项
@@ -578,10 +578,10 @@ Database:
 绑定参数可用的方法:
 
 ```go
-Add(arg Argument) *Argument
 AddArg(name, desc string, requiredAndArrayed ...bool) *Argument
+AddArgByRule(name, rule string) *Argument
 AddArgument(arg *Argument) *Argument
-BindArg(arg Argument) *Argument
+BindArg(arg *Argument) *Argument
 ```
 
 用法示例：
@@ -593,24 +593,29 @@ cmd.AddArg("arg2", "the optional argument, is optional")
 cmd.AddArg("arrArg", "the array argument, is array", false, true)
 ```
 
-也可以使用 `Add()/BindArg()`:
+也可以使用 `BindArg()` 添加一个 `*gcli.Argument` 对象:
 
 ```go
-cmd.Add("arg0", gcli.Argument{
-	Name: "ag0",
+cmd.BindArg(&gcli.Argument{
+	Name: "arg0",
 	Desc: "the first argument, is required",
-	Require: true,
+	Required: true,
 })
-cmd.BindArg("arg2", gcli.Argument{
-	Name: "ag0",
+cmd.BindArg(&gcli.Argument{
+	Name: "arg2",
 	Desc: "the third argument, is is optional",
 })
-
-cmd.BindArg("arrArg", gcli.Argument{
+cmd.BindArg(&gcli.Argument{
 	Name: "arrArg",
 	Desc: "the third argument, is is array",
 	Arrayed: true,
 })
+```
+
+使用规则字符串 `AddArgByRule`:
+
+```go
+cmd.AddArgByRule("arg2", "add an arg by string rule;required;23")
 ```
 
 ### 获取参数
@@ -622,15 +627,8 @@ var MyCommand = &gcli.Command{
     Name: "example",
     Desc: "this is an example command",
     Config: func(c *gcli.Command) {
-        cmd.BindArg("arg0", gcli.Argument{
-            Name: "ag0",
-            Desc: "the first argument, is required",
-            Require: true,
-        })
-        cmd.Add("arg1", gcli.Argument{
-            Name: "ag1",
-            Desc: "the second argument, is is optional",
-        })
+        c.AddArg("arg0", "the first argument, is required", true)
+        c.AddArg("arg1", "the second argument, is is optional")
     },
     Func: func(c *gcli.Command, args []string) error {
         arg0 := c.Arg("arg0").String()
@@ -649,6 +647,12 @@ gcli 内置了颜色输出、交互输入（`Confirm` / `Select` / `ReadLine` �
 分别由 [gookit/color](https://github.com/gookit/color) 与 [gookit/cliui](https://github.com/gookit/cliui) 提供。
 
 ```go
+import (
+    "github.com/gookit/color"
+    "github.com/gookit/cliui/interact"
+    "github.com/gookit/cliui/progress"
+)
+
 color.Info.Tips("processing...")              // 颜色输出
 
 ok := interact.Confirm("ensure continue?")    // 交互确认
