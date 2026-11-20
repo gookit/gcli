@@ -3,7 +3,7 @@ module github.com/gookit/gcli/v3
 go 1.23.0
 
 require (
-	github.com/gookit/cliui v0.5.3
+	github.com/gookit/cliui v0.5.4
 	github.com/gookit/color v1.6.3
 	github.com/gookit/gopty v0.1.2
 	github.com/gookit/goutil v0.9.0
