@@ -318,7 +318,7 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 
 	// parse global options
 	if err := app.doParseOpts(args); err != nil { // has error.
-		color.Error.Tips(err.Error())
+		color.Error.Tips("%s", err.Error())
 		return
 	}
 
@@ -370,7 +370,7 @@ func (app *App) parseAppOpts(args []string) (ok bool) {
 
 		script, err := app.GenCompletionScript(app.opts.genCompletion)
 		if err != nil {
-			color.Error.Tips(err.Error())
+			color.Error.Tips("%s", err.Error())
 			color.Info.Tips("Run %s --gen-completion help for setup guide", app.BinName())
 		} else {
 			color.Print(script)

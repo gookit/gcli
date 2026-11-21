@@ -47,8 +47,9 @@ func logf(level VerbLevel, format string, v ...any) {
 func defaultErrHandler(ctx *HookCtx) (stop bool) {
 	if errV := ctx.Get("err"); errV != nil {
 		if err, ok := errV.(error); ok {
-			color.Error.Tips(err.Error())
-			// fmt.Println(color.Red.Render("ERROR:"), err.Error())
+			// the error text is data, never a format string: a value such as
+			// "[fe80::1%12]:22" must be printed verbatim.
+			color.Error.Tips("%s", err.Error())
 		}
 	}
 
