@@ -2,6 +2,7 @@ package gcli
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"strings"
 
@@ -92,6 +93,32 @@ func (e *runErr) Code() int { return e.code }
 func (e *runErr) Error() string {
 	return fmt.Sprintf("%v (exit code %d)", e.err, e.code)
 }
+
+// exitCodeError carries a process exit code chosen by the command itself.
+type exitCodeError struct {
+	code int
+	err  error
+}
+
+// NewExitError wraps err so App.Run exits with code instead of the default
+// ERR code. The wrapped error text is printed unchanged.
+//
+//	return gcli.NewExitError(130, errors.New("interrupted"))
+func NewExitError(code int, err error) error {
+	if err == nil {
+		err = errors.New("command failed")
+	}
+	return &exitCodeError{code: code, err: err}
+}
+
+// Code for error
+func (e *exitCodeError) Code() int { return e.code }
+
+// Error string, without decorating the wrapped message
+func (e *exitCodeError) Error() string { return e.err.Error() }
+
+// Unwrap allows errors.Is/As on the wrapped error
+func (e *exitCodeError) Unwrap() error { return e.err }
 
 // HookFunc definition.
 //

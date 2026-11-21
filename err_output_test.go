@@ -1,6 +1,7 @@
 package gcli_test
 
 import (
+	"errors"
 	"fmt"
 	"strings"
 	"testing"
@@ -32,4 +33,38 @@ func TestApp_ErrorTipsKeepsPercentLiteral(t *testing.T) {
 	if strings.Contains(out, "%!") {
 		t.Fatalf("error text was mangled as a format string, output:\n%s", out)
 	}
+}
+
+// A command can pick its own process exit code, e.g. 130 for an interruption.
+func TestApp_NewExitErrorSetsCode(t *testing.T) {
+	t.Run("custom code replaces the default ERR code", func(t *testing.T) {
+		buf := byteutil.NewBuffer()
+		color.Disable()
+		color.SetOutput(buf)
+		defer color.ResetOptions()
+
+		sentinel := errors.New("scan interrupted")
+		app := gcli.NewApp(gcli.NotExitOnEnd())
+		app.Add(gcli.NewCommand("fail", "desc").WithFunc(func(c *gcli.Command, args []string) error {
+			return gcli.NewExitError(130, sentinel)
+		}))
+
+		assert.Eq(t, 130, app.Run([]string{"fail"}))
+		out := buf.String()
+		assert.StrContains(t, out, "scan interrupted")
+		assert.StrNotContains(t, out, "exit code 130")
+
+		err := app.LastError()
+		assert.Err(t, err)
+		assert.True(t, errors.Is(err, sentinel))
+	})
+
+	t.Run("nil error still exits with the code", func(t *testing.T) {
+		app := gcli.NewApp(gcli.NotExitOnEnd())
+		app.Add(gcli.NewCommand("fail", "desc").WithFunc(func(c *gcli.Command, args []string) error {
+			return gcli.NewExitError(3, nil)
+		}))
+
+		assert.Eq(t, 3, app.Run([]string{"fail"}))
+	})
 }
